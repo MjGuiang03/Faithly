@@ -18,11 +18,8 @@ export default function ResetPassword() {
     setLoading(true);
 
     const result = await resetPassword(email);
-    
-    if (result.success) {
-      setSent(true);
-    }
-    
+    if (result.success) setSent(true);
+
     setLoading(false);
   };
 
@@ -31,8 +28,7 @@ export default function ResetPassword() {
       <div className="login-container">
         <div className="login-wrapper">
           <button onClick={() => navigate('/login')} className="back-button">
-            <ArrowLeft className="back-icon" />
-            Back to Login
+            <ArrowLeft className="back-icon" /> Back to Login
           </button>
 
           <div className="login-card">
@@ -44,19 +40,7 @@ export default function ResetPassword() {
               </p>
             </div>
 
-            <div className="reset-success">
-              <p className="reset-info">
-                Click the link in the email to reset your password. The link will expire in 1 hour.
-              </p>
-              <p className="reset-info">
-                Didn't receive the email? Check your spam folder.
-              </p>
-            </div>
-
-            <button 
-              onClick={() => navigate('/login')} 
-              className="submit-button"
-            >
+            <button onClick={() => navigate('/login')} className="submit-button">
               Back to Login
             </button>
           </div>
@@ -69,8 +53,7 @@ export default function ResetPassword() {
     <div className="login-container">
       <div className="login-wrapper">
         <button onClick={() => navigate('/login')} className="back-button">
-          <ArrowLeft className="back-icon" />
-          Back to Login
+          <ArrowLeft className="back-icon" /> Back to Login
         </button>
 
         <div className="login-card">
@@ -78,42 +61,31 @@ export default function ResetPassword() {
             <img src={puacLogo} alt="PUAC Logo" className="logo-image" />
             <h1 className="login-title">Reset Your Password</h1>
             <p className="login-subtitle">
-              Enter your email address and we'll send you a link to reset your password
+              Enter your email and we'll send you a link to reset your password
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="login-form">
             <div className="form-group">
-              <label className="form-label">Email Address</label>
+              <label>Email Address</label>
               <div className="input-wrapper">
                 <Mail className="input-icon" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="form-input"
                   placeholder="Enter your email"
                   required
+                  className="form-input"
                   disabled={loading}
                 />
               </div>
             </div>
 
-            <button 
-              type="submit" 
-              className="submit-button"
-              disabled={loading}
-            >
+            <button type="submit" className="submit-button" disabled={loading}>
               {loading ? 'Sending...' : 'Send Reset Link'}
             </button>
           </form>
-
-          <p className="register-link">
-            Remember your password?{' '}
-            <button onClick={() => navigate('/login')} className="register-button">
-              Sign In
-            </button>
-          </p>
         </div>
       </div>
     </div>

@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Mail, ArrowLeft, KeyRound } from 'lucide-react';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from './ui/input-otp';
 import puacLogo from '../assets/puaclogo.png';
 import '../styles/Login.css';
 
@@ -118,21 +117,14 @@ export default function OTPLogin() {
               <div className="form-group">
                 <label className="form-label">Enter 6-Digit OTP</label>
                 <div className="otp-wrapper">
-                  <InputOTP 
-                    maxLength={6} 
-                    value={otp} 
-                    onChange={handleOTPChange}
-                    disabled={loading}
-                  >
-                    <InputOTPGroup>
-                      <InputOTPSlot index={0} />
-                      <InputOTPSlot index={1} />
-                      <InputOTPSlot index={2} />
-                      <InputOTPSlot index={3} />
-                      <InputOTPSlot index={4} />
-                      <InputOTPSlot index={5} />
-                    </InputOTPGroup>
-                  </InputOTP>
+                  <input
+                    type="text"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    maxLength={6}
+                    placeholder="Enter OTP"
+                    className="otp-input"
+                  />
                 </div>
               </div>
 

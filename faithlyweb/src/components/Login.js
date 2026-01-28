@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Mail, Lock, ArrowLeft, Eye, EyeOff, KeyRound } from 'lucide-react';
+import { Mail, Lock, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import puacLogo from '../assets/puaclogo.png';
 import '../styles/Login.css';
 
@@ -22,13 +22,21 @@ export default function Login() {
     setLoading(true);
 
     const result = await signIn(email, password);
-    
+
     if (result.success) {
-      navigate('/home');
+      navigate('/home'); // change to your home/dashboard route
     } else {
-      setError(result.error?.message || 'Failed to sign in');
+      // User not found validation
+      if (
+        result.error?.message?.toLowerCase().includes('not found') ||
+        result.error?.message?.toLowerCase().includes('no user')
+      ) {
+        setError('User not found. Please sign up first.');
+      } else {
+        setError(result.error?.message || 'Failed to sign in');
+      }
     }
-    
+
     setLoading(false);
   };
 
@@ -88,11 +96,7 @@ export default function Login() {
               </div>
             </div>
 
-            {error && (
-              <div className="error-message">
-                {error}
-              </div>
-            )}
+            {error && <div className="error-message">{error}</div>}
 
             <div className="form-options">
               <label className="checkbox-label">
@@ -118,26 +122,13 @@ export default function Login() {
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
 
-            <div className="divider">
-              <span className="divider-text">OR</span>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => navigate('/otp-login')}
-              className="otp-button"
-            >
-              <KeyRound size={20} />
-              Sign in with OTP
-            </button>
+            <p className="register-link">
+              Don't have an account?{' '}
+              <button onClick={() => navigate('/signup')} className="register-button">
+                Sign Up
+              </button>
+            </p>
           </form>
-
-          <p className="register-link">
-            Don't have an account?{' '}
-            <button onClick={() => navigate('/signup')} className="register-button">
-              Sign Up
-            </button>
-          </p>
         </div>
       </div>
     </div>

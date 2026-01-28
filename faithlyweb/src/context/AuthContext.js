@@ -1,323 +1,165 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import { supabase, sanitizeInput } from '../lib/supabase';
-import { toast } from 'sonner@2.0.3';
+import { createContext, useContext, useState } from 'react';
+import { toast } from 'sonner';
 
-const AuthContext = createContext({});
+const AuthContext = createContext();
+export const useAuth = () => useContext(AuthContext);
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+const API = process.env.REACT_APP_API_URL;
+
+console.log('🔥 API URL:', API);
+
+const safeJSON = async (res) => {
+  const text = await res.text();
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error('Server error. Check backend or API URL.');
   }
-  return context;
 };
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [session, setSession] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
-  const [supabaseConfigured, setSupabaseConfigured] = useState(true);
+  const [loading, setLoading] = useState(false);
 
-  // Initialize auth state
-  useEffect(() => {
-    // Check if Supabase is configured
-    const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL;
-    const supabaseAnonKey = import.meta.env?.VITE_SUPABASE_ANON_KEY;
-    
-    if (!supabaseUrl || !supabaseAnonKey) {
-      setSupabaseConfigured(false);
-      setLoading(false);
-      return;
-    }
-
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchUserProfile(session.user.id);
-      }
-      setLoading(false);
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchUserProfile(session.user.id);
-      } else {
-        setProfile(null);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  // Fetch user profile from custom table
-  const fetchUserProfile = async (userId) => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error) throw error;
-      setProfile(data);
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-    }
-  };
-
-  // Sign up with email verification
-  const signUp = async (formData) => {
-    try {
-      const { email, password, fullName, phone, branch, position, gender, birthday } = formData;
-
-      // Sanitize all inputs
-      const sanitizedData = {
-        email: sanitizeInput(email.toLowerCase().trim()),
-        fullName: sanitizeInput(fullName.trim()),
-        phone: sanitizeInput(phone.trim()),
-        branch: sanitizeInput(branch),
-        position: sanitizeInput(position),
-        gender: sanitizeInput(gender),
-        birthday: birthday
-      };
-
-      // Sign up with Supabase Auth
-      const { data, error } = await supabase.auth.signUp({
-        email: sanitizedData.email,
-        password: password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/verify-email`,
-          data: {
-            full_name: sanitizedData.fullName,
-            phone: sanitizedData.phone,
-            branch: sanitizedData.branch,
-            position: sanitizedData.position,
-            gender: sanitizedData.gender,
-            birthday: sanitizedData.birthday
-          }
-        }
-      });
-
-      if (error) throw error;
-
-      // Create profile in custom table
-      if (data.user) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert([{
-            id: data.user.id,
-            email: sanitizedData.email,
-            full_name: sanitizedData.fullName,
-            phone: sanitizedData.phone,
-            branch: sanitizedData.branch,
-            position: sanitizedData.position,
-            gender: sanitizedData.gender,
-            birthday: sanitizedData.birthday,
-            created_at: new Date().toISOString()
-          }]);
-
-        if (profileError) {
-          console.error('Profile creation error:', profileError);
-        }
-      }
-
-      toast.success('Registration successful! Please check your email to verify your account.');
-      return { success: true, data };
-    } catch (error) {
-      console.error('Signup error:', error);
-      toast.error(error.message || 'An error occurred during signup');
-      return { success: false, error };
-    }
-  };
-
-  // Sign in with email and password
+  /* ---------- LOGIN ---------- */
   const signIn = async (email, password) => {
     try {
-      const sanitizedEmail = sanitizeInput(email.toLowerCase().trim());
-
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: sanitizedEmail,
-        password: password
+      setLoading(true);
+      const res = await fetch(`${API}/api/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
       });
 
-      if (error) throw error;
+      const data = await safeJSON(res);
+      if (!res.ok) throw new Error(data.message || 'Login failed');
 
-      // Check if email is verified
-      if (!data.user.email_confirmed_at) {
-        await supabase.auth.signOut();
-        toast.error('Please verify your email before signing in.');
-        return { success: false, error: { message: 'Email not verified' } };
-      }
-
-      toast.success('Successfully signed in!');
-      return { success: true, data };
-    } catch (error) {
-      console.error('Signin error:', error);
-      toast.error(error.message || 'Invalid email or password');
-      return { success: false, error };
+      setUser(data.user);
+      setProfile(data.user);
+      toast.success('Signed in successfully');
+      return { success: true };
+    } catch (err) {
+      toast.error(err.message);
+      return { success: false, error: err };
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Sign in with OTP (sent to email)
-  const signInWithOTP = async (email) => {
+  /* ---------- SIGNUP ---------- */
+  const signUp = async (formData) => {
     try {
-      const sanitizedEmail = sanitizeInput(email.toLowerCase().trim());
-
-      const { data, error } = await supabase.auth.signInWithOtp({
-        email: sanitizedEmail,
-        options: {
-          shouldCreateUser: false, // Only allow existing users
-          emailRedirectTo: `${window.location.origin}/verify-otp`
-        }
+      setLoading(true);
+      console.log('API URL:', API);
+      
+      const res = await fetch(`${API}/api/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          fullName: formData.fullName,
+          phone: formData.phone,
+          branch: formData.branch,
+          position: formData.position,
+          gender: formData.gender,
+          birthday: formData.birthday
+        })
       });
 
-      if (error) throw error;
+      const data = await safeJSON(res);
+      if (!res.ok) throw new Error(data.message || 'Signup failed');
 
-      toast.success('OTP sent to your email! Check your inbox.');
-      return { success: true, data };
-    } catch (error) {
-      console.error('OTP error:', error);
-      toast.error(error.message || 'Failed to send OTP');
-      return { success: false, error };
+      toast.success('Check your email for OTP');
+      return { success: true };
+    } catch (err) {
+      toast.error(err.message);
+      return { success: false, error: err };
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Verify OTP
-  const verifyOTP = async (email, token) => {
+  /* ---------- VERIFY OTP (EMAIL VERIFICATION ONLY) ---------- */
+  const verifyOTP = async (email, otp) => {
     try {
-      const sanitizedEmail = sanitizeInput(email.toLowerCase().trim());
-
-      const { data, error } = await supabase.auth.verifyOtp({
-        email: sanitizedEmail,
-        token: token,
-        type: 'email'
+      const res = await fetch(`${API}/api/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp })
       });
 
-      if (error) throw error;
+      const data = await safeJSON(res);
+      if (!res.ok) throw new Error(data.message || 'OTP verification failed');
 
-      toast.success('OTP verified successfully!');
-      return { success: true, data };
-    } catch (error) {
-      console.error('OTP verification error:', error);
-      toast.error(error.message || 'Invalid or expired OTP');
-      return { success: false, error };
+      toast.success('Email verified');
+      return { success: true };
+    } catch (err) {
+      toast.error(err.message);
+      return { success: false, error: err };
     }
   };
 
-  // Reset password
+  /* ---------- RESEND OTP ---------- */
+  const resendOTP = async (email) => {
+    try {
+      const res = await fetch(`${API}/api/resend-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+
+      const data = await safeJSON(res);
+      if (!res.ok) throw new Error(data.message || 'Resend failed');
+
+      toast.success('OTP resent');
+      return { success: true };
+    } catch (err) {
+      toast.error(err.message);
+      return { success: false, error: err };
+    }
+  };
+
+  /* ---------- RESET PASSWORD ---------- */
   const resetPassword = async (email) => {
     try {
-      const sanitizedEmail = sanitizeInput(email.toLowerCase().trim());
-
-      const { data, error } = await supabase.auth.resetPasswordForEmail(sanitizedEmail, {
-        redirectTo: `${window.location.origin}/update-password`
+      const res = await fetch(`${API}/api/resend-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
       });
 
-      if (error) throw error;
+      const data = await safeJSON(res);
+      if (!res.ok) throw new Error(data.message || 'Failed to send reset link');
 
-      toast.success('Password reset link sent to your email!');
-      return { success: true, data };
-    } catch (error) {
-      console.error('Password reset error:', error);
-      toast.error(error.message || 'Failed to send reset link');
-      return { success: false, error };
-    }
-  };
-
-  // Update password
-  const updatePassword = async (newPassword) => {
-    try {
-      const { data, error } = await supabase.auth.updateUser({
-        password: newPassword
-      });
-
-      if (error) throw error;
-
-      toast.success('Password updated successfully!');
-      return { success: true, data };
-    } catch (error) {
-      console.error('Password update error:', error);
-      toast.error(error.message || 'Failed to update password');
-      return { success: false, error };
-    }
-  };
-
-  // Sign out
-  const signOut = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      
-      setUser(null);
-      setSession(null);
-      setProfile(null);
-      toast.success('Signed out successfully');
+      toast.success('Password reset link sent to your email');
       return { success: true };
-    } catch (error) {
-      console.error('Signout error:', error);
-      toast.error(error.message || 'Failed to sign out');
-      return { success: false, error };
+    } catch (err) {
+      toast.error(err.message);
+      return { success: false, error: err };
     }
   };
 
-  // Update user profile
-  const updateProfile = async (updates) => {
-    try {
-      if (!user) throw new Error('No user logged in');
-
-      const sanitizedUpdates = {};
-      Object.keys(updates).forEach(key => {
-        if (typeof updates[key] === 'string') {
-          sanitizedUpdates[key] = sanitizeInput(updates[key]);
-        } else {
-          sanitizedUpdates[key] = updates[key];
-        }
-      });
-
-      const { data, error } = await supabase
-        .from('profiles')
-        .update(sanitizedUpdates)
-        .eq('id', user.id)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setProfile(data);
-      toast.success('Profile updated successfully!');
-      return { success: true, data };
-    } catch (error) {
-      console.error('Profile update error:', error);
-      toast.error(error.message || 'Failed to update profile');
-      return { success: false, error };
-    }
-  };
-
-  const value = {
-    user,
-    session,
-    profile,
-    loading,
-    signUp,
-    signIn,
-    signInWithOTP,
-    verifyOTP,
-    signOut,
-    resetPassword,
-    updatePassword,
-    updateProfile,
-    // Legacy login for compatibility
-    login: signIn
+  const signOut = () => {
+    setUser(null);
+    setProfile(null);
+    toast.success('Signed out successfully');
+    return { success: true };
   };
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{
+      user,
+      profile,
+      loading,
+      signIn,
+      signUp,
+      verifyOTP,
+      resendOTP,
+      resetPassword,
+      signOut
+    }}>
       {children}
     </AuthContext.Provider>
   );

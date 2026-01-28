@@ -575,3 +575,10 @@
     font-size: 0.8125rem;
   }
 }
+
+.otp-input {
+  letter-spacing: 6px;
+  text-align: center;
+  font-size: 18px;
+  padding: 10px;
+}
