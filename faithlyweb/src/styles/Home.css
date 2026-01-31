@@ -19,36 +19,34 @@
 }
 
 .sidebar-header {
-  padding: 24px 24px 32px;
+  padding: 20px 20px 5px;
   border-bottom: 0.8px solid #1c398e;
 }
 
-.logo-container {
+.sidebar .logo-container {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  align-items: flex-start;
 }
 
-.logo-icon {
-  width: 40px;
-  height: 40px;
-  background: #155dfc;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+
+
+.sidebar .logo-image {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
   flex-shrink: 0;
+    margin-top: 4x;
+    margin-left: 10px;
 }
 
-.logo-svg {
-  width: 24px;
-  height: 24px;
-}
+
 
 .logo-text {
   display: flex;
   flex-direction: column;
   gap: 0;
+      margin-right: 50px;
+
 }
 
 .logo-title {
@@ -197,11 +195,13 @@
 }
 
 /* Welcome Header */
-.welcome-header {
+.home-header {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
+
+
 
 .page-title {
   font-size: 30px;

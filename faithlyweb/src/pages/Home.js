@@ -2,6 +2,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import svgPaths from '../imports/svg-kfi3zq3ims';
 import '../styles/Home.css';
+import puacLogo from '../assets/puaclogo.png';
+
 
 export default function Home() {
   const navigate = useNavigate();
@@ -76,16 +78,9 @@ export default function Home() {
         {/* Logo */}
         <div className="sidebar-header">
           <div className="logo-container">
-            <div className="logo-icon">
-              <svg className="logo-svg" fill="none" viewBox="0 0 24 24">
-                <path d={svgPaths.p13b4cd00} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                <path d={svgPaths.p32939e80} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                <path d={svgPaths.pdc9c900} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                <path d={svgPaths.p20de0972} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-              </svg>
-            </div>
+                <img src={puacLogo} alt="PUAC Logo" className="logo-image" />
             <div className="logo-text">
-              <h1 className="logo-title">Church of Grace</h1>
+              <h1 className="logo-title">FaithLy</h1>
               <p className="logo-subtitle">Member Portal</p>
             </div>
           </div>
@@ -181,7 +176,7 @@ export default function Home() {
       {/* Main Content */}
       <div className="main-content">
         {/* Welcome Header */}
-        <div className="welcome-header">
+        <div className="home-header">
           <h1 className="page-title">Welcome Back!</h1>
           <p className="page-subtitle">Here's an overview of your church activities</p>
         </div>

@@ -22,15 +22,18 @@
 
 .logo-section {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.5rem;
+  margin-top: 5px;
 }
 
-.logo-image {
-  width: 1.75rem;
-  height: 1.75rem;
+.logo-section .logo-image {
+  width: 2.25rem;
+  height: 2.25rem;
   object-fit: contain;
+  margin-top: 4px;
 }
+
 
 .logo-title {
   font-weight: bold;

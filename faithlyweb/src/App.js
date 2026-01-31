@@ -1,17 +1,17 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
 import { Toaster } from 'sonner';
 import { AuthProvider } from './context/AuthContext';
-import ProtectedRoute from './components/ProtectedRoute';
+import ProtectedRoute from './pages/ProtectedRoute';
 
 // Pages
-import Welcome from './components/Welcome';
-import Login from './components/Login';
-import Signup from './components/Signup';
-import OTPLogin from './components/OTPLogin';
-import ResetPassword from './components/ResetPassword';
-import UpdatePassword from './components/UpdatePassword';
-import VerifyEmail from './components/VerifyEmail';
-import Home from './components/Home';
+import Welcome from './pages/Welcome';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import OTPLogin from './pages/OTPLogin';
+import ResetPassword from './pages/ResetPassword';
+import UpdatePassword from './pages/UpdatePassword';
+import VerifyEmail from './pages/VerifyEmail';
+import Home from './pages/Home';
 
 export default function App() {
   return (

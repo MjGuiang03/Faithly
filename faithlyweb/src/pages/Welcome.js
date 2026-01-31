@@ -93,11 +93,11 @@ export default function Welcome() {
                 <p className="stat-label">Active Members</p>
               </div>
               <div className="stat-item">
-                <p className="stat-number">$2.5M+</p>
+                <p className="stat-number">₱2.5M+</p>
                 <p className="stat-label">Loans Processed</p>
               </div>
               <div className="stat-item">
-                <p className="stat-number">4</p>
+                <p className="stat-number">68</p>
                 <p className="stat-label">Branch Locations</p>
               </div>
             </div>
