@@ -159,7 +159,7 @@ export default function Welcome() {
       <footer className="welcome-footer">
         <div className="footer-content">
           <p className="footer-text">
-            © 2026 Church of Grace. All rights reserved. | Secure & Trusted Church Management Platform
+            © 2026 FaithLy. All rights reserved. | Secure & Trusted Church Management Platform
           </p>
         </div>
       </footer>

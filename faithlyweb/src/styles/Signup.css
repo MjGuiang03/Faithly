@@ -543,6 +543,12 @@
   overflow-y: auto;
   flex: 1;
 }
+.modal-body p{
+  color: white;
+}
+.modal-body .terms-and-condition{
+color: white;
+}
 
 @media (min-width: 640px) {
   .modal-body {

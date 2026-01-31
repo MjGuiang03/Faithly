@@ -40,19 +40,19 @@ export default function Home() {
   const recentActivities = [
     {
       title: 'Loan Payment Processed',
-      description: 'Monthly payment of $450 received',
+      description: 'example',
       time: '2 days ago',
       iconColor: '#00A63E'
     },
     {
       title: 'Donation Received',
-      description: 'Thank you for your $100 donation',
+      description: 'example',
       time: '1 week ago',
       iconColor: '#E60076'
     },
     {
       title: 'Service Attendance',
-      description: 'Checked in to Sunday Service',
+      description: 'example',
       time: '1 week ago',
       iconColor: '#155DFC'
     }
@@ -195,7 +195,7 @@ export default function Home() {
             </div>
             <div className="stat-content">
               <p className="stat-label">Active Loans</p>
-              <p className="stat-value">2</p>
+              <p className="stat-value">0</p>
             </div>
           </div>
 
@@ -207,7 +207,7 @@ export default function Home() {
             </div>
             <div className="stat-content">
               <p className="stat-label">Total Donated</p>
-              <p className="stat-value">₱1,250</p>
+              <p className="stat-value">₱0</p>
             </div>
           </div>
 
@@ -222,7 +222,7 @@ export default function Home() {
             </div>
             <div className="stat-content">
               <p className="stat-label">Attendance Rate</p>
-              <p className="stat-value">87%</p>
+              <p className="stat-value">0</p>
             </div>
           </div>
 
@@ -235,7 +235,7 @@ export default function Home() {
             </div>
             <div className="stat-content">
               <p className="stat-label">Member Since</p>
-              <p className="stat-value">2020</p>
+              <p className="stat-value">2026</p>
             </div>
           </div>
         </div>

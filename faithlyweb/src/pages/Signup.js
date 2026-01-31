@@ -273,7 +273,94 @@ export default function Signup() {
               <h2 className="modal-title">Terms and Conditions</h2>
               <button onClick={() => setShowTermsModal(false)} className="modal-close"><X className="close-icon"/></button>
             </div>
-            <div className="modal-body"> {/* Your Terms text here */} </div>
+            <div className="modal-body">  
+              <p>
+    <strong>1. Acceptance of Terms</strong><br />
+    By accessing and using <strong>FaithLy</strong>, a loan management system
+    developed for the Philippine United Apostolic Church, you agree to comply
+    with and be bound by these Terms and Conditions. If you do not agree, you
+    must discontinue use of the system.
+  </p>
+
+  <p>
+    <strong>2. Purpose of the System</strong><br />
+    FaithLy is designed to facilitate transparent and accountable management
+    of church-related loan applications, approvals, payments, and member
+    records in support of responsible financial stewardship.
+  </p>
+
+  <p>
+    <strong>3. Authorized Users</strong><br />
+    Only registered and approved church members, officers, and administrators
+    are permitted to access FaithLy. Access rights are assigned based on user
+    roles defined by church authorities.
+  </p>
+
+  <p>
+    <strong>4. User Responsibilities</strong><br />
+    Users are responsible for maintaining the confidentiality of their login
+    credentials and for all activities performed under their accounts. Any
+    unauthorized use must be reported immediately.
+  </p>
+
+  <p>
+    <strong>5. Loan Application and Approval</strong><br />
+    Submitting a loan application through FaithLy does not guarantee approval.
+    All loan requests are subject to review, verification, and approval by
+    authorized church officers in accordance with church policies.
+  </p>
+
+  <p>
+    <strong>6. Loan Terms, Interest, and Penalties</strong><br />
+    Approved loans are governed by agreed terms, including loan amount,
+    repayment schedule, interest rates, and applicable penalties for late
+    payments. These details are displayed within the system and serve as the
+    official reference.
+  </p>
+
+  <p>
+    <strong>7. Payments and Monitoring</strong><br />
+    Borrowers are responsible for making payments on or before the due dates
+    shown in FaithLy. The system provides automated monitoring of balances,
+    payment history, and loan status for reference purposes.
+  </p>
+
+  <p>
+    <strong>8. AI Assistance Disclaimer</strong><br />
+    FaithLy may include an AI-powered chatbot (<strong>GuideLy</strong>) to
+    assist with inquiries related to loan status, payment schedules, and
+    system navigation. The chatbot provides informational support only and does
+    not replace official decisions made by church authorities.
+  </p>
+
+  <p>
+    <strong>9. Prohibited Use</strong><br />
+    Users shall not misuse the system, attempt unauthorized access,
+    manipulate records, or engage in activities that compromise the security
+    or integrity of FaithLy.
+  </p>
+
+  <p>
+    <strong>10. Termination of Access</strong><br />
+    The church reserves the right to suspend or terminate access to FaithLy
+    for violations of these Terms and Conditions or other valid administrative
+    reasons.
+  </p>
+
+  <p>
+    <strong>11. Limitation of Liability</strong><br />
+    FaithLy is provided for administrative support purposes only. The church
+    shall not be held liable for any direct or indirect damages arising from
+    the use or inability to use the system.
+  </p>
+
+  <p>
+    <strong>12. Governing Principles</strong><br />
+    FaithLy operates under the principles of faith, integrity, transparency,
+    accountability, and responsible stewardship in alignment with church
+    values.
+  </p>
+   </div>
             <div className="modal-footer"><button onClick={handleAgreeTerms} className="modal-agree-button">Agree</button></div>
           </div>
         </div>
@@ -286,7 +373,66 @@ export default function Signup() {
               <h2 className="modal-title">Privacy Policy</h2>
               <button onClick={() => setShowPrivacyModal(false)} className="modal-close"><X className="close-icon"/></button>
             </div>
-            <div className="modal-body"> {/* Your Privacy text here */} </div>
+            <div className="modal-body"> 
+              <p>
+  <strong>1. Data Collection</strong><br />
+  FaithLy collects personal information such as names, contact details, loan
+  records, payment history, and system usage data necessary for loan management
+  and administrative purposes.
+</p>
+
+<p>
+  <strong>2. Use of Information</strong><br />
+  Collected information is used solely to process loan applications, monitor
+  payments, maintain records, provide system support, and improve FaithLy
+  services.
+</p>
+
+<p>
+  <strong>3. Data Protection and Security</strong><br />
+  FaithLy implements reasonable administrative, technical, and organizational
+  measures to protect personal data against unauthorized access, alteration,
+  disclosure, or loss.
+</p>
+
+<p>
+  <strong>4. Data Privacy Compliance</strong><br />
+  All personal data is processed in accordance with the Data Privacy Act of
+  2012 (Republic Act No. 10173) and its implementing rules and regulations.
+</p>
+
+<p>
+  <strong>5. Data Sharing</strong><br />
+  Personal information shall not be shared with third parties except when
+  required by law or authorized by church administration for official purposes.
+</p>
+
+<p>
+  <strong>6. User Rights</strong><br />
+  Users have the right to access, correct, and request updates to their
+  personal information in accordance with applicable data privacy laws.
+</p>
+
+<p>
+  <strong>7. Data Retention</strong><br />
+  Personal data is retained only for as long as necessary to fulfill the
+  purposes of the system or as required by church policy and applicable laws.
+</p>
+
+<p>
+  <strong>8. Changes to the Privacy Policy</strong><br />
+  The church reserves the right to update this Privacy Policy as needed. Users
+  will be informed of significant changes, and continued use of FaithLy
+  constitutes acceptance of the updated policy.
+</p>
+
+<p>
+  <strong>9. Contact Information</strong><br />
+  For questions or concerns regarding these Terms and Conditions or the Privacy
+  Policy, users may contact the church administration through official
+  communication channels.
+</p>
+               </div>
             <div className="modal-footer"><button onClick={handleAgreePrivacy} className="modal-agree-button">Agree</button></div>
           </div>
         </div>
