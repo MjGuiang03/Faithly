@@ -170,7 +170,7 @@ app.post('/api/login', async (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    res.json({
+    res.status(200).json({
       message: 'Login successful',
       user: {
         email: user.email,
@@ -187,6 +187,209 @@ app.post('/api/login', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Login failed' });
+  }
+});
+
+/* ================== UPDATE PROFILE ================== */
+app.put('/api/update-profile', async (req, res) => {
+  try {
+    const { email, fullName, phone, branch, position } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+
+    // Find user in database
+    const user = await users.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Prepare update object (only editable fields)
+    const updateData = {};
+    if (fullName) updateData.fullName = fullName;
+    if (phone) updateData.phone = phone;
+    if (branch) updateData.branch = branch;
+    if (position) updateData.position = position;
+
+    // Update user profile (gender and birthday are NOT updated)
+    await users.updateOne({ email }, { $set: updateData });
+
+    // Get updated user
+    const updatedUser = await users.findOne({ email });
+
+    res.status(200).json({
+      message: 'Profile updated successfully',
+      user: {
+        email: updatedUser.email,
+        fullName: updatedUser.fullName,
+        phone: updatedUser.phone,
+        branch: updatedUser.branch,
+        position: updatedUser.position,
+        gender: updatedUser.gender,
+        birthday: updatedUser.birthday,
+        createdAt: updatedUser.createdAt
+      }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to update profile' });
+  }
+});
+
+/* ================== PASSWORD RESET - REQUEST OTP ================== */
+app.post('/api/reset-password-request', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await users.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Generate OTP for password reset
+    const otp = generateOTP();
+
+    // Delete any existing password reset OTPs
+    await otps.deleteMany({ email, type: 'reset-password' });
+
+    // Store new OTP
+    await otps.insertOne({
+      email,
+      otp,
+      type: 'reset-password',
+      expiresAt: new Date(Date.now() + 15 * 60 * 1000)
+    });
+
+    // Send OTP email
+    await transporter.sendMail({
+      from: `\"Faithly\" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: 'Password Reset Code',
+      html: `<h2>Password Reset OTP</h2><h1>${otp}</h1><p>This code expires in 15 minutes. If you didn't request a password reset, please ignore this email.</p>`
+    });
+
+    res.json({ message: 'OTP sent to your email' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to send OTP' });
+  }
+});
+
+/* ================== PASSWORD RESET - VERIFY OTP ================== */
+app.post('/api/reset-password-verify-otp', async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    const record = await otps.findOne({
+      email,
+      otp,
+      type: 'reset-password',
+      expiresAt: { $gt: new Date() }
+    });
+
+    if (!record) {
+      return res.status(400).json({ message: 'Invalid or expired OTP' });
+    }
+
+    res.json({ message: 'OTP verified successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Verification failed' });
+  }
+});
+
+/* ================== PASSWORD RESET - UPDATE PASSWORD ================== */
+app.post('/api/reset-password-update', async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    // Verify OTP one more time
+    const record = await otps.findOne({
+      email,
+      otp,
+      type: 'reset-password',
+      expiresAt: { $gt: new Date() }
+    });
+
+    if (!record) {
+      return res.status(400).json({ message: 'Invalid or expired OTP' });
+    }
+
+    // Hash new password
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+
+    // Update password
+    await users.updateOne(
+      { email },
+      { $set: { passwordHash } }
+    );
+
+    // Delete the used OTP
+    await otps.deleteMany({ email, type: 'reset-password' });
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to update password' });
+  }
+});
+
+/* ================== DELETE ACCOUNT ================== */
+app.delete('/api/delete-account', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Validate input
+    if (!email || !password) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Email and password are required' 
+      });
+    }
+
+    // Find user by email
+    const user = await users.findOne({ email });
+    
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'User not found' 
+      });
+    }
+
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    
+    if (!isPasswordValid) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Password is incorrect' 
+      });
+    }
+
+    // Delete the user account
+    await users.deleteOne({ email });
+
+    // Delete related OTPs
+    await otps.deleteMany({ email });
+
+    // Optional: Delete related data (loans, donations, attendance records, etc.)
+    // await db.collection('loans').deleteMany({ userEmail: email });
+    // await db.collection('donations').deleteMany({ userEmail: email });
+    // await db.collection('attendance').deleteMany({ userEmail: email });
+
+    res.status(200).json({ 
+      success: true, 
+      message: 'Account deleted successfully' 
+    });
+
+  } catch (error) {
+    console.error('Delete account error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error. Please try again later.' 
+    });
   }
 });
 

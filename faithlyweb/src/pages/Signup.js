@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import { Mail, Lock, User, Phone, ArrowLeft, Eye, EyeOff, Building2, Briefcase, Users as UsersIcon, Calendar, X } from 'lucide-react';
 import puacLogo from '../assets/puaclogo.png';

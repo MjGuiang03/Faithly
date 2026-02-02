@@ -59,7 +59,7 @@
   background-color: rgba(30, 41, 59, 0.5);
   backdrop-filter: blur(8px);
   border: 1px solid rgba(30, 58, 138, 0.5);
-  border-radius: 1rem;
+  border-radius: .25rem;
   padding: 1.5rem;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 }
@@ -88,8 +88,8 @@
 }
 
 .signup-logo-image {
-  width: 3rem;
-  height: 3rem;
+  width: 4rem;
+  height: 4rem;
   object-fit: contain;
   margin: 0 auto 1rem;
   display: block;
@@ -97,16 +97,16 @@
 
 @media (min-width: 640px) {
   .signup-logo-image {
-    width: 3.5rem;
-    height: 3.5rem;
+    width: 4.5rem;
+    height: 4.5rem;
     margin-bottom: 1.25rem;
   }
 }
 
 @media (min-width: 768px) {
   .signup-logo-image {
-    width: 4rem;
-    height: 4rem;
+    width: 5rem;
+    height: 5rem;
   }
 }
 
@@ -475,7 +475,7 @@
   background: linear-gradient(to bottom, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
   backdrop-filter: blur(12px);
   border: 1px solid rgba(30, 58, 138, 0.5);
-  border-radius: 1rem;
+  border-radius: .25rem;
   width: 100%;
   max-width: 40rem;
   max-height: 80vh;

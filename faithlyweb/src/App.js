@@ -24,6 +24,7 @@ export default function App() {
           expand={false}
           duration={4000}
         />
+
         <Routes>
           {/* Public routes */}
           <Route path="/" element={<Welcome />} />
@@ -33,18 +34,18 @@ export default function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/update-password" element={<UpdatePassword />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
-          
+
           {/* Protected routes */}
-          <Route 
-            path="/home" 
+          <Route
+            path="/home"
             element={
               <ProtectedRoute>
                 <Home />
               </ProtectedRoute>
-            } 
+            }
           />
-          
-          {/* Fallback redirect */}
+
+          {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>

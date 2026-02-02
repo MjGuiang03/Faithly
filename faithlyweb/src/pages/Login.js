@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import { Mail, Lock, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import puacLogo from '../assets/puaclogo.png';
@@ -12,7 +12,6 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -99,15 +98,7 @@ export default function Login() {
             {error && <div className="error-message">{error}</div>}
 
             <div className="form-options">
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="checkbox-input"
-                />
-                <span className="checkbox-text">Remember me</span>
-              </label>
+              
 
               <button
                 type="button"
