@@ -18,8 +18,23 @@ const db = client.db(process.env.DB_NAME);
 
 const users = db.collection('users');
 const otps = db.collection('otps');
+const admins = db.collection('admins'); // Add admins collection
 
 console.log('✅ Connected to MongoDB');
+
+/* ================== CREATE DEFAULT ADMIN ================== */
+// Create default admin account for testing
+const defaultAdmin = await admins.findOne({ email: 'admin' });
+if (!defaultAdmin) {
+  const adminPasswordHash = await bcrypt.hash('admin', 10);
+  await admins.insertOne({
+    email: 'admin',
+    passwordHash: adminPasswordHash,
+    role: 'admin',
+    createdAt: new Date()
+  });
+  console.log('✅ Default admin account created (email: admin, password: admin)');
+}
 
 /* ================== EMAIL ================== */
 const transporter = nodemailer.createTransport({
@@ -47,9 +62,20 @@ app.post('/api/register', async (req, res) => {
   try {
     const { email, password, fullName, phone, branch, position, gender, birthday } = req.body;
 
+    // Prevent email reuse (even for deactivated accounts)
     const existing = await users.findOne({ email });
     if (existing) {
-      return res.status(400).json({ message: 'Email already exists' });
+      // Check if account is deactivated (soft deleted)
+      if (existing.isDeleted) {
+        return res.status(400).json({ 
+          message: 'This email was previously registered and deleted. Please use a different email.' 
+        });
+      } else {
+        // Account is active or inactive
+        return res.status(400).json({ 
+          message: 'Email already exists. Please login or use a different email.' 
+        });
+      }
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
@@ -161,6 +187,11 @@ app.post('/api/login', async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    // Check if account is deleted (soft delete)
+    if (user.isDeleted) {
+      return res.status(403).json({ message: 'This account has been deleted. Please sign up again using a different email address.' });
+    }
+
     if (!user.isVerified) {
       return res.status(403).json({ message: 'Email not verified' });
     }
@@ -169,6 +200,12 @@ app.post('/api/login', async (req, res) => {
     if (!match) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
+
+    // Update lastLoginAt for activity tracking
+    await users.updateOne(
+      { email },
+      { $set: { lastLoginAt: new Date() } }
+    );
 
     res.status(200).json({
       message: 'Login successful',
@@ -335,7 +372,7 @@ app.post('/api/reset-password-update', async (req, res) => {
   }
 });
 
-/* ================== DELETE ACCOUNT ================== */
+/* ================== DELETE ACCOUNT (SOFT DELETE) ================== */
 app.delete('/api/delete-account', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -358,6 +395,14 @@ app.delete('/api/delete-account', async (req, res) => {
       });
     }
 
+    // Check if already deleted
+    if (user.isDeleted) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Account is already deactivated' 
+      });
+    }
+
     // Verify password
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     
@@ -368,20 +413,20 @@ app.delete('/api/delete-account', async (req, res) => {
       });
     }
 
-    // Delete the user account
-    await users.deleteOne({ email });
-
-    // Delete related OTPs
-    await otps.deleteMany({ email });
-
-    // Optional: Delete related data (loans, donations, attendance records, etc.)
-    // await db.collection('loans').deleteMany({ userEmail: email });
-    // await db.collection('donations').deleteMany({ userEmail: email });
-    // await db.collection('attendance').deleteMany({ userEmail: email });
+    // Soft delete: mark as deleted instead of removing
+    await users.updateOne(
+      { email },
+      { 
+        $set: { 
+          isDeleted: true, 
+          deletedAt: new Date() 
+        } 
+      }
+    );
 
     res.status(200).json({ 
       success: true, 
-      message: 'Account deleted successfully' 
+      message: 'Account deactivated successfully' 
     });
 
   } catch (error) {
@@ -390,6 +435,152 @@ app.delete('/api/delete-account', async (req, res) => {
       success: false, 
       message: 'Server error. Please try again later.' 
     });
+  }
+});
+
+/* ================== ADMIN LOGIN ================== */
+app.post('/api/admin/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const admin = await admins.findOne({ email });
+    if (!admin) {
+      return res.status(404).json({ message: 'Invalid admin credentials' });
+    }
+
+    const match = await bcrypt.compare(password, admin.passwordHash);
+    if (!match) {
+      return res.status(400).json({ message: 'Invalid admin credentials' });
+    }
+
+    res.status(200).json({
+      message: 'Admin login successful',
+      admin: {
+        email: admin.email,
+        role: admin.role
+      }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Admin login failed' });
+  }
+});
+
+/* ================== ADMIN - GET ALL MEMBERS ================== */
+app.get('/api/admin/members', async (req, res) => {
+  try {
+    const { search, status, branch } = req.query;
+
+    // Build query
+    const query = {};
+
+    // Search by name, email, or memberID
+    if (search) {
+      query.$or = [
+        { fullName: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+        { memberId: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    // Filter by branch
+    if (branch && branch !== 'all') {
+      query.branch = branch;
+    }
+
+    // Get all users
+    const allUsers = await users.find(query).toArray();
+
+    // Calculate status for each user and filter
+    const now = new Date();
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    let filteredUsers = allUsers.map(user => {
+      let userStatus = 'active';
+      
+      if (user.isDeleted) {
+        userStatus = 'deactivated';
+      } else if (!user.lastLoginAt || new Date(user.lastLoginAt) < oneWeekAgo) {
+        userStatus = 'inactive';
+      }
+
+      return {
+        ...user,
+        status: userStatus,
+        memberId: user.memberId || `M-${user._id.toString().slice(-5).toUpperCase()}`
+      };
+    });
+
+    // Apply status filter
+    if (status && status !== 'all') {
+      filteredUsers = filteredUsers.filter(user => user.status === status);
+    }
+
+    // Calculate statistics
+    const stats = {
+      total: allUsers.length,
+      active: filteredUsers.filter(u => u.status === 'active').length,
+      inactive: filteredUsers.filter(u => u.status === 'inactive').length,
+      deactivated: filteredUsers.filter(u => u.status === 'deactivated').length,
+      newThisMonth: allUsers.filter(u => {
+        const created = new Date(u.createdAt);
+        return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
+      }).length
+    };
+
+    res.status(200).json({
+      success: true,
+      members: filteredUsers,
+      stats
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to fetch members' });
+  }
+});
+
+/* ================== ADMIN - PERMANENTLY DELETE MEMBER ================== */
+app.delete('/api/admin/delete-member-permanent', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+
+    // Delete the user permanently
+    const result = await users.deleteOne({ email });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Delete related OTPs
+    await otps.deleteMany({ email });
+
+    res.status(200).json({
+      success: true,
+      message: 'Member permanently deleted'
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to delete member' });
+  }
+});
+
+/* ================== ADMIN - GET AVAILABLE BRANCHES ================== */
+app.get('/api/admin/branches', async (req, res) => {
+  try {
+    // Get unique branches from users collection
+    const branches = await users.distinct('branch');
+    
+    res.status(200).json({
+      success: true,
+      branches: branches.filter(b => b) // Remove null/undefined values
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to fetch branches' });
   }
 });
 

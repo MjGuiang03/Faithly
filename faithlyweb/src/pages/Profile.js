@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import '../styles/Profile.css';
+import Sidebar from '../components/Sidebar';
 
 export default function Profile() {
   const { user, profile, updateProfile, deleteAccount } = useAuth();
@@ -109,6 +110,8 @@ export default function Profile() {
   };
 
   return (
+    <div className="profile-layout">
+    <Sidebar />
     <div className="profile-container">
       <div className="profile-header">
         <div>
@@ -370,5 +373,7 @@ export default function Profile() {
         </div>
       )}
     </div>
+    </div>
+
   );
 }

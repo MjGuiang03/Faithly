@@ -1,0 +1,178 @@
+/* Sidebar */
+.sidebar {
+  width: 256px;
+  background: linear-gradient(to bottom, #0f172b, #162456);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  height: 100vh;
+  left: 0;
+  top: 0;
+  z-index: 50;
+}
+
+.sidebar-header {
+  padding: 20px 20px 5px;
+  border-bottom: 0.8px solid #1c398e;
+}
+
+.sidebar .logo-container {
+  display: flex;
+  align-items: flex-start;
+}
+
+.sidebar .logo-image {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  flex-shrink: 0;
+  margin-top: 4px;
+  margin-left: 10px;
+}
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-right: 50px;
+}
+
+.logo-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+  line-height: 24px;
+}
+
+.logo-subtitle {
+  font-size: 14px;
+  color: #8ec5ff;
+  margin: 0;
+  line-height: 20px;
+}
+
+/* Navigation */
+.sidebar-nav {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: transparent;
+  border: none;
+  color: #bedbff;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: 100%;
+  text-align: left;
+}
+
+.nav-item:hover {
+  background: rgba(21, 93, 252, 0.1);
+}
+
+.nav-item-active {
+  background: #155dfc;
+  color: white;
+}
+
+.nav-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+  padding: 16px;
+  border-top: 0.8px solid #1c398e;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  background: #155dfc;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.avatar-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.user-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.user-name {
+  font-size: 14px;
+  color: white;
+  margin: 0;
+  line-height: 20px;
+}
+
+.user-email {
+  font-size: 12px;
+  color: #8ec5ff;
+  margin: 0;
+  line-height: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.signout-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  color: #ffa2a2;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: 100%;
+}
+
+.signout-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.signout-btn:hover {
+  background: rgba(255, 162, 162, 0.1);
+}
+
+/* Sidebar responsive */
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
+  }
+}

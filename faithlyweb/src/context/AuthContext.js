@@ -220,7 +220,7 @@ export const AuthProvider = ({ children }) => {
 
       setUser(null);
       setProfile(null);
-      toast.success('Account deleted successfully');
+      toast.success('Account deleted successfully.');
       return { success: true };
     } catch (err) {
       console.error('❌ Delete account error:', err);
