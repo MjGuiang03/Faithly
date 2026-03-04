@@ -1,0 +1,322 @@
+/* AdminLogin.css - Fixed, Responsive, Clean */
+
+/* =========================
+   Main Container
+========================= */
+.admin-login-container {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: linear-gradient(
+      150.571deg,
+      rgb(15, 23, 43) 0%,
+      rgb(28, 57, 142) 50%,
+      rgb(15, 23, 43) 100%
+    );
+}
+
+/* =========================
+   Wrapper
+========================= */
+.admin-login-wrapper {
+  width: 448px;
+  max-width: 90%;
+}
+
+/* =========================
+   Card
+========================= */
+.admin-login-card {
+  background-color: rgba(29, 41, 61, 0.5);
+  border-radius: 16px;
+  position: relative;
+  width: 100%;
+}
+
+.admin-login-card-border {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  border: 0.8px solid rgba(25, 60, 184, 0.5);
+  box-shadow: 0px 25px 50px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+}
+
+.admin-login-card-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding: 32px;
+}
+
+/* =========================
+   Header
+========================= */
+.admin-login-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-login-logo-container {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-login-logo {
+  width: 4rem;
+  height: 4rem;
+}
+
+.admin-login-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-login-heading p {
+  font-family: Arial, sans-serif;
+  font-size: 24px;
+  font-weight: bold;
+  color: #ffffff;
+  text-align: center;
+}
+
+.admin-login-subtitle p {
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  color: #8ec5ff;
+  text-align: center;
+}
+
+/* =========================
+   Form
+========================= */
+.admin-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+/* =========================
+   Fields
+========================= */
+.admin-login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-login-label p {
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  color: #bedbff;
+}
+
+/* =========================
+   Input Container
+========================= */
+.admin-login-input-container {
+  position: relative;
+  width: 100%;
+  height: 50px;
+}
+
+.admin-login-input-wrapper {
+  width: 100%;
+  height: 100%;
+  background-color: rgba(15, 23, 43, 0.5);
+  border-radius: 10px;
+  position: relative;
+}
+
+.admin-login-input-border {
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  border: 0.8px solid rgba(25, 60, 184, 0.5);
+  pointer-events: none;
+}
+
+.admin-login-input {
+  width: 100%;
+  height: 100%;
+  padding: 12px 16px 12px 40px;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  font-family: Arial, sans-serif;
+  color: #ffffff;
+}
+
+.admin-login-input.password-input {
+  padding-right: 48px;
+}
+
+.admin-login-input::placeholder {
+  color: rgba(81, 162, 255, 0.5);
+}
+
+.admin-login-input:disabled {
+  opacity: 0.5;
+}
+
+/* =========================
+   Icons
+========================= */
+.admin-login-icon {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+}
+
+.admin-login-eye-button {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.admin-login-eye-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* =========================
+   Submit Button
+========================= */
+.admin-login-submit {
+  width: 100%;
+  height: 48px;
+  background-color: #155dfc;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0px 10px 15px rgba(28, 57, 142, 0.5),
+              0px 4px 6px rgba(28, 57, 142, 0.5);
+  transition: background-color 0.25s ease;
+}
+
+.admin-login-submit:hover:not(:disabled) {
+  background-color: #1347d4;
+}
+
+.admin-login-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.admin-login-submit p {
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+/* =========================
+   Security Notice
+========================= */
+.admin-login-notice {
+  background-color: rgba(28, 57, 142, 0.3);
+  border-radius: 10px;
+  position: relative;
+}
+
+.admin-login-notice-border {
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  border: 0.8px solid rgba(25, 60, 184, 0.5);
+  pointer-events: none;
+}
+
+.admin-login-notice-content {
+  padding: 14px;
+}
+
+.admin-login-notice-text p {
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  color: #bedbff;
+  text-align: center;
+}
+
+/* =========================
+   Footer
+========================= */
+.admin-login-footer {
+  margin-top: 16px;
+}
+
+.admin-login-footer p {
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  color: #8ec5ff;
+  text-align: center;
+}
+
+/* =========================
+   Mobile
+========================= */
+@media (max-width: 480px) {
+  .admin-login-card-inner {
+    padding: 24px;
+  }
+
+  .admin-login-heading p {
+    font-size: 22px;
+  }
+
+  .admin-login-input {
+    font-size: 14px;
+  }
+}
+/* =========================
+   FINAL SPACING FIXES
+========================= */
+
+/* Tighten Admin Portal ↔ subtitle spacing */
+.admin-login-heading p {
+  margin-bottom: 4px;
+}
+
+.admin-login-subtitle p {
+  margin-top: 0;
+}
+
+/* Reduce space between label and input */
+.admin-login-field {
+  gap: 4px;
+}
+
+/* Ensure consistent input height */
+.admin-login-input-container {
+  height: 50px;
+}
+
+/* Perfect vertical centering for input & placeholder */
+.admin-login-input {
+  padding: 0 16px 0 40px;
+  line-height: 50px;
+}
+
+/* Password input spacing */
+.admin-login-input.password-input {
+  padding-right: 48px;
+}

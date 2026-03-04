@@ -1,85 +1,91 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { AuthProvider } from './context/AuthContext';
-import ProtectedRoute from './pages/ProtectedRoute';
-import AdminProtectedRoute from './AdminPages/AdminProtectedRoute';
+import ProtectedRoute from './user/components/ProtectedRoute';
+import AdminProtectedRoute from './admin/pages/AdminProtectedRoute';
 
 // Regular User Pages
-import Welcome from './pages/Welcome';
-import Login from './pages/Login';
-import Signup from './pages/Signup';
-import OTPLogin from './pages/OTPLogin';
-import ResetPassword from './pages/ResetPassword';
-import UpdatePassword from './pages/UpdatePassword';
-import VerifyEmail from './pages/VerifyEmail';
-import Home from './pages/Home';
-import Loans from './pages/Loans';
-import Donation from './pages/Donation'
-import Attendance from './pages/Attendance'
-import Branches from './pages/Branches'
-import Settings from './pages/Settings'
-import Profile from './pages/Profile';
+import Welcome from './user/pages/Welcome';
+import ResetPassword from './user/components/ResetPassword';
+import UpdatePassword from './user/components/UpdatePassword';
+import VerifyEmail from './user/components/VerifyEmail';
+
+import Home from './user/pages/Home';
+import Loans from './user/pages/Loans';
+import Donation from './user/pages/Donation';
+import Attendance from './user/pages/Attendance';
+import Branches from './user/pages/Branches';
+import Settings from './user/pages/Settings';
+import Profile from './user/pages/Profile';
 
 // Admin Pages
-import AdminLogin from './AdminPages/AdminLogin';
-import AdminDashboard from './AdminPages/AdminDashboard';
-
-
+import AdminLogin from './admin/pages/AdminLogin';
+import AdminLayout from './admin/pages/AdminLayout';
+import AdminDashboard from './admin/pages/AdminDashboard';
+import AdminLoanManagement from './admin/pages/AdminLoanManagement';
+import AdminMembers from './admin/pages/AdminMembers';
+import AdminDonations from './admin/pages/AdminDonations';
+import AdminAttendance from './admin/pages/AdminAttendance';
+import AdminBranches from './admin/pages/AdminBranches';
+import AdminSettings from './admin/pages/AdminSettings';
 
 export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Toaster 
-          position="top-right" 
-          richColors 
-          closeButton 
+        <Toaster
+          position="top-right"
+          richColors
+          closeButton
           expand={false}
           duration={4000}
         />
 
         <Routes>
-          {/* ========== PUBLIC ROUTES (Anyone can access) ========== */}
+          {/* ========== PUBLIC ROUTES ========== */}
           <Route path="/" element={<Welcome />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/otp-login" element={<OTPLogin />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/update-password" element={<UpdatePassword />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
-          <Route path="/loans" element={<Loans />} />
-          <Route path="/donation" element={<Donation />} />
-          <Route path="/attendance" element={<Attendance />} />
-          <Route path="/branches" element={<Branches />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/profile" element={<Profile />} />
 
-
-          {/* ========== ADMIN ROUTES (Admin only) ========== */}
-          {/* Admin Login - Public (so admins can log in) */}
+          {/* ========== ADMIN ROUTES ========== */}
+          {/* Public admin login — no layout */}
           <Route path="/admin/login" element={<AdminLogin />} />
-          
-          {/* Admin Dashboard - Protected (only logged-in admins) */}
+
+          {/* Redirect /admin → /admin/dashboard */}
+          <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+
+          {/*
+            All protected admin routes share AdminLayout (sidebar rendered ONCE).
+            AdminProtectedRoute wraps AdminLayout so unauthenticated users
+            are redirected before the layout even mounts.
+          */}
           <Route
-            path="/admin/dashboard"
             element={
               <AdminProtectedRoute>
-                <AdminDashboard />
+                <AdminLayout />
               </AdminProtectedRoute>
             }
-          />
+          >
+            <Route path="/admin/dashboard"  element={<AdminDashboard />} />
+            <Route path="/admin/loans"      element={<AdminLoanManagement />} />
+            <Route path="/admin/members"    element={<AdminMembers />} />
+            <Route path="/admin/donations"  element={<AdminDonations />} />
+            <Route path="/admin/attendance" element={<AdminAttendance />} />
+            <Route path="/admin/branches"   element={<AdminBranches />} />
+            <Route path="/admin/settings"   element={<AdminSettings />} />
+          </Route>
 
-          {/* ========== USER ROUTES (Logged-in users only) ========== */}
-          <Route
-            path="/home"
-            element={
-              <ProtectedRoute>
-                <Home />
-              </ProtectedRoute>
-            }
-          />
+          {/* ========== USER ROUTES ========== */}
+          <Route path="/home"       element={<ProtectedRoute><Home /></ProtectedRoute>} />
+          <Route path="/loans"      element={<ProtectedRoute><Loans /></ProtectedRoute>} />
+          <Route path="/donation"   element={<ProtectedRoute><Donation /></ProtectedRoute>} />
+          <Route path="/attendance" element={<ProtectedRoute><Attendance /></ProtectedRoute>} />
+          <Route path="/branches"   element={<ProtectedRoute><Branches /></ProtectedRoute>} />
+          <Route path="/settings"   element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+          <Route path="/profile"    element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
-          {/* Fallback - Redirect to welcome page */}
+          {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>

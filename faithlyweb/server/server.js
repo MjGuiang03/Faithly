@@ -1,29 +1,111 @@
+import jwt from 'jsonwebtoken';
+import rateLimit from 'express-rate-limit';
 import express from 'express';
 import cors from 'cors';
 import bcrypt from 'bcryptjs';
 import nodemailer from 'nodemailer';
-import { MongoClient } from 'mongodb';
+import { MongoClient, ObjectId } from 'mongodb';
 import dotenv from 'dotenv';
+import { body, validationResult } from 'express-validator';
 
 dotenv.config();
 
+const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
+
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10kb' }));
+
+/* ================== RATE LIMITERS ================== */
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: { message: 'Too many login attempts. Try again in 15 minutes.' }
+});
+
+const registerLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { message: 'Too many registration attempts. Please try again later.' }
+});
+
+const otpLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: { message: 'Too many OTP attempts. Please try again later.' }
+});
+
+const resendOtpLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 3,
+  message: { message: 'Too many resend requests. Please wait before trying again.' }
+});
+
+const resetPasswordLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: { message: 'Too many password reset attempts. Please try again later.' }
+});
+
+/* ================== VALIDATION HELPER ================== */
+const validate = (validations) => async (req, res, next) => {
+  await Promise.all(validations.map(v => v.run(req)));
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ message: errors.array()[0].msg });
+  }
+  next();
+};
+
+/* ================== AUTH MIDDLEWARE ================== */
+const authenticateUser = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ message: 'No token provided' });
+
+  const token = authHeader.split(' ')[1];
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: 'Invalid or expired token' });
+  }
+};
+
+const authenticateAdmin = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ message: 'No token provided' });
+
+  const token = authHeader.split(' ')[1];
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const admin = await admins.findOne({ email: decoded.email });
+    if (!admin) return res.status(403).json({ message: 'Not authorized' });
+
+    req.admin = admin;
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: 'Invalid or expired token' });
+  }
+};
+
+app.use('/api/admin/login', loginLimiter);
 
 /* ================== MONGODB ================== */
 const client = new MongoClient(process.env.MONGODB_URI);
 await client.connect();
 const db = client.db(process.env.DB_NAME);
 
-const users = db.collection('users');
-const otps = db.collection('otps');
-const admins = db.collection('admins'); // Add admins collection
+const users      = db.collection('users');
+const otps       = db.collection('otps');
+const admins     = db.collection('admins');
+const loans      = db.collection('loans');
+const donations  = db.collection('donations');
+const attendance = db.collection('attendance');
 
 console.log('✅ Connected to MongoDB');
 
 /* ================== CREATE DEFAULT ADMIN ================== */
-// Create default admin account for testing
 const defaultAdmin = await admins.findOne({ email: 'admin' });
 if (!defaultAdmin) {
   const adminPasswordHash = await bcrypt.hash('admin', 10);
@@ -58,157 +140,328 @@ const sendOTP = async (email, otp) => {
 };
 
 /* ================== REGISTER (SIGNUP) ================== */
-app.post('/api/register', async (req, res) => {
-  try {
-    const { email, password, fullName, phone, branch, position, gender, birthday } = req.body;
+app.post('/api/register',
+  registerLimiter,
+  validate([
+    body('fullName')
+      .trim()
+      .notEmpty().withMessage('Full name is required')
+      .isLength({ max: 50 }).withMessage('Name too long')
+      .matches(/^[A-Za-z\s]+$/).withMessage('Name must contain letters only'),
 
-    // Prevent email reuse (even for deactivated accounts)
-    const existing = await users.findOne({ email });
-    if (existing) {
-      // Check if account is deactivated (soft deleted)
-      if (existing.isDeleted) {
-        return res.status(400).json({ 
-          message: 'This email was previously registered and deleted. Please use a different email.' 
-        });
-      } else {
-        // Account is active or inactive
-        return res.status(400).json({ 
-          message: 'Email already exists. Please login or use a different email.' 
-        });
+    body('email')
+      .trim()
+      .toLowerCase()
+      .notEmpty().withMessage('Email is required')
+      .isEmail().withMessage('Invalid email format')
+      .isLength({ max: 100 }).withMessage('Email too long'),
+
+    body('phone')
+      .trim()
+      .notEmpty().withMessage('Phone is required')
+      .matches(/^\+63\d{10}$/).withMessage('Phone must be in format +63XXXXXXXXXX'),
+
+    body('password')
+      .notEmpty().withMessage('Password is required')
+      .isLength({ min: 8, max: 64 }).withMessage('Password must be 8–64 characters')
+      .matches(/[A-Z]/).withMessage('Password must contain an uppercase letter')
+      .matches(/[0-9]/).withMessage('Password must contain a number')
+      .matches(/[^A-Za-z0-9]/).withMessage('Password must contain a symbol'),
+
+    body('birthday')
+      .notEmpty().withMessage('Birthday is required')
+      .isISO8601().withMessage('Invalid date format'),
+
+    body('churchId')
+      .optional()
+      .trim()
+      .isLength({ max: 20 }).withMessage('Church ID too long')
+      .matches(/^[a-zA-Z0-9\-]*$/).withMessage('Church ID contains invalid characters'),
+
+    body('branch')
+      .optional()
+      .trim()
+      .isLength({ max: 50 }),
+
+    body('position')
+      .optional()
+      .trim()
+      .isLength({ max: 50 }),
+
+    body('gender')
+      .optional()
+      .isIn(['male', 'female']).withMessage('Invalid gender value'),
+  ]),
+  async (req, res) => {
+    try {
+      const { email, password, fullName, phone, branch, position, gender, birthday } = req.body;
+
+      const existing = await users.findOne({ email });
+      if (existing) {
+        if (existing.isDeleted) {
+          return res.status(400).json({
+            message: 'This email was previously registered and deleted. Please use a different email.'
+          });
+        } else {
+          return res.status(400).json({
+            message: 'Email already exists. Please login or use a different email.'
+          });
+        }
       }
+
+      const passwordHash = await bcrypt.hash(password, 10);
+
+      await users.insertOne({
+        email,
+        passwordHash,
+        fullName,
+        phone,
+        branch,
+        position,
+        gender,
+        birthday,
+        isVerified: false,
+        failedLoginAttempts: 0,
+        lockUntil: null,
+        isPermanentlyLocked: false,
+        createdAt: new Date()
+      });
+
+      const otp = generateOTP();
+      await otps.deleteMany({ email, type: 'verify' });
+      await otps.insertOne({
+        email,
+        otp,
+        type: 'verify',
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000)
+      });
+
+      await sendOTP(email, otp);
+      res.json({ message: 'Signup successful. OTP sent to email.' });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Server error during signup' });
     }
-
-    const passwordHash = await bcrypt.hash(password, 10);
-
-    await users.insertOne({
-      email,
-      passwordHash,
-      fullName,
-      phone,
-      branch,
-      position,
-      gender,
-      birthday,
-      isVerified: false,
-      createdAt: new Date()
-    });
-
-    const otp = generateOTP();
-
-    await otps.deleteMany({ email, type: 'verify' });
-
-    await otps.insertOne({
-      email,
-      otp,
-      type: 'verify',
-      expiresAt: new Date(Date.now() + 15 * 60 * 1000)
-    });
-
-    await sendOTP(email, otp);
-
-    res.json({ message: 'Signup successful. OTP sent to email.' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error during signup' });
   }
-});
+);
 
 /* ================== VERIFY EMAIL OTP ================== */
-app.post('/api/verify-otp', async (req, res) => {
-  try {
-    const { email, otp } = req.body;
+app.post('/api/verify-otp',
+  otpLimiter,
+  validate([
+    body('email').trim().isEmail().withMessage('Invalid email'),
+    body('otp').trim().matches(/^\d{6}$/).withMessage('OTP must be 6 digits'),
+  ]),
+  async (req, res) => {
+    try {
+      const { email, otp } = req.body;
 
-    const record = await otps.findOne({
-      email,
-      otp,
-      type: 'verify',
-      expiresAt: { $gt: new Date() }
-    });
+      const record = await otps.findOne({
+        email,
+        otp,
+        type: 'verify',
+        expiresAt: { $gt: new Date() }
+      });
 
-    if (!record) {
-      return res.status(400).json({ message: 'Invalid or expired OTP' });
+      if (!record) {
+        return res.status(400).json({ message: 'Invalid or expired OTP' });
+      }
+
+      await users.updateOne({ email }, { $set: { isVerified: true } });
+      await otps.deleteMany({ email, type: 'verify' });
+
+      res.json({ message: 'Email verified successfully' });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Verification failed' });
     }
-
-    await users.updateOne(
-      { email },
-      { $set: { isVerified: true } }
-    );
-
-    await otps.deleteMany({ email, type: 'verify' });
-
-    res.json({ message: 'Email verified successfully' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Verification failed' });
   }
-});
+);
 
 /* ================== RESEND OTP ================== */
-app.post('/api/resend-otp', async (req, res) => {
-  try {
-    const { email } = req.body;
+app.post('/api/resend-otp',
+  resendOtpLimiter,
+  validate([
+    body('email').trim().isEmail().withMessage('Invalid email'),
+  ]),
+  async (req, res) => {
+    try {
+      const { email } = req.body;
 
-    const user = await users.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      const user = await users.findOne({ email });
+      if (!user) return res.status(404).json({ message: 'User not found' });
+      if (user.isVerified) return res.status(400).json({ message: 'Email already verified' });
+
+      const otp = generateOTP();
+      await otps.deleteMany({ email, type: 'verify' });
+      await otps.insertOne({
+        email,
+        otp,
+        type: 'verify',
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000)
+      });
+
+      await sendOTP(email, otp);
+      res.json({ message: 'OTP resent successfully' });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Failed to resend OTP' });
     }
-
-    if (user.isVerified) {
-      return res.status(400).json({ message: 'Email already verified' });
-    }
-
-    const otp = generateOTP();
-
-    await otps.deleteMany({ email, type: 'verify' });
-
-    await otps.insertOne({
-      email,
-      otp,
-      type: 'verify',
-      expiresAt: new Date(Date.now() + 15 * 60 * 1000)
-    });
-
-    await sendOTP(email, otp);
-
-    res.json({ message: 'OTP resent successfully' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Failed to resend OTP' });
   }
-});
+);
 
 /* ================== LOGIN ================== */
+/*
+  Lock tier logic (stored in MongoDB):
+
+  TIER 1 (first set of 3 attempts):
+  ─ Attempts 1–2  → invalid credentials warning ("X attempt(s) remaining")
+  ─ Attempt 3     → lock account for 5 minutes
+
+  After 5-min lock expires:
+  TIER 2 (second set of 3 attempts):
+  ─ Attempts 4–5  → invalid credentials warning ("X attempt(s) remaining")
+  ─ Attempt 6     → lock account for 30 minutes + recommend password reset
+
+  After 30-min lock expires:
+  TIER 3:
+  ─ Attempt 7+    → permanently lock account (requires password reset)
+
+  Successful login → resets all counters
+  Password reset   → resets all counters
+*/
 app.post('/api/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
     const user = await users.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
-    // Check if account is deleted (soft delete)
     if (user.isDeleted) {
-      return res.status(403).json({ message: 'This account has been deleted. Please sign up again using a different email address.' });
+      return res.status(403).json({
+        message: 'This account has been deleted. Please sign up again using a different email address.'
+      });
     }
 
     if (!user.isVerified) {
       return res.status(403).json({ message: 'Email not verified' });
     }
 
-    const match = await bcrypt.compare(password, user.passwordHash);
-    if (!match) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+    const now = new Date();
+
+    // ── PERMANENT LOCK ──────────────────────────────────────────────────────
+    if (user.isPermanentlyLocked) {
+      return res.status(403).json({
+        message: 'Your account has been permanently locked due to too many failed login attempts. Please reset your password to regain access.',
+        locked: true,
+        permanent: true
+      });
     }
 
-    // Update lastLoginAt for activity tracking
+    // ── TIMED LOCK (still active) ───────────────────────────────────────────
+    if (user.lockUntil && user.lockUntil > now) {
+      const remainingMs = user.lockUntil - now;
+      const remainingMinutes = Math.ceil(remainingMs / 60000);
+      const remainingSeconds = Math.ceil(remainingMs / 1000);
+      const attempts = user.failedLoginAttempts || 0;
+
+      if (attempts >= 6) {
+        return res.status(403).json({
+          message: `Your account is locked for ${remainingMinutes} more minute(s) due to too many failed attempts. We strongly recommend resetting your password.`,
+          locked: true,
+          lockUntil: user.lockUntil,
+          remainingSeconds,
+          recommendReset: true
+        });
+      }
+
+      return res.status(403).json({
+        message: `Account locked due to multiple failed attempts. Try again in ${remainingMinutes} minute(s).`,
+        locked: true,
+        lockUntil: user.lockUntil,
+        remainingSeconds
+      });
+    }
+
+    // ── PASSWORD CHECK ──────────────────────────────────────────────────────
+    const match = await bcrypt.compare(password, user.passwordHash);
+
+    if (!match) {
+      const attempts = (user.failedLoginAttempts || 0) + 1;
+      const updateData = { failedLoginAttempts: attempts };
+
+      // Tier 3 → permanent lock on 7th attempt
+      if (attempts >= 7) {
+        updateData.isPermanentlyLocked = true;
+        updateData.lockUntil = null;
+        await users.updateOne({ email }, { $set: updateData });
+
+        return res.status(403).json({
+          message: 'Your account has been permanently locked. Please reset your password to regain access.',
+          locked: true,
+          permanent: true
+        });
+      }
+
+      // Tier 2 → 30-minute lock on exactly the 6th attempt
+      if (attempts === 6) {
+        updateData.lockUntil = new Date(now.getTime() + 30 * 60 * 1000);
+        await users.updateOne({ email }, { $set: updateData });
+
+        return res.status(403).json({
+          message: 'Too many failed login attempts. Your account has been locked for 30 minutes. We strongly recommend resetting your password.',
+          locked: true,
+          lockUntil: updateData.lockUntil,
+          remainingSeconds: 30 * 60,
+          recommendReset: true
+        });
+      }
+
+      // Tier 1 → 5-minute lock on exactly the 3rd attempt
+      if (attempts === 3) {
+        updateData.lockUntil = new Date(now.getTime() + 5 * 60 * 1000);
+        await users.updateOne({ email }, { $set: updateData });
+
+        return res.status(403).json({
+          message: 'Too many failed login attempts. Your account has been locked for 5 minutes.',
+          locked: true,
+          lockUntil: updateData.lockUntil,
+          remainingSeconds: 5 * 60
+        });
+      }
+
+      await users.updateOne({ email }, { $set: updateData });
+
+      const attemptsInCurrentTier = attempts <= 3 ? attempts : attempts - 3;
+      const remaining = 3 - attemptsInCurrentTier;
+
+      return res.status(400).json({
+        message: `Invalid credentials. ${remaining} attempt(s) remaining before your account is locked.`
+      });
+    }
+
+    // ── SUCCESSFUL LOGIN → reset all lock state ─────────────────────────────
     await users.updateOne(
       { email },
-      { $set: { lastLoginAt: new Date() } }
+      {
+        $set: {
+          lastLoginAt: now,
+          failedLoginAttempts: 0,
+          lockUntil: null,
+          isPermanentlyLocked: false
+        }
+      }
+    );
+
+    const token = jwt.sign(
+      { email: user.email },
+      JWT_SECRET,
+      { expiresIn: '1h' }
     );
 
     res.status(200).json({
       message: 'Login successful',
+      token,
       user: {
         email: user.email,
         fullName: user.fullName,
@@ -228,31 +481,24 @@ app.post('/api/login', async (req, res) => {
 });
 
 /* ================== UPDATE PROFILE ================== */
-app.put('/api/update-profile', async (req, res) => {
+app.put('/api/update-profile', authenticateUser, async (req, res) => {
   try {
-    const { email, fullName, phone, branch, position } = req.body;
+    const email = req.user.email;
+    const { fullName, phone, branch, position } = req.body;
 
-    if (!email) {
-      return res.status(400).json({ message: 'Email is required' });
-    }
+    if (!email) return res.status(400).json({ message: 'Email is required' });
 
-    // Find user in database
     const user = await users.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
-    // Prepare update object (only editable fields)
     const updateData = {};
     if (fullName) updateData.fullName = fullName;
-    if (phone) updateData.phone = phone;
-    if (branch) updateData.branch = branch;
+    if (phone)    updateData.phone    = phone;
+    if (branch)   updateData.branch   = branch;
     if (position) updateData.position = position;
 
-    // Update user profile (gender and birthday are NOT updated)
     await users.updateOne({ email }, { $set: updateData });
 
-    // Get updated user
     const updatedUser = await users.findOne({ email });
 
     res.status(200).json({
@@ -275,166 +521,147 @@ app.put('/api/update-profile', async (req, res) => {
 });
 
 /* ================== PASSWORD RESET - REQUEST OTP ================== */
-app.post('/api/reset-password-request', async (req, res) => {
-  try {
-    const { email } = req.body;
+app.post('/api/reset-password-request',
+  resetPasswordLimiter,
+  validate([
+    body('email').trim().isEmail().withMessage('Invalid email'),
+  ]),
+  async (req, res) => {
+    try {
+      const { email } = req.body;
 
-    const user = await users.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      const user = await users.findOne({ email });
+      if (!user) return res.status(404).json({ message: 'User not found' });
+
+      const otp = generateOTP();
+      await otps.deleteMany({ email, type: 'reset-password' });
+      await otps.insertOne({
+        email,
+        otp,
+        type: 'reset-password',
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000)
+      });
+
+      await transporter.sendMail({
+        from: `"Faithly" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: 'Password Reset Code',
+        html: `<h2>Password Reset OTP</h2><h1>${otp}</h1><p>This code expires in 15 minutes.</p>`
+      });
+
+      res.json({ message: 'OTP sent to your email' });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Failed to send OTP' });
     }
-
-    // Generate OTP for password reset
-    const otp = generateOTP();
-
-    // Delete any existing password reset OTPs
-    await otps.deleteMany({ email, type: 'reset-password' });
-
-    // Store new OTP
-    await otps.insertOne({
-      email,
-      otp,
-      type: 'reset-password',
-      expiresAt: new Date(Date.now() + 15 * 60 * 1000)
-    });
-
-    // Send OTP email
-    await transporter.sendMail({
-      from: `\"Faithly\" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: 'Password Reset Code',
-      html: `<h2>Password Reset OTP</h2><h1>${otp}</h1><p>This code expires in 15 minutes. If you didn't request a password reset, please ignore this email.</p>`
-    });
-
-    res.json({ message: 'OTP sent to your email' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Failed to send OTP' });
   }
-});
+);
 
 /* ================== PASSWORD RESET - VERIFY OTP ================== */
-app.post('/api/reset-password-verify-otp', async (req, res) => {
-  try {
-    const { email, otp } = req.body;
+app.post('/api/reset-password-verify-otp',
+  resetPasswordLimiter,
+  validate([
+    body('email').trim().isEmail().withMessage('Invalid email'),
+    body('otp').trim().matches(/^\d{6}$/).withMessage('OTP must be 6 digits'),
+  ]),
+  async (req, res) => {
+    try {
+      const { email, otp } = req.body;
 
-    const record = await otps.findOne({
-      email,
-      otp,
-      type: 'reset-password',
-      expiresAt: { $gt: new Date() }
-    });
+      const record = await otps.findOne({
+        email,
+        otp,
+        type: 'reset-password',
+        expiresAt: { $gt: new Date() }
+      });
 
-    if (!record) {
-      return res.status(400).json({ message: 'Invalid or expired OTP' });
+      if (!record) return res.status(400).json({ message: 'Invalid or expired OTP' });
+
+      res.json({ message: 'OTP verified successfully' });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Verification failed' });
     }
-
-    res.json({ message: 'OTP verified successfully' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Verification failed' });
   }
-});
+);
 
 /* ================== PASSWORD RESET - UPDATE PASSWORD ================== */
-app.post('/api/reset-password-update', async (req, res) => {
-  try {
-    const { email, otp, newPassword } = req.body;
+app.post('/api/reset-password-update',
+  resetPasswordLimiter,
+  validate([
+    body('email').trim().isEmail().withMessage('Invalid email'),
+    body('otp').trim().matches(/^\d{6}$/).withMessage('OTP must be 6 digits'),
+    body('newPassword')
+      .isLength({ min: 8, max: 64 }).withMessage('Password must be 8–64 characters')
+      .matches(/[A-Z]/).withMessage('Password must contain an uppercase letter')
+      .matches(/[0-9]/).withMessage('Password must contain a number')
+      .matches(/[^A-Za-z0-9]/).withMessage('Password must contain a symbol'),
+  ]),
+  async (req, res) => {
+    try {
+      const { email, otp, newPassword } = req.body;
 
-    // Verify OTP one more time
-    const record = await otps.findOne({
-      email,
-      otp,
-      type: 'reset-password',
-      expiresAt: { $gt: new Date() }
-    });
+      const record = await otps.findOne({
+        email,
+        otp,
+        type: 'reset-password',
+        expiresAt: { $gt: new Date() }
+      });
 
-    if (!record) {
-      return res.status(400).json({ message: 'Invalid or expired OTP' });
+      if (!record) return res.status(400).json({ message: 'Invalid or expired OTP' });
+
+      const passwordHash = await bcrypt.hash(newPassword, 10);
+
+      await users.updateOne(
+        { email },
+        {
+          $set: {
+            passwordHash,
+            failedLoginAttempts: 0,
+            lockUntil: null,
+            isPermanentlyLocked: false
+          }
+        }
+      );
+
+      await otps.deleteMany({ email, type: 'reset-password' });
+
+      res.json({ message: 'Password updated successfully' });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Failed to update password' });
     }
-
-    // Hash new password
-    const passwordHash = await bcrypt.hash(newPassword, 10);
-
-    // Update password
-    await users.updateOne(
-      { email },
-      { $set: { passwordHash } }
-    );
-
-    // Delete the used OTP
-    await otps.deleteMany({ email, type: 'reset-password' });
-
-    res.json({ message: 'Password updated successfully' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Failed to update password' });
   }
-});
+);
 
 /* ================== DELETE ACCOUNT (SOFT DELETE) ================== */
-app.delete('/api/delete-account', async (req, res) => {
+app.delete('/api/delete-account', authenticateUser, async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const email = req.user.email;
+    const { password } = req.body;
 
-    // Validate input
     if (!email || !password) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Email and password are required' 
-      });
+      return res.status(400).json({ success: false, message: 'Email and password are required' });
     }
 
-    // Find user by email
     const user = await users.findOne({ email });
-    
-    if (!user) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'User not found' 
-      });
-    }
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
-    // Check if already deleted
     if (user.isDeleted) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Account is already deactivated' 
-      });
+      return res.status(400).json({ success: false, message: 'Account is already deactivated' });
     }
 
-    // Verify password
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-    
     if (!isPasswordValid) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Password is incorrect' 
-      });
+      return res.status(401).json({ success: false, message: 'Password is incorrect' });
     }
 
-    // Soft delete: mark as deleted instead of removing
-    await users.updateOne(
-      { email },
-      { 
-        $set: { 
-          isDeleted: true, 
-          deletedAt: new Date() 
-        } 
-      }
-    );
+    await users.updateOne({ email }, { $set: { isDeleted: true, deletedAt: new Date() } });
 
-    res.status(200).json({ 
-      success: true, 
-      message: 'Account deactivated successfully' 
-    });
-
+    res.status(200).json({ success: true, message: 'Account deactivated successfully' });
   } catch (error) {
     console.error('Delete account error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Server error. Please try again later.' 
-    });
+    res.status(500).json({ success: false, message: 'Server error. Please try again later.' });
   }
 });
 
@@ -444,21 +671,21 @@ app.post('/api/admin/login', async (req, res) => {
     const { email, password } = req.body;
 
     const admin = await admins.findOne({ email });
-    if (!admin) {
-      return res.status(404).json({ message: 'Invalid admin credentials' });
-    }
+    if (!admin) return res.status(404).json({ message: 'Invalid admin credentials' });
 
     const match = await bcrypt.compare(password, admin.passwordHash);
-    if (!match) {
-      return res.status(400).json({ message: 'Invalid admin credentials' });
-    }
+    if (!match) return res.status(400).json({ message: 'Invalid admin credentials' });
+
+    const token = jwt.sign(
+      { email: admin.email, role: 'admin' },
+      JWT_SECRET,
+      { expiresIn: '2h' }
+    );
 
     res.status(200).json({
       message: 'Admin login successful',
-      admin: {
-        email: admin.email,
-        role: admin.role
-      }
+      token,
+      admin: { email: admin.email, role: admin.role }
     });
   } catch (err) {
     console.error(err);
@@ -467,37 +694,38 @@ app.post('/api/admin/login', async (req, res) => {
 });
 
 /* ================== ADMIN - GET ALL MEMBERS ================== */
-app.get('/api/admin/members', async (req, res) => {
+app.get('/api/admin/members', authenticateAdmin, async (req, res) => {
   try {
     const { search, status, branch } = req.query;
 
-    // Build query
-    const query = {};
+    // ── Pagination params ─────────────────────────────────────────────────
+    const page  = Math.max(1, parseInt(req.query.page)  || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 10));
+    const skip  = (page - 1) * limit;
 
-    // Search by name, email, or memberID
+    // ── Base query (no status filter yet – status is computed in-app) ─────
+    const baseQuery = {};
+
     if (search) {
-      query.$or = [
+      baseQuery.$or = [
         { fullName: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } },
+        { email:    { $regex: search, $options: 'i' } },
         { memberId: { $regex: search, $options: 'i' } }
       ];
     }
 
-    // Filter by branch
     if (branch && branch !== 'all') {
-      query.branch = branch;
+      baseQuery.branch = branch;
     }
 
-    // Get all users
-    const allUsers = await users.find(query).toArray();
+    // ── Fetch all matching docs to compute status (status is derived) ─────
+    const allUsers = await users.find(baseQuery).toArray();
 
-    // Calculate status for each user and filter
-    const now = new Date();
+    const now        = new Date();
     const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-    let filteredUsers = allUsers.map(user => {
+    const withStatus = allUsers.map(user => {
       let userStatus = 'active';
-      
       if (user.isDeleted) {
         userStatus = 'deactivated';
       } else if (!user.lastLoginAt || new Date(user.lastLoginAt) < oneWeekAgo) {
@@ -506,32 +734,53 @@ app.get('/api/admin/members', async (req, res) => {
 
       return {
         ...user,
-        status: userStatus,
+        status:   userStatus,
         memberId: user.memberId || `M-${user._id.toString().slice(-5).toUpperCase()}`
       };
     });
 
-    // Apply status filter
-    if (status && status !== 'all') {
-      filteredUsers = filteredUsers.filter(user => user.status === status);
-    }
+    // ── Global stats (always based on ALL users, unfiltered by status) ────
+    const allForStats = await users.find({}).toArray();
+    const statsWithStatus = allForStats.map(u => {
+      if (u.isDeleted) return { ...u, status: 'deactivated' };
+      if (!u.lastLoginAt || new Date(u.lastLoginAt) < oneWeekAgo) return { ...u, status: 'inactive' };
+      return { ...u, status: 'active' };
+    });
 
-    // Calculate statistics
     const stats = {
-      total: allUsers.length,
-      active: filteredUsers.filter(u => u.status === 'active').length,
-      inactive: filteredUsers.filter(u => u.status === 'inactive').length,
-      deactivated: filteredUsers.filter(u => u.status === 'deactivated').length,
-      newThisMonth: allUsers.filter(u => {
+      total:        allForStats.length,
+      active:       statsWithStatus.filter(u => u.status === 'active').length,
+      inactive:     statsWithStatus.filter(u => u.status === 'inactive').length,
+      deactivated:  statsWithStatus.filter(u => u.status === 'deactivated').length,
+      newThisMonth: allForStats.filter(u => {
         const created = new Date(u.createdAt);
-        return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
+        return created.getMonth()    === now.getMonth() &&
+               created.getFullYear() === now.getFullYear();
       }).length
     };
 
+    // ── Apply status filter ───────────────────────────────────────────────
+    const filtered = (status && status !== 'all')
+      ? withStatus.filter(u => u.status === status)
+      : withStatus;
+
+    // ── Paginate ──────────────────────────────────────────────────────────
+    const totalMembers = filtered.length;
+    const totalPages   = Math.ceil(totalMembers / limit) || 1;
+    const pageMembers  = filtered.slice(skip, skip + limit);
+
     res.status(200).json({
       success: true,
-      members: filteredUsers,
-      stats
+      members: pageMembers,
+      stats,
+      pagination: {
+        page,
+        limit,
+        totalMembers,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1
+      }
     });
   } catch (err) {
     console.error(err);
@@ -539,48 +788,484 @@ app.get('/api/admin/members', async (req, res) => {
   }
 });
 
-/* ================== ADMIN - PERMANENTLY DELETE MEMBER ================== */
-app.delete('/api/admin/delete-member-permanent', async (req, res) => {
+
+/* ================== ADMIN - UPDATE MEMBER ================== */
+/*
+  Add this route to server.js alongside the other /api/admin routes.
+
+  PUT /api/admin/update-member
+  Body: { email, fullName, phone, branch, position }
+*/
+/* ================== ADMIN - UPDATE MEMBER (with password check) ========= */
+app.put('/api/admin/update-member', authenticateAdmin, async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email, adminPassword, fullName, phone, branch, position } = req.body;
 
-    if (!email) {
-      return res.status(400).json({ message: 'Email is required' });
+    if (!email)         return res.status(400).json({ success: false, message: 'Email is required' });
+    if (!adminPassword) return res.status(400).json({ success: false, message: 'Admin password is required' });
+
+    // ── Verify admin password ────────────────────────────────────────────
+    const admin = await admins.findOne({ email: req.admin.email });
+    if (!admin) return res.status(403).json({ success: false, message: 'Admin not found' });
+
+    const passwordMatch = await bcrypt.compare(adminPassword, admin.passwordHash);
+    if (!passwordMatch) {
+      return res.status(401).json({ success: false, wrongPassword: true, message: 'Incorrect admin password' });
     }
 
-    // Delete the user permanently
-    const result = await users.deleteOne({ email });
+    // ── Find member ──────────────────────────────────────────────────────
+    const user = await users.findOne({ email });
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
-    if (result.deletedCount === 0) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+    const updateData = {};
+    if (fullName !== undefined) updateData.fullName = fullName;
+    if (phone    !== undefined) updateData.phone    = phone;
+    if (branch   !== undefined) updateData.branch   = branch;
+    if (position !== undefined) updateData.position = position;
 
-    // Delete related OTPs
-    await otps.deleteMany({ email });
+    await users.updateOne({ email }, { $set: updateData });
+
+    const updated = await users.findOne({ email });
 
     res.status(200).json({
       success: true,
-      message: 'Member permanently deleted'
+      message: 'Member updated successfully',
+      user: {
+        email:    updated.email,
+        fullName: updated.fullName,
+        phone:    updated.phone,
+        branch:   updated.branch,
+        position: updated.position
+      }
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Failed to delete member' });
+    res.status(500).json({ success: false, message: 'Failed to update member' });
+  }
+});
+
+/* ================== ADMIN - DELETE MEMBER (with password check) ========= */
+app.delete('/api/admin/delete-member-permanent', authenticateAdmin, async (req, res) => {
+  try {
+    const { email, adminPassword } = req.body;
+
+    if (!email)         return res.status(400).json({ success: false, message: 'Email is required' });
+    if (!adminPassword) return res.status(400).json({ success: false, message: 'Admin password is required' });
+
+    // ── Verify admin password ────────────────────────────────────────────
+    const admin = await admins.findOne({ email: req.admin.email });
+    if (!admin) return res.status(403).json({ success: false, message: 'Admin not found' });
+
+    const passwordMatch = await bcrypt.compare(adminPassword, admin.passwordHash);
+    if (!passwordMatch) {
+      return res.status(401).json({ success: false, wrongPassword: true, message: 'Incorrect admin password' });
+    }
+
+    // ── Delete member ────────────────────────────────────────────────────
+    const result = await users.deleteOne({ email });
+    if (result.deletedCount === 0) return res.status(404).json({ success: false, message: 'User not found' });
+
+    await otps.deleteMany({ email });
+
+    res.status(200).json({ success: true, message: 'Member permanently deleted' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to delete member' });
   }
 });
 
 /* ================== ADMIN - GET AVAILABLE BRANCHES ================== */
-app.get('/api/admin/branches', async (req, res) => {
+app.get('/api/admin/branches', authenticateAdmin, async (req, res) => {
   try {
-    // Get unique branches from users collection
     const branches = await users.distinct('branch');
-    
-    res.status(200).json({
-      success: true,
-      branches: branches.filter(b => b) // Remove null/undefined values
-    });
+    res.status(200).json({ success: true, branches: branches.filter(b => b) });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Failed to fetch branches' });
+  }
+});
+
+/* ============================================================
+   ==================== LOAN ROUTES ==========================
+   ============================================================ */
+
+/* ================== USER - APPLY FOR LOAN ================== */
+app.post('/api/loans/apply', authenticateUser, async (req, res) => {
+  try {
+    const email = req.user.email;
+    const { amount, purpose, termMonths } = req.body;
+
+    if (!email || !amount || !purpose) {
+      return res.status(400).json({ success: false, message: 'Amount and purpose are required' });
+    }
+
+    const user = await users.findOne({ email });
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    const count  = await loans.countDocuments();
+    const loanId = `LN-${new Date().getFullYear()}-${String(count + 1).padStart(3, '0')}`;
+
+    const newLoan = {
+      loanId,
+      email,
+      memberName: user.fullName,
+      amount:     Number(amount),
+      purpose,
+      termMonths: termMonths || 12,
+      status:     'pending',
+      appliedDate: new Date(),
+      updatedAt:   new Date()
+    };
+
+    await loans.insertOne(newLoan);
+    res.status(201).json({ success: true, message: 'Loan application submitted', loanId });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to apply for loan' });
+  }
+});
+
+/* ================== USER - GET MY LOANS ================== */
+app.get('/api/loans/my-loans', authenticateUser, async (req, res) => {
+  try {
+    const email = req.user.email;
+    if (!email) return res.status(400).json({ success: false, message: 'Email is required' });
+
+    const userLoans = await loans.find({ email }).sort({ appliedDate: -1 }).toArray();
+
+    const totalBorrowed     = userLoans.reduce((sum, l) => sum + l.amount, 0);
+    const activeLoans       = userLoans.filter(l => l.status === 'active');
+    const remainingBalance  = activeLoans.reduce((sum, l) => sum + (l.remainingBalance || l.amount), 0);
+
+    res.status(200).json({
+      success: true,
+      loans: userLoans,
+      stats: { totalBorrowed, remainingBalance, activeCount: activeLoans.length }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to fetch loans' });
+  }
+});
+
+/* ================== ADMIN - GET ALL LOANS ================== */
+app.get('/api/admin/loans', authenticateAdmin, async (req, res) => {
+  try {
+    const { search, status } = req.query;
+    const query = {};
+
+    if (status && status !== 'all') query.status = status;
+
+    if (search) {
+      query.$or = [
+        { memberName: { $regex: search, $options: 'i' } },
+        { loanId:     { $regex: search, $options: 'i' } },
+        { email:      { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const allLoans = await loans.find(query).sort({ appliedDate: -1 }).toArray();
+
+    const totalDisbursedResult = await loans.aggregate([
+      { $match: { status: { $in: ['active', 'completed'] } } },
+      { $group: { _id: null, total: { $sum: '$amount' } } }
+    ]).toArray();
+
+    const stats = {
+      pending:       await loans.countDocuments({ status: 'pending' }),
+      active:        await loans.countDocuments({ status: 'active' }),
+      completed:     await loans.countDocuments({ status: 'completed' }),
+      totalDisbursed: totalDisbursedResult[0]?.total || 0
+    };
+
+    res.status(200).json({ success: true, loans: allLoans, stats });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to fetch loans' });
+  }
+});
+
+/* ================== ADMIN - APPROVE LOAN ================== */
+app.put('/api/admin/loans/:id/approve', authenticateAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const loan = await loans.findOne({ _id: new ObjectId(id) });
+    if (!loan) return res.status(404).json({ success: false, message: 'Loan not found' });
+
+    if (loan.status !== 'pending') {
+      return res.status(400).json({ success: false, message: 'Only pending loans can be approved' });
+    }
+
+    await loans.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { status: 'active', approvedDate: new Date(), updatedAt: new Date() } }
+    );
+
+    res.status(200).json({ success: true, message: 'Loan approved successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to approve loan' });
+  }
+});
+
+/* ================== ADMIN - REJECT LOAN ================== */
+app.put('/api/admin/loans/:id/reject', authenticateAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const loan = await loans.findOne({ _id: new ObjectId(id) });
+    if (!loan) return res.status(404).json({ success: false, message: 'Loan not found' });
+
+    if (loan.status !== 'pending') {
+      return res.status(400).json({ success: false, message: 'Only pending loans can be rejected' });
+    }
+
+    await loans.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { status: 'rejected', rejectedDate: new Date(), updatedAt: new Date() } }
+    );
+
+    res.status(200).json({ success: true, message: 'Loan rejected successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to reject loan' });
+  }
+});
+
+/* ============================================================
+   ================== DONATION ROUTES ========================
+   ============================================================ */
+
+/* ================== USER - MAKE A DONATION ================== */
+app.post('/api/donations', authenticateUser, async (req, res) => {
+  try {
+    const email = req.user.email;
+    const { amount, category, paymentMethod, isRecurring } = req.body;
+
+    if (!email || !amount || !category) {
+      return res.status(400).json({ success: false, message: 'Amount and category are required' });
+    }
+
+    const user = await users.findOne({ email });
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    const count      = await donations.countDocuments();
+    const donationId = `D-${new Date().getFullYear()}-${String(count + 1).padStart(3, '0')}`;
+
+    const newDonation = {
+      donationId,
+      email,
+      member:    user.fullName,
+      amount:    Number(amount),
+      category,
+      method:    paymentMethod || 'Credit Card',
+      type:      isRecurring ? 'Recurring' : 'One-time',
+      date:      new Date(),
+      createdAt: new Date()
+    };
+
+    await donations.insertOne(newDonation);
+    res.status(201).json({ success: true, message: 'Donation recorded successfully', donationId });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to record donation' });
+  }
+});
+
+/* ================== USER - GET MY DONATIONS ================== */
+app.get('/api/donations/my-donations', authenticateUser, async (req, res) => {
+  try {
+    const email = req.user.email;
+    if (!email) return res.status(400).json({ success: false, message: 'Email is required' });
+
+    const userDonations = await donations.find({ email }).sort({ createdAt: -1 }).toArray();
+
+    const totalDonated = userDonations.reduce((sum, d) => sum + d.amount, 0);
+
+    const now = new Date();
+    const thisYearDonations = userDonations.filter(
+      d => new Date(d.createdAt).getFullYear() === now.getFullYear()
+    );
+    const thisYearTotal = thisYearDonations.reduce((sum, d) => sum + d.amount, 0);
+
+    res.status(200).json({
+      success: true,
+      donations: userDonations,
+      stats: { totalDonated, thisYearTotal, totalCount: userDonations.length }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to fetch donations' });
+  }
+});
+
+/* ================== ADMIN - GET ALL DONATIONS ================== */
+app.get('/api/admin/donations', authenticateAdmin, async (req, res) => {
+  try {
+    const { search, status, branch } = req.query;
+    const query = {};
+
+    if (status && status !== 'all') {
+      query.type = status === 'recurring' ? 'Recurring' : 'One-time';
+    }
+
+    if (search) {
+      query.$or = [
+        { member:     { $regex: search, $options: 'i' } },
+        { donationId: { $regex: search, $options: 'i' } },
+        { email:      { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const allDonations = await donations.find(query).sort({ createdAt: -1 }).toArray();
+
+    const now = new Date();
+    const thisMonthDonations = allDonations.filter(d => {
+      const date = new Date(d.createdAt);
+      return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+    });
+
+    const recurringDonations = allDonations.filter(d => d.type === 'Recurring');
+
+    const stats = {
+      total:      allDonations.reduce((sum, d) => sum + d.amount, 0),
+      thisMonth:  thisMonthDonations.reduce((sum, d) => sum + d.amount, 0),
+      recurring:  recurringDonations.reduce((sum, d) => sum + d.amount, 0),
+      totalCount: allDonations.length
+    };
+
+    const categoryMap = {};
+    allDonations.forEach(d => {
+      if (!categoryMap[d.category]) {
+        categoryMap[d.category] = { name: d.category, amount: 0, count: 0 };
+      }
+      categoryMap[d.category].amount += d.amount;
+      categoryMap[d.category].count  += 1;
+    });
+    const categories = Object.values(categoryMap);
+
+    res.status(200).json({ success: true, donations: allDonations, stats, categories });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to fetch donations' });
+  }
+});
+
+/* ============================================================
+   ================= ATTENDANCE ROUTES =======================
+   ============================================================ */
+
+/* ================== USER - RECORD ATTENDANCE (CHECK IN) ================== */
+app.post('/api/attendance/checkin', authenticateUser, async (req, res) => {
+  try {
+    const email = req.user.email;
+    const { service, branch, method } = req.body;
+
+    if (!email || !service || !branch) {
+      return res.status(400).json({ success: false, message: 'Service and branch are required' });
+    }
+
+    const user = await users.findOne({ email });
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    const count    = await attendance.countDocuments();
+    const recordId = `A-${new Date().getFullYear()}-${String(count + 1).padStart(3, '0')}`;
+    const now      = new Date();
+
+    const newRecord = {
+      recordId,
+      email,
+      member:  user.fullName,
+      service,
+      branch,
+      method:    method || 'QR',
+      date:      now.toLocaleDateString('en-US'),
+      time:      now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      createdAt: now
+    };
+
+    await attendance.insertOne(newRecord);
+    res.status(201).json({ success: true, message: 'Attendance recorded successfully', recordId });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to record attendance' });
+  }
+});
+
+/* ================== USER - GET MY ATTENDANCE ================== */
+app.get('/api/attendance/my-attendance', authenticateUser, async (req, res) => {
+  try {
+    const email = req.user.email;
+    if (!email) return res.status(400).json({ success: false, message: 'Email is required' });
+
+    const userAttendance = await attendance.find({ email }).sort({ createdAt: -1 }).toArray();
+
+    const now = new Date();
+    const thisMonth = userAttendance.filter(a => {
+      return new Date(a.createdAt).getMonth() === now.getMonth() &&
+             new Date(a.createdAt).getFullYear() === now.getFullYear();
+    });
+
+    res.status(200).json({
+      success: true,
+      attendance: userAttendance,
+      stats: { total: userAttendance.length, thisMonth: thisMonth.length }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to fetch attendance' });
+  }
+});
+
+/* ================== ADMIN - GET ALL ATTENDANCE ================== */
+app.get('/api/admin/attendance', authenticateAdmin, async (req, res) => {
+  try {
+    const { search, service, branch, method } = req.query;
+    const query = {};
+
+    if (service) query.service = service;
+    if (branch)  query.branch  = branch;
+    if (method)  query.method  = method;
+
+    if (search) {
+      query.$or = [
+        { member:   { $regex: search, $options: 'i' } },
+        { recordId: { $regex: search, $options: 'i' } },
+        { email:    { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const allAttendance = await attendance.find(query).sort({ createdAt: -1 }).toArray();
+
+    const now        = new Date();
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const thisWeek   = allAttendance.filter(a => new Date(a.createdAt) >= oneWeekAgo);
+
+    const serviceMap = {};
+    allAttendance.forEach(a => {
+      serviceMap[a.service] = (serviceMap[a.service] || 0) + 1;
+    });
+
+    const serviceValues = Object.values(serviceMap);
+    const avgPerService = serviceValues.length > 0
+      ? Math.round(serviceValues.reduce((s, v) => s + v, 0) / serviceValues.length)
+      : 0;
+
+    const branchMap = {};
+    allAttendance.forEach(a => {
+      branchMap[a.branch] = (branchMap[a.branch] || 0) + 1;
+    });
+    const topBranch = Object.entries(branchMap).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A';
+
+    const stats    = { total: allAttendance.length, thisWeek: thisWeek.length, avgPerService, topBranch };
+    const byService = Object.entries(serviceMap).map(([service, count]) => ({ service, count }));
+    const byBranch  = Object.entries(branchMap).map(([branch, count]) => ({ branch, count }));
+
+    res.status(200).json({ success: true, attendance: allAttendance, stats, byService, byBranch });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to fetch attendance' });
   }
 });
 

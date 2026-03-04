@@ -1,0 +1,299 @@
+/* AdminSettings.css - Admin Settings Page Styles */
+/* All classes are prefixed with admin- to prevent conflicts */
+
+.admin-settings-main {
+  flex: 1;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.admin-settings-header {
+  margin-bottom: 32px;
+}
+
+.admin-settings-title {
+  font-family: 'Arial:Bold', sans-serif;
+  font-size: 24px;
+  line-height: 32px;
+  color: #101828;
+  margin-bottom: 4px;
+}
+
+.admin-settings-subtitle {
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  color: #6a7282;
+}
+
+.admin-settings-section {
+  background: white;
+  border: 0.8px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.admin-settings-section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.admin-settings-section-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-settings-section-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.admin-settings-section-icon-blue {
+  background: #dbeafe;
+  color: #155dfc;
+}
+
+.admin-settings-section-icon-purple {
+  background: #f3e8ff;
+  color: #9333ea;
+}
+
+.admin-settings-section-icon-green {
+  background: #dcfce7;
+  color: #00a63e;
+}
+
+.admin-settings-section-icon-orange {
+  background: #ffedd5;
+  color: #f97316;
+}
+
+.admin-settings-section-icon-pink {
+  background: #fce7f3;
+  color: #ec4899;
+}
+
+.admin-settings-section-title-wrapper {
+  flex: 1;
+}
+
+.admin-settings-section-title {
+  font-family: 'Arial:Bold', sans-serif;
+  font-size: 18px;
+  line-height: 28px;
+  color: #101828;
+}
+
+.admin-settings-section-description {
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  color: #6a7282;
+}
+
+.admin-settings-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.admin-settings-form-group {
+  margin-bottom: 20px;
+}
+
+.admin-settings-form-label {
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  color: #364153;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.admin-settings-form-input {
+  width: 100%;
+  height: 42px;
+  border: 0.8px solid #d1d5dc;
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 16px;
+  color: #0a0a0a;
+}
+
+.admin-settings-form-input::placeholder {
+  color: rgba(10, 10, 10, 0.5);
+}
+
+.admin-settings-toggle-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 0.8px solid #f3f4f6;
+}
+
+.admin-settings-toggle-item:last-child {
+  border-bottom: none;
+}
+
+.admin-settings-toggle-label-wrapper {
+  flex: 1;
+}
+
+.admin-settings-toggle-label {
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  color: #101828;
+  margin-bottom: 2px;
+}
+
+.admin-settings-toggle-description {
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  color: #6a7282;
+}
+
+.admin-settings-toggle {
+  width: 44px;
+  height: 24px;
+  background: #155dfc;
+  border-radius: 26843500px;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s;
+}
+
+.admin-settings-toggle:not(.admin-settings-toggle-on) {
+  background: #d1d5dc;
+}
+
+.admin-settings-toggle::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  transition: left 0.2s;
+}
+
+.admin-settings-toggle.admin-settings-toggle-on::after {
+  left: 22px;
+}
+
+.admin-settings-notification-events {
+  margin-top: 16px;
+  padding-left: 20px;
+}
+
+.admin-settings-notification-event {
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 14px;
+  line-height: 24px;
+  color: #4a5565;
+  position: relative;
+  padding-left: 16px;
+}
+
+.admin-settings-notification-event::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: #4a5565;
+}
+
+.admin-settings-security-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 0.8px solid #f3f4f6;
+}
+
+.admin-settings-security-item:last-child {
+  border-bottom: none;
+}
+
+.admin-settings-security-label-wrapper {
+  flex: 1;
+}
+
+.admin-settings-security-label {
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  color: #101828;
+  margin-bottom: 2px;
+}
+
+.admin-settings-security-description {
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  color: #6a7282;
+}
+
+.admin-settings-change-btn {
+  background: none;
+  border: none;
+  color: #155dfc;
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.admin-settings-change-btn:hover {
+  text-decoration: underline;
+}
+
+.admin-settings-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 24px;
+}
+
+.admin-settings-reset-btn {
+  background: white;
+  border: 0.8px solid #d1d5dc;
+  border-radius: 10px;
+  padding: 12px 24px;
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 16px;
+  color: #364153;
+  cursor: pointer;
+}
+
+.admin-settings-reset-btn:hover {
+  background: #f9fafb;
+}
+
+.admin-settings-save-btn {
+  flex: 1;
+  background: #155dfc;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 24px;
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.admin-settings-save-btn:hover {
+  background: #1048d4;
+}

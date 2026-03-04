@@ -1,0 +1,357 @@
+/* AdminDashboard.css - Dashboard Specific Styles */
+/* All classes are prefixed with admin- to prevent conflicts */
+
+.admin-dashboard-container {
+  min-height: 100vh;
+  background: #f3f4f6;
+  display: flex;
+}
+
+.admin-dashboard-main {
+  flex: 1;
+}
+
+.admin-dashboard-header {
+  margin-bottom: 24px;
+}
+
+.admin-dashboard-title {
+  font-family: 'Arial:Bold', sans-serif;
+  font-size: 30px;
+  line-height: 36px;
+  color: #101828;
+  margin-bottom: 8px;
+}
+
+.admin-dashboard-subtitle {
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  color: #4a5565;
+}
+
+.admin-dashboard-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.admin-dashboard-stat-card {
+  background: white;
+  border: 0.8px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 24.8px;
+  min-height: 169.588px;
+}
+
+.admin-dashboard-stat-icon-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.admin-dashboard-stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-dashboard-stat-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.admin-dashboard-stat-badge {
+  height: 28px;
+  border-radius: 26843500px;
+  padding: 4px 8px;
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  background: #dcfce7;
+  color: #00a63e;
+}
+
+.admin-dashboard-stat-label {
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  color: #4a5565;
+  margin-bottom: 4px;
+}
+
+.admin-dashboard-stat-value {
+  font-family: 'Arial:Bold', sans-serif;
+  font-size: 24px;
+  line-height: 32px;
+  color: #101828;
+}
+
+.admin-dashboard-pending-section {
+  background: white;
+  border: 0.8px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 24.8px;
+  margin-bottom: 24px;
+}
+
+.admin-dashboard-section-title {
+  font-family: 'Arial:Bold', sans-serif;
+  font-size: 20px;
+  line-height: 28px;
+  color: #101828;
+  margin-bottom: 24px;
+}
+
+.admin-dashboard-pending-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.admin-dashboard-pending-card {
+  border: 0.8px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 16.8px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.admin-dashboard-pending-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-dashboard-pending-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.admin-dashboard-pending-number {
+  font-family: 'Arial:Bold', sans-serif;
+  font-size: 24px;
+  line-height: 32px;
+  color: #101828;
+}
+
+.admin-dashboard-pending-label {
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  color: #4a5565;
+}
+
+.admin-dashboard-activity-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.admin-dashboard-activity-card {
+  background: white;
+  border: 0.8px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 24.8px;
+}
+
+.admin-dashboard-activity-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.admin-dashboard-view-all-btn {
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  color: #155dfc;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.admin-dashboard-activity-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 0.8px solid #f3f4f6;
+}
+
+.admin-dashboard-activity-item:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.admin-dashboard-activity-icon {
+  width: 20px;
+  height: 20px;
+  margin-top: 4px;
+}
+
+.admin-dashboard-activity-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.admin-dashboard-activity-title {
+  font-family: 'Arial:Bold', sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  color: #101828;
+  margin-bottom: 4px;
+}
+
+.admin-dashboard-activity-name {
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 12px;
+  line-height: 16px;
+  color: #4a5565;
+}
+
+.admin-dashboard-activity-time {
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 12px;
+  line-height: 16px;
+  color: #6a7282;
+}
+
+.admin-dashboard-payment-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-top: 0.8px solid #f3f4f6;
+}
+
+.admin-dashboard-payment-item:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.admin-dashboard-payment-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 12px;
+}
+
+.admin-dashboard-payment-name {
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  color: #101828;
+  margin-bottom: 4px;
+}
+
+.admin-dashboard-payment-id {
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 12px;
+  line-height: 16px;
+  color: #6a7282;
+}
+
+.admin-dashboard-payment-amount {
+  font-family: 'Arial:Bold', sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  color: #101828;
+}
+
+.admin-dashboard-payment-overdue {
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 12px;
+  line-height: 16px;
+  color: #e7000b;
+}
+
+.admin-dashboard-bottom-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.admin-dashboard-bottom-stat-card {
+  background: white;
+  border: 0.8px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 24.8px;
+}
+
+.admin-dashboard-bottom-stat-label {
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  color: #4a5565;
+  margin-bottom: 8px;
+}
+
+.admin-dashboard-bottom-stat-value {
+  font-family: 'Arial:Bold', sans-serif;
+  font-size: 30px;
+  line-height: 36px;
+  color: #101828;
+  margin-bottom: 8px;
+}
+
+.admin-dashboard-bottom-stat-subtext {
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  color: #4a5565;
+}
+
+/* Color variations */
+.admin-bg-blue {
+  background: #155dfc;
+}
+
+.admin-bg-green {
+  background: #00a63e;
+}
+
+.admin-bg-pink {
+  background: #e60076;
+}
+
+.admin-bg-darkblue {
+  background: #0f2854;
+}
+
+.admin-bg-orange {
+  background: #ffedd4;
+}
+
+.admin-bg-lightblue {
+  background: #dbeafe;
+}
+
+.admin-bg-lightred {
+  background: #ffe2e2;
+}
+
+.admin-text-orange {
+  color: #f54900;
+}
+
+.admin-text-blue {
+  color: #155dfc;
+}
+
+.admin-text-red {
+  color: #e7000b;
+}
+
+.admin-text-green {
+  color: #00a63e;
+}

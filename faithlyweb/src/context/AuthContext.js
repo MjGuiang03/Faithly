@@ -10,7 +10,6 @@ console.log('🔥 API URL:', API);
 
 const safeJSON = async (res) => {
   const text = await res.text();
-  console.log('📄 Raw response text:', text);
   try {
     return JSON.parse(text);
   } catch (err) {
@@ -20,7 +19,7 @@ const safeJSON = async (res) => {
 };
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser]       = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -28,23 +27,34 @@ export const AuthProvider = ({ children }) => {
   const signIn = async (email, password) => {
     try {
       setLoading(true);
-      const res = await fetch(`${API}/api/login`, {
-        method: 'POST',
+      const res  = await fetch(`${API}/api/login`, {
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body:    JSON.stringify({ email, password })
       });
 
       const data = await safeJSON(res);
-      if (!res.ok) throw new Error(data.message || 'Login failed');
 
-      console.log('Login response data:', data.user);
+      // ✅ Do NOT throw — return raw data so LoginModal can read
+      //    locked / remainingSeconds / permanent / recommendReset fields
+      if (!res.ok) {
+        return {
+          success: false,
+          message: data.message || 'Login failed',
+          data               // ← full server payload passed back to LoginModal
+        };
+      }
+
+      localStorage.setItem('token', data.token);
       setUser(data.user);
       setProfile(data.user);
       toast.success('Signed in successfully');
       return { success: true };
+
     } catch (err) {
+      // Only fires on network errors / JSON parse failures
       toast.error(err.message);
-      return { success: false, error: err };
+      return { success: false, message: err.message, data: {} };
     } finally {
       setLoading(false);
     }
@@ -54,19 +64,17 @@ export const AuthProvider = ({ children }) => {
   const signUp = async (formData) => {
     try {
       setLoading(true);
-      console.log('API URL:', API);
-      
       const res = await fetch(`${API}/api/register`, {
-        method: 'POST',
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: formData.email,
+        body:    JSON.stringify({
+          email:    formData.email,
           password: formData.password,
           fullName: formData.fullName,
-          phone: formData.phone,
-          branch: formData.branch,
+          phone:    formData.phone,
+          branch:   formData.branch,
           position: formData.position,
-          gender: formData.gender,
+          gender:   formData.gender,
           birthday: formData.birthday
         })
       });
@@ -88,9 +96,9 @@ export const AuthProvider = ({ children }) => {
   const verifyOTP = async (email, otp) => {
     try {
       const res = await fetch(`${API}/api/verify-otp`, {
-        method: 'POST',
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, otp })
+        body:    JSON.stringify({ email, otp })
       });
 
       const data = await safeJSON(res);
@@ -108,9 +116,9 @@ export const AuthProvider = ({ children }) => {
   const resendOTP = async (email) => {
     try {
       const res = await fetch(`${API}/api/resend-otp`, {
-        method: 'POST',
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
+        body:    JSON.stringify({ email })
       });
 
       const data = await safeJSON(res);
@@ -128,9 +136,9 @@ export const AuthProvider = ({ children }) => {
   const resetPassword = async (email) => {
     try {
       const res = await fetch(`${API}/api/reset-password-request`, {
-        method: 'POST',
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
+        body:    JSON.stringify({ email })
       });
 
       const data = await safeJSON(res);
@@ -148,9 +156,9 @@ export const AuthProvider = ({ children }) => {
   const verifyResetOTP = async (email, otp) => {
     try {
       const res = await fetch(`${API}/api/reset-password-verify-otp`, {
-        method: 'POST',
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, otp })
+        body:    JSON.stringify({ email, otp })
       });
 
       const data = await safeJSON(res);
@@ -167,9 +175,9 @@ export const AuthProvider = ({ children }) => {
   const updatePasswordWithOTP = async (email, otp, newPassword) => {
     try {
       const res = await fetch(`${API}/api/reset-password-update`, {
-        method: 'POST',
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, otp, newPassword })
+        body:    JSON.stringify({ email, otp, newPassword })
       });
 
       const data = await safeJSON(res);
@@ -183,7 +191,9 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  /* ---------- SIGN OUT ---------- */
   const signOut = () => {
+    localStorage.removeItem('token');
     setUser(null);
     setProfile(null);
     toast.success('Signed out successfully');
@@ -194,24 +204,18 @@ export const AuthProvider = ({ children }) => {
   const deleteAccount = async (email, password) => {
     try {
       setLoading(true);
-      
-      console.log('🗑️ Attempting to delete account for:', email);
-      console.log('🌐 API endpoint:', `${API}/api/delete-account`);
-      
       const res = await fetch(`${API}/api/delete-account`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        method:  'DELETE',
+        headers: {
+          'Content-Type':  'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
         body: JSON.stringify({ email, password })
       });
 
-      console.log('📥 Response status:', res.status);
-      console.log('📥 Response headers:', res.headers);
-      
       const data = await safeJSON(res);
-      console.log('📦 Response data:', data);
-      
+
       if (!res.ok) {
-        // Handle specific error cases - don't show toast for password errors
         if (res.status === 401 || data.message?.toLowerCase().includes('password')) {
           return { success: false, error: { message: 'Password is incorrect', isPasswordError: true } };
         }
@@ -223,10 +227,6 @@ export const AuthProvider = ({ children }) => {
       toast.success('Account deleted successfully.');
       return { success: true };
     } catch (err) {
-      console.error('❌ Delete account error:', err);
-      console.error('❌ Error details:', err.message);
-      
-      // Don't show toast for password errors
       if (!err.isPasswordError) {
         toast.error(err.message || 'Failed to delete account');
       }
@@ -240,57 +240,38 @@ export const AuthProvider = ({ children }) => {
   const updateProfile = async (formData) => {
     try {
       setLoading(true);
-      
-      console.log('🔄 Updating profile with data:', {
-        email: formData.email,
-        fullName: formData.fullName,
-        phone: formData.phone,
-        branch: formData.branch,
-        position: formData.position
-      });
-      
-      console.log('🌐 API URL:', `${API}/api/update-profile`);
-      
       const res = await fetch(`${API}/api/update-profile`, {
-        method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
+        method:  'PUT',
+        headers: {
+          'Content-Type':  'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
         body: JSON.stringify({
-          email: formData.email,
+          email:    formData.email,
           fullName: formData.fullName,
-          phone: formData.phone,
-          branch: formData.branch,
+          phone:    formData.phone,
+          branch:   formData.branch,
           position: formData.position
         })
       });
 
-      console.log('📥 Response status:', res.status);
-      
       const data = await safeJSON(res);
-      console.log('📦 Response data:', data);
-      
       if (!res.ok) throw new Error(data.message || 'Update failed');
 
-      // Update local state (keep gender and birthday from original profile)
       const updatedProfile = {
         ...profile,
         ...data.user,
         fullName: data.user.fullName || formData.fullName,
-        email: data.user.email || formData.email,
-        phone: data.user.phone || formData.phone,
-        branch: data.user.branch || formData.branch,
+        email:    data.user.email    || formData.email,
+        phone:    data.user.phone    || formData.phone,
+        branch:   data.user.branch   || formData.branch,
         position: data.user.position || formData.position
       };
-      
-      console.log('✅ Updated profile state:', updatedProfile);
-      
+
       setProfile(updatedProfile);
       setUser(updatedProfile);
-      
       return { success: true };
     } catch (err) {
-      console.error('❌ Update profile error:', err);
       toast.error(err.message);
       return { success: false, error: err };
     } finally {

@@ -1,0 +1,300 @@
+/* AdminAttendance.css - Attendance Monitoring Page Styles */
+/* All classes are prefixed with admin- to prevent conflicts */
+
+.admin-attendance-main {
+  flex: 1;
+}
+
+.admin-attendance-header {
+  margin-bottom: 24px;
+}
+
+.admin-attendance-title {
+  font-family: 'Arial:Bold', sans-serif;
+  font-size: 30px;
+  line-height: 36px;
+  color: #101828;
+  margin-bottom: 8px;
+}
+
+.admin-attendance-subtitle {
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  color: #4a5565;
+}
+
+.admin-attendance-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.admin-attendance-stat-card {
+  background: white;
+  border: 0.8px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 24.8px;
+}
+
+.admin-attendance-stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.admin-attendance-stat-label {
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  color: #4a5565;
+}
+
+.admin-attendance-stat-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.admin-attendance-stat-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.admin-attendance-stat-value {
+  font-family: 'Arial:Bold', sans-serif;
+  font-size: 24px;
+  line-height: 32px;
+  color: #101828;
+}
+
+.admin-attendance-breakdown-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.admin-attendance-breakdown-card {
+  background: white;
+  border: 0.8px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 24.8px;
+}
+
+.admin-attendance-section-title {
+  font-family: 'Arial:Bold', sans-serif;
+  font-size: 20px;
+  line-height: 28px;
+  color: #101828;
+  margin-bottom: 24px;
+}
+
+.admin-attendance-breakdown-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+  border-top: 0.8px solid #f3f4f6;
+}
+
+.admin-attendance-breakdown-item:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.admin-attendance-breakdown-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-attendance-breakdown-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.admin-attendance-breakdown-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.admin-attendance-breakdown-label {
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  color: #101828;
+}
+
+.admin-attendance-breakdown-value {
+  font-family: 'Arial:Bold', sans-serif;
+  font-size: 24px;
+  line-height: 32px;
+  color: #101828;
+}
+
+.admin-attendance-search-section {
+  background: white;
+  border: 0.8px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 16.8px;
+  margin-bottom: 24px;
+}
+
+.admin-attendance-search-container {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.admin-attendance-search-wrapper {
+  position: relative;
+  flex: 1;
+  max-width: 534px;
+}
+
+.admin-attendance-search-input {
+  width: 100%;
+  height: 42px;
+  border: 0.8px solid #d1d5dc;
+  border-radius: 10px;
+  padding: 8px 16px 8px 40px;
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 16px;
+  color: #0a0a0a;
+}
+
+.admin-attendance-search-input::placeholder {
+  color: rgba(10, 10, 10, 0.5);
+}
+
+.admin-attendance-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+}
+
+.admin-attendance-search-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.admin-attendance-table-section {
+  background: white;
+  border: 0.8px solid #e5e7eb;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.admin-attendance-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-attendance-table-header {
+  background: #f9fafb;
+  height: 44.4px;
+}
+
+.admin-attendance-table-header-cell {
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  color: #4a5565;
+  text-align: left;
+  padding: 10.8px 16px;
+}
+
+.admin-attendance-table-row {
+  border-top: 0.8px solid #f3f4f6;
+  height: 64.8px;
+}
+
+.admin-attendance-table-cell {
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  color: #101828;
+  padding: 18.2px 16px;
+}
+
+.admin-attendance-user-avatar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-attendance-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #dbeafe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-attendance-avatar svg {
+  width: 16px;
+  height: 16px;
+}
+
+.admin-attendance-member-name {
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  color: #101828;
+}
+
+.admin-attendance-service {
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  color: #364153;
+}
+
+.admin-attendance-date {
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  color: #364153;
+}
+
+.admin-attendance-time {
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  color: #364153;
+}
+
+.admin-attendance-branch {
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  color: #364153;
+}
+
+.admin-attendance-method-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 23.988px;
+  padding: 4px 12px;
+  border-radius: 26843500px;
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.admin-attendance-method-qr {
+  background: #dbeafe;
+  color: #155dfc;
+}
+
+.admin-attendance-method-rfid {
+  background: #dcfce7;
+  color: #00a63e;
+}

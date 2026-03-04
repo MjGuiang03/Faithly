@@ -1,0 +1,237 @@
+/* AdminBranches.css - Branch Management Page Styles */
+/* All classes are prefixed with admin- to prevent conflicts */
+
+.admin-branches-main {
+  flex: 1;
+}
+
+.admin-branches-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.admin-branches-header-left {
+  flex: 1;
+}
+
+.admin-branches-title {
+  font-family: 'Arial:Bold', sans-serif;
+  font-size: 30px;
+  line-height: 36px;
+  color: #101828;
+  margin-bottom: 8px;
+}
+
+.admin-branches-subtitle {
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  color: #4a5565;
+}
+
+.admin-branches-add-btn {
+  background: #155dfc;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 20px;
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-branches-add-btn:hover {
+  background: #1048d4;
+}
+
+.admin-branches-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.admin-branches-stat-card {
+  background: white;
+  border: 0.8px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 24.8px;
+}
+
+.admin-branches-stat-label {
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  color: #4a5565;
+  margin-bottom: 8px;
+}
+
+.admin-branches-stat-value {
+  font-family: 'Arial:Bold', sans-serif;
+  font-size: 24px;
+  line-height: 32px;
+  color: #101828;
+}
+
+.admin-branches-stat-value-active {
+  color: #00a63e;
+}
+
+.admin-branches-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+.admin-branches-card {
+  background: white;
+  border: 0.8px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 24.8px;
+  position: relative;
+}
+
+.admin-branches-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.admin-branches-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  background: #dbeafe;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-branches-icon-wrapper svg {
+  width: 24px;
+  height: 24px;
+}
+
+.admin-branches-card-title-section {
+  flex: 1;
+}
+
+.admin-branches-card-title {
+  font-family: 'Arial:Bold', sans-serif;
+  font-size: 18px;
+  line-height: 28px;
+  color: #101828;
+  margin-bottom: 4px;
+}
+
+.admin-branches-card-id {
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  color: #6a7282;
+  margin-bottom: 8px;
+}
+
+.admin-branches-status-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 4px 12px;
+  border-radius: 26843500px;
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 12px;
+  line-height: 16px;
+  background: #dcfce7;
+  color: #00a63e;
+}
+
+.admin-branches-edit-btn {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #155dfc;
+}
+
+.admin-branches-edit-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.admin-branches-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.admin-branches-detail-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  color: #4a5565;
+}
+
+.admin-branches-detail-icon {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.admin-branches-detail-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.admin-branches-stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  padding-top: 20px;
+  border-top: 0.8px solid #f3f4f6;
+}
+
+.admin-branches-stat-item {
+  text-align: center;
+}
+
+.admin-branches-stat-item-value {
+  font-family: 'Arial:Bold', sans-serif;
+  font-size: 24px;
+  line-height: 32px;
+  color: #155dfc;
+  margin-bottom: 4px;
+}
+
+.admin-branches-stat-item-value-green {
+  color: #00a63e;
+}
+
+.admin-branches-stat-item-label {
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 12px;
+  line-height: 16px;
+  color: #6a7282;
+}
+
+.admin-branches-stat-item-sublabel {
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 12px;
+  line-height: 16px;
+  color: #6a7282;
+  margin-top: 2px;
+}
