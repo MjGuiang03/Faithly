@@ -7,7 +7,8 @@ import puacLogo from '../../assets/puaclogo.png';
 import svgPaths from "../../imports/svg-icons";
 import '../styles/Verify.css';
 
-export default function VerifyEmailModal({ isOpen, onClose, email }) {
+// Change the function signature to accept optional override props:
+export default function VerifyEmailModal({ isOpen, onClose, email, onVerify, onResend }) {
   const navigate = useNavigate();
   const { verifyOTP, resendOTP } = useAuth();
 
@@ -85,53 +86,62 @@ export default function VerifyEmailModal({ isOpen, onClose, email }) {
   };
 
   const handleVerify = async (e) => {
-    e.preventDefault();
-    
-    const otpString = otp.join('');
-    if (otpString.length !== 6) {
-      setError('Please enter all 6 digits');
-      return;
-    }
+  e.preventDefault();
 
-    setLoading(true);
-    setError('');
+  const otpString = otp.join('');
+  if (otpString.length !== 6) { setError('Please enter all 6 digits'); return; }
 
-    const result = await verifyOTP(email, otpString);
-    
+  setLoading(true);
+  setError('');
+
+  // If a custom onVerify is passed (e.g. from Settings), use it
+  if (onVerify) {
+    const result = await onVerify(otpString);
     if (result.success) {
       setSuccess(true);
-      toast.success('Email verified successfully!');
-      setTimeout(() => {
-        onClose();
-        navigate('/login');
-      }, 1500);
+      toast.success('Verified successfully!');
+      setTimeout(() => onClose(), 1500);
     } else {
-      setError(result.error?.message || 'Invalid or expired OTP');
-      toast.error('Verification failed');
-      // Clear OTP on error
+      setError(result.message || 'Invalid or expired OTP');
       setOtp(['', '', '', '', '', '']);
       inputRefs[0].current?.focus();
     }
-
     setLoading(false);
-  };
+    return;
+  }
+
+  // Default behavior (signup flow)
+  const result = await verifyOTP(email, otpString);
+  if (result.success) {
+    setSuccess(true);
+    toast.success('Email verified successfully!');
+    setTimeout(() => { onClose(); navigate('/login'); }, 1500);
+  } else {
+    setError(result.error?.message || 'Invalid or expired OTP');
+    toast.error('Verification failed');
+    setOtp(['', '', '', '', '', '']);
+    inputRefs[0].current?.focus();
+  }
+  setLoading(false);
+};
 
   const handleResend = async () => {
-    setResendLoading(true);
-    setError('');
-    setOtp(['', '', '', '', '', '']);
-    
-    const result = await resendOTP(email);
-    
-    if (result?.success) {
-      toast.success('New OTP sent to your email');
-    } else {
-      toast.error('Failed to resend OTP. Please try again.');
-    }
-    
-    setResendLoading(false);
-    inputRefs[0].current?.focus();
-  };
+  setResendLoading(true);
+  setError('');
+  setOtp(['', '', '', '', '', '']);
+
+  // If a custom onResend is passed (e.g. from Settings), use it
+  const result = onResend ? await onResend() : await resendOTP(email);
+
+  if (result?.success) {
+    toast.success('New OTP sent to your email');
+  } else {
+    toast.error(result?.message || 'Failed to resend OTP. Please try again.');
+  }
+
+  setResendLoading(false);
+  inputRefs[0].current?.focus();
+};
 
 
 

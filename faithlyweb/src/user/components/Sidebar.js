@@ -89,14 +89,14 @@ export default function Sidebar() {
         </button>
       </div>
 
-      {/* User Profile — clickable to navigate to /profile */}
+      {/* User Profile — click to navigate to /settings */}
       <div className="sidebar-profile">
         <div
-          className={`sidebar-profile-info ${isActive('/profile') ? 'active' : ''}`}
-          onClick={() => navigate('/profile')}
+          className={`sidebar-profile-info ${isActive('/settings') ? 'active' : ''}`}
+          onClick={() => navigate('/settings')}
           role="button"
           tabIndex={0}
-          onKeyDown={(e) => e.key === 'Enter' && navigate('/profile')}
+          onKeyDown={(e) => e.key === 'Enter' && navigate('/settings')}
         >
           <div className="sidebar-profile-avatar">
             <p>{profile?.fullName?.charAt(0)?.toUpperCase() || 'M'}</p>

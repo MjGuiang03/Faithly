@@ -54,6 +54,109 @@ const calculateAge = (birthDate) => {
   return age;
 };
 
+/* ── Grouped community locations ─────────────────────────────────────────── */
+const CommunitySelect = ({ value, onChange }) => (
+  <select name="community" value={value} onChange={onChange} className="signup-form-select">
+    <option value="">Select your Community</option>
+    <optgroup label="Kalinga">
+      <option>Tabuk</option>
+      <option>Zapote</option>
+      <option>Bliss</option>
+      <option>Libanon</option>
+      <option>Batong Buhay</option>
+      <option>Balatoc</option>
+      <option>Lat-nog</option>
+    </optgroup>
+    <optgroup label="Isabela">
+      <option>Santiago City</option>
+    </optgroup>
+    <optgroup label="Abra">
+      <option>Lamao</option>
+      <option>Lingey</option>
+      <option>Cabaruyan</option>
+      <option>Ducligan</option>
+      <option>Gangal</option>
+      <option>Bila-Bila</option>
+      <option>Naguillian</option>
+      <option>Ud-udiao</option>
+      <option>Villa Conchita</option>
+      <option>Ay-yeng Manabo</option>
+      <option>Dao-angan</option>
+      <option>Kilong-olao</option>
+      <option>Bao-yan</option>
+      <option>Amti</option>
+      <option>Danac</option>
+      <option>Bengued</option>
+      <option>Sappaac</option>
+      <option>Saccaang</option>
+    </optgroup>
+    <optgroup label="Benguet">
+      <option>Baguio</option>
+    </optgroup>
+    <optgroup label="Rizal">
+      <option>Montalban</option>
+    </optgroup>
+    <optgroup label="NCR">
+      <option>Valenzuela City</option>
+      <option>Tandang Sora, Quezon City</option>
+      <option>COA, Quezon City</option>
+      <option>Payatas, Quezon City</option>
+      <option>Malaria, Caloocan</option>
+    </optgroup>
+    <optgroup label="Bulacan">
+      <option>Meycauayan City</option>
+      <option>Camalig</option>
+      <option>San Jose Del Monte</option>
+    </optgroup>
+    <optgroup label="Tarlac">
+      <option>Pacpaco, San Manuel</option>
+      <option>Victoria</option>
+    </optgroup>
+    <optgroup label="Nueva Ecija">
+      <option>Bambanaba, Cuyapo</option>
+    </optgroup>
+    <optgroup label="Pangasinan">
+      <option>Dagupan</option>
+      <option>Mangatarem</option>
+      <option>Laoak Langka</option>
+      <option>Orbiztondo</option>
+      <option>Malasiqui, Bolaoit</option>
+      <option>Taloyan</option>
+      <option>Binmaley</option>
+      <option>San Carlos</option>
+      <option>Manaoag</option>
+      <option>Pozorrubio</option>
+      <option>Alcala</option>
+    </optgroup>
+    <optgroup label="Agusan Del Norte">
+      <option>Butuan City</option>
+      <option>RTR</option>
+      <option>Jabonga, Bangonay</option>
+      <option>Kasiklan</option>
+      <option>San Mateo</option>
+      <option>Fatima Kim.13</option>
+      <option>Bayugan</option>
+      <option>Ibuan</option>
+      <option>Balubo</option>
+    </optgroup>
+    <optgroup label="Cebu">
+      <option>Mandaue</option>
+      <option>Liloan</option>
+      <option>Calero</option>
+      <option>Compostela</option>
+    </optgroup>
+    <optgroup label="Surigao Del Norte">
+      <option>Alegria</option>
+      <option>Bonifacio</option>
+      <option>Matin-ao</option>
+      <option>Ipil</option>
+    </optgroup>
+    <optgroup label="Surigao Del Sur">
+      <option>Kinabigtasan, Tago</option>
+    </optgroup>
+  </select>
+);
+
 export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({firstName:'',lastName:'',email:'',phone:'',gender:'',birthday:'',community:'',position:'',churchId:'',password:'',confirmPassword:''});
@@ -315,6 +418,7 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
 
           {/* ROW: COMMUNITY + POSITION */}
           <div className="signup-form-row">
+            {/* ── Community — grouped by province/region ── */}
             <div className="signup-form-group">
               <label className="signup-form-label">Community:</label>
               <div className="signup-select-wrapper">
@@ -322,18 +426,7 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
                   <path d={svgPaths.p1beb9580} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                   <path d={svgPaths.p32ab0300} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 </svg>
-                <select
-                  name="community"
-                  value={formData.branch}
-                  onChange={handleChange}
-                  className="signup-form-select"
-                >
-                  <option value="">Select your Community</option>
-                  <option value="Main Branch">Main Branch</option>
-                  <option value="Northside Branch">Northside Branch</option>
-                  <option value="Southside Branch">Southside Branch</option>
-                  <option value="Downside Branch">Downside Branch</option>
-                </select>
+                <CommunitySelect value={formData.community} onChange={handleChange} />
                 <svg className="signup-select-dropdown" fill="none" viewBox="0 0 20 20">
                   <path d={svgPaths.p1ae0b780} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 </svg>
@@ -458,7 +551,7 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
             </div>
           </div>
 
-          {/* TERMS CHECKBOX — only checks when both modals are agreed */}
+          {/* TERMS CHECKBOX */}
           <div className="signup-checkbox-wrapper">
             <input
               type="checkbox"
@@ -523,7 +616,7 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
       </div>
 
       {/* VERIFY EMAIL MODAL */}
-            {showVerifyModal && <VerifyEmailModal isOpen={showVerifyModal} onClose={()=>setShowVerifyModal(false)} email={registeredEmail}/>}
+      {showVerifyModal && <VerifyEmailModal isOpen={showVerifyModal} onClose={() => setShowVerifyModal(false)} email={registeredEmail} />}
     </div>
   );
 }

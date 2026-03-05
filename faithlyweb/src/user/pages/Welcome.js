@@ -3,10 +3,12 @@ import { CheckCircle } from 'lucide-react';
 import puacLogo from '../../assets/puaclogo.png';
 import LoginModal from '../components/LoginModal';
 import SignupModal from '../components/SignupModal';
+import ResetPassword from '../components/ResetPassword';
 import '../styles/Welcome.css';
 
 export default function Welcome() {
   const [showSignupModal, setShowSignupModal] = useState(false);
+  const [authView, setAuthView] = useState('login'); // 'login' or 'reset'
 
   const benefits = [
     'Instant loan application and tracking',
@@ -23,6 +25,14 @@ export default function Welcome() {
 
   const handleCloseSignup = () => {
     setShowSignupModal(false);
+  };
+
+  const handleSwitchToReset = () => {
+    setAuthView('reset');
+  };
+
+  const handleBackToLogin = () => {
+    setAuthView('login');
   };
 
   return (
@@ -84,12 +94,20 @@ export default function Welcome() {
             </div>
           </div>
 
-          {/* Right Content - Embedded Login Form */}
+          {/* Right Content - Embedded Login/Reset Form */}
           <div className="login-card-container">
-            <LoginModal 
-              embedded={true} 
-              onSwitchToSignup={handleOpenSignup}
-            />
+            {authView === 'login' ? (
+              <LoginModal 
+                embedded={true} 
+                onSwitchToSignup={handleOpenSignup}
+                onSwitchToReset={handleSwitchToReset}
+              />
+            ) : (
+              <ResetPassword
+                embedded={true}
+                onBackToLogin={handleBackToLogin}
+              />
+            )}
           </div>
         </div>
       </div>

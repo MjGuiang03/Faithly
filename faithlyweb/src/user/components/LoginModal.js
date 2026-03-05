@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
-import { Mail, Lock, Eye, EyeOff, X } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, X, AlertTriangle } from 'lucide-react';
 import puacLogo from '../../assets/puaclogo.png';
-import '../styles/Modal.css';
+import '../styles/LoginModal.css';
 
 // Valid email domains list
 const validDomains = [
@@ -48,20 +48,8 @@ const validateEmailAdvanced = (email) => {
   return '';
 };
 
-/*
-  ─────────────────────────────────────────────────────────────
-  Lock tier summary (mirrors server.js exactly):
-    Attempts 1–2  → show remaining attempts warning
-    Attempt  3    → 5-minute lock
-    Attempt  6    → 30-minute lock + recommend password reset
-    Attempt  7+   → permanent lock (must reset password)
 
-  All lock state lives in MongoDB. The frontend just reads the
-  server response and starts a local countdown timer for UX.
-  ─────────────────────────────────────────────────────────────
-*/
-
-export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, embedded = false }) {
+export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, onSwitchToReset, embedded = false }) {
   const { signIn } = useAuth();
   const navigate = useNavigate();
 
@@ -73,10 +61,10 @@ export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, e
   const [emailError, setEmailError]     = useState('');
 
   // Lock state — driven entirely by server responses
-  const [isLocked, setIsLocked]                   = useState(false);
+  const [isLocked, setIsLocked]                       = useState(false);
   const [isPermanentlyLocked, setIsPermanentlyLocked] = useState(false);
-  const [recommendReset, setRecommendReset]       = useState(false);
-  const [lockTimeRemaining, setLockTimeRemaining] = useState(0);
+  const [recommendReset, setRecommendReset]           = useState(false);
+  const [lockTimeRemaining, setLockTimeRemaining]     = useState(0);
 
   const timerRef = useRef(null);
 
@@ -153,7 +141,6 @@ export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, e
       const data = result.data || {};
 
       if (data.permanent) {
-        // Permanently locked — no countdown
         setIsPermanentlyLocked(true);
         setIsLocked(false);
         setError(
@@ -161,12 +148,10 @@ export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, e
           'Your account has been permanently locked. Please reset your password to regain access.'
         );
       } else if (data.locked && data.remainingSeconds) {
-        // Timed lock (5 min or 30 min)
         setRecommendReset(!!data.recommendReset);
         startCountdown(data.remainingSeconds);
         setError(data.message || 'Account locked. Please wait before trying again.');
       } else {
-        // Regular invalid credentials warning
         setError(result.message || data.message || 'Invalid email or password.');
       }
     }
@@ -175,8 +160,12 @@ export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, e
   };
 
   const handleForgotPassword = () => {
-    if (onClose) onClose();
-    navigate('/reset-password');
+    if (embedded && onSwitchToReset) {
+      onSwitchToReset();
+    } else {
+      if (onClose) onClose();
+      navigate('/reset-password');
+    }
   };
 
   // ── Derive button label ────────────────────────────────────────────────────
@@ -187,42 +176,48 @@ export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, e
     return 'Login';
   };
 
-  // Inputs are only blocked during loading or an active lock — NOT during email validation
   const inputDisabled  = loading || isLocked || isPermanentlyLocked;
-  // Submit button is also blocked while there's a validation error
   const buttonDisabled = inputDisabled || !!emailError;
+
+  // ── Derive alert heading label ─────────────────────────────────────────────
+  const getAlertHeading = () => {
+    if (isPermanentlyLocked) return 'Account Permanently Locked';
+    if (isLocked)            return 'Account Temporarily Locked';
+    return 'Sign-in Failed';
+  };
 
   // ── Shared form JSX ────────────────────────────────────────────────────────
   const renderForm = () => (
-    <form onSubmit={handleSubmit} className="modal-form">
+    <form onSubmit={handleSubmit} className="lm-form">
+
       {/* EMAIL */}
-      <div className="modal-form-group">
-        <label className="modal-form-label">Email Address</label>
-        <div className="modal-input-wrapper">
-          <Mail className="modal-input-icon" />
+      <div className="lm-form-group">
+        <label className="lm-label">Email Address</label>
+        <div className="lm-input-wrapper">
+          <Mail className="lm-input-icon" />
           <input
             type="email"
             value={email}
             onChange={handleEmailChange}
-            className={`modal-form-input ${emailError ? 'modal-input-error' : ''}`}
+            className={`lm-input ${emailError ? 'lm-input-error' : ''}`}
             placeholder="Enter your email"
             required
             disabled={inputDisabled}
           />
         </div>
-        {emailError && <span className="modal-error-text">{emailError}</span>}
+        {emailError && <span className="lm-field-error">{emailError}</span>}
       </div>
 
       {/* PASSWORD */}
-      <div className="modal-form-group">
-        <label className="modal-form-label">Password</label>
-        <div className="modal-input-wrapper">
-          <Lock className="modal-input-icon" />
+      <div className="lm-form-group">
+        <label className="lm-label">Password</label>
+        <div className="lm-input-wrapper">
+          <Lock className="lm-input-icon" />
           <input
             type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="modal-form-input modal-password-input"
+            className="lm-input lm-password-input"
             placeholder="Enter your password"
             required
             disabled={inputDisabled}
@@ -230,39 +225,58 @@ export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, e
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="modal-password-toggle"
+            className="lm-password-toggle"
             disabled={inputDisabled}
           >
             {showPassword
-              ? <EyeOff className="modal-toggle-icon" />
-              : <Eye className="modal-toggle-icon" />}
+              ? <EyeOff className="lm-toggle-icon" />
+              : <Eye className="lm-toggle-icon" />}
           </button>
         </div>
       </div>
 
-      {/* ── ALERT BANNER — shown for all error states ── */}
+      {/* ── REDESIGNED ALERT BANNER ── */}
       {error && (
-        <div className="login-alert-banner">
-          <span className="login-alert-message">{error}</span>
+        <div className="lm-alert-banner">
+          <div className="lm-alert-body">
+            {/* Icon */}
+            <div className="lm-alert-icon">
+              <AlertTriangle />
+            </div>
 
-          {/* Reset password CTA for tier 2 and permanent */}
-          {(isPermanentlyLocked || recommendReset) && (
-            <button
-              type="button"
-              className="login-alert-reset-btn"
-              onClick={handleForgotPassword}
-            >
-              → Reset your password now
-            </button>
-          )}
+            {/* Content */}
+            <div className="lm-alert-content">
+              <span className="lm-alert-heading">{getAlertHeading()}</span>
+              <span className="lm-alert-message">{error}</span>
+
+              {/* Live countdown badge */}
+              {isLocked && lockTimeRemaining > 0 && (
+                <div className="lm-alert-timer">
+                  <span className="lm-alert-timer-dot" />
+                  Try again in {formatTime(lockTimeRemaining)}
+                </div>
+              )}
+
+              {/* Reset CTA */}
+              {(isPermanentlyLocked || recommendReset) && (
+                <button
+                  type="button"
+                  className="lm-alert-reset-btn"
+                  onClick={handleForgotPassword}
+                >
+                  Reset your password
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       )}
 
       {/* FORGOT PASSWORD */}
-      <div className="modal-form-options">
+      <div className="lm-form-options">
         <button
           type="button"
-          className="modal-forgot-password"
+          className="lm-forgot-password"
           onClick={handleForgotPassword}
         >
           Forgot password?
@@ -272,18 +286,18 @@ export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, e
       {/* SUBMIT */}
       <button
         type="submit"
-        className="modal-submit-button"
+        className="lm-submit-btn"
         disabled={buttonDisabled}
       >
         {getButtonLabel()}
       </button>
 
-      <p className="modal-switch-text">
+      <p className="lm-switch-text">
         Don't have an account?{' '}
         <button
           type="button"
           onClick={onSwitchToSignup}
-          className="modal-switch-button"
+          className="lm-switch-btn"
         >
           Sign Up
         </button>
@@ -294,11 +308,11 @@ export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, e
   // ── Embedded (card) mode ───────────────────────────────────────────────────
   if (embedded) {
     return (
-      <div className="login-card-embedded">
-        <div className="modal-header-custom">
-          <img src={puacLogo} alt="PUAC Logo" className="modal-logo" />
-          <h1 className="modal-title-custom">Welcome Back</h1>
-          <p className="modal-subtitle-custom">Sign in to access your account</p>
+      <div className="lm-card-embedded">
+        <div className="lm-header">
+          <img src={puacLogo} alt="PUAC Logo" className="lm-logo" />
+          <h1 className="lm-title">Welcome Back</h1>
+          <p className="lm-subtitle">Sign in to access your account</p>
         </div>
         {renderForm()}
       </div>
@@ -309,16 +323,16 @@ export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, e
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay-custom" onClick={onClose}>
-      <div className="modal-container-custom" onClick={(e) => e.stopPropagation()}>
-        <button onClick={onClose} className="modal-close-btn">
-          <X className="close-icon" />
+    <div className="lm-overlay" onClick={onClose}>
+      <div className="lm-container" onClick={(e) => e.stopPropagation()}>
+        <button onClick={onClose} className="lm-close-btn">
+          <X className="lm-close-icon" />
         </button>
 
-        <div className="modal-header-custom">
-          <img src={puacLogo} alt="PUAC Logo" className="modal-logo" />
-          <h1 className="modal-title-custom">Welcome Back</h1>
-          <p className="modal-subtitle-custom">Sign in to access your account</p>
+        <div className="lm-header">
+          <img src={puacLogo} alt="PUAC Logo" className="lm-logo" />
+          <h1 className="lm-title">Welcome Back</h1>
+          <p className="lm-subtitle">Sign in to access your account</p>
         </div>
 
         {renderForm()}

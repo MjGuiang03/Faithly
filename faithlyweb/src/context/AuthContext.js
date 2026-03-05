@@ -35,14 +35,8 @@ export const AuthProvider = ({ children }) => {
 
       const data = await safeJSON(res);
 
-      // ✅ Do NOT throw — return raw data so LoginModal can read
-      //    locked / remainingSeconds / permanent / recommendReset fields
       if (!res.ok) {
-        return {
-          success: false,
-          message: data.message || 'Login failed',
-          data               // ← full server payload passed back to LoginModal
-        };
+        return { success: false, message: data.message || 'Login failed', data };
       }
 
       localStorage.setItem('token', data.token);
@@ -50,9 +44,7 @@ export const AuthProvider = ({ children }) => {
       setProfile(data.user);
       toast.success('Signed in successfully');
       return { success: true };
-
     } catch (err) {
-      // Only fires on network errors / JSON parse failures
       toast.error(err.message);
       return { success: false, message: err.message, data: {} };
     } finally {
@@ -132,62 +124,74 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  /* ---------- RESET PASSWORD ---------- */
+  /* ---------- RESET PASSWORD - STEP 1: Request OTP ---------- */
   const resetPassword = async (email) => {
     try {
-      const res = await fetch(`${API}/api/reset-password-request`, {
+      const res  = await fetch(`${API}/api/reset-password-request`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ email })
       });
 
       const data = await safeJSON(res);
-      if (!res.ok) throw new Error(data.message || 'Failed to send OTP');
+
+      if (!res.ok) {
+        if (res.status !== 429) toast.error(data.message || 'Failed to send OTP');
+        return { success: false, retryAfter: data.retryAfter || 0 };
+      }
 
       toast.success('OTP sent to your email');
       return { success: true };
     } catch (err) {
       toast.error(err.message);
-      return { success: false, error: err };
+      return { success: false, retryAfter: 0 };
     }
   };
 
-  /* ---------- VERIFY PASSWORD RESET OTP ---------- */
+  /* ---------- RESET PASSWORD - STEP 2: Verify OTP ---------- */
   const verifyResetOTP = async (email, otp) => {
     try {
-      const res = await fetch(`${API}/api/reset-password-verify-otp`, {
+      const res  = await fetch(`${API}/api/reset-password-verify-otp`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ email, otp })
       });
 
       const data = await safeJSON(res);
-      if (!res.ok) throw new Error(data.message || 'Invalid OTP');
+
+      if (!res.ok) {
+        if (res.status !== 429) toast.error(data.message || 'Invalid OTP');
+        return { success: false, retryAfter: data.retryAfter || 0 };
+      }
 
       return { success: true };
     } catch (err) {
       toast.error(err.message);
-      return { success: false, error: err };
+      return { success: false, retryAfter: 0 };
     }
   };
 
-  /* ---------- UPDATE PASSWORD AFTER RESET ---------- */
+  /* ---------- RESET PASSWORD - STEP 3: Update Password ---------- */
   const updatePasswordWithOTP = async (email, otp, newPassword) => {
     try {
-      const res = await fetch(`${API}/api/reset-password-update`, {
+      const res  = await fetch(`${API}/api/reset-password-update`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ email, otp, newPassword })
       });
 
       const data = await safeJSON(res);
-      if (!res.ok) throw new Error(data.message || 'Failed to update password');
+
+      if (!res.ok) {
+        if (res.status !== 429) toast.error(data.message || 'Failed to update password');
+        return { success: false, retryAfter: data.retryAfter || 0 };
+      }
 
       toast.success('Password updated successfully');
       return { success: true };
     } catch (err) {
       toast.error(err.message);
-      return { success: false, error: err };
+      return { success: false, retryAfter: 0 };
     }
   };
 
@@ -250,8 +254,8 @@ export const AuthProvider = ({ children }) => {
           email:    formData.email,
           fullName: formData.fullName,
           phone:    formData.phone,
-          branch:   formData.branch,
-          position: formData.position
+          branch:   formData.branch,   // community → branch in the DB
+          position: formData.position,
         })
       });
 
@@ -262,20 +266,80 @@ export const AuthProvider = ({ children }) => {
         ...profile,
         ...data.user,
         fullName: data.user.fullName || formData.fullName,
-        email:    data.user.email    || formData.email,
+        email:    data.user.email    || formData.email    || profile?.email,
         phone:    data.user.phone    || formData.phone,
         branch:   data.user.branch   || formData.branch,
-        position: data.user.position || formData.position
+        position: data.user.position || formData.position,
       };
 
       setProfile(updatedProfile);
       setUser(updatedProfile);
+      toast.success('Profile updated successfully');
       return { success: true };
     } catch (err) {
       toast.error(err.message);
-      return { success: false, error: err };
+      return { success: false, message: err.message, error: err };
     } finally {
       setLoading(false);
+    }
+  };
+
+  /* ---------- REQUEST EMAIL CHANGE (sends OTP to NEW email) ---------- */
+  const requestEmailChange = async (newEmail) => {
+    try {
+      const res = await fetch(`${API}/api/request-email-change`, {
+        method:  'POST',
+        headers: {
+          'Content-Type':  'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({ newEmail }),
+      });
+
+      const data = await safeJSON(res);
+
+      if (!res.ok) {
+        return { success: false, message: data.message || 'Failed to send verification email' };
+      }
+
+      return { success: true, message: data.message };
+    } catch (err) {
+      return { success: false, message: err.message || 'Something went wrong' };
+    }
+  };
+
+  /* ---------- VERIFY EMAIL CHANGE OTP + COMMIT NEW EMAIL ---------- */
+  const verifyEmailChange = async (newEmail, otp) => {
+    try {
+      const res = await fetch(`${API}/api/verify-email-change`, {
+        method:  'POST',
+        headers: {
+          'Content-Type':  'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({ otp }),
+      });
+
+      const data = await safeJSON(res);
+
+      if (!res.ok) {
+        return { success: false, message: data.message || 'Invalid or expired OTP' };
+      }
+
+      // Server returns a new token because the email (JWT subject) changed
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+      }
+
+      // Update local user / profile state with the new email
+      const updatedEmail = data.newEmail || newEmail;
+      setUser(prev    => prev    ? { ...prev,    email: updatedEmail } : prev);
+      setProfile(prev => prev    ? { ...prev,    email: updatedEmail } : prev);
+
+      toast.success('Email updated successfully');
+      return { success: true };
+    } catch (err) {
+      return { success: false, message: err.message || 'Verification failed' };
     }
   };
 
@@ -292,8 +356,10 @@ export const AuthProvider = ({ children }) => {
       verifyResetOTP,
       updatePasswordWithOTP,
       updateProfile,
+      requestEmailChange,
+      verifyEmailChange,
       signOut,
-      deleteAccount
+      deleteAccount,
     }}>
       {children}
     </AuthContext.Provider>

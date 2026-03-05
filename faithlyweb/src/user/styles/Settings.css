@@ -34,21 +34,10 @@
   flex-shrink: 0;
 }
 
-.section-icon-box.notifications-icon {
-  background: #dbeafe;
-}
-
-.section-icon-box.security-icon {
-  background: #dcfce7;
-}
-
-.section-icon-box.preferences-icon {
-  background: #f3e8ff;
-}
-
-.section-icon-box.payment-icon {
-  background: #fef3c7;
-}
+.section-icon-box.notifications-icon { background: #dbeafe; }
+.section-icon-box.security-icon      { background: #dcfce7; }
+.section-icon-box.preferences-icon   { background: #f3e8ff; }
+.section-icon-box.payment-icon       { background: #fef3c7; }
 
 .section-icon {
   width: 20px;
@@ -128,18 +117,11 @@
   cursor: pointer;
 }
 
-.toggle-switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
 
 .toggle-slider {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 0; left: 0; right: 0; bottom: 0;
   background-color: #d1d5dc;
   border-radius: 26843500px;
   transition: 0.3s;
@@ -157,13 +139,8 @@
   transition: 0.3s;
 }
 
-.toggle-switch input:checked + .toggle-slider {
-  background-color: #155dfc;
-}
-
-.toggle-switch input:checked + .toggle-slider:before {
-  transform: translateX(24px);
-}
+.toggle-switch input:checked + .toggle-slider { background-color: #155dfc; }
+.toggle-switch input:checked + .toggle-slider:before { transform: translateX(24px); }
 
 /* Notification Preferences */
 .notification-preferences {
@@ -216,16 +193,8 @@
   gap: 12px;
 }
 
-.setting-item-icon {
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
-}
-
-.setting-item-icon svg {
-  width: 100%;
-  height: 100%;
-}
+.setting-item-icon { width: 20px; height: 20px; flex-shrink: 0; }
+.setting-item-icon svg { width: 100%; height: 100%; }
 
 .setting-item-content {
   flex: 1;
@@ -262,20 +231,11 @@
   transition: opacity 0.2s;
 }
 
-.link-button:hover {
-  opacity: 0.8;
-}
-
-.link-button.danger {
-  color: #ef4444;
-}
+.link-button:hover { opacity: 0.8; }
+.link-button.danger { color: #ef4444; }
 
 /* Form Group */
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
+.form-group { display: flex; flex-direction: column; gap: 8px; }
 
 .form-label {
   font-size: 14px;
@@ -299,9 +259,7 @@
   cursor: pointer;
 }
 
-.form-select:focus {
-  border-color: #155dfc;
-}
+.form-select:focus { border-color: #155dfc; }
 
 /* Payment Card Item */
 .payment-card-item {
@@ -313,16 +271,8 @@
   gap: 12px;
 }
 
-.payment-card-icon {
-  width: 32px;
-  height: 24px;
-  flex-shrink: 0;
-}
-
-.payment-card-icon svg {
-  width: 100%;
-  height: 100%;
-}
+.payment-card-icon { width: 32px; height: 24px; flex-shrink: 0; }
+.payment-card-icon svg { width: 100%; height: 100%; }
 
 .payment-card-content {
   flex: 1;
@@ -386,9 +336,7 @@
   transition: background 0.2s;
 }
 
-.save-settings-btn:hover {
-  background: #1246d1;
-}
+.save-settings-btn:hover { background: #1246d1; }
 
 .reset-btn {
   height: 48px;
@@ -408,27 +356,502 @@
   background: #f9fafb;
 }
 
-/* Responsive Design */
+/* ============================================================
+   PERSONAL INFORMATION SECTION - REVISED
+   ============================================================ */
+
+/* Override gap for the PI section — card sits closer to header */
+.pi-section {
+  gap: 16px;
+}
+
+/* Section header — no divider, icon in light blue box */
+.pi-section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pi-icon-box {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #dbeafe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── Blue Profile Card with Upload ─────────────────────────────────── */
+.pi-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 60%, #1e40af 100%);
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+
+/* Avatar wrapper with upload functionality */
+.pi-card-avatar-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* Avatar circle */
+.pi-card-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.pi-card-avatar-wrapper:hover .pi-card-avatar {
+  transform: scale(1.05);
+}
+
+/* Camera badge - only visible when editing */
+.pi-card-avatar-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #10b981;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2.5px solid #fff;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.4);
+  z-index: 1;
+  transition: all 0.2s ease;
+}
+
+.pi-card-avatar-wrapper:hover .pi-card-avatar-badge {
+  transform: scale(1.1);
+  background: #059669;
+}
+
+/* Name / email / badges column */
+.pi-card-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pi-card-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  font-family: Arial, sans-serif;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pi-card-email {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.78);
+  font-family: Arial, sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pi-card-badges {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.pi-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: Arial, sans-serif;
+}
+
+.pi-badge-level {
+  background: rgba(0, 0, 0, 0.28);
+  color: #ffffff;
+}
+
+.pi-badge-member {
+  background: rgba(0, 0, 0, 0.22);
+  color: #ffffff;
+}
+
+/* Action buttons (right side of card) */
+.pi-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Edit Profile button — white pill */
+.pi-btn-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: white;
+  border: none;
+  border-radius: 8px;
+  color: #155dfc;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: Arial, sans-serif;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  white-space: nowrap;
+}
+
+.pi-btn-edit:hover {
+  background: #f0f7ff;
+  transform: translateY(-1px);
+}
+
+/* Cancel button */
+.pi-btn-cancel {
+  padding: 7px 14px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: Arial, sans-serif;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.pi-btn-cancel:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.pi-btn-cancel:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* Save Changes button */
+.pi-btn-save {
+  padding: 7px 16px;
+  background: #ffffff;
+  border: none;
+  border-radius: 8px;
+  color: #1d4ed8;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: Arial, sans-serif;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  white-space: nowrap;
+}
+
+.pi-btn-save:hover:not(:disabled) {
+  background: #eff6ff;
+  transform: translateY(-1px);
+}
+
+.pi-btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ── Edit Form ─────────────────────────────────────────── */
+.pi-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: pi-form-in 0.2s ease;
+}
+
+@keyframes pi-form-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* "Editing your profile" notice */
+.pi-edit-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 13px;
+  color: #155dfc;
+  font-family: Arial, sans-serif;
+  font-style: italic;
+}
+
+/* 2-column grid */
+.pi-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 24px;
+}
+
+.pi-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Full-width field */
+.pi-form-field-full {
+  grid-column: 1 / -1;
+}
+
+/* Uppercase small label (like in the image) */
+.pi-form-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #6b7280;
+  font-family: Arial, sans-serif;
+  text-transform: uppercase;
+}
+
+/* Standard input */
+.pi-form-input {
+  width: 100%;
+  padding: 9px 12px;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #101828;
+  font-family: Arial, sans-serif;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.pi-form-input:focus {
+  border-color: #155dfc;
+  box-shadow: 0 0 0 3px rgba(21, 93, 252, 0.08);
+}
+
+/* Select variant of the input */
+.pi-form-select {
+  appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 6L8 10L12 6' stroke='%236b7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 32px;
+}
+
+/* Read-only text display (no border, looks like plain text) - REVISED */
+.pi-readonly-text {
+  padding: 8px 0;
+  color: #374151;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  min-height: 36px;
+}
+
+.pi-readonly-text svg {
+  flex-shrink: 0;
+}
+
+.pi-readonly-text span {
+  line-height: 1.5;
+}
+
+/* Readonly note - now appears once below both fields - REVISED */
+.pi-readonly-note {
+  font-size: 11px;
+  color: #9ca3af;
+  font-family: Arial, sans-serif;
+  font-style: italic;
+  text-align: center;
+  margin-top: -8px;
+}
+
+/* Profile photo field */
+.pi-photo-field {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+/* Blue "select" button attached to left of input */
+.pi-photo-select-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 9px 12px;
+  background: #155dfc;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: Arial, sans-serif;
+  border-radius: 8px 0 0 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.pi-photo-select-btn:hover { background: #1246d1; }
+
+.pi-photo-input-hidden {
+  display: none;
+}
+
+/* Filename input — attached right */
+.pi-photo-filename {
+  border-radius: 0 8px 8px 0;
+  border-left: none;
+  flex: 1;
+}
+
+.pi-photo-filename:focus {
+  border-left: none;
+}
+
+/* Floating Chat Button */
+.chat-button {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #155dfc 0%, #1246d1 100%);
+  border: none;
+  box-shadow: 0 4px 12px rgba(21, 93, 252, 0.3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.chat-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(21, 93, 252, 0.4);
+}
+
+.chat-button svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Settings Header */
+.settings-header {
+  margin-bottom: 24px;
+}
+
+.page-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #101828;
+  margin: 0 0 8px 0;
+  font-family: Arial, sans-serif;
+}
+
+.page-subtitle {
+  font-size: 16px;
+  color: #6b7280;
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+/* Main Content Layout */
+.main-content {
+  flex: 1;
+  padding: 32px;
+  overflow-y: auto;
+  background: #f9fafb;
+}
+
+.home-layout {
+  display: flex;
+  height: 100vh;
+  background: #f9fafb;
+}
+
+/* ── Responsive ────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .settings-container {
-    max-width: 100%;
-  }
+  .settings-container { max-width: 100%; }
 
   .toggle-setting,
-  .setting-item {
-    flex-direction: column;
-    align-items: flex-start;
+  .setting-item { flex-direction: column; align-items: flex-start; }
+
+  .toggle-switch { align-self: flex-start; }
+
+  .settings-actions { flex-direction: column; }
+  .reset-btn { width: 100%; }
+
+  .pi-form-grid { grid-template-columns: 1fr; }
+
+  .pi-card {
+    flex-wrap: wrap;
+    gap: 12px;
   }
 
-  .toggle-switch {
-    align-self: flex-start;
-  }
-
-  .settings-actions {
-    flex-direction: column;
-  }
-
-  .reset-btn {
+  .pi-card-actions {
     width: 100%;
+    justify-content: flex-end;
+  }
+  
+  .main-content {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pi-card { padding: 14px 16px; }
+  .pi-btn-edit,
+  .pi-btn-cancel,
+  .pi-btn-save { font-size: 12px; padding: 6px 12px; }
+  
+  .pi-card-avatar {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .pi-card-avatar img {
+    width: 48px !important;
+    height: 48px !important;
+  }
+  
+  .pi-card-avatar-badge {
+    width: 22px;
+    height: 22px;
+  }
+  
+  .chat-button {
+    width: 50px;
+    height: 50px;
+    bottom: 20px;
+    right: 20px;
+  }
+  
+  .chat-button svg {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .main-content {
+    padding: 16px;
   }
 }

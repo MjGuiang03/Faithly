@@ -7,12 +7,23 @@ import nodemailer from 'nodemailer';
 import { MongoClient, ObjectId } from 'mongodb';
 import dotenv from 'dotenv';
 import { body, validationResult } from 'express-validator';
+import helmet from 'helmet';
+import mongoSanitize from 'express-mongo-sanitize';
 
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
 
 const app = express();
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  message: { message: 'Too many requests. Please slow down.' }
+});
+
+app.use(globalLimiter);
+app.use(helmet());
+app.use(mongoSanitize());
 app.use(cors());
 app.use(express.json({ limit: '10kb' }));
 
@@ -41,10 +52,31 @@ const resendOtpLimiter = rateLimit({
   message: { message: 'Too many resend requests. Please wait before trying again.' }
 });
 
-const resetPasswordLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5,
-  message: { message: 'Too many password reset attempts. Please try again later.' }
+// Step 1 – request OTP: 5 sends per 15 min
+const resetRequestLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, max: 5,
+  standardHeaders: true, legacyHeaders: false,
+  handler: (req, res, next, options) => {
+    res.status(429).json({ message: 'Too many requests. Please wait 15 minutes before trying again.', retryAfter: options.windowMs / 1000 });
+  }
+});
+
+// Step 2 – verify OTP: more attempts allowed for typos
+const resetVerifyLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, max: 10,
+  standardHeaders: true, legacyHeaders: false,
+  handler: (req, res, next, options) => {
+    res.status(429).json({ message: 'Too many OTP attempts. Please wait 15 minutes before trying again.', retryAfter: options.windowMs / 1000 });
+  }
+});
+
+// Step 3 – update password: allow retries for validation errors
+const resetUpdateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, max: 10,
+  standardHeaders: true, legacyHeaders: false,
+  handler: (req, res, next, options) => {
+    res.status(429).json({ message: 'Too many password update attempts. Please wait 15 minutes before trying again.', retryAfter: options.windowMs / 1000 });
+  }
 });
 
 /* ================== VALIDATION HELPER ================== */
@@ -77,13 +109,20 @@ const authenticateAdmin = async (req, res, next) => {
   if (!authHeader) return res.status(401).json({ message: 'No token provided' });
 
   const token = authHeader.split(' ')[1];
+
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
+
+    if (decoded.role !== 'admin') {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+
     const admin = await admins.findOne({ email: decoded.email });
     if (!admin) return res.status(403).json({ message: 'Not authorized' });
 
     req.admin = admin;
     next();
+
   } catch (err) {
     return res.status(401).json({ message: 'Invalid or expired token' });
   }
@@ -105,17 +144,35 @@ const attendance = db.collection('attendance');
 
 console.log('✅ Connected to MongoDB');
 
+/* ================== DATABASE INDEXES ================== */
+
+await users.createIndex({ email: 1 }, { unique: true });
+await otps.createIndex({ email: 1 });
+await loans.createIndex({ email: 1 });
+await loans.createIndex({ loanId: 1 });
+await attendance.createIndex({ email: 1 });
+
+/* OTP AUTO DELETE AFTER EXPIRATION */
+await otps.createIndex(
+  { expiresAt: 1 },
+  { expireAfterSeconds: 0 }
+);
+
 /* ================== CREATE DEFAULT ADMIN ================== */
-const defaultAdmin = await admins.findOne({ email: 'admin' });
+const DEFAULT_ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+const DEFAULT_ADMIN_PASS = process.env.ADMIN_PASS;
+
+const defaultAdmin = await admins.findOne({ email: DEFAULT_ADMIN_EMAIL });
+
 if (!defaultAdmin) {
-  const adminPasswordHash = await bcrypt.hash('admin', 10);
+  const adminPasswordHash = await bcrypt.hash(DEFAULT_ADMIN_PASS, 12);
+
   await admins.insertOne({
-    email: 'admin',
+    email: DEFAULT_ADMIN_EMAIL,
     passwordHash: adminPasswordHash,
     role: 'admin',
     createdAt: new Date()
   });
-  console.log('✅ Default admin account created (email: admin, password: admin)');
 }
 
 /* ================== EMAIL ================== */
@@ -204,7 +261,7 @@ app.post('/api/register',
           });
         } else {
           return res.status(400).json({
-            message: 'Email already exists. Please login or use a different email.'
+            message: 'Unable to complete registration. Please try a different email.'
           });
         }
       }
@@ -289,7 +346,7 @@ app.post('/api/resend-otp',
       const { email } = req.body;
 
       const user = await users.findOne({ email });
-      if (!user) return res.status(404).json({ message: 'User not found' });
+if (!user) return res.status(400).json({ message: 'Invalid request' });
       if (user.isVerified) return res.status(400).json({ message: 'Email already verified' });
 
       const otp = generateOTP();
@@ -330,12 +387,18 @@ app.post('/api/resend-otp',
   Successful login → resets all counters
   Password reset   → resets all counters
 */
-app.post('/api/login', async (req, res) => {
+app.post('/api/login', loginLimiter,
+  validate([
+    body('email').trim().isEmail().withMessage('Invalid email'),
+    body('password').notEmpty().withMessage('Password is required')
+  ]),
+  async (req, res) => {
+
   try {
     const { email, password } = req.body;
 
     const user = await users.findOne({ email });
-    if (!user) return res.status(404).json({ message: 'User not found' });
+if (!user) return res.status(400).json({ message: 'Invalid credentials' });
 
     if (user.isDeleted) {
       return res.status(403).json({
@@ -454,10 +517,14 @@ app.post('/api/login', async (req, res) => {
     );
 
     const token = jwt.sign(
-      { email: user.email },
-      JWT_SECRET,
-      { expiresIn: '1h' }
-    );
+  { email: user.email, role: 'user' },
+  JWT_SECRET,
+  {
+    expiresIn: '1h',
+    issuer: 'faithly-api',
+    audience: 'faithly-users'
+  }
+);
 
     res.status(200).json({
       message: 'Login successful',
@@ -522,7 +589,7 @@ app.put('/api/update-profile', authenticateUser, async (req, res) => {
 
 /* ================== PASSWORD RESET - REQUEST OTP ================== */
 app.post('/api/reset-password-request',
-  resetPasswordLimiter,
+  resetRequestLimiter,
   validate([
     body('email').trim().isEmail().withMessage('Invalid email'),
   ]),
@@ -531,7 +598,7 @@ app.post('/api/reset-password-request',
       const { email } = req.body;
 
       const user = await users.findOne({ email });
-      if (!user) return res.status(404).json({ message: 'User not found' });
+if (!user) return res.status(400).json({ message: 'Invalid credentials' });
 
       const otp = generateOTP();
       await otps.deleteMany({ email, type: 'reset-password' });
@@ -559,7 +626,7 @@ app.post('/api/reset-password-request',
 
 /* ================== PASSWORD RESET - VERIFY OTP ================== */
 app.post('/api/reset-password-verify-otp',
-  resetPasswordLimiter,
+  resetVerifyLimiter,
   validate([
     body('email').trim().isEmail().withMessage('Invalid email'),
     body('otp').trim().matches(/^\d{6}$/).withMessage('OTP must be 6 digits'),
@@ -587,7 +654,7 @@ app.post('/api/reset-password-verify-otp',
 
 /* ================== PASSWORD RESET - UPDATE PASSWORD ================== */
 app.post('/api/reset-password-update',
-  resetPasswordLimiter,
+  resetUpdateLimiter,
   validate([
     body('email').trim().isEmail().withMessage('Invalid email'),
     body('otp').trim().matches(/^\d{6}$/).withMessage('OTP must be 6 digits'),
@@ -666,21 +733,31 @@ app.delete('/api/delete-account', authenticateUser, async (req, res) => {
 });
 
 /* ================== ADMIN LOGIN ================== */
-app.post('/api/admin/login', async (req, res) => {
+app.post('/api/admin/login',
+  loginLimiter,
+  validate([
+    body('email').trim().notEmpty().withMessage('Email required'),
+    body('password').notEmpty().withMessage('Password required')
+  ]),
+  async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const admin = await admins.findOne({ email });
-    if (!admin) return res.status(404).json({ message: 'Invalid admin credentials' });
+   const admin = await admins.findOne({ email });
+if (!admin) return res.status(400).json({ message: 'Invalid credentials' });
 
-    const match = await bcrypt.compare(password, admin.passwordHash);
-    if (!match) return res.status(400).json({ message: 'Invalid admin credentials' });
+const match = await bcrypt.compare(password, admin.passwordHash);
+if (!match) return res.status(400).json({ message: 'Invalid credentials' });
 
     const token = jwt.sign(
-      { email: admin.email, role: 'admin' },
-      JWT_SECRET,
-      { expiresIn: '2h' }
-    );
+  { email: admin.email, role: 'admin' },
+  JWT_SECRET,
+  {
+    expiresIn: '2h',
+    issuer: 'faithly-api',
+    audience: 'faithly-admin'
+  }
+);
 
     res.status(200).json({
       message: 'Admin login successful',
@@ -1266,6 +1343,171 @@ app.get('/api/admin/attendance', authenticateAdmin, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Failed to fetch attendance' });
+  }
+});
+
+/* ================== REQUEST EMAIL CHANGE (sends OTP to NEW email) ======= */
+app.post('/api/request-email-change', authenticateUser, async (req, res) => {
+  try {
+    const currentEmail = req.user.email;
+    const { newEmail } = req.body;
+
+    if (!newEmail) return res.status(400).json({ success: false, message: 'New email is required' });
+
+    const normalizedNew = newEmail.trim().toLowerCase();
+
+    // Same as current?
+    if (normalizedNew === currentEmail.toLowerCase()) {
+      return res.status(400).json({ success: false, message: 'New email is the same as your current email' });
+    }
+
+    // Daily email change limit — 1 per day
+const startOfDay = new Date();
+startOfDay.setHours(0, 0, 0, 0);
+
+const currentUser = await users.findOne({ email: currentEmail });
+if (currentUser?.lastEmailChangeAt) {
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
+  if (new Date(currentUser.lastEmailChangeAt) >= startOfDay) {
+    return res.status(429).json({
+      success: false,
+      message: 'You can only change your email once per day. Please try again tomorrow.'
+    });
+  }
+}
+
+    // Already taken?
+    const existing = await users.findOne({ email: normalizedNew });
+    if (existing) {
+      return res.status(400).json({ success: false, message: 'This email is already in use by another account' });
+    }
+
+    // Generate & send OTP to the NEW email address
+    const otp = generateOTP();
+    await otps.deleteMany({ email: currentEmail, type: 'change-email' });
+    await otps.insertOne({
+  email:      currentEmail,
+  newEmail:   normalizedNew,
+  otp,
+  type:       'change-email',
+  expiresAt:  new Date(Date.now() + 15 * 60 * 1000),
+  createdAt:  new Date(),   // ← this is what the limit check queries against
+  used:       false,
+});
+
+    await transporter.sendMail({
+      from:    `"Faithly" <${process.env.EMAIL_USER}>`,
+      to:      normalizedNew,
+      subject: 'Confirm Your New Email Address',
+      html: `
+        <h2>Email Change Request</h2>
+        <p>We received a request to change your Faithly account email to this address.</p>
+        <h1 style="letter-spacing:0.3em">${otp}</h1>
+        <p>This code expires in <strong>15 minutes</strong>. If you did not request this, please ignore this email.</p>
+      `,
+    });
+
+    res.json({ success: true, message: 'Verification code sent to your new email address' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to send verification email' });
+  }
+});
+
+/* ================== VERIFY EMAIL CHANGE OTP + UPDATE EMAIL ============= */
+app.post('/api/verify-email-change', authenticateUser, async (req, res) => {
+  try {
+    const currentEmail = req.user.email;
+    const { otp } = req.body;
+
+    if (!otp) return res.status(400).json({ success: false, message: 'OTP is required' });
+
+    const record = await otps.findOne({
+      email:    currentEmail,
+      otp:      otp.trim(),
+      type:     'change-email',
+      expiresAt: { $gt: new Date() },
+    });
+
+    if (!record) {
+      return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
+    }
+
+    const newEmail = record.newEmail;
+
+    // Double-check new email is still available
+    const taken = await users.findOne({ email: newEmail });
+    if (taken) {
+      await otps.deleteMany({ email: currentEmail, type: 'change-email' });
+      return res.status(400).json({ success: false, message: 'This email was just taken by another account' });
+    }
+
+    // Update the user's email
+    await users.updateOne(
+  { email: currentEmail },
+  { $set: { email: newEmail, lastEmailChangeAt: new Date() } }
+);
+
+    // Clean up OTP
+    await otps.deleteMany({ email: currentEmail, type: 'change-email' });
+    
+    // Issue a new token with the updated email
+    const newToken = jwt.sign({ email: newEmail }, JWT_SECRET, { expiresIn: '1h' });
+
+    res.json({
+      success:  true,
+      message:  'Email updated successfully',
+      newEmail,
+      token:    newToken,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to verify email change' });
+  }
+});
+
+/* ================== UPDATE PROFILE (extended — includes community/branch) */
+// NOTE: This replaces the existing /api/update-profile route.
+// The existing route already handles branch; this version also accepts
+// dateOfBirth and ensures community (sent as `branch`) is saved.
+app.put('/api/update-profile', authenticateUser, async (req, res) => {
+  try {
+    const email = req.user.email;
+    const { fullName, phone, branch, position, dateOfBirth } = req.body;
+
+    const user = await users.findOne({ email });
+    
+
+    const updateData = {};
+    if (fullName    !== undefined) updateData.fullName    = fullName;
+    if (phone       !== undefined) updateData.phone       = phone;
+    if (branch      !== undefined) updateData.branch      = branch;      // community
+    if (position    !== undefined) updateData.position    = position;
+    if (dateOfBirth !== undefined) updateData.dateOfBirth = dateOfBirth;
+
+    await users.updateOne({ email }, { $set: updateData });
+
+    const updatedUser = await users.findOne({ email });
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile updated successfully',
+      user: {
+        email:       updatedUser.email,
+        fullName:    updatedUser.fullName,
+        phone:       updatedUser.phone,
+        branch:      updatedUser.branch,
+        position:    updatedUser.position,
+        gender:      updatedUser.gender,
+        birthday:    updatedUser.birthday,
+        dateOfBirth: updatedUser.dateOfBirth,
+        createdAt:   updatedUser.createdAt,
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to update profile' });
   }
 });
 

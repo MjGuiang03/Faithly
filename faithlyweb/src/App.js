@@ -16,7 +16,6 @@ import Donation from './user/pages/Donation';
 import Attendance from './user/pages/Attendance';
 import Branches from './user/pages/Branches';
 import Settings from './user/pages/Settings';
-import Profile from './user/pages/Profile';
 
 // Admin Pages
 import AdminLogin from './admin/pages/AdminLogin';
@@ -83,7 +82,6 @@ export default function App() {
           <Route path="/attendance" element={<ProtectedRoute><Attendance /></ProtectedRoute>} />
           <Route path="/branches"   element={<ProtectedRoute><Branches /></ProtectedRoute>} />
           <Route path="/settings"   element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-          <Route path="/profile"    element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
