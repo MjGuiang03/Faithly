@@ -1,31 +1,30 @@
-import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router';
-import { useAuth } from '../../context/AuthContext';
-import { Mail, ArrowLeft, Lock } from 'lucide-react';
-import '../styles/ResetPassword.css';
-import puacLogo from '../../assets/puaclogo.png';
+import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router";
+import { useAuth } from "../../context/AuthContext";
+import { Mail, Lock, ArrowLeft, Eye, EyeOff, X, AlertTriangle, CheckCircle } from "lucide-react";
+import puacLogo from "../../assets/puaclogo.png";
+import "../styles/ResetPassword.css";
 
-const API = process.env.REACT_APP_API_URL;
-
-/* ─── Password rule checker ─────────────────────────────────── */
 const RULES = [
-  { key: 'lower',  label: 'At least one lowercase letter', test: v => /[a-z]/.test(v) },
-  { key: 'min8',   label: 'Minimum 8 characters',          test: v => v.length >= 8    },
-  { key: 'upper',  label: 'At least one uppercase letter', test: v => /[A-Z]/.test(v) },
-  { key: 'number', label: 'At least one number',           test: v => /[0-9]/.test(v) },
-  { key: 'symbol', label: 'At least one symbol',           test: v => /[^A-Za-z0-9]/.test(v) },
+  { key: "lower", label: "At least one lowercase letter", test: v => /[a-z]/.test(v) },
+  { key: "upper", label: "At least one uppercase letter", test: v => /[A-Z]/.test(v) },
+  { key: "number", label: "At least one number",          test: v => /[0-9]/.test(v) },
+  { key: "symbol", label: "At least one symbol",          test: v => /[^A-Za-z0-9]/.test(v) },
+  { key: "min8",   label: "Minimum 8 characters",         test: v => v.length >= 8 },
 ];
 
-function PasswordRules({ password, show }) {
-  if (!show) return null;
+function allRulesPass(p) { return RULES.every(r => r.test(p)); }
+
+/* ── Password rules checklist ── */
+function PasswordRules({ password }) {
   return (
     <ul className="rp-rules-list">
-      {RULES.map(r => {
-        const pass = r.test(password);
+      {RULES.map(rule => {
+        const ok = rule.test(password);
         return (
-          <li key={r.key} className={`rp-rule ${pass ? 'rp-rule-pass' : 'rp-rule-fail'}`}>
-            <span className="rp-rule-icon">{pass ? '✓' : '✗'}</span>
-            {r.label}
+          <li key={rule.key} className={`rp-rule ${ok ? "rp-rule-pass" : "rp-rule-fail"}`}>
+            <span className="rp-rule-icon">{ok ? "✓" : "✗"}</span>
+            {rule.label}
           </li>
         );
       })}
@@ -33,65 +32,78 @@ function PasswordRules({ password, show }) {
   );
 }
 
-function allRulesPass(password) {
-  return RULES.every(r => r.test(password));
-}
-
-/* ─── Rate-limit countdown banner ───────────────────────────── */
+/* ── Rate-limit countdown banner ── */
 function RateLimitBanner({ seconds, onExpire }) {
   const [remaining, setRemaining] = useState(seconds);
 
   useEffect(() => {
     if (remaining <= 0) { onExpire(); return; }
-    const t = setInterval(() => setRemaining(r => {
-      if (r <= 1) { clearInterval(t); onExpire(); return 0; }
-      return r - 1;
-    }), 1000);
+    const t = setInterval(() => {
+      setRemaining(prev => { if (prev <= 1) { clearInterval(t); onExpire(); return 0; } return prev - 1; });
+    }, 1000);
     return () => clearInterval(t);
-  }, []);  // eslint-disable-line
+  }, []);
 
-  const mins = Math.floor(remaining / 60);
-  const secs = remaining % 60;
-  const label = mins > 0
-    ? `${mins}m ${String(secs).padStart(2, '0')}s`
-    : `${secs}s`;
+  const m = Math.floor(remaining / 60), s = remaining % 60;
 
   return (
-    <div className="rp-rate-limit-banner">
-      <span className="rp-rate-limit-icon">⏳</span>
-      <div>
-        <p className="rp-rate-limit-title">Too many attempts</p>
-        <p className="rp-rate-limit-msg">Please wait <strong>{label}</strong> before trying again.</p>
+    <div className="rp-alert-banner rp-alert-warning">
+      <div className="rp-alert-banner::before" />
+      <div className="rp-alert-body">
+        <div className="rp-alert-icon rp-alert-icon-warning">
+          <AlertTriangle size={16} />
+        </div>
+        <div className="rp-alert-content">
+          <span className="rp-alert-heading rp-alert-heading-warning">Too many attempts</span>
+          <span className="rp-alert-message rp-alert-message-warning">
+            Please wait <strong>{m > 0 ? `${m}m ${s}s` : `${s}s`}</strong> before trying again.
+          </span>
+        </div>
       </div>
     </div>
   );
 }
 
-export default function ResetPassword({ embedded = false, onBackToLogin }) {
-  const navigate = useNavigate();
+/* ═══════════════════════════════════════════
+   Main component
+   Props (modal mode):   isOpen, onClose
+   Props (page mode):    neither — standalone
+═══════════════════════════════════════════ */
+export default function ResetPassword({ isOpen, onClose }) {
+  const navigate  = useNavigate();
   const { resetPassword, verifyResetOTP, updatePasswordWithOTP } = useAuth();
 
   const [step,            setStep]            = useState(1);
-  const [email,           setEmail]           = useState('');
-  const [otp,             setOtp]             = useState(['', '', '', '', '', '']);
-  const [newPassword,     setNewPassword]     = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [email,           setEmail]           = useState("");
+  const [otp,             setOtp]             = useState(["","","","","",""]);
+  const [newPassword,     setNewPassword]     = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showNew,         setShowNew]         = useState(false);
+  const [showConfirm,     setShowConfirm]     = useState(false);
   const [loading,         setLoading]         = useState(false);
-  const [passwordFocused, setPasswordFocused] = useState(false);
-  const [rateLimitSecs,   setRateLimitSecs]   = useState(0); // >0 = rate-limited
+  const [rateLimitSecs,   setRateLimitSecs]   = useState(0);
+  const [successMsg,      setSuccessMsg]      = useState("");
 
   const otpRefs = useRef([]);
 
-  /* ── Rate-limit helper: wraps any auth call ── */
-  const withRateLimit = async (fn) => {
+  /* detect modal vs page mode */
+  const isModal = typeof isOpen !== "undefined";
+
+  const handleClose = () => {
+    if (isModal && onClose) onClose();
+    else navigate("/login");
+  };
+
+  const handleBack = () => {
+    if (step > 1) setStep(s => s - 1);
+    else handleClose();
+  };
+
+  const withRateLimit = async fn => {
     setRateLimitSecs(0);
     try {
       const result = await fn();
-      // If the auth context surfaced a 429 via result.retryAfter
-      if (result?.retryAfter) {
-        setRateLimitSecs(result.retryAfter);
-        return { success: false };
-      }
+      if (result?.retryAfter) { setRateLimitSecs(result.retryAfter); return { success: false }; }
       return result;
     } catch (err) {
       if (err?.retryAfter) setRateLimitSecs(err.retryAfter);
@@ -99,9 +111,9 @@ export default function ResetPassword({ embedded = false, onBackToLogin }) {
     }
   };
 
-  /* ── Step 1 ── */
-  const handleEmailSubmit = async (e) => {
-    if (e?.preventDefault) e.preventDefault();
+  /* Step 1 — send email */
+  const handleEmailSubmit = async e => {
+    e?.preventDefault();
     if (rateLimitSecs > 0) return;
     setLoading(true);
     const result = await withRateLimit(() => resetPassword(email));
@@ -109,265 +121,248 @@ export default function ResetPassword({ embedded = false, onBackToLogin }) {
     setLoading(false);
   };
 
-  /* ── OTP helpers ── */
-  const handleOTPChange = (index, value) => {
-    if (isNaN(value)) return;
-    const newOTP = [...otp];
-    newOTP[index] = value;
-    setOtp(newOTP);
-    if (value && index < 5) otpRefs.current[index + 1]?.focus();
+  /* OTP helpers */
+  const handleOTPChange = (i, val) => {
+    if (isNaN(val)) return;
+    const next = [...otp]; next[i] = val; setOtp(next);
+    if (val && i < 5) otpRefs.current[i + 1]?.focus();
   };
-  const handleOTPKeyDown = (index, e) => {
-    if (e.key === 'Backspace' && !otp[index] && index > 0) otpRefs.current[index - 1]?.focus();
+  const handleOTPKeyDown = (i, e) => {
+    if (e.key === "Backspace" && !otp[i] && i > 0) otpRefs.current[i - 1]?.focus();
   };
-  const handleOTPPaste = (e) => {
+  const handleOTPPaste = e => {
     e.preventDefault();
-    const pastedData = e.clipboardData.getData('text').slice(0, 6);
-    const newOTP = pastedData.split('');
-    while (newOTP.length < 6) newOTP.push('');
-    setOtp(newOTP);
+    const chars = e.clipboardData.getData("text").slice(0, 6).split("");
+    while (chars.length < 6) chars.push("");
+    setOtp(chars);
     otpRefs.current[5]?.focus();
   };
 
-  /* ── Step 2 ── */
-  const handleOTPSubmit = async (e) => {
+  /* Step 2 — verify OTP */
+  const handleOTPSubmit = async e => {
     e.preventDefault();
     if (rateLimitSecs > 0) return;
     setLoading(true);
-    const result = await withRateLimit(() => verifyResetOTP(email, otp.join('')));
+    const result = await withRateLimit(() => verifyResetOTP(email, otp.join("")));
     if (result.success) setStep(3);
     setLoading(false);
   };
 
-  /* ── Step 3 ── */
-  const handlePasswordSubmit = async (e) => {
+  /* Step 3 — new password */
+  const handlePasswordSubmit = async e => {
     e.preventDefault();
-    if (!allRulesPass(newPassword)) return;
-    if (newPassword !== confirmPassword) return;
-    if (rateLimitSecs > 0) return;
+    if (!allRulesPass(newPassword) || newPassword !== confirmPassword) return;
     setLoading(true);
-    const result = await withRateLimit(() => updatePasswordWithOTP(email, otp.join(''), newPassword));
+    const result = await withRateLimit(() => updatePasswordWithOTP(email, otp.join(""), newPassword));
     if (result.success) {
-      if (embedded && onBackToLogin) onBackToLogin();
-      else navigate('/login');
+      setSuccessMsg("Password updated successfully!");
+      setTimeout(() => { handleClose(); }, 1800);
     }
     setLoading(false);
   };
 
-  const handleBackButton = () => {
-    setRateLimitSecs(0);
-    if (step === 1) { if (embedded && onBackToLogin) onBackToLogin(); else navigate('/login'); }
-    else if (step === 2) setStep(1);
-    else if (step === 3) setStep(2);
-  };
+  /* ── shared step labels ── */
+  const steps = ["Email", "Verify", "Password"];
 
-  const isBlocked = rateLimitSecs > 0;
-
-  /* ════════════════════════════════════════════
-     EMBEDDED MODE
-  ════════════════════════════════════════════ */
-  if (embedded) {
+  /* ── inner content per step ── */
+  const renderContent = () => {
+    /* ─ Step 1 ─ */
     if (step === 1) return (
-      <div className="login-card-embedded">
-        <button onClick={handleBackButton} className="reset-back-button-embedded">
-          <ArrowLeft className="reset-back-icon" />
-        </button>
-        <div className="modal-header-custom">
-          <img src={puacLogo} alt="PUAC Logo" className="modal-logo" />
-          <h1 className="modal-title-custom">Reset Your Password</h1>
-          <p className="modal-subtitle-custom">Enter your email address and we'll send you a verification code</p>
+      <>
+        <div className="rp-header">
+          <img src={puacLogo} alt="PUAC Logo" className="rp-logo" />
+          <h1 className="rp-title">Reset Password</h1>
+          <p className="rp-subtitle">Enter your email and we'll send you a verification code</p>
         </div>
-        {isBlocked && <RateLimitBanner seconds={rateLimitSecs} onExpire={() => setRateLimitSecs(0)} />}
-        <form onSubmit={handleEmailSubmit} className="modal-form">
-          <div className="modal-form-group">
-            <label className="modal-form-label">Email Address</label>
-            <div className="modal-input-wrapper">
-              <Mail className="modal-input-icon" />
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Enter your email" required className="modal-form-input" disabled={loading || isBlocked} />
+
+        {rateLimitSecs > 0 && <RateLimitBanner seconds={rateLimitSecs} onExpire={() => setRateLimitSecs(0)} />}
+
+        <form onSubmit={handleEmailSubmit} className="rp-form">
+          <div className="rp-form-group">
+            <label className="rp-label">Email Address</label>
+            <div className="rp-input-wrapper">
+              <Mail className="rp-input-icon" />
+              <input
+                type="email"
+                className="rp-input"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="Enter your email"
+                required
+                disabled={loading || rateLimitSecs > 0}
+              />
             </div>
           </div>
-          <button type="submit" className="modal-submit-button" disabled={loading || isBlocked}>
-            {loading ? 'Sending...' : 'Send Verification Code'}
+
+          <button type="submit" className="rp-submit-btn" disabled={loading || rateLimitSecs > 0}>
+            {loading ? "Sending..." : "Send Verification Code"}
           </button>
         </form>
-      </div>
+      </>
     );
 
+    /* ─ Step 2 ─ */
     if (step === 2) return (
-      <div className="login-card-embedded">
-        <button onClick={handleBackButton} className="reset-back-button-embedded">
-          <ArrowLeft className="reset-back-icon" />
-        </button>
-        <div className="modal-header-custom">
-          <img src={puacLogo} alt="PUAC Logo" className="modal-logo" />
-          <h1 className="modal-title-custom">Enter Verification Code</h1>
-          <p className="modal-subtitle-custom">We sent a 6-digit code to</p>
-          <p className="modal-subtitle-custom" style={{ fontWeight: '600', color: '#155DFC', marginTop: '0.25rem' }}>{email}</p>
+      <>
+        <div className="rp-header">
+          <img src={puacLogo} alt="PUAC Logo" className="rp-logo" />
+          <h1 className="rp-title">Enter Verification Code</h1>
+          <p className="rp-subtitle">We sent a 6-digit code to <strong>{email}</strong></p>
         </div>
-        {isBlocked && <RateLimitBanner seconds={rateLimitSecs} onExpire={() => setRateLimitSecs(0)} />}
-        <form onSubmit={handleOTPSubmit} className="modal-form">
-          <div className="reset-otp-container">
-            {otp.map((digit, index) => (
-              <input key={index} ref={el => (otpRefs.current[index] = el)} type="text" maxLength="1" value={digit}
-                onChange={e => handleOTPChange(index, e.target.value)} onKeyDown={e => handleOTPKeyDown(index, e)}
-                onPaste={handleOTPPaste} className="reset-otp-input-embedded" disabled={loading || isBlocked} />
+
+        {rateLimitSecs > 0 && <RateLimitBanner seconds={rateLimitSecs} onExpire={() => setRateLimitSecs(0)} />}
+
+        <form onSubmit={handleOTPSubmit} className="rp-form">
+          <div className="rp-otp-container">
+            {otp.map((digit, i) => (
+              <input
+                key={i}
+                ref={el => (otpRefs.current[i] = el)}
+                type="text"
+                inputMode="numeric"
+                maxLength="1"
+                value={digit}
+                onChange={e => handleOTPChange(i, e.target.value)}
+                onKeyDown={e => handleOTPKeyDown(i, e)}
+                onPaste={handleOTPPaste}
+                className="rp-otp-input"
+                disabled={loading || rateLimitSecs > 0}
+              />
             ))}
           </div>
-          <button type="button" onClick={handleEmailSubmit} className="modal-forgot-password" disabled={loading || isBlocked}>Resend Code</button>
-          <button type="submit" className="modal-submit-button" disabled={loading || isBlocked}>
-            {loading ? 'Verifying...' : 'Verify Code'}
+
+          <button
+            type="button"
+            onClick={handleEmailSubmit}
+            className="rp-resend-btn"
+            disabled={loading || rateLimitSecs > 0}
+          >
+            Didn't receive a code? <span>Resend</span>
+          </button>
+
+          <button
+            type="submit"
+            className="rp-submit-btn"
+            disabled={loading || rateLimitSecs > 0 || otp.join("").length < 6}
+          >
+            {loading ? "Verifying..." : "Verify Code"}
           </button>
         </form>
-      </div>
+      </>
     );
 
+    /* ─ Step 3 ─ */
     return (
-      <div className="login-card-embedded">
-        <button onClick={handleBackButton} className="reset-back-button-embedded">
-          <ArrowLeft className="reset-back-icon" />
-        </button>
-        <div className="modal-header-custom">
-          <img src={puacLogo} alt="PUAC Logo" className="modal-logo" />
-          <h1 className="modal-title-custom">Create New Password</h1>
-          <p className="modal-subtitle-custom">Enter your new password below</p>
+      <>
+        <div className="rp-header">
+          <img src={puacLogo} alt="PUAC Logo" className="rp-logo" />
+          <h1 className="rp-title">Create New Password</h1>
+          <p className="rp-subtitle">Make it strong and memorable</p>
         </div>
-        {isBlocked && <RateLimitBanner seconds={rateLimitSecs} onExpire={() => setRateLimitSecs(0)} />}
-        <form onSubmit={handlePasswordSubmit} className="modal-form">
-          <div className="modal-form-group">
-            <label className="modal-form-label">New Password</label>
-            <div className="modal-input-wrapper">
-              <Lock className="modal-input-icon" />
-              <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)}
-                onFocus={() => setPasswordFocused(true)} placeholder="Enter new password" required
-                className="modal-form-input" disabled={loading || isBlocked} />
-            </div>
-            <PasswordRules password={newPassword} show={passwordFocused || newPassword.length > 0} />
+
+        {successMsg && (
+          <div className="rp-success-banner">
+            <CheckCircle size={16} />
+            <span>{successMsg}</span>
           </div>
-          <div className="modal-form-group">
-            <label className="modal-form-label">Confirm Password</label>
-            <div className="modal-input-wrapper">
-              <Lock className="modal-input-icon" />
-              <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
-                placeholder="Confirm new password" required
-                className={`modal-form-input ${confirmPassword && confirmPassword !== newPassword ? 'rp-input-mismatch' : ''}`}
-                disabled={loading || isBlocked} />
+        )}
+
+        <form onSubmit={handlePasswordSubmit} className="rp-form">
+          <div className="rp-form-group">
+            <label className="rp-label">New Password</label>
+            <div className="rp-input-wrapper">
+              <Lock className="rp-input-icon" />
+              <input
+                type={showNew ? "text" : "password"}
+                className="rp-input rp-password-input"
+                value={newPassword}
+                onChange={e => setNewPassword(e.target.value)}
+                placeholder="Enter new password"
+                disabled={loading}
+              />
+              <button type="button" className="rp-password-toggle" onClick={() => setShowNew(v => !v)} disabled={loading}>
+                {showNew ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+            {newPassword && <PasswordRules password={newPassword} />}
+          </div>
+
+          <div className="rp-form-group">
+            <label className="rp-label">Confirm Password</label>
+            <div className="rp-input-wrapper">
+              <Lock className="rp-input-icon" />
+              <input
+                type={showConfirm ? "text" : "password"}
+                className={`rp-input rp-password-input ${confirmPassword && confirmPassword !== newPassword ? "rp-input-mismatch" : ""}`}
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                placeholder="Confirm new password"
+                disabled={loading}
+              />
+              <button type="button" className="rp-password-toggle" onClick={() => setShowConfirm(v => !v)} disabled={loading}>
+                {showConfirm ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
             </div>
             {confirmPassword && confirmPassword !== newPassword && (
               <p className="rp-mismatch-msg">Passwords do not match</p>
             )}
           </div>
-          <button type="submit" className="modal-submit-button"
-            disabled={loading || isBlocked || !allRulesPass(newPassword) || newPassword !== confirmPassword}>
-            {loading ? 'Updating...' : 'Update Password'}
+
+          <button
+            type="submit"
+            className="rp-submit-btn"
+            disabled={loading || !allRulesPass(newPassword) || newPassword !== confirmPassword}
+          >
+            {loading ? "Updating..." : "Update Password"}
           </button>
         </form>
+      </>
+    );
+  };
+
+  /* ── Modal wrapper ── */
+  const card = (
+    <div className="rp-container" onClick={e => e.stopPropagation()}>
+      {/* Top nav: back arrow + close */}
+      <div className="rp-nav">
+        <button className="rp-nav-btn" onClick={handleBack} type="button">
+          <ArrowLeft size={18} />
+        </button>
+
+        {/* Step indicator */}
+        <div className="rp-stepper">
+          {steps.map((label, i) => (
+            <div key={label} className="rp-step-item">
+              <div className={`rp-step-dot ${i + 1 < step ? "rp-step-done" : i + 1 === step ? "rp-step-active" : "rp-step-inactive"}`}>
+                {i + 1 < step ? "✓" : i + 1}
+              </div>
+              <span className={`rp-step-label ${i + 1 === step ? "rp-step-label-active" : ""}`}>{label}</span>
+              {i < steps.length - 1 && <div className={`rp-step-line ${i + 1 < step ? "rp-step-line-done" : ""}`} />}
+            </div>
+          ))}
+        </div>
+
+        {isModal && (
+          <button className="rp-nav-btn" onClick={handleClose} type="button">
+            <X size={18} />
+          </button>
+        )}
+      </div>
+
+      {renderContent()}
+    </div>
+  );
+
+  /* Modal mode */
+  if (isModal) {
+    if (!isOpen) return null;
+    return (
+      <div className="rp-overlay" onClick={handleClose}>
+        {card}
       </div>
     );
   }
 
-  /* ════════════════════════════════════════════
-     FULL-PAGE MODE
-  ════════════════════════════════════════════ */
-  if (step === 1) return (
-    <div className="reset-password-container">
-      <div className="reset-password-wrapper">
-        <button onClick={handleBackButton} className="back-button"><ArrowLeft className="back-icon" /></button>
-        <div className="reset-password-card">
-          <div className="reset-password-header">
-            <img src={puacLogo} alt="PUAC Logo" className="logo-image" />
-            <h1 className="reset-password-title">Reset Your Password</h1>
-            <p className="reset-password-subtitle">Enter your email address and we'll send you a verification code</p>
-          </div>
-          {isBlocked && <RateLimitBanner seconds={rateLimitSecs} onExpire={() => setRateLimitSecs(0)} />}
-          <form onSubmit={handleEmailSubmit} className="reset-password-form">
-            <div className="form-group">
-              <label>Email Address</label>
-              <div className="input-wrapper">
-                <Mail className="input-icon" />
-                <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Enter your email" required className="form-input" disabled={loading || isBlocked} />
-              </div>
-            </div>
-            <button type="submit" className="submit-button" disabled={loading || isBlocked}>
-              {loading ? 'Sending...' : 'Send Verification Code'}
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
-
-  if (step === 2) return (
-    <div className="reset-password-container">
-      <div className="reset-password-wrapper">
-        <button onClick={handleBackButton} className="back-button"><ArrowLeft className="back-icon" /></button>
-        <div className="reset-password-card">
-          <div className="reset-password-header">
-            <img src={puacLogo} alt="PUAC Logo" className="logo-image" />
-            <h1 className="reset-password-title">Enter Verification Code</h1>
-            <p className="reset-password-subtitle">We sent a 6-digit code to</p>
-            <p className="reset-password-subtitle" style={{ fontWeight: '600', color: '#155DFC', marginTop: '0.25rem' }}>{email}</p>
-          </div>
-          {isBlocked && <RateLimitBanner seconds={rateLimitSecs} onExpire={() => setRateLimitSecs(0)} />}
-          <form onSubmit={handleOTPSubmit} className="reset-password-form">
-            <div className="otp-container">
-              {otp.map((digit, index) => (
-                <input key={index} ref={el => (otpRefs.current[index] = el)} type="text" maxLength="1" value={digit}
-                  onChange={e => handleOTPChange(index, e.target.value)} onKeyDown={e => handleOTPKeyDown(index, e)}
-                  onPaste={handleOTPPaste} className="respass-otp-input" disabled={loading || isBlocked} />
-              ))}
-            </div>
-            <button type="button" onClick={handleEmailSubmit} className="resend-button" disabled={loading || isBlocked}>Resend Code</button>
-            <button type="submit" className="submit-button" disabled={loading || isBlocked}>
-              {loading ? 'Verifying...' : 'Verify Code'}
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
-
-  return (
-    <div className="reset-password-container">
-      <div className="reset-password-wrapper">
-        <button onClick={handleBackButton} className="back-button"><ArrowLeft className="back-icon" /></button>
-        <div className="reset-password-card">
-          <div className="reset-password-header">
-            <img src={puacLogo} alt="PUAC Logo" className="logo-image" />
-            <h1 className="reset-password-title">Create New Password</h1>
-            <p className="reset-password-subtitle">Enter your new password below</p>
-          </div>
-          {isBlocked && <RateLimitBanner seconds={rateLimitSecs} onExpire={() => setRateLimitSecs(0)} />}
-          <form onSubmit={handlePasswordSubmit} className="reset-password-form">
-            <div className="form-group">
-              <label className="respass-info">New Password</label>
-              <div className="input-wrapper">
-                <Lock className="input-icon" />
-                <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)}
-                  onFocus={() => setPasswordFocused(true)} placeholder="Enter new password" required
-                  className="form-input" disabled={loading || isBlocked} />
-              </div>
-              <PasswordRules password={newPassword} show={passwordFocused || newPassword.length > 0} />
-            </div>
-            <div className="form-group">
-              <label className="respass-info">Confirm Password</label>
-              <div className="input-wrapper">
-                <Lock className="input-icon" />
-                <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
-                  placeholder="Confirm new password" required
-                  className={`form-input ${confirmPassword && confirmPassword !== newPassword ? 'rp-input-mismatch' : ''}`}
-                  disabled={loading || isBlocked} />
-              </div>
-              {confirmPassword && confirmPassword !== newPassword && (
-                <p className="rp-mismatch-msg rp-mismatch-dark">Passwords do not match</p>
-              )}
-            </div>
-            <button type="submit" className="submit-button"
-              disabled={loading || isBlocked || !allRulesPass(newPassword) || newPassword !== confirmPassword}>
-              {loading ? 'Updating...' : 'Update Password'}
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
+  /* Standalone page mode */
+  return <div className="rp-page">{card}</div>;
 }

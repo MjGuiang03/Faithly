@@ -1,145 +1,128 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import '../styles/AdminLoanManagement.css';
-import svgPaths from "../../imports/svg-icons";
 
 const API = process.env.REACT_APP_API_URL;
 
+const fmt = (n) =>
+  n != null ? `₱${Number(n).toLocaleString('en-PH')}` : '₱0';
+
+const fmtDate = (d) => {
+  if (!d) return 'N/A';
+  return new Date(d).toLocaleDateString('en-US', {
+    month: 'numeric', day: 'numeric', year: 'numeric',
+  });
+};
+
+const STATUSES = ['all', 'pending', 'active', 'completed', 'rejected'];
+
 export default function AdminLoanManagement() {
   const navigate = useNavigate();
-  const [loans, setLoans] = useState([]);
-  const [stats, setStats] = useState({
-    pending: 0,
-    active: 0,
-    completed: 0,
-    totalDisbursed: 0
-  });
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [loading, setLoading] = useState(true);
 
+  const [loans,        setLoans]        = useState([]);
+  const [stats,        setStats]        = useState({ pending: 0, active: 0, completed: 0, totalDisbursed: 0 });
+  const [searchTerm,   setSearchTerm]   = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [loading,      setLoading]      = useState(true);
+  const [actionLoading, setActionLoading] = useState(null); // stores _id of loan being acted on
+
+  /* ── Auth guard ── */
   useEffect(() => {
-    const adminEmail = localStorage.getItem('adminEmail');
-    if (!adminEmail) {
-      navigate('/admin/login');
-      return;
-    }
-    fetchLoans();
+    const token = localStorage.getItem('adminToken');
+    if (!token) navigate('/admin/login');
   }, [navigate]);
 
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      fetchLoans();
-    }, 400);
-    return () => clearTimeout(timeout);
-  }, [searchTerm, statusFilter]);
-
-  const fetchLoans = async () => {
+  /* ── Fetch from real API ── */
+  const fetchLoans = useCallback(async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      
-      // Mock data for demonstration
-      setLoans([
-        {
-          _id: '1',
-          loanId: 'LN-2026-001',
-          memberName: 'Juan Dela Cruz',
-          email: 'juan@example.com',
-          amount: 10000,
-          purpose: 'Medical Emergency',
-          status: 'pending',
-          appliedDate: '2026-02-20'
-        },
-        {
-          _id: '2',
-          loanId: 'LN-2026-002',
-          memberName: 'Maria Santos',
-          email: 'maria@example.com',
-          amount: 15000,
-          purpose: 'Education',
-          status: 'active',
-          appliedDate: '2026-02-18'
-        },
-        {
-          _id: '3',
-          loanId: 'LN-2026-003',
-          memberName: 'Pedro Garcia',
-          email: 'pedro@example.com',
-          amount: 8000,
-          purpose: 'Business Capital',
-          status: 'completed',
-          appliedDate: '2026-02-15'
-        },
-        {
-          _id: '4',
-          loanId: 'LN-2026-004',
-          memberName: 'Ana Reyes',
-          email: 'ana@example.com',
-          amount: 12000,
-          purpose: 'Home Repair',
-          status: 'pending',
-          appliedDate: '2026-02-22'
-        },
-        {
-          _id: '5',
-          loanId: 'LN-2026-005',
-          memberName: 'Carlos Torres',
-          email: 'carlos@example.com',
-          amount: 20000,
-          purpose: 'Medical Emergency',
-          status: 'active',
-          appliedDate: '2026-02-10'
-        }
-      ]);
+      const token  = localStorage.getItem('adminToken');
+      const params = new URLSearchParams();
+      if (statusFilter !== 'all') params.set('status', statusFilter);
+      if (searchTerm.trim())      params.set('search', searchTerm.trim());
 
-      setStats({
-        pending: 2,
-        active: 2,
-        completed: 1,
-        totalDisbursed: 50000
+      const res  = await fetch(`${API}/api/admin/loans?${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
+      const data = await res.json();
+
+      if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          navigate('/admin/login');
+          return;
+        }
+        toast.error(data.message || 'Failed to fetch loans');
+        return;
+      }
+
+      setLoans(data.loans  || []);
+      setStats(data.stats  || { pending: 0, active: 0, completed: 0, totalDisbursed: 0 });
     } catch (err) {
-      toast.error('Failed to fetch loans');
+      toast.error('Network error. Could not load loans.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [statusFilter, searchTerm, navigate]);
 
-  const handleApprove = async (loanId) => {
+  /* initial load */
+  useEffect(() => { fetchLoans(); }, [fetchLoans]);
+
+  /* debounce search */
+  useEffect(() => {
+    const t = setTimeout(() => fetchLoans(), 400);
+    return () => clearTimeout(t);
+  }, [searchTerm]);
+
+  /* ── Approve ── */
+  const handleApprove = async (loan) => {
+    if (!window.confirm(`Approve loan ${loan.loanId} for ${loan.memberName}?`)) return;
+
+    setActionLoading(loan._id);
     try {
-      toast.success('Loan approved successfully');
+      const token = localStorage.getItem('adminToken');
+      const res   = await fetch(`${API}/api/admin/loans/${loan._id}/approve`, {
+        method:  'PUT',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data  = await res.json();
+
+      if (!res.ok) { toast.error(data.message || 'Failed to approve loan'); return; }
+
+      toast.success(`Loan ${loan.loanId} approved`);
       fetchLoans();
-    } catch (err) {
-      toast.error('Failed to approve loan');
+    } catch {
+      toast.error('Network error. Please try again.');
+    } finally {
+      setActionLoading(null);
     }
   };
 
-  const handleReject = async (loanId) => {
+  /* ── Reject ── */
+  const handleReject = async (loan) => {
+    if (!window.confirm(`Reject loan ${loan.loanId} for ${loan.memberName}?`)) return;
+
+    setActionLoading(loan._id);
     try {
-      toast.success('Loan rejected');
+      const token = localStorage.getItem('adminToken');
+      const res   = await fetch(`${API}/api/admin/loans/${loan._id}/reject`, {
+        method:  'PUT',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data  = await res.json();
+
+      if (!res.ok) { toast.error(data.message || 'Failed to reject loan'); return; }
+
+      toast.success(`Loan ${loan.loanId} rejected`);
       fetchLoans();
-    } catch (err) {
-      toast.error('Failed to reject loan');
+    } catch {
+      toast.error('Network error. Please try again.');
+    } finally {
+      setActionLoading(null);
     }
   };
 
-  const formatCurrency = (amount) => `₱${Number(amount).toLocaleString()}`;
-
-  const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'numeric', day: 'numeric', year: 'numeric'
-    });
-  };
-
-  const filteredLoans = loans.filter(loan => {
-    const matchesSearch = loan.memberName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          loan.loanId.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || loan.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
-
+  /* ── Render ── */
   return (
     <div className="admin-loan-main">
       {/* Header */}
@@ -148,7 +131,7 @@ export default function AdminLoanManagement() {
         <p className="admin-loan-subtitle">Review and manage loan applications</p>
       </div>
 
-      {/* Stats Grid */}
+      {/* Stats */}
       <div className="admin-loan-stats-grid">
         <div className="admin-loan-stat-card">
           <p className="admin-loan-stat-label">Pending Review</p>
@@ -164,11 +147,11 @@ export default function AdminLoanManagement() {
         </div>
         <div className="admin-loan-stat-card">
           <p className="admin-loan-stat-label">Total Disbursed</p>
-          <p className="admin-loan-stat-value">{formatCurrency(stats.totalDisbursed)}</p>
+          <p className="admin-loan-stat-value">{fmt(stats.totalDisbursed)}</p>
         </div>
       </div>
 
-      {/* Search and Filter */}
+      {/* Search & Filter */}
       <div className="admin-loan-search-section">
         <div className="admin-loan-search-container">
           <div className="admin-loan-search-wrapper">
@@ -180,29 +163,30 @@ export default function AdminLoanManagement() {
             </div>
             <input
               type="text"
-              placeholder="Search by member name or loan ID..."
+              placeholder="Search by member name or loan ID…"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="admin-loan-search-input"
             />
           </div>
+
           <div className="admin-loan-filter">
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={(e) => { setStatusFilter(e.target.value); }}
               className="admin-loan-filter-button"
             >
-              <option value="all">All Status</option>
-              <option value="pending">Pending</option>
-              <option value="active">Active</option>
-              <option value="completed">Completed</option>
-              <option value="rejected">Rejected</option>
+              {STATUSES.map(s => (
+                <option key={s} value={s}>
+                  {s === 'all' ? 'All Status' : s.charAt(0).toUpperCase() + s.slice(1)}
+                </option>
+              ))}
             </select>
           </div>
         </div>
       </div>
 
-      {/* Loans Table */}
+      {/* Table */}
       <div className="admin-loan-table-section">
         <table className="admin-loan-table">
           <thead>
@@ -216,84 +200,115 @@ export default function AdminLoanManagement() {
               <th className="admin-loan-table-header-cell">Actions</th>
             </tr>
           </thead>
+
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={7} className="admin-loan-table-cell" style={{ textAlign: 'center', color: '#6a7282' }}>
-                  Loading loans...
+                <td colSpan={7} className="admin-loan-table-cell admin-loan-table-empty">
+                  <div className="admin-loan-loading-row">
+                    <div className="admin-loan-spinner" />
+                    Loading loans…
+                  </div>
                 </td>
               </tr>
-            ) : filteredLoans.length === 0 ? (
+            ) : loans.length === 0 ? (
               <tr>
-                <td colSpan={7} className="admin-loan-table-cell" style={{ textAlign: 'center', color: '#6a7282' }}>
+                <td colSpan={7} className="admin-loan-table-cell admin-loan-table-empty">
                   No loans found
                 </td>
               </tr>
             ) : (
-              filteredLoans.map((loan) => (
-                <tr key={loan._id} className="admin-loan-table-row">
-                  <td className="admin-loan-table-cell">{loan.loanId}</td>
-                  <td className="admin-loan-table-cell">
-                    <div className="admin-loan-member-info">
-                      <span className="admin-loan-member-name">{loan.memberName}</span>
-                      <span className="admin-loan-member-email">{loan.email}</span>
-                    </div>
-                  </td>
-                  <td className="admin-loan-table-cell">
-                    <span className="admin-loan-amount">{formatCurrency(loan.amount)}</span>
-                  </td>
-                  <td className="admin-loan-table-cell">
-                    <span className="admin-loan-purpose">{loan.purpose}</span>
-                  </td>
-                  <td className="admin-loan-table-cell">
-                    <span className={`admin-loan-status-badge admin-loan-status-${loan.status}`}>
-                      {loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}
-                    </span>
-                  </td>
-                  <td className="admin-loan-table-cell">
-                    <span className="admin-loan-date">{formatDate(loan.appliedDate)}</span>
-                  </td>
-                  <td className="admin-loan-table-cell">
-                    <div className="admin-loan-actions">
-                      <button className="admin-loan-action-btn" title="View details">
-                        <div className="admin-loan-action-icon">
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                            <path d="M0.666667 8C0.666667 8 3.33333 2.66667 8 2.66667C12.6667 2.66667 15.3333 8 15.3333 8C15.3333 8 12.6667 13.3333 8 13.3333C3.33333 13.3333 0.666667 8 0.666667 8Z" stroke="#4A5565" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M8 10C9.10457 10 10 9.10457 10 8C10 6.89543 9.10457 6 8 6C6.89543 6 6 6.89543 6 8C6 9.10457 6.89543 10 8 10Z" stroke="#4A5565" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                        </div>
-                      </button>
-                      {loan.status === 'pending' && (
-                        <>
-                          <button
-                            className="admin-loan-action-btn"
-                            title="Approve"
-                            onClick={() => handleApprove(loan._id)}
-                          >
-                            <div className="admin-loan-action-icon">
-                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                <path d="M13.3333 4L6 11.3333L2.66667 8" stroke="#00A63E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                              </svg>
-                            </div>
-                          </button>
-                          <button
-                            className="admin-loan-action-btn"
-                            title="Reject"
-                            onClick={() => handleReject(loan._id)}
-                          >
-                            <div className="admin-loan-action-icon">
-                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                <path d="M12 4L4 12" stroke="#E7000B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                <path d="M4 4L12 12" stroke="#E7000B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                              </svg>
-                            </div>
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))
+              loans.map((loan) => {
+                const isBusy = actionLoading === loan._id;
+                return (
+                  <tr key={loan._id} className="admin-loan-table-row">
+                    <td className="admin-loan-table-cell">{loan.loanId}</td>
+
+                    <td className="admin-loan-table-cell">
+                      <div className="admin-loan-member-info">
+                        <span className="admin-loan-member-name">{loan.memberName}</span>
+                        <span className="admin-loan-member-email">{loan.email}</span>
+                      </div>
+                    </td>
+
+                    <td className="admin-loan-table-cell">
+                      <span className="admin-loan-amount">{fmt(loan.amount)}</span>
+                    </td>
+
+                    <td className="admin-loan-table-cell">
+                      <span className="admin-loan-purpose">{loan.purpose}</span>
+                    </td>
+
+                    <td className="admin-loan-table-cell">
+                      <span className={`admin-loan-status-badge admin-loan-status-${loan.status}`}>
+                        {loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}
+                      </span>
+                    </td>
+
+                    <td className="admin-loan-table-cell">
+                      <span className="admin-loan-date">{fmtDate(loan.appliedDate)}</span>
+                    </td>
+
+                    <td className="admin-loan-table-cell">
+                      <div className="admin-loan-actions">
+                        {/* View */}
+                        <button
+                          className="admin-loan-action-btn"
+                          title="View details"
+                          onClick={() => navigate(`/admin/loans/${loan._id}`)}
+                        >
+                          <div className="admin-loan-action-icon">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                              <path d="M0.666667 8C0.666667 8 3.33333 2.66667 8 2.66667C12.6667 2.66667 15.3333 8 15.3333 8C15.3333 8 12.6667 13.3333 8 13.3333C3.33333 13.3333 0.666667 8 0.666667 8Z" stroke="#4A5565" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                              <path d="M8 10C9.10457 10 10 9.10457 10 8C10 6.89543 9.10457 6 8 6C6.89543 6 6 6.89543 6 8C6 9.10457 6.89543 10 8 10Z" stroke="#4A5565" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </div>
+                        </button>
+
+                        {/* Approve / Reject — only for pending loans */}
+                        {loan.status === 'pending' && (
+                          <>
+                            <button
+                              className="admin-loan-action-btn"
+                              title="Approve"
+                              disabled={isBusy}
+                              onClick={() => handleApprove(loan)}
+                            >
+                              <div className="admin-loan-action-icon">
+                                {isBusy ? (
+                                  <div className="admin-loan-spinner admin-loan-spinner-sm" />
+                                ) : (
+                                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                    <path d="M13.3333 4L6 11.3333L2.66667 8" stroke="#00A63E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                  </svg>
+                                )}
+                              </div>
+                            </button>
+
+                            <button
+                              className="admin-loan-action-btn"
+                              title="Reject"
+                              disabled={isBusy}
+                              onClick={() => handleReject(loan)}
+                            >
+                              <div className="admin-loan-action-icon">
+                                {isBusy ? (
+                                  <div className="admin-loan-spinner admin-loan-spinner-sm" />
+                                ) : (
+                                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                    <path d="M12 4L4 12" stroke="#E7000B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                    <path d="M4 4L12 12" stroke="#E7000B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                  </svg>
+                                )}
+                              </div>
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>

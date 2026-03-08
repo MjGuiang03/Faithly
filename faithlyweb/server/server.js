@@ -27,6 +27,8 @@ app.use(mongoSanitize());
 app.use(cors());
 app.use(express.json({ limit: '10kb' }));
 
+
+
 /* ================== RATE LIMITERS ================== */
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -141,6 +143,8 @@ const admins     = db.collection('admins');
 const loans      = db.collection('loans');
 const donations  = db.collection('donations');
 const attendance = db.collection('attendance');
+const verifications = db.collection('verifications');
+
 
 console.log('✅ Connected to MongoDB');
 
@@ -151,7 +155,7 @@ await otps.createIndex({ email: 1 });
 await loans.createIndex({ email: 1 });
 await loans.createIndex({ loanId: 1 });
 await attendance.createIndex({ email: 1 });
-
+await verifications.createIndex({ email: 1 });
 /* OTP AUTO DELETE AFTER EXPIRATION */
 await otps.createIndex(
   { expiresAt: 1 },
@@ -1510,6 +1514,171 @@ app.put('/api/update-profile', authenticateUser, async (req, res) => {
     res.status(500).json({ message: 'Failed to update profile' });
   }
 });
+
+/* ================== USER - SUBMIT OFFICER VERIFICATION ================== */
+app.post('/api/verification/submit', authenticateUser, async (req, res) => {
+  try {
+    const email = req.user.email;
+    const { churchId, position, occupation, salary } = req.body;
+
+    if (!churchId || !position || !occupation || !salary) {
+      return res.status(400).json({ success: false, message: 'All fields are required' });
+    }
+
+    const user = await users.findOne({ email });
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    // Check if already verified
+    if (user.verificationStatus === 'verified') {
+      return res.status(400).json({ success: false, message: 'You are already verified' });
+    }
+
+    // Check if a real pending submission exists in verifications collection
+    const existing = await verifications.findOne({ email, status: 'pending' });
+    if (existing) {
+      return res.status(400).json({ success: false, message: 'You already have a pending verification request' });
+    }
+
+    // If user doc says pending but no verification doc exists, allow resubmission
+    // (handles the case where the verification doc was manually deleted for testing)
+
+    const verification = {
+      email,
+      memberName: user.fullName,
+      churchId,
+      position,
+      occupation,
+      salary: Number(salary),
+      status: 'pending',
+      submittedAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    await verifications.insertOne(verification);
+
+    // Mark user as pending
+    await users.updateOne({ email }, { $set: { verificationStatus: 'pending' } });
+
+    res.status(201).json({ success: true, message: 'Verification request submitted successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to submit verification' });
+  }
+});
+
+/* ================== USER - GET MY VERIFICATION STATUS ================== */
+app.get('/api/verification/status', authenticateUser, async (req, res) => {
+  try {
+    const email = req.user.email;
+
+    const user = await users.findOne({ email });
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    const verification = await verifications.findOne(
+      { email },
+      { sort: { submittedAt: -1 } }
+    );
+
+    // ── Self-heal: if the user has a stale verificationStatus but no
+    //    matching verification document exists, reset back to 'unverified'.
+    //    This happens when docs are manually deleted in MongoDB for testing.
+    let verificationStatus = user.verificationStatus || 'unverified';
+
+    if (
+      (verificationStatus === 'pending' || verificationStatus === 'rejected') &&
+      !verification
+    ) {
+      // No verification doc found — reset user status silently
+      await users.updateOne({ email }, { $set: { verificationStatus: 'unverified' } });
+      verificationStatus = 'unverified';
+    }
+
+    res.status(200).json({
+      success: true,
+      verificationStatus,
+      verification: verification || null
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to fetch verification status' });
+  }
+});
+
+/* ================== ADMIN - GET ALL VERIFICATIONS ================== */
+app.get('/api/admin/verifications', authenticateAdmin, async (req, res) => {
+  try {
+    const { status } = req.query;
+    const query = {};
+    if (status && status !== 'all') query.status = status;
+
+    const allVerifications = await verifications.find(query).sort({ submittedAt: -1 }).toArray();
+
+    const stats = {
+      pending:  await verifications.countDocuments({ status: 'pending' }),
+      approved: await verifications.countDocuments({ status: 'approved' }),
+      rejected: await verifications.countDocuments({ status: 'rejected' }),
+    };
+
+    res.status(200).json({ success: true, verifications: allVerifications, stats });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to fetch verifications' });
+  }
+});
+
+/* ================== ADMIN - APPROVE VERIFICATION ================== */
+app.put('/api/admin/verifications/:id/approve', authenticateAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const verification = await verifications.findOne({ _id: new ObjectId(id) });
+    if (!verification) return res.status(404).json({ success: false, message: 'Verification not found' });
+
+    await verifications.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { status: 'approved', reviewedAt: new Date(), updatedAt: new Date() } }
+    );
+
+    // Upgrade user to verified
+    await users.updateOne(
+      { email: verification.email },
+      { $set: { verificationStatus: 'verified' } }
+    );
+
+    res.status(200).json({ success: true, message: 'Verification approved' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to approve verification' });
+  }
+});
+
+/* ================== ADMIN - REJECT VERIFICATION ================== */
+app.put('/api/admin/verifications/:id/reject', authenticateAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+
+    const verification = await verifications.findOne({ _id: new ObjectId(id) });
+    if (!verification) return res.status(404).json({ success: false, message: 'Verification not found' });
+
+    await verifications.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { status: 'rejected', rejectionReason: reason || '', reviewedAt: new Date(), updatedAt: new Date() } }
+    );
+
+    // Reset user back to unverified so they can resubmit
+    await users.updateOne(
+      { email: verification.email },
+      { $set: { verificationStatus: 'rejected' } }
+    );
+
+    res.status(200).json({ success: true, message: 'Verification rejected' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to reject verification' });
+  }
+});
+
 
 /* ================== SERVER ================== */
 app.listen(process.env.PORT, () => {

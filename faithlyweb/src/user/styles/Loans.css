@@ -563,3 +563,352 @@
     padding: 16px;
   }
 }
+/* ============================================================
+   Loans.css ADDITIONS — paste these at the end of your
+   existing Loans.css file
+   ============================================================ */
+
+/* ── Header right cluster ────────────────────────────────── */
+.loans-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* ── Verification badge ──────────────────────────────────── */
+.verify-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: Arial, sans-serif;
+  white-space: nowrap;
+}
+
+.verify-badge-icon {
+  font-size: 0.85rem;
+}
+
+.verify-badge-verified {
+  background: #dcfce7;
+  color: #166534;
+  border: 1.5px solid #86efac;
+}
+
+.verify-badge-pending {
+  background: #fef9c3;
+  color: #854d0e;
+  border: 1.5px solid #fde047;
+}
+
+.verify-badge-rejected {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1.5px solid #fca5a5;
+}
+
+.verify-badge-unverified {
+  background: #f3f4f6;
+  color: #6b7280;
+  border: 1.5px solid #d1d5db;
+}
+
+.verify-badge-link {
+  background: none;
+  border: none;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #155dfc;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 4px;
+  text-decoration: underline;
+  font-family: Arial, sans-serif;
+}
+
+.verify-badge-link:hover { color: #1246d1; }
+
+/* ── Apply button locked state ───────────────────────────── */
+.apply-loan-btn-locked {
+  background-color: #e5e7eb !important;
+  color: #9ca3af !important;
+  box-shadow: none !important;
+  cursor: not-allowed !important;
+}
+
+.apply-loan-btn-locked:hover {
+  background-color: #e5e7eb !important;
+  transform: none !important;
+}
+
+.apply-loan-btn:disabled {
+  pointer-events: auto !important; /* keeps native title tooltip */
+}
+
+/* ── Locked banner ───────────────────────────────────────── */
+.loans-locked-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.75rem;
+  background: linear-gradient(135deg, #eff6ff 0%, #f9fafb 100%);
+  border: 1.5px solid #bfdbfe;
+  border-radius: 12px;
+  padding: 1.5rem 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.loans-locked-icon { display: none; }
+
+.loans-locked-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.loans-locked-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1e3a8a;
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+.loans-locked-text {
+  font-size: 0.875rem;
+  color: #374151;
+  margin: 0;
+  line-height: 1.6;
+  font-family: Arial, sans-serif;
+  max-width: 520px;
+}
+
+.loans-locked-cta {
+  display: inline-block;
+  padding: 8px 20px;
+  background: #155dfc;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: Arial, sans-serif;
+  transition: background 0.2s;
+  margin-top: 0.25rem;
+}
+
+.loans-locked-cta:hover { background: #1246d1; }
+
+/* ── Loading ─────────────────────────────────────────────── */
+.loans-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 0;
+  gap: 1rem;
+  color: #6b7280;
+  font-family: Arial, sans-serif;
+  font-size: 0.9rem;
+}
+
+.loans-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #e5e7eb;
+  border-top-color: #155dfc;
+  border-radius: 50%;
+  animation: loans-spin 0.7s linear infinite;
+}
+
+@keyframes loans-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Error banner ────────────────────────────────────────── */
+.loans-error-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 12px 16px;
+  background: #fff5f5;
+  border: 1.5px solid #fca5a5;
+  border-radius: 10px;
+  color: #b91c1c;
+  font-size: 0.875rem;
+  font-family: Arial, sans-serif;
+  margin-bottom: 1.5rem;
+}
+
+.loans-retry-btn {
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: Arial, sans-serif;
+  white-space: nowrap;
+}
+
+.loans-retry-btn:hover { background: #b91c1c; }
+
+/* ── Empty state ─────────────────────────────────────────── */
+.loans-empty {
+  text-align: center;
+  padding: 3.5rem 1rem;
+  color: #6b7280;
+  font-family: Arial, sans-serif;
+}
+
+.loans-empty-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.loans-empty-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 0.25rem;
+}
+
+.loans-empty-text {
+  font-size: 0.875rem;
+}
+
+/* ── Loan status badge variants ──────────────────────────── */
+.loan-status-active    { background: #dcfce7; color: #166534; }
+.loan-status-pending   { background: #fef9c3; color: #854d0e; }
+.loan-status-completed { background: #dbeafe; color: #1e3a8a; }
+.loan-status-rejected  { background: #fee2e2; color: #991b1b; }
+
+/* ── OfficerVerification error banner ────────────────────── */
+.vm-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #fff5f5;
+  border: 1.5px solid #fca5a5;
+  border-radius: 8px;
+  color: #b91c1c;
+  font-size: 0.875rem;
+  font-family: Arial, sans-serif;
+  margin-bottom: 1rem;
+}
+
+.vm-error-icon { flex-shrink: 0; color: #dc2626; }
+
+/* ── Verification pill (inside pi-card-badges) ───────────── */
+/*
+  Structure:  [  label text  |  Get verified  ]
+  The whole thing is one rounded pill. The action sits
+  right-of a thin divider — visually one unit.
+*/
+.pi-verify-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: Arial, sans-serif;
+  overflow: hidden;           /* keeps children inside the pill shape */
+  flex-shrink: 0;
+}
+
+/* Label portion */
+.pi-verify-pill__label {
+  padding: 2px 8px 2px 10px;
+  line-height: 20px;
+}
+
+/* Thin vertical divider between label and action */
+.pi-verify-pill__sep {
+  display: inline-block;
+  width: 1px;
+  height: 14px;
+  flex-shrink: 0;
+  opacity: 0.45;
+}
+
+/* Action button — no extra border, inherits pill bg, just lighter */
+.pi-verify-pill__action {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: Arial, sans-serif;
+  padding: 2px 10px 2px 8px;
+  line-height: 20px;
+  transition: opacity 0.15s;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.pi-verify-pill__action:hover { opacity: 0.75; }
+
+/* ── Status variants ─────────────────────────── */
+.pi-verify-pill--unverified {
+  background: rgba(0, 0, 0, 0.30);
+  color: #ffffff;
+}
+.pi-verify-pill--unverified .pi-verify-pill__sep  { background: rgba(255,255,255,0.5); }
+.pi-verify-pill--unverified .pi-verify-pill__action { color: #93c5fd; }
+
+.pi-verify-pill--pending {
+  background: rgba(234, 179, 8, 0.25);
+  color: #fef08a;
+}
+.pi-verify-pill--pending .pi-verify-pill__sep { background: rgba(254,240,138,0.4); }
+
+.pi-verify-pill--verified {
+  background: rgba(34, 197, 94, 0.25);
+  color: #bbf7d0;
+}
+.pi-verify-pill--verified .pi-verify-pill__sep { background: rgba(187,247,208,0.4); }
+
+.pi-verify-pill--rejected {
+  background: rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+}
+.pi-verify-pill--rejected .pi-verify-pill__sep    { background: rgba(252,165,165,0.4); }
+.pi-verify-pill--rejected .pi-verify-pill__action { color: #fca5a5; }
+
+/* ── Remove scrollbar from OfficerVerification modal ─────── */
+.vm-overlay {
+  overflow: hidden;
+}
+
+.vm-container {
+  overflow-y: auto;
+  max-height: 90vh;
+  scrollbar-width: none;       /* Firefox */
+  -ms-overflow-style: none;    /* IE/Edge */
+}
+
+.vm-container::-webkit-scrollbar {
+  display: none;               /* Chrome/Safari */
+}
+
+/* ── Upload box "done" state ─────────────────────────────── */
+.vm-upload-box-done {
+  border-color: #22c55e !important;
+  background: #f0fdf4 !important;
+}
+
+.vm-upload-box-done .vm-upload-text {
+  color: #16a34a !important;
+  font-weight: 700;
+}

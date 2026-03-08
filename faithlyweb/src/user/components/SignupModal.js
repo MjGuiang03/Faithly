@@ -237,7 +237,6 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
       setRegisteredEmail(formData.email);
       setShowVerifyModal(true);
       toast.success('Registration successful! Please verify your email.');
-      onClose();
     }catch(err){console.error(err); toast.error('Server error. Please try again.');}finally{setLoading(false);}
   };
 

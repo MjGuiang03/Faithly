@@ -1,305 +1,343 @@
-/* AdminDonations.css - Donation Tracking Page Styles */
-/* All classes are prefixed with admin- to prevent conflicts */
+/* ═══════════════════════════════════════════════════
+   AdminDonations.css
+   Extends AdminLoanManagement styles — reuses all
+   admin-loan-* classes, adds admin-don-* additions
+═══════════════════════════════════════════════════ */
 
-.admin-donations-main {
-  flex: 1;
+/* ── Re-declare shared admin-loan-* classes here
+   so this file is self-contained (or import
+   AdminLoanManagement.css and skip this block) ── */
+
+.admin-loan-main {
+  max-width: 1200px;
 }
 
-.admin-donations-header {
-  margin-bottom: 24px;
-}
+.admin-loan-header { margin-bottom: 24px; }
 
-.admin-donations-title {
-  font-family: 'Arial:Bold', sans-serif;
-  font-size: 30px;
-  line-height: 36px;
+.admin-loan-title {
+  font-size: 22px;
+  font-weight: 700;
   color: #101828;
-  margin-bottom: 8px;
+  margin: 0 0 4px;
+  font-family: Arial, sans-serif;
 }
 
-.admin-donations-subtitle {
-  font-family: 'Arial:Regular', sans-serif;
-  font-size: 16px;
-  line-height: 24px;
+.admin-loan-subtitle {
+  font-size: 14px;
   color: #4a5565;
+  margin: 0;
+  font-family: Arial, sans-serif;
 }
 
-.admin-donations-stats-grid {
+/* Stats grid */
+.admin-loan-stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
-  margin-bottom: 24px;
-}
-
-.admin-donations-stat-card {
-  background: white;
-  border: 0.8px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 24.8px;
-}
-
-.admin-donations-stat-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.admin-donations-stat-label {
-  font-family: 'Arial:Regular', sans-serif;
-  font-size: 14px;
-  line-height: 20px;
-  color: #4a5565;
-}
-
-.admin-donations-stat-icon {
-  width: 20px;
-  height: 20px;
-}
-
-.admin-donations-stat-icon svg {
-  width: 100%;
-  height: 100%;
-}
-
-.admin-donations-stat-value {
-  font-family: 'Arial:Bold', sans-serif;
-  font-size: 24px;
-  line-height: 32px;
-  color: #101828;
-}
-
-.admin-donations-category-section {
-  background: white;
-  border: 0.8px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 24.8px;
-  margin-bottom: 24px;
-}
-
-.admin-donations-section-title {
-  font-family: 'Arial:Bold', sans-serif;
-  font-size: 20px;
-  line-height: 28px;
-  color: #101828;
-  margin-bottom: 24px;
-}
-
-.admin-donations-category-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
-}
-
-.admin-donations-category-card {
-  background: #f9fafb;
-  border-radius: 10px;
-  padding: 20px;
-}
-
-.admin-donations-category-name {
-  font-family: 'Arial:Bold', sans-serif;
-  font-size: 16px;
-  line-height: 24px;
-  color: #101828;
-  margin-bottom: 8px;
-}
-
-.admin-donations-category-amount {
-  font-family: 'Arial:Bold', sans-serif;
-  font-size: 24px;
-  line-height: 32px;
-  color: #0f2854;
-  margin-bottom: 4px;
-}
-
-.admin-donations-category-count {
-  font-family: 'Arial:Regular', sans-serif;
-  font-size: 14px;
-  line-height: 20px;
-  color: #6a7282;
-}
-
-.admin-donations-search-section {
-  background: white;
-  border: 0.8px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 16.8px;
   margin-bottom: 24px;
 }
 
-.admin-donations-search-container {
+.admin-loan-stat-card {
+  background: white;
+  border: 0.8px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px 22px;
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-loan-stat-label {
+  font-size: 13px;
+  color: #4a5565;
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+.admin-loan-stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #101828;
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+/* Search section */
+.admin-loan-search-section { margin-bottom: 20px; }
+
+.admin-loan-search-container {
+  display: flex;
+  gap: 12px;
   align-items: center;
 }
 
-.admin-donations-search-wrapper {
+.admin-loan-search-wrapper {
   position: relative;
   flex: 1;
-  max-width: 534px;
 }
 
-.admin-donations-search-input {
-  width: 100%;
-  height: 42px;
-  border: 0.8px solid #d1d5dc;
-  border-radius: 10px;
-  padding: 8px 16px 8px 40px;
-  font-family: 'Arial:Regular', sans-serif;
-  font-size: 16px;
-  color: #0a0a0a;
-}
-
-.admin-donations-search-input::placeholder {
-  color: rgba(10, 10, 10, 0.5);
-}
-
-.admin-donations-search-icon {
+.admin-loan-search-icon {
   position: absolute;
-  left: 12px;
+  left: 13px;
   top: 50%;
   transform: translateY(-50%);
-  width: 20px;
-  height: 20px;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
 }
 
-.admin-donations-search-icon svg {
+.admin-loan-search-input {
   width: 100%;
-  height: 100%;
-}
-
-.admin-donations-filter {
-  height: 42px;
+  box-sizing: border-box;
+  height: 40px;
+  padding: 0 16px 0 42px;
   border: 0.8px solid #d1d5dc;
-  border-radius: 10px;
-  padding: 8px 16px;
+  border-radius: 9px;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+  color: #101828;
+  outline: none;
+  transition: border-color 0.2s;
   background: white;
-  font-family: 'Arial:Regular', sans-serif;
-  font-size: 16px;
-  color: rgba(10, 10, 10, 0.5);
-  cursor: pointer;
-  min-width: 118px;
 }
 
-.admin-donations-branch-filter {
-  height: 42px;
+.admin-loan-search-input::placeholder { color: #99a1af; }
+.admin-loan-search-input:focus        { border-color: #155dfc; }
+
+.admin-loan-filter-button {
+  height: 40px;
+  padding: 0 14px;
   border: 0.8px solid #d1d5dc;
-  border-radius: 10px;
-  padding: 8px 16px;
+  border-radius: 9px;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+  color: #101828;
   background: white;
-  font-family: 'Arial:Regular', sans-serif;
-  font-size: 16px;
-  color: rgba(10, 10, 10, 0.5);
   cursor: pointer;
-  min-width: 167px;
+  outline: none;
+  transition: border-color 0.2s;
+  min-width: 160px;
 }
 
-.admin-donations-table-section {
+.admin-loan-filter-button:focus { border-color: #155dfc; }
+
+/* Table card */
+.admin-loan-table-card {
   background: white;
   border: 0.8px solid #e5e7eb;
   border-radius: 14px;
   overflow: hidden;
 }
 
-.admin-donations-table {
+.admin-loan-table-scroll {
+  overflow-x: auto;
+}
+
+.admin-loan-table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.admin-donations-table-header {
+.admin-loan-table-header {
   background: #f9fafb;
-  height: 44.4px;
 }
 
-.admin-donations-table-header-cell {
-  font-family: 'Arial:Regular', sans-serif;
-  font-size: 14px;
-  line-height: 20px;
-  color: #4a5565;
+.admin-loan-table-header-cell {
+  padding: 12px 16px;
   text-align: left;
-  padding: 10.8px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4a5565;
+  font-family: Arial, sans-serif;
+  white-space: nowrap;
+  border-bottom: 0.8px solid #e5e7eb;
 }
 
-.admin-donations-table-row {
-  border-top: 0.8px solid #f3f4f6;
-  height: 64.8px;
+.admin-loan-table-row {
+  border-bottom: 0.8px solid #f3f4f6;
+  transition: background 0.15s;
 }
 
-.admin-donations-table-cell {
-  font-family: 'Arial:Regular', sans-serif;
-  font-size: 16px;
-  line-height: 24px;
+.admin-loan-table-row:last-child { border-bottom: none; }
+.admin-loan-table-row:hover      { background: #fafafa; }
+
+.admin-loan-table-cell {
+  padding: 14px 16px;
+  font-size: 14px;
   color: #101828;
-  padding: 18.2px 16px;
+  font-family: Arial, sans-serif;
+  vertical-align: middle;
 }
 
-.admin-donations-heart-icon {
+/* Empty / loading */
+.admin-loan-table-empty {
+  text-align: center;
+  color: #6a7282;
+  padding: 2.5rem 1rem;
+}
+
+.admin-loan-loading-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* Spinner */
+.admin-loan-spinner {
   width: 20px;
   height: 20px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 8px;
+  border: 2.5px solid #e5e7eb;
+  border-top-color: #155dfc;
+  border-radius: 50%;
+  animation: adon-spin 0.65s linear infinite;
+  flex-shrink: 0;
 }
 
-.admin-donations-heart-icon svg {
-  width: 100%;
-  height: 100%;
+@keyframes adon-spin {
+  to { transform: rotate(360deg); }
 }
 
-.admin-donations-member-name {
-  font-family: 'Arial:Regular', sans-serif;
-  font-size: 16px;
-  line-height: 24px;
+/* Member info cell */
+.admin-loan-member-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin-loan-member-name {
+  font-size: 14px;
+  font-weight: 600;
   color: #101828;
 }
 
-.admin-donations-amount {
-  font-family: 'Arial:Bold', sans-serif;
-  font-size: 16px;
-  line-height: 24px;
-  color: #00a63e;
-}
-
-.admin-donations-category {
-  font-family: 'Arial:Regular', sans-serif;
-  font-size: 16px;
-  line-height: 24px;
-  color: #364153;
-}
-
-.admin-donations-date {
-  font-family: 'Arial:Regular', sans-serif;
-  font-size: 16px;
-  line-height: 24px;
-  color: #364153;
-}
-
-.admin-donations-method {
-  font-family: 'Arial:Regular', sans-serif;
-  font-size: 16px;
-  line-height: 24px;
-  color: #364153;
-}
-
-.admin-donations-type-badge {
-  display: inline-flex;
-  align-items: center;
-  height: 23.988px;
-  padding: 4px 12px;
-  border-radius: 26843500px;
-  font-family: 'Arial:Regular', sans-serif;
+.admin-loan-member-email {
   font-size: 12px;
-  line-height: 16px;
-}
-
-.admin-donations-type-recurring {
-  background: #dbeafe;
-  color: #155dfc;
-}
-
-.admin-donations-type-onetime {
-  background: #f3f4f6;
   color: #6a7282;
+}
+
+/* Amount */
+.admin-loan-amount {
+  font-weight: 700;
+  color: #101828;
+}
+
+/* Date */
+.admin-loan-date {
+  font-size: 13px;
+  color: #4a5565;
+  white-space: nowrap;
+}
+
+/* ── Donation-specific additions ── */
+
+.admin-don-id {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  font-family: 'Courier New', monospace;
+}
+
+.admin-don-category {
+  font-size: 13px;
+  color: #374151;
+}
+
+.admin-don-method {
+  font-size: 13px;
+  color: #374151;
+}
+
+.admin-don-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: Arial, sans-serif;
+  white-space: nowrap;
+}
+
+.admin-don-badge-recurring {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.admin-don-badge-once {
+  background: #f3f4f6;
+  color: #4a5565;
+}
+
+/* ── Pagination ── */
+.admin-don-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-top: 0.8px solid #e5e7eb;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.admin-don-pagination-info {
+  font-size: 13px;
+  color: #4a5565;
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+.admin-don-pagination-info strong {
+  color: #101828;
+}
+
+.admin-don-pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.admin-don-page-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 6px;
+  background: white;
+  border: 0.8px solid #d1d5dc;
+  border-radius: 7px;
+  font-size: 13px;
+  font-family: Arial, sans-serif;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.admin-don-page-btn:hover:not(:disabled):not(.admin-don-page-btn-active) {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.admin-don-page-btn-active {
+  background: #155dfc;
+  border-color: #155dfc;
+  color: white;
+  font-weight: 700;
+}
+
+.admin-don-page-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .admin-loan-stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px) {
+  .admin-loan-main           { padding: 20px 16px; }
+  .admin-loan-stats-grid     { grid-template-columns: 1fr; }
+  .admin-loan-search-container { flex-direction: column; }
+  .admin-loan-filter-button  { width: 100%; }
+  .admin-don-pagination      { flex-direction: column; align-items: flex-start; }
 }

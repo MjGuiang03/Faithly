@@ -1,12 +1,15 @@
 import { useNavigate } from 'react-router';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import svgPaths from '../../imports/svg-icons';
 import '../styles/Settings.css';
 import Sidebar from '../components/Sidebar';
 import VerifyEmailModal from '../components/VerifyEmail';
+import VerificationModal from '../components/OfficerVerification';
 
-/* ─── Community options (same as Signup) ──────────────────────────────── */
+const API = process.env.REACT_APP_API_URL;
+
+/* ─── Community options ──────────────────────────────────────────────── */
 const COMMUNITIES = {
   Kalinga:            ['Tabuk','Zapote','Bliss','Libanon','Batong Buhay','Balatoc','Lat-nog'],
   Isabela:            ['Santiago City'],
@@ -24,21 +27,15 @@ const COMMUNITIES = {
   'Surigao Del Sur':  ['Kinabigtasan, Tago'],
 };
 
-/* ─── Email OTP Modal ─────────────────────────────────────────────────── */
-
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   SETTINGS PAGE
-═══════════════════════════════════════════════════════════════════════════ */
 export default function Settings() {
   const navigate = useNavigate();
   const { user, profile, signOut, updateProfile, requestEmailChange, verifyEmailChange } = useAuth();
 
-  /* ── Personal Info state ─────────────────────────────────────────────── */
-  const [isEditing, setIsEditing]   = useState(false);
-  const [isSaving, setIsSaving]     = useState(false);
-  const [formError, setFormError]   = useState('');
-  const [photoPreview, setPhotoPreview] = useState(null);
+  /* ── Personal Info ───────────────────────────────────────────────────── */
+  const [isEditing,     setIsEditing]     = useState(false);
+  const [isSaving,      setIsSaving]      = useState(false);
+  const [formError,     setFormError]     = useState('');
+  const [photoPreview,  setPhotoPreview]  = useState(null);
 
   const [editForm, setEditForm] = useState({
     fullName:  profile?.fullName  || '',
@@ -48,21 +45,41 @@ export default function Settings() {
     photoFile: null,
   });
 
-  /* ── Email OTP state ─────────────────────────────────────────────────── */
+  /* ── Email OTP ───────────────────────────────────────────────────────── */
   const [showEmailOtp, setShowEmailOtp] = useState(false);
   const [pendingEmail, setPendingEmail] = useState('');
+
+  /* ── Officer Verification ────────────────────────────────────────────── */
+  const [verificationStatus,  setVerificationStatus]  = useState(null);
+  const [showVerifyModal,     setShowVerifyModal]      = useState(false);
 
   /* ── Other settings ──────────────────────────────────────────────────── */
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [smsNotifications,   setSmsNotifications]   = useState(false);
   const [twoFactorAuth,      setTwoFactorAuth]       = useState(false);
-
   const [notificationPreferences, setNotificationPreferences] = useState({
     loanUpdates: true, paymentReminders: true, upcomingServices: true, churchAnnouncements: true,
   });
-
   const [language, setLanguage] = useState('English');
   const [timezone, setTimezone] = useState('GMT+8 Manila');
+
+  /* ── Fetch verification status on mount ──────────────────────────────── */
+  useEffect(() => {
+    const fetchVerification = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res   = await fetch(`${API}/api/verification/status`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data  = await res.json();
+        if (res.ok && data.success) setVerificationStatus(data.verificationStatus);
+        else setVerificationStatus('unverified');
+      } catch {
+        setVerificationStatus('unverified');
+      }
+    };
+    fetchVerification();
+  }, []);
 
   /* ── Handlers ────────────────────────────────────────────────────────── */
   const handleEditChange = (field, value) => {
@@ -82,37 +99,25 @@ export default function Settings() {
   const handleSaveChanges = async () => {
     setFormError('');
     if (!editForm.fullName.trim()) { setFormError('Full name is required.'); return; }
-
     setIsSaving(true);
     try {
       const emailChanged = editForm.email.trim().toLowerCase() !== (user?.email || '').trim().toLowerCase();
-
       if (emailChanged) {
-        // Validate email format first
         if (!editForm.email.includes('@') || !editForm.email.includes('.')) {
           setFormError('Please enter a valid email address.'); return;
         }
         const reqResult = await requestEmailChange(editForm.email.trim());
-        if (!reqResult.success) {
-          setFormError(reqResult.message || 'Failed to send verification email.');
-          return;
-        }
+        if (!reqResult.success) { setFormError(reqResult.message || 'Failed to send verification email.'); return; }
         setPendingEmail(editForm.email.trim());
         setShowEmailOtp(true);
-        return; // wait for OTP
-      }
-
-      // No email change — update profile directly
-      const result = await updateProfile({
-        fullName:  editForm.fullName.trim(),
-        phone:     editForm.phone.trim(),
-        branch:    editForm.community,
-      });
-
-      if (!result.success) {
-        setFormError(result.message || 'Failed to update profile.');
         return;
       }
+      const result = await updateProfile({
+        fullName: editForm.fullName.trim(),
+        phone:    editForm.phone.trim(),
+        branch:   editForm.community,
+      });
+      if (!result.success) { setFormError(result.message || 'Failed to update profile.'); return; }
       setIsEditing(false);
     } catch (err) {
       setFormError(err.message || 'Something went wrong.');
@@ -124,37 +129,17 @@ export default function Settings() {
   const handleVerifyEmailOtp = async (otp) => {
     const verifyResult = await verifyEmailChange(pendingEmail, otp);
     if (!verifyResult.success) return { success: false, message: verifyResult.message };
-
-    // Email verified — also update other fields
-    await updateProfile({
-      fullName: editForm.fullName.trim(),
-      phone:    editForm.phone.trim(),
-      branch:   editForm.community,
-    });
-
+    await updateProfile({ fullName: editForm.fullName.trim(), phone: editForm.phone.trim(), branch: editForm.community });
     setShowEmailOtp(false);
     setIsEditing(false);
     return { success: true };
   };
 
-  const handleResendEmailOtp = async () => {
-    return await requestEmailChange(pendingEmail);
-  };
-
-  const handleCancelEmailOtp = () => {
-    setShowEmailOtp(false);
-    setPendingEmail('');
-    setIsSaving(false);
-  };
+  const handleResendEmailOtp  = async () => await requestEmailChange(pendingEmail);
+  const handleCancelEmailOtp  = () => { setShowEmailOtp(false); setPendingEmail(''); setIsSaving(false); };
 
   const handleCancelEdit = () => {
-    setEditForm({
-      fullName:  profile?.fullName  || '',
-      email:     user?.email        || '',
-      phone:     profile?.phone     || '',
-      community: profile?.branch    || profile?.community || '',
-      photoFile: null,
-    });
+    setEditForm({ fullName: profile?.fullName || '', email: user?.email || '', phone: profile?.phone || '', community: profile?.branch || profile?.community || '', photoFile: null });
     setPhotoPreview(null);
     setFormError('');
     setIsEditing(false);
@@ -164,18 +149,28 @@ export default function Settings() {
     setNotificationPreferences(prev => ({ ...prev, [pref]: !prev[pref] }));
 
   const handleSaveSettings = () => alert('Settings saved successfully!');
-
   const handleReset = () => {
     setEmailNotifications(true); setSmsNotifications(false); setTwoFactorAuth(false);
     setNotificationPreferences({ loanUpdates: true, paymentReminders: true, upcomingServices: true, churchAnnouncements: true });
     setLanguage('English'); setTimezone('GMT+8 Manila');
   };
 
+  /* Re-fetch verification after modal closes */
+  const handleVerifyModalClose = async () => {
+    setShowVerifyModal(false);
+    try {
+      const token = localStorage.getItem('token');
+      const res   = await fetch(`${API}/api/verification/status`, { headers: { Authorization: `Bearer ${token}` } });
+      const data  = await res.json();
+      if (res.ok && data.success) setVerificationStatus(data.verificationStatus);
+    } catch {}
+  };
+
   /* ── Derived display values ──────────────────────────────────────────── */
   const displayName      = profile?.fullName || 'Member';
   const displayEmail     = user?.email       || 'member@puac.org';
   const displayCommunity = profile?.branch   || profile?.community || '';
-  const initials         = displayName.charAt(0).toUpperCase();
+  const avatarSrc        = photoPreview || profile?.photoUrl || null;
 
   const accountCreated = user?.createdAt
     ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
@@ -183,29 +178,57 @@ export default function Settings() {
 
   const dateOfBirthRaw = profile?.birthday || profile?.dateOfBirth;
   const dateOfBirth    = dateOfBirthRaw
-    ? (() => {
-        try { return new Date(dateOfBirthRaw).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }); }
-        catch { return dateOfBirthRaw; }
-      })()
+    ? (() => { try { return new Date(dateOfBirthRaw).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }); } catch { return dateOfBirthRaw; } })()
     : 'Not set';
 
-  /* ── Avatar ──────────────────────────────────────────────────────────── */
-  const avatarSrc = photoPreview || profile?.photoUrl || null;
+  /* ── Verification badge ──────────────────────────────────────────────── */
+  const renderVerificationBadge = () => {
+    if (verificationStatus === null) return null;
+    const STATUS = {
+      verified:   { cls: 'pi-verify-pill--verified',   label: 'Officer Verified',       actionLabel: null },
+      pending:    { cls: 'pi-verify-pill--pending',     label: 'Verification Pending',   actionLabel: null },
+      rejected:   { cls: 'pi-verify-pill--rejected',    label: 'Verification Rejected',  actionLabel: 'Resubmit' },
+      unverified: { cls: 'pi-verify-pill--unverified',  label: 'Verification Required',  actionLabel: 'Get verified' },
+    };
+    const { cls, label, actionLabel } = STATUS[verificationStatus] || STATUS.unverified;
+    return (
+      <div className={`pi-verify-pill ${cls}`}>
+        <span className="pi-verify-pill__label">{label}</span>
+        {actionLabel && (
+          <>
+            <span className="pi-verify-pill__sep" aria-hidden="true" />
+            <button className="pi-verify-pill__action" onClick={() => navigate('/loans')}>
+              {actionLabel}
+            </button>
+          </>
+        )}
+      </div>
+    );
+  };
 
+  /* ════════════════════════════════════════════════════════════════════
+     RENDER
+  ════════════════════════════════════════════════════════════════════ */
   return (
     <div className="home-layout">
       <Sidebar />
 
       {/* Email OTP Modal */}
-     {showEmailOtp && (
-  <VerifyEmailModal
-    isOpen={showEmailOtp}
-    onClose={handleCancelEmailOtp}
-    email={pendingEmail}
-    onVerify={handleVerifyEmailOtp}
-    onResend={handleResendEmailOtp}
-  />
-)}
+      {showEmailOtp && (
+        <VerifyEmailModal
+          isOpen={showEmailOtp}
+          onClose={handleCancelEmailOtp}
+          email={pendingEmail}
+          onVerify={handleVerifyEmailOtp}
+          onResend={handleResendEmailOtp}
+        />
+      )}
+
+      {/* Officer Verification Modal */}
+      <VerificationModal
+        isOpen={showVerifyModal}
+        onClose={handleVerifyModalClose}
+      />
 
       {/* Main Content */}
       <div className="main-content">
@@ -230,9 +253,9 @@ export default function Settings() {
               </div>
             </div>
 
-            {/* Blue profile card with avatar upload */}
+            {/* Blue profile card */}
             <div className="pi-card">
-              {/* Avatar with upload functionality */}
+              {/* Avatar */}
               <div
                 className="pi-card-avatar-wrapper"
                 onClick={() => isEditing && document.getElementById('pi-photo-input-header').click()}
@@ -255,24 +278,22 @@ export default function Settings() {
                     </svg>
                   </div>
                 )}
-                <input
-                  id="pi-photo-input-header"
-                  type="file"
-                  accept="image/*"
-                  style={{ display: 'none' }}
-                  onChange={handlePhotoSelect}
-                />
+                <input id="pi-photo-input-header" type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhotoSelect} />
               </div>
 
+              {/* Name / email / badges */}
               <div className="pi-card-info">
                 <span className="pi-card-name">{displayName}</span>
                 <span className="pi-card-email">{displayEmail}</span>
                 <div className="pi-card-badges">
-                  <span className="pi-badge pi-badge-level">Level 1</span>
                   <span className="pi-badge pi-badge-member">Member</span>
+                  <span className="pi-badge pi-badge-level">Level 1</span>
+                  {/* ── Verification badge lives here ── */}
+                  {renderVerificationBadge()}
                 </div>
               </div>
 
+              {/* Edit / Save buttons */}
               <div className="pi-card-actions">
                 {isEditing ? (
                   <>
@@ -304,85 +325,50 @@ export default function Settings() {
                   Editing your profile — changes won't be saved until you click Save Changes
                 </p>
 
-                {/* Global form error */}
                 {formError && (
-                  <div style={{
-                    display: 'flex', alignItems: 'center', gap: 8,
-                    background: '#FEF2F2', border: '1px solid #FECACA',
-                    borderRadius: 10, padding: '10px 14px', marginBottom: 16,
-                  }}>
-                    <svg width="16" height="16" fill="none" viewBox="0 0 20 20" style={{ flexShrink: 0 }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:8, background:'#FEF2F2', border:'1px solid #FECACA', borderRadius:10, padding:'10px 14px', marginBottom:16 }}>
+                    <svg width="16" height="16" fill="none" viewBox="0 0 20 20" style={{ flexShrink:0 }}>
                       <circle cx="10" cy="10" r="9" stroke="#F04438" strokeWidth="1.5"/>
                       <path d="M10 6v4M10 14h.01" stroke="#F04438" strokeWidth="1.5" strokeLinecap="round"/>
                     </svg>
-                    <span style={{ fontSize: 13, color: '#B91C1C' }}>{formError}</span>
+                    <span style={{ fontSize:13, color:'#B91C1C' }}>{formError}</span>
                   </div>
                 )}
 
-                {/* ── Form Grid ────────────────────────────────────── */}
                 <div className="pi-form-grid">
-
                   {/* Full Name */}
                   <div className="pi-form-field">
                     <label className="pi-form-label">FULL NAME</label>
-                    <input
-                      type="text"
-                      className="pi-form-input"
-                      value={editForm.fullName}
-                      onChange={e => handleEditChange('fullName', e.target.value)}
-                      placeholder="Enter full name"
-                    />
+                    <input type="text" className="pi-form-input" value={editForm.fullName} onChange={e => handleEditChange('fullName', e.target.value)} placeholder="Enter full name" />
                   </div>
 
                   {/* Email */}
                   <div className="pi-form-field">
                     <label className="pi-form-label">EMAIL ADDRESS</label>
-                    <input
-                      type="email"
-                      className="pi-form-input"
-                      value={editForm.email}
-                      onChange={e => handleEditChange('email', e.target.value)}
-                      placeholder="Enter email"
-                    />
+                    <input type="email" className="pi-form-input" value={editForm.email} onChange={e => handleEditChange('email', e.target.value)} placeholder="Enter email" />
                     {editForm.email.trim().toLowerCase() !== (user?.email || '').trim().toLowerCase() && editForm.email ? (
-  <span style={{
-    display: 'flex', alignItems: 'center', gap: 5,
-    fontSize: 11, color: '#D97706', marginTop: 5,
-  }}>
-    <svg width="12" height="12" fill="none" viewBox="0 0 20 20"><path d="M10 2L2 17h16L10 2Z" stroke="#D97706" strokeWidth="1.5" strokeLinejoin="round"/><path d="M10 8v4M10 14h.01" stroke="#D97706" strokeWidth="1.5" strokeLinecap="round"/></svg>
-    Changing email requires OTP verification · You can only change your email once per day
-  </span>
-) : (
-  <span style={{
-    display: 'flex', alignItems: 'center', gap: 5,
-    fontSize: 11, color: '#9CA3AF', marginTop: 5,
-  }}>
-    <svg width="12" height="12" fill="none" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" stroke="#9CA3AF" strokeWidth="1.5"/><path d="M10 6v4M10 14h.01" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round"/></svg>
-    You can only change your email once per day
-  </span>
-)}
+                      <span style={{ display:'flex', alignItems:'center', gap:5, fontSize:11, color:'#D97706', marginTop:5 }}>
+                        <svg width="12" height="12" fill="none" viewBox="0 0 20 20"><path d="M10 2L2 17h16L10 2Z" stroke="#D97706" strokeWidth="1.5" strokeLinejoin="round"/><path d="M10 8v4M10 14h.01" stroke="#D97706" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                        Changing email requires OTP verification · You can only change your email once per day
+                      </span>
+                    ) : (
+                      <span style={{ display:'flex', alignItems:'center', gap:5, fontSize:11, color:'#9CA3AF', marginTop:5 }}>
+                        <svg width="12" height="12" fill="none" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" stroke="#9CA3AF" strokeWidth="1.5"/><path d="M10 6v4M10 14h.01" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                        You can only change your email once per day
+                      </span>
+                    )}
                   </div>
 
                   {/* Phone */}
                   <div className="pi-form-field">
                     <label className="pi-form-label">PHONE NUMBER</label>
-                    <input
-                      type="tel"
-                      className="pi-form-input"
-                      value={editForm.phone}
-                      onChange={e => handleEditChange('phone', e.target.value)}
-                      placeholder="+63 90 000 0000"
-                    />
+                    <input type="tel" className="pi-form-input" value={editForm.phone} onChange={e => handleEditChange('phone', e.target.value)} placeholder="+63 90 000 0000" />
                   </div>
 
                   {/* Community */}
                   <div className="pi-form-field">
                     <label className="pi-form-label">COMMUNITY</label>
-                    <select
-                      className="pi-form-input pi-form-select"
-                      value={editForm.community}
-                      onChange={e => handleEditChange('community', e.target.value)}
-                    >
+                    <select className="pi-form-input pi-form-select" value={editForm.community} onChange={e => handleEditChange('community', e.target.value)}>
                       <option value="">— Select Community —</option>
                       {Object.entries(COMMUNITIES).map(([region, places]) => (
                         <optgroup key={region} label={region}>
@@ -392,7 +378,7 @@ export default function Settings() {
                     </select>
                   </div>
 
-                  {/* Date of Birth — text only, no border */}
+                  {/* Date of Birth — readonly */}
                   <div className="pi-form-field">
                     <label className="pi-form-label">DATE OF BIRTH</label>
                     <div className="pi-readonly-text">
@@ -404,7 +390,7 @@ export default function Settings() {
                     </div>
                   </div>
 
-                  {/* Account Created — text only, no border, next to Date of Birth */}
+                  {/* Account Created — readonly */}
                   <div className="pi-form-field">
                     <label className="pi-form-label">ACCOUNT CREATED</label>
                     <div className="pi-readonly-text">
@@ -416,17 +402,15 @@ export default function Settings() {
                     </div>
                   </div>
 
-                  {/* Single readonly note spanning both columns */}
                   <div className="pi-form-field-full">
                     <span className="pi-readonly-note">These fields cannot be changed</span>
                   </div>
-
                 </div>
               </div>
             )}
           </div>
 
-          {/* ── Notifications ────────────────────────────────────────── */}
+          {/* ── Notifications ─────────────────────────────────────────── */}
           <div className="settings-section">
             <div className="section-header">
               <div className="section-icon-box notifications-icon">
@@ -440,7 +424,6 @@ export default function Settings() {
                 <p className="section-subtitle">Manage how you receive updates</p>
               </div>
             </div>
-
             <div className="settings-group">
               <div className="toggle-setting">
                 <div className="toggle-setting-info">
@@ -465,12 +448,7 @@ export default function Settings() {
               <div className="notification-preferences">
                 <h3 className="preferences-title">Notification Preferences</h3>
                 <div className="checkbox-list">
-                  {[
-                    ['loanUpdates',        'Loan application updates'],
-                    ['paymentReminders',   'Payment reminders'],
-                    ['upcomingServices',   'Upcoming services'],
-                    ['churchAnnouncements','Church announcements'],
-                  ].map(([key, label]) => (
+                  {[['loanUpdates','Loan application updates'],['paymentReminders','Payment reminders'],['upcomingServices','Upcoming services'],['churchAnnouncements','Church announcements']].map(([key, label]) => (
                     <label key={key} className="checkbox-item">
                       <input type="checkbox" checked={notificationPreferences[key]} onChange={() => handlePreferenceChange(key)} />
                       <span>{label}</span>
@@ -481,7 +459,7 @@ export default function Settings() {
             </div>
           </div>
 
-          {/* ── Security ─────────────────────────────────────────────── */}
+          {/* ── Security ──────────────────────────────────────────────── */}
           <div className="settings-section">
             <div className="section-header">
               <div className="section-icon-box security-icon">
@@ -496,42 +474,24 @@ export default function Settings() {
             </div>
             <div className="settings-group">
               <div className="setting-item">
-                <div className="setting-item-icon">
-                  <svg fill="none" viewBox="0 0 20 20"><path d="M15.8333 9.16667H4.16667C3.24619 9.16667 2.5 9.91286 2.5 10.8333V16.6667C2.5 17.5871 3.24619 18.3333 4.16667 18.3333H15.8333C16.7538 18.3333 17.5 17.5871 17.5 16.6667V10.8333C17.5 9.91286 16.7538 9.16667 15.8333 9.16667Z" stroke="#6B7280" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" /><path d="M5.83333 9.16667V5.83333C5.83333 4.72826 6.27232 3.66846 7.05372 2.88706C7.83512 2.10565 8.89493 1.66667 10 1.66667C11.1051 1.66667 12.1649 2.10565 12.9463 2.88706C13.7277 3.66846 14.1667 4.72826 14.1667 5.83333V9.16667" stroke="#6B7280" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" /></svg>
-                </div>
-                <div className="setting-item-content">
-                  <h3 className="setting-item-title">Password</h3>
-                  <p className="setting-item-description">Last changed 3 months ago</p>
-                </div>
+                <div className="setting-item-icon"><svg fill="none" viewBox="0 0 20 20"><path d="M15.8333 9.16667H4.16667C3.24619 9.16667 2.5 9.91286 2.5 10.8333V16.6667C2.5 17.5871 3.24619 18.3333 4.16667 18.3333H15.8333C16.7538 18.3333 17.5 17.5871 17.5 16.6667V10.8333C17.5 9.91286 16.7538 9.16667 15.8333 9.16667Z" stroke="#6B7280" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" /><path d="M5.83333 9.16667V5.83333C5.83333 4.72826 6.27232 3.66846 7.05372 2.88706C7.83512 2.10565 8.89493 1.66667 10 1.66667C11.1051 1.66667 12.1649 2.10565 12.9463 2.88706C13.7277 3.66846 14.1667 4.72826 14.1667 5.83333V9.16667" stroke="#6B7280" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" /></svg></div>
+                <div className="setting-item-content"><h3 className="setting-item-title">Password</h3><p className="setting-item-description">Last changed 3 months ago</p></div>
                 <button className="link-button">Change</button>
               </div>
               <div className="toggle-setting">
-                <div className="setting-item-icon">
-                  <svg fill="none" viewBox="0 0 20 20"><path d="M15.8333 9.16667H4.16667C3.24619 9.16667 2.5 9.91286 2.5 10.8333V16.6667C2.5 17.5871 3.24619 18.3333 4.16667 18.3333H15.8333C16.7538 18.3333 17.5 17.5871 17.5 16.6667V10.8333C17.5 9.91286 16.7538 9.16667 15.8333 9.16667Z" stroke="#6B7280" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" /><path d="M5.83333 9.16667V5.83333C5.83333 4.72826 6.27232 3.66846 7.05372 2.88706C7.83512 2.10565 8.89493 1.66667 10 1.66667C11.1051 1.66667 12.1649 2.10565 12.9463 2.88706C13.7277 3.66846 14.1667 4.72826 14.1667 5.83333V9.16667" stroke="#6B7280" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" /></svg>
-                </div>
-                <div className="toggle-setting-info">
-                  <h3 className="toggle-title">Two-Factor Authentication</h3>
-                  <p className="toggle-description">Add an extra layer of security</p>
-                </div>
-                <label className="toggle-switch">
-                  <input type="checkbox" checked={twoFactorAuth} onChange={e => setTwoFactorAuth(e.target.checked)} />
-                  <span className="toggle-slider"></span>
-                </label>
+                <div className="setting-item-icon"><svg fill="none" viewBox="0 0 20 20"><path d="M15.8333 9.16667H4.16667C3.24619 9.16667 2.5 9.91286 2.5 10.8333V16.6667C2.5 17.5871 3.24619 18.3333 4.16667 18.3333H15.8333C16.7538 18.3333 17.5 17.5871 17.5 16.6667V10.8333C17.5 9.91286 16.7538 9.16667 15.8333 9.16667Z" stroke="#6B7280" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" /><path d="M5.83333 9.16667V5.83333C5.83333 4.72826 6.27232 3.66846 7.05372 2.88706C7.83512 2.10565 8.89493 1.66667 10 1.66667C11.1051 1.66667 12.1649 2.10565 12.9463 2.88706C13.7277 3.66846 14.1667 4.72826 14.1667 5.83333V9.16667" stroke="#6B7280" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" /></svg></div>
+                <div className="toggle-setting-info"><h3 className="toggle-title">Two-Factor Authentication</h3><p className="toggle-description">Add an extra layer of security</p></div>
+                <label className="toggle-switch"><input type="checkbox" checked={twoFactorAuth} onChange={e => setTwoFactorAuth(e.target.checked)} /><span className="toggle-slider"></span></label>
               </div>
               <div className="setting-item">
-                <div className="setting-item-icon">
-                  <svg fill="none" viewBox="0 0 20 20"><path d="M10 18.3333C14.6024 18.3333 18.3333 14.6024 18.3333 10C18.3333 5.39763 14.6024 1.66667 10 1.66667C5.39763 1.66667 1.66667 5.39763 1.66667 10C1.66667 14.6024 5.39763 18.3333 10 18.3333Z" stroke="#6B7280" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" /><path d="M10 5V10L13.3333 11.6667" stroke="#6B7280" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" /></svg>
-                </div>
-                <div className="setting-item-content">
-                  <h3 className="setting-item-title">Login History</h3>
-                  <p className="setting-item-description">View recent login activity</p>
-                </div>
+                <div className="setting-item-icon"><svg fill="none" viewBox="0 0 20 20"><path d="M10 18.3333C14.6024 18.3333 18.3333 14.6024 18.3333 10C18.3333 5.39763 14.6024 1.66667 10 1.66667C5.39763 1.66667 1.66667 5.39763 1.66667 10C1.66667 14.6024 5.39763 18.3333 10 18.3333Z" stroke="#6B7280" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" /><path d="M10 5V10L13.3333 11.6667" stroke="#6B7280" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" /></svg></div>
+                <div className="setting-item-content"><h3 className="setting-item-title">Login History</h3><p className="setting-item-description">View recent login activity</p></div>
                 <button className="link-button">View</button>
               </div>
             </div>
           </div>
 
-          {/* ── Preferences ──────────────────────────────────────────── */}
+          {/* ── Preferences ───────────────────────────────────────────── */}
           <div className="settings-section">
             <div className="section-header">
               <div className="section-icon-box preferences-icon">
@@ -561,7 +521,7 @@ export default function Settings() {
             </div>
           </div>
 
-          {/* ── Payment Methods ───────────────────────────────────────── */}
+          {/* ── Payment Methods ────────────────────────────────────────── */}
           <div className="settings-section">
             <div className="section-header">
               <div className="section-icon-box payment-icon">
@@ -577,9 +537,7 @@ export default function Settings() {
             </div>
             <div className="settings-group">
               <div className="payment-card-item">
-                <div className="payment-card-icon">
-                  <svg fill="none" viewBox="0 0 32 24"><rect width="32" height="24" fill="#E5E7EB" rx="4" /><rect width="32" height="8" y="6" fill="#9CA3AF" /></svg>
-                </div>
+                <div className="payment-card-icon"><svg fill="none" viewBox="0 0 32 24"><rect width="32" height="24" fill="#E5E7EB" rx="4" /><rect width="32" height="8" y="6" fill="#9CA3AF" /></svg></div>
                 <div className="payment-card-content">
                   <h3 className="payment-card-number">•••• •••• •••• 4242</h3>
                   <p className="payment-card-expiry">Expires 12/2026</p>
@@ -590,7 +548,7 @@ export default function Settings() {
             </div>
           </div>
 
-          {/* ── Action Buttons ────────────────────────────────────────── */}
+          {/* ── Action Buttons ─────────────────────────────────────────── */}
           <div className="settings-actions">
             <button className="save-settings-btn" onClick={handleSaveSettings}>Save All Settings</button>
             <button className="reset-btn" onClick={handleReset}>Reset</button>

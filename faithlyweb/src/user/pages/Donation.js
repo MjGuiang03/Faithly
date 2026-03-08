@@ -1,109 +1,116 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import svgPaths from '../../imports/svg-icons';
-import puacLogo from '../../assets/puaclogo.png';
-import '../styles/Donation.css';
 import Sidebar from '../components/Sidebar';
+import '../styles/Donation.css';
+
+const API = process.env.REACT_APP_API_URL;
+
+const fmt = (n) =>
+  n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 0 })}` : '₱0';
+
+const fmtDate = (d) =>
+  d ? new Date(d).toLocaleDateString('en-PH', { month: 'numeric', day: 'numeric', year: 'numeric' }) : '—';
+
+const QUICK_AMOUNTS = [25, 50, 100, 250];
+
+const CATEGORIES = [
+  { name: 'General Fund',      description: 'Church operations and ministry' },
+  { name: 'Children Ministry', description: "Children's programs and activities" },
+  { name: 'Building Fund',     description: 'Infrastructure and facility improvements' },
+  { name: 'Youth Ministry',    description: 'Youth programs and events' },
+  { name: 'Mission Fund',      description: 'Missionary work and outreach programs' },
+];
+
+const mockProcessPayment = () =>
+  new Promise((resolve) => setTimeout(() => resolve({ success: true }), 1200));
 
 export default function Donations() {
-  const navigate = useNavigate();
-  const { user, profile, signOut } = useAuth();
-  const [donationAmount, setDonationAmount] = useState('');
+  const [donationAmount,   setDonationAmount]   = useState('');
   const [donationCategory, setDonationCategory] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('');
-  const [isRecurring, setIsRecurring] = useState(false);
+  const [paymentMethod,    setPaymentMethod]    = useState('GCash');
+  const [isRecurring,      setIsRecurring]      = useState(false);
+  const [submitting,       setSubmitting]       = useState(false);
+  const [formError,        setFormError]        = useState('');
+  const [donationHistory,  setDonationHistory]  = useState([]);
+  const [stats,            setStats]            = useState({ totalDonated: 0, thisYearTotal: 0, totalCount: 0 });
+  const [loading,          setLoading]          = useState(true);
+  const [historyPage,      setHistoryPage]      = useState(1);
+  const HISTORY_PER_PAGE = 5;
 
-  const handleSignOut = async () => {
-    const result = await signOut();
-    if (result.success) {
-      navigate('/');
+  const fetchHistory = useCallback(async () => {
+    setLoading(true);
+    const token = localStorage.getItem('token');
+    try {
+      const res  = await fetch(`${API}/api/donations/my-donations`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setDonationHistory(data.donations || []);
+        setStats(data.stats || { totalDonated: 0, thisYearTotal: 0, totalCount: 0 });
+      }
+    } catch { /* silent */ }
+    finally  { setLoading(false); }
+  }, []);
+
+  useEffect(() => { fetchHistory(); }, [fetchHistory]);
+
+  /* ── History pagination ── */
+  const historyTotalPages = Math.max(1, Math.ceil(donationHistory.length / HISTORY_PER_PAGE));
+  const paginatedHistory  = donationHistory.slice(
+    (historyPage - 1) * HISTORY_PER_PAGE,
+    historyPage * HISTORY_PER_PAGE
+  );
+
+  const handleDonate = async () => {
+    setFormError('');
+    const num = Number(donationAmount);
+    if (!num || num <= 0)  { setFormError('Please enter a valid donation amount.'); return; }
+    if (!donationCategory) { setFormError('Please select a donation category.');    return; }
+
+    setSubmitting(true);
+    try {
+      await mockProcessPayment();
+      const token = localStorage.getItem('token');
+      const res   = await fetch(`${API}/api/donations`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body:    JSON.stringify({ amount: num, category: donationCategory, paymentMethod, isRecurring }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to record donation');
+      setDonationAmount('');
+      setDonationCategory('');
+      setIsRecurring(false);
+      fetchHistory();
+    } catch (err) {
+      setFormError(err.message || 'Something went wrong. Please try again.');
+    } finally {
+      setSubmitting(false);
     }
-  };
-
-  const quickAmounts = [25, 50, 100, 250];
-
-  const donationHistory = [
-    // {
-    //   fund: 'General Fund',
-    //   id: 'D-2026-001',
-    //   date: '1/15/2026',
-    //   method: 'Credit Card',
-    //   amount: '₱100',
-    //   recurring: true
-    // },
-    // {
-    //   fund: 'Mission Fund',
-    //   id: 'D-2025-089',
-    //   date: '12/20/2025',
-    //   method: 'Bank Transfer',
-    //   amount: '₱50',
-    //   recurring: false
-    // },
-    // {
-    //   fund: 'Building Fund',
-    //   id: 'D-2025-076',
-    //   date: '11/10/2025',
-    //   method: 'Credit Card',
-    //   amount: '₱200',
-    //   recurring: false
-    // }
-  ];
-
-  const categories = [
-    {
-      name: 'General Fund',
-      description: 'Church operations and ministry'
-    },
-    {
-      name: 'Building Fund',
-      description: 'Infrastructure and facility improvements'
-    },
-    {
-      name: 'Mission Fund',
-      description: 'Missionary work and outreach programs'
-    },
-    {
-      name: 'Children Ministry',
-      description: "Children's programs and activities"
-    },
-    {
-      name: 'Youth Ministry',
-      description: 'Youth programs and events'
-    }
-  ];
-
-  const handleQuickAmount = (amount) => {
-    setDonationAmount(amount.toString());
-  };
-
-  const handleDonate = () => {
-    alert('Donation feature coming soon!');
   };
 
   return (
     <div className="home-layout">
-      {/* Sidebar */}
-     <Sidebar/>
-
-      {/* Main Content */}
+      <Sidebar />
       <div className="main-content">
+
         {/* Header */}
         <div className="donations-header">
           <h1 className="page-title">Donations</h1>
           <p className="page-subtitle">Support the church and track your giving</p>
         </div>
 
-        {/* Stats Cards */}
+        {/* Stats */}
         <div className="donations-stats">
           <div className="donation-stat-card">
             <div className="donation-stat-header">
               <p className="donation-stat-label">Total Donated</p>
               <svg className="donation-stat-icon" fill="none" viewBox="0 0 20 20">
-                <path d={svgPaths.p387b1200} stroke="#E60076" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                <path d="M17.3667 3.84167C16.941 3.41583 16.4357 3.07803 15.8794 2.84757C15.3231 2.61712 14.7267 2.49854 14.1245 2.49854C13.5224 2.49854 12.9259 2.61712 12.3696 2.84757C11.8133 3.07803 11.308 3.41583 10.8823 3.84167L10.0001 4.72417L9.11793 3.84167C8.25853 2.98227 7.09337 2.49898 5.87593 2.49898C4.65849 2.49898 3.49334 2.98227 2.63393 3.84167C1.77453 4.70108 1.29124 5.86623 1.29124 7.08367C1.29124 8.30111 1.77453 9.46626 2.63393 10.3257L10.0001 17.6917L17.3662 10.3257C17.792 9.89993 18.1298 9.39461 18.3602 8.83831C18.5907 8.28202 18.7092 7.68556 18.7092 7.08334C18.7092 6.48112 18.5907 5.88465 18.3602 5.32836C18.1298 4.77207 17.792 4.26743 17.3662 3.84167H17.3667Z" stroke="#E60076" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667"/>
               </svg>
             </div>
-            <p className="donation-stat-value">₱0</p>
+            <p className="donation-stat-value">{fmt(stats.totalDonated)}</p>
           </div>
           <div className="donation-stat-card">
             <div className="donation-stat-header">
@@ -113,7 +120,7 @@ export default function Donations() {
                 <path d="M6.66667 13.3333L10 10L13.3333 13.3333" stroke="#00A63E" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
               </svg>
             </div>
-            <p className="donation-stat-value">₱0</p>
+            <p className="donation-stat-value">{fmt(stats.thisYearTotal)}</p>
           </div>
           <div className="donation-stat-card">
             <div className="donation-stat-header">
@@ -121,22 +128,23 @@ export default function Donations() {
               <svg className="donation-stat-icon" fill="none" viewBox="0 0 20 20">
                 <path d="M6.66667 1.66667V5" stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 <path d="M13.3333 1.66667V5" stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                <path d={svgPaths.p1da67b80} stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 <path d="M2.5 8.33333H17.5" stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                <path d="M15.8333 3.33333H4.16667C3.24619 3.33333 2.5 4.07952 2.5 5V16.6667C2.5 17.5871 3.24619 18.3333 4.16667 18.3333H15.8333C16.7538 18.3333 17.5 17.5871 17.5 16.6667V5C17.5 4.07952 16.7538 3.33333 15.8333 3.33333Z" stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
               </svg>
             </div>
-            <p className="donation-stat-value">0</p>
+            <p className="donation-stat-value">{stats.totalCount}</p>
           </div>
         </div>
 
-        {/* Content Grid */}
+        {/* Two-column grid */}
         <div className="donations-content-grid">
-          {/* Make a Donation Form */}
+
+          {/* Left: Make a Donation */}
           <div className="donation-form-card">
             <h2 className="section-title">Make a Donation</h2>
-            
             <div className="donation-form">
-              {/* Amount Input */}
+
+              {/* Amount */}
               <div className="form-group">
                 <label className="form-label">Donation Amount</label>
                 <div className="amount-input-wrapper">
@@ -146,33 +154,36 @@ export default function Donations() {
                     className="amount-input"
                     placeholder="Enter amount"
                     value={donationAmount}
-                    onChange={(e) => setDonationAmount(e.target.value)}
+                    onChange={(e) => { setDonationAmount(e.target.value); setFormError(''); }}
+                    disabled={submitting}
                   />
                 </div>
                 <div className="quick-amounts">
-                  {quickAmounts.map((amount) => (
+                  {QUICK_AMOUNTS.map((q) => (
                     <button
-                      key={amount}
-                      className="quick-amount-btn"
-                      onClick={() => handleQuickAmount(amount)}
+                      key={q}
+                      className={`quick-amount-btn${Number(donationAmount) === q ? ' quick-amount-active' : ''}`}
+                      onClick={() => { setDonationAmount(String(q)); setFormError(''); }}
+                      disabled={submitting}
                     >
-                      ₱{amount}
+                      ₱{q}
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Category Dropdown */}
+              {/* Category */}
               <div className="form-group">
                 <label className="form-label">Donation Category</label>
                 <select
                   className="form-select"
                   value={donationCategory}
-                  onChange={(e) => setDonationCategory(e.target.value)}
+                  onChange={(e) => { setDonationCategory(e.target.value); setFormError(''); }}
+                  disabled={submitting}
                 >
-                  <option value="">Select category</option>
-                  {categories.map((cat, index) => (
-                    <option key={index} value={cat.name}>{cat.name}</option>
+                  <option value=""></option>
+                  {CATEGORIES.map((c) => (
+                    <option key={c.name} value={c.name}>{c.name}</option>
                   ))}
                 </select>
               </div>
@@ -182,26 +193,31 @@ export default function Donations() {
                 <label className="form-label">Payment Method</label>
                 <div className="payment-methods">
                   <button
-                    className={`payment-method-btn ${paymentMethod === 'card' ? 'active' : ''}`}
-                    onClick={() => setPaymentMethod('card')}
+                    className={`payment-method-btn${paymentMethod === 'GCash' ? ' active' : ''}`}
+                    onClick={() => setPaymentMethod('GCash')}
+                    disabled={submitting}
                   >
-                    <svg className="payment-icon" fill="none" viewBox="0 0 24 24">
-                      <path d="M21 4H3C1.89543 4 1 4.89543 1 6V18C1 19.1046 1.89543 20 3 20H21C22.1046 20 23 19.1046 23 18V6C23 4.89543 22.1046 4 21 4Z" stroke="#0A0A0A" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                      <path d="M1 10H23" stroke="#0A0A0A" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                    <svg className="payment-icon" viewBox="0 0 28 28" fill="none">
+                      <circle cx="14" cy="14" r="12" fill="#E8F3FF"/>
+                      <text x="14" y="19" textAnchor="middle" fontSize="15" fontWeight="800" fill="#007DFF" fontFamily="Arial, sans-serif">G</text>
                     </svg>
-                    <span>Credit Card</span>
+                    <span>GCash</span>
                   </button>
                   <button
-                    className={`payment-method-btn ${paymentMethod === 'bank' ? 'active' : ''}`}
-                    onClick={() => setPaymentMethod('bank')}
+                    className={`payment-method-btn${paymentMethod === 'Bank' ? ' active' : ''}`}
+                    onClick={() => setPaymentMethod('Bank')}
+                    disabled={submitting}
                   >
-                    <span className="peso-icon">₱</span>
-                    <span>Bank Transfer</span>
+                    <svg className="payment-icon" fill="none" viewBox="0 0 24 24">
+                      <rect x="2" y="7" width="20" height="14" rx="2" stroke="#374151" strokeWidth="1.8"/>
+                      <path d="M2 11H22" stroke="#374151" strokeWidth="1.8"/>
+                    </svg>
+                    <span>Bank</span>
                   </button>
                 </div>
               </div>
 
-              {/* Recurring Checkbox */}
+              {/* Recurring */}
               <div className="recurring-container">
                 <input
                   type="checkbox"
@@ -209,6 +225,7 @@ export default function Donations() {
                   className="recurring-checkbox"
                   checked={isRecurring}
                   onChange={(e) => setIsRecurring(e.target.checked)}
+                  disabled={submitting}
                 />
                 <label htmlFor="recurring" className="recurring-label">
                   <span className="recurring-title">Make this a recurring donation</span>
@@ -216,62 +233,108 @@ export default function Donations() {
                 </label>
               </div>
 
+              {formError && <p className="donation-form-error">{formError}</p>}
+
               {/* Donate Button */}
-              <button className="donate-btn" onClick={handleDonate}>
-                <svg className="donate-icon" fill="none" viewBox="0 0 20 20">
-                  <path d={svgPaths.p387b1200} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                </svg>
-                Donate Now
+              <button className="donate-btn" onClick={handleDonate} disabled={submitting}>
+                {submitting ? 'Processing…' : (
+                  <>
+                    <svg className="donate-icon" fill="none" viewBox="0 0 20 20">
+                      <path d="M17.3667 3.84167C16.941 3.41583 16.4357 3.07803 15.8794 2.84757C15.3231 2.61712 14.7267 2.49854 14.1245 2.49854C13.5224 2.49854 12.9259 2.61712 12.3696 2.84757C11.8133 3.07803 11.308 3.41583 10.8823 3.84167L10.0001 4.72417L9.11793 3.84167C8.25853 2.98227 7.09337 2.49898 5.87593 2.49898C4.65849 2.49898 3.49334 2.98227 2.63393 3.84167C1.77453 4.70108 1.29124 5.86623 1.29124 7.08367C1.29124 8.30111 1.77453 9.46626 2.63393 10.3257L10.0001 17.6917L17.3662 10.3257C17.792 9.89993 18.1298 9.39461 18.3602 8.83831C18.5907 8.28202 18.7092 7.68556 18.7092 7.08334C18.7092 6.48112 18.5907 5.88465 18.3602 5.32836C18.1298 4.77207 17.792 4.26743 17.3662 3.84167H17.3667Z" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667"/>
+                    </svg>
+                    Donate Now
+                  </>
+                )}
               </button>
             </div>
           </div>
 
-          {/* Donation History */}
+          {/* Right: Donation Categories */}
           <div className="donation-history-card">
-            <h2 className="section-title">Donation History</h2>
-            <div className="donation-history-list">
-              {donationHistory.map((donation, index) => (
-                <div key={index} className="donation-history-item">
-                  <div className="donation-history-main">
-                    <svg className="donation-history-icon" fill="none" viewBox="0 0 20 20">
-                      <path d={svgPaths.p387b1200} stroke="#E60076" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                    </svg>
-                    <div className="donation-history-info">
-                      <h3 className="donation-fund">{donation.fund}</h3>
-                      <p className="donation-id">{donation.id}</p>
-                      <p className="donation-details">{donation.date} • {donation.method}</p>
-                      {donation.recurring && (
-                        <span className="recurring-badge">Recurring</span>
-                      )}
-                    </div>
-                  </div>
-                  <p className="donation-history-amount">{donation.amount}</p>
+            <h2 className="section-title">Donation Categories</h2>
+            <div className="donation-categories-list">
+              {CATEGORIES.map((c) => (
+                <div key={c.name} className="donation-category-row">
+                  <h3 className="donation-fund">{c.name}</h3>
+                  <p className="donation-details" style={{ margin: 0 }}>{c.description}</p>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Donation Categories */}
+        {/* Donation History (full width) */}
         <div className="donation-categories-section">
-          <h2 className="section-title">Donation Categories</h2>
-          <div className="donation-categories-grid">
-            {categories.map((category, index) => (
-              <div key={index} className="category-card">
-                <h3 className="category-name">{category.name}</h3>
-                <p className="category-description">{category.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+          <h2 className="section-title">Donation History</h2>
 
-      {/* Floating Chat Button */}
-      <button className="chat-button">
-        <svg fill="none" viewBox="0 0 24 24">
-          <path d={svgPaths.p261dfb00} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-        </svg>
-      </button>
+          {loading && <p className="donations-loading-text">Loading…</p>}
+
+          {!loading && donationHistory.length === 0 && (
+            <p className="donations-empty-text">No donations yet.</p>
+          )}
+
+          {!loading && donationHistory.length > 0 && (
+            <div className="donation-history-list">
+              {paginatedHistory.map((d) => (
+                <div key={d._id || d.donationId} className="donation-history-item">
+                  <div className="donation-history-main">
+                    <svg className="donation-history-icon" fill="none" viewBox="0 0 20 20">
+                      <path d="M17.3667 3.84167C16.941 3.41583 16.4357 3.07803 15.8794 2.84757C15.3231 2.61712 14.7267 2.49854 14.1245 2.49854C13.5224 2.49854 12.9259 2.61712 12.3696 2.84757C11.8133 3.07803 11.308 3.41583 10.8823 3.84167L10.0001 4.72417L9.11793 3.84167C8.25853 2.98227 7.09337 2.49898 5.87593 2.49898C4.65849 2.49898 3.49334 2.98227 2.63393 3.84167C1.77453 4.70108 1.29124 5.86623 1.29124 7.08367C1.29124 8.30111 1.77453 9.46626 2.63393 10.3257L10.0001 17.6917L17.3662 10.3257C17.792 9.89993 18.1298 9.39461 18.3602 8.83831C18.5907 8.28202 18.7092 7.68556 18.7092 7.08334C18.7092 6.48112 18.5907 5.88465 18.3602 5.32836C18.1298 4.77207 17.792 4.26743 17.3662 3.84167H17.3667Z" stroke="#E60076" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667"/>
+                    </svg>
+                    <div className="donation-history-info">
+                      <h3 className="donation-fund">{d.category}</h3>
+                      <p className="donation-id">{d.donationId}</p>
+                      <p className="donation-details">
+                        {fmtDate(d.createdAt || d.date)} • {d.method || d.paymentMethod}
+                      </p>
+                      {d.type === 'Recurring' && (
+                        <span className="recurring-badge">Recurring</span>
+                      )}
+                    </div>
+                  </div>
+                  <p className="donation-history-amount">{fmt(d.amount)}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* History Pagination */}
+          {!loading && historyTotalPages > 1 && (
+            <div className="don-hist-pagination">
+              <button
+                className="don-hist-page-btn"
+                onClick={() => setHistoryPage(p => Math.max(1, p - 1))}
+                disabled={historyPage === 1}
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M9 10L5 7L9 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+
+              {Array.from({ length: historyTotalPages }, (_, i) => i + 1).map((p) => (
+                <button
+                  key={p}
+                  className={`don-hist-page-btn${p === historyPage ? ' don-hist-page-btn-active' : ''}`}
+                  onClick={() => setHistoryPage(p)}
+                >
+                  {p}
+                </button>
+              ))}
+
+              <button
+                className="don-hist-page-btn"
+                onClick={() => setHistoryPage(p => Math.min(historyTotalPages, p + 1))}
+                disabled={historyPage === historyTotalPages}
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M5 4L9 7L5 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          )}
+        </div>
+
+      </div>
     </div>
   );
 }
