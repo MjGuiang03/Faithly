@@ -13,6 +13,7 @@ import donationRoutes     from './routes/donations.js';
 import attendanceRoutes   from './routes/attendance.js';
 import verificationRoutes from './routes/verification.js';
 import adminRoutes        from './routes/admin.js';
+import notificationRoutes from './routes/notifications.js';
 
 const app = express();
 
@@ -32,5 +33,6 @@ app.use('/api',        donationRoutes);
 app.use('/api',        attendanceRoutes);
 app.use('/api',        verificationRoutes);
 app.use('/api/admin',  adminRoutes);
+app.use('/api/admin',  notificationRoutes);
 
 export default app;

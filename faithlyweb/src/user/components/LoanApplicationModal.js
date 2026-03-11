@@ -10,12 +10,14 @@ export default function LoanApplicationModal({ isOpen, onClose }) {
     guarantorName: '',
     guarantorPhone: ''
   });
+  const [selfieFile, setSelfieFile] = useState(null);
+  const [idFile,     setIdFile]     = useState(null);
 
   if (!isOpen) return null;
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+    console.log('Form submitted:', formData, { selfieFile, idFile });
     onClose();
   };
 
@@ -171,6 +173,86 @@ export default function LoanApplicationModal({ isOpen, onClose }) {
                   />
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Upload Documents */}
+          <div className="loan-application-upload-section">
+            <h3 className="loan-application-guarantor-title">Upload Documents</h3>
+            <div className="loan-application-row">
+
+              {/* Selfie with ID & Date */}
+              <div className="loan-application-group-half">
+                <label className="loan-application-label">Selfie with ID &amp; Date</label>
+                <label
+                  htmlFor="loan-selfie-upload"
+                  className={`loan-upload-box ${selfieFile ? 'loan-upload-box-done' : ''}`}
+                >
+                  {selfieFile ? (
+                    <>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="loan-upload-icon">
+                        <path d="M20 6L9 17l-5-5" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      <p className="loan-upload-text loan-upload-text-done">File selected</p>
+                      <p className="loan-upload-subtext">{selfieFile.name}</p>
+                    </>
+                  ) : (
+                    <>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="loan-upload-icon">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                        <polyline points="17 8 12 3 7 8" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                        <line x1="12" y1="3" x2="12" y2="15" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      <p className="loan-upload-text">Click to upload or drag and drop</p>
+                      <p className="loan-upload-subtext">PNG, JPG</p>
+                    </>
+                  )}
+                  <input
+                    type="file"
+                    id="loan-selfie-upload"
+                    accept="image/png, image/jpeg"
+                    onChange={(e) => setSelfieFile(e.target.files[0] || null)}
+                    hidden
+                  />
+                </label>
+              </div>
+
+              {/* Valid Government ID */}
+              <div className="loan-application-group-half">
+                <label className="loan-application-label">Valid Government ID</label>
+                <label
+                  htmlFor="loan-id-upload"
+                  className={`loan-upload-box ${idFile ? 'loan-upload-box-done' : ''}`}
+                >
+                  {idFile ? (
+                    <>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="loan-upload-icon">
+                        <path d="M20 6L9 17l-5-5" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      <p className="loan-upload-text loan-upload-text-done">File selected</p>
+                      <p className="loan-upload-subtext">{idFile.name}</p>
+                    </>
+                  ) : (
+                    <>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="loan-upload-icon">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                        <polyline points="17 8 12 3 7 8" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                        <line x1="12" y1="3" x2="12" y2="15" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      <p className="loan-upload-text">Click to upload or drag and drop</p>
+                      <p className="loan-upload-subtext">PNG, JPG</p>
+                    </>
+                  )}
+                  <input
+                    type="file"
+                    id="loan-id-upload"
+                    accept="image/png, image/jpeg"
+                    onChange={(e) => setIdFile(e.target.files[0] || null)}
+                    hidden
+                  />
+                </label>
+              </div>
+
             </div>
           </div>
 

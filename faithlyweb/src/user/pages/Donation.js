@@ -27,7 +27,7 @@ const mockProcessPayment = () =>
 /* ── Payment method icons ── */
 const GCashIcon = () => (
   <img
-    src="https://images.seeklogo.com/logo-png/52/2/gcash-logo-png_seeklogo-522261.png"
+    src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/GCash_logo.svg/320px-GCash_logo.svg.png"
     alt="GCash"
     style={{ width: 52, height: 22, objectFit: 'contain' }}
     onError={(e) => { e.target.style.display = 'none'; }}
@@ -57,6 +57,7 @@ export default function Donations() {
   const [stats,            setStats]            = useState({ totalDonated: 0, thisYearTotal: 0, totalCount: 0 });
   const [loading,          setLoading]          = useState(true);
   const [historyPage,      setHistoryPage]      = useState(1);
+  const [successModal,     setSuccessModal]     = useState(null);
   const HISTORY_PER_PAGE = 5;
 
   const fetchHistory = useCallback(async () => {
@@ -100,6 +101,7 @@ export default function Donations() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Failed to record donation');
+      setSuccessModal({ amount: num, category: donationCategory });
       setDonationAmount('');
       setDonationCategory('');
       setIsRecurring(false);
@@ -113,6 +115,7 @@ export default function Donations() {
   };
 
   return (
+    <>
     <div className="home-layout">
       <Sidebar />
       <div className="main-content">
@@ -345,5 +348,44 @@ export default function Donations() {
 
       </div>
     </div>
+
+    {/* ── Thank You Modal ── */}
+    {successModal && (
+      <div className="donation-success-overlay" onClick={() => setSuccessModal(null)}>
+        <div className="donation-success-modal" onClick={e => e.stopPropagation()}>
+          {/* Checkmark icon */}
+          <div className="donation-success-icon-wrap">
+            <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+              <circle cx="22" cy="22" r="22" fill="#dcfce7"/>
+              <path d="M13 22.5L19.5 29L31 16" stroke="#16a34a" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+
+          <h2 className="donation-success-title">Thank You!</h2>
+          <p className="donation-success-subtitle">Your generous donation has been received</p>
+
+          {/* Amount + Category box */}
+          <div className="donation-success-details">
+            <p className="donation-success-detail-label">Donation Amount</p>
+            <p className="donation-success-amount">{fmt(successModal.amount)}</p>
+            <div className="donation-success-category">
+              <svg width="15" height="15" viewBox="0 0 20 20" fill="none">
+                <path d="M17.3667 3.84167C16.941 3.41583 16.4357 3.07803 15.8794 2.84757C15.3231 2.61712 14.7267 2.49854 14.1245 2.49854C13.5224 2.49854 12.9259 2.61712 12.3696 2.84757C11.8133 3.07803 11.308 3.41583 10.8823 3.84167L10.0001 4.72417L9.11793 3.84167C8.25853 2.98227 7.09337 2.49898 5.87593 2.49898C4.65849 2.49898 3.49334 2.98227 2.63393 3.84167C1.77453 4.70108 1.29124 5.86623 1.29124 7.08367C1.29124 8.30111 1.77453 9.46626 2.63393 10.3257L10.0001 17.6917L17.3662 10.3257C17.792 9.89993 18.1298 9.39461 18.3602 8.83831C18.5907 8.28202 18.7092 7.68556 18.7092 7.08334C18.7092 6.48112 18.5907 5.88465 18.3602 5.32836C18.1298 4.77207 17.792 4.26743 17.3662 3.84167H17.3667Z" stroke="#E60076" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667"/>
+              </svg>
+              <span>{successModal.category}</span>
+            </div>
+          </div>
+
+          <p className="donation-success-note">
+            Your contribution helps us continue our mission and ministry work
+          </p>
+
+          <button className="donation-success-close" onClick={() => setSuccessModal(null)}>
+            Close
+          </button>
+        </div>
+      </div>
+    )}
+  </>
   );
 }

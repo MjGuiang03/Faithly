@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Camera, CreditCard, Info, Clock, CheckCircle, AlertTriangle } from "lucide-react";
+import { X, Info, Clock, AlertTriangle } from "lucide-react";
 import "../styles/OfficerVerification.css";
 
 const API = process.env.REACT_APP_API_URL;
@@ -10,8 +10,6 @@ export default function VerificationModal({ isOpen, onClose }) {
   const [position,   setPosition]   = useState("");
   const [occupation, setOccupation] = useState("");
   const [salary,     setSalary]     = useState("");
-  const [selfieFile, setSelfieFile] = useState(null);
-  const [idFile,     setIdFile]     = useState(null);
   const [loading,    setLoading]    = useState(false);
   const [apiError,   setApiError]   = useState("");
 
@@ -19,8 +17,6 @@ export default function VerificationModal({ isOpen, onClose }) {
 
   const resetForm = () => {
     setShowConfirmation(false);
-    setSelfieFile(null);
-    setIdFile(null);
     setChurchId("");
     setPosition("");
     setOccupation("");
@@ -33,22 +29,12 @@ export default function VerificationModal({ isOpen, onClose }) {
     if (isModal && onClose) onClose();
   };
 
-  const handleSelfieUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) setSelfieFile(file);
-  };
-
-  const handleIdUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) setIdFile(file);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setApiError("");
 
-    if (!selfieFile || !idFile || !churchId || !position || !occupation || !salary) {
-      setApiError("Please fill in all required fields and upload both photos.");
+    if (!churchId || !position || !occupation || !salary) {
+      setApiError("Please fill in all required fields.");
       return;
     }
 
@@ -88,12 +74,10 @@ export default function VerificationModal({ isOpen, onClose }) {
   /* ── Confirmation screen ── */
   const renderConfirmation = () => (
     <div className="vm-confirmation">
-      {/* X close top-right */}
       <button className="vm-close-btn vm-close-top" onClick={handleClose} type="button">
         <X size={20} />
       </button>
 
-      {/* Green check circle */}
       <div className="vm-check-circle">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
           <path d="M20 6L9 17l-5-5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -112,7 +96,7 @@ export default function VerificationModal({ isOpen, onClose }) {
         <div>
           <p className="vm-timeline-title">Processing Timeline</p>
           <p className="vm-timeline-text">
-            Our administrators will review your documents and notify you once your access
+            Our administrators will review your information and notify you once your access
             has been approved.
           </p>
         </div>
@@ -135,7 +119,6 @@ export default function VerificationModal({ isOpen, onClose }) {
         </p>
       </div>
 
-      {/* API error banner */}
       {apiError && (
         <div className="vm-error-banner">
           <AlertTriangle size={16} className="vm-error-icon" />
@@ -144,38 +127,6 @@ export default function VerificationModal({ isOpen, onClose }) {
       )}
 
       <form onSubmit={handleSubmit} className="vm-form">
-        {/* Selfie upload */}
-        <div className="vm-form-group">
-          <label className="vm-label">Upload Selfie Verification</label>
-          <label htmlFor="selfie-upload" className={`vm-upload-box ${selfieFile ? "vm-upload-box-done" : ""}`}>
-            <div className="vm-upload-icon-wrapper">
-              <Camera size={32} strokeWidth={2} className="vm-upload-icon" />
-            </div>
-            <p className="vm-upload-text">{selfieFile ? "✓ File selected" : "Tap to upload"}</p>
-            <p className="vm-upload-subtext">
-              {selfieFile
-                ? selfieFile.name
-                : "Upload a selfie holding your ID and the written date of application"}
-            </p>
-            <input type="file" id="selfie-upload" accept="image/*" onChange={handleSelfieUpload} hidden />
-          </label>
-        </div>
-
-        {/* ID upload */}
-        <div className="vm-form-group">
-          <label className="vm-label">Upload Valid ID</label>
-          <label htmlFor="id-upload" className={`vm-upload-box vm-upload-box-small ${idFile ? "vm-upload-box-done" : ""}`}>
-            <div className="vm-upload-icon-wrapper">
-              <CreditCard size={32} strokeWidth={2} className="vm-upload-icon" />
-            </div>
-            <p className="vm-upload-text">{idFile ? "✓ File selected" : "Tap to upload"}</p>
-            <p className="vm-upload-subtext">
-              {idFile ? idFile.name : "Upload a clear photo of any valid government-issued ID"}
-            </p>
-            <input type="file" id="id-upload" accept="image/*" onChange={handleIdUpload} hidden />
-          </label>
-        </div>
-
         {/* Church ID */}
         <div className="vm-form-group">
           <label className="vm-label">Church ID Number</label>
@@ -219,15 +170,112 @@ export default function VerificationModal({ isOpen, onClose }) {
         {/* Occupation */}
         <div className="vm-form-group">
           <label className="vm-label">Occupation / Job</label>
-          <input
-            type="text"
+          <select
             className="vm-input"
-            value={occupation}
-            onChange={(e) => setOccupation(e.target.value)}
-            placeholder="Enter your occupation"
+            value={occupation.startsWith("Others: ") ? "Others" : occupation}
+            onChange={(e) => {
+              if (e.target.value === "Others") {
+                setOccupation("Others: ");
+              } else {
+                setOccupation(e.target.value);
+              }
+            }}
             required
             disabled={loading}
-          />
+          >
+            <option value="">Select your occupation</option>
+            <optgroup label="Government & Public Service">
+              <option>Government Employee</option>
+              <option>Public School Teacher</option>
+              <option>Police Officer</option>
+              <option>Military Personnel</option>
+              <option>Barangay Official</option>
+              <option>Postal Worker</option>
+            </optgroup>
+            <optgroup label="Healthcare">
+              <option>Doctor / Physician</option>
+              <option>Nurse</option>
+              <option>Midwife</option>
+              <option>Pharmacist</option>
+              <option>Medical Technologist</option>
+              <option>Dentist</option>
+              <option>Caregiver</option>
+            </optgroup>
+            <optgroup label="Education">
+              <option>Private School Teacher</option>
+              <option>Professor / Instructor</option>
+              <option>Tutor</option>
+            </optgroup>
+            <optgroup label="Business & Finance">
+              <option>Business Owner / Entrepreneur</option>
+              <option>Accountant</option>
+              <option>Bank Employee</option>
+              <option>Insurance Agent</option>
+              <option>Real Estate Agent</option>
+              <option>Sales Representative</option>
+            </optgroup>
+            <optgroup label="Technology">
+              <option>Software Developer / Engineer</option>
+              <option>IT Support Specialist</option>
+              <option>Graphic Designer</option>
+              <option>BPO / Call Center Agent</option>
+              <option>Data Analyst</option>
+            </optgroup>
+            <optgroup label="Skilled Trades & Labor">
+              <option>Construction Worker / Mason</option>
+              <option>Electrician</option>
+              <option>Plumber</option>
+              <option>Carpenter</option>
+              <option>Mechanic</option>
+              <option>Welder</option>
+              <option>Factory Worker</option>
+            </optgroup>
+            <optgroup label="Transport & Logistics">
+              <option>Driver (Jeepney / Tricycle / Bus)</option>
+              <option>Delivery Rider</option>
+              <option>Seaman / Seafarer</option>
+              <option>Logistics Staff</option>
+            </optgroup>
+            <optgroup label="Agriculture & Fishing">
+              <option>Farmer</option>
+              <option>Fisher / Fisherman</option>
+              <option>Farm Worker</option>
+            </optgroup>
+            <optgroup label="Retail & Food Service">
+              <option>Sari-sari Store Owner</option>
+              <option>Market Vendor</option>
+              <option>Restaurant / Food Service Staff</option>
+              <option>Cashier / Retail Staff</option>
+            </optgroup>
+            <optgroup label="Domestic & Personal Services">
+              <option>Household Helper / Kasambahay</option>
+              <option>Laundry Service Worker</option>
+              <option>Beautician / Barber</option>
+              <option>Dressmaker / Tailor</option>
+            </optgroup>
+            <optgroup label="OFW & Freelance">
+              <option>OFW (Overseas Filipino Worker)</option>
+              <option>Freelancer / Online Worker</option>
+              <option>Content Creator / Influencer</option>
+            </optgroup>
+            <optgroup label="Other">
+              <option value="Others">Others — please specify</option>
+            </optgroup>
+          </select>
+
+          {/* Show text input when "Others" is selected */}
+          {occupation.startsWith("Others") && (
+            <input
+              type="text"
+              className="vm-input"
+              value={occupation.replace("Others: ", "")}
+              onChange={(e) => setOccupation(`Others: ${e.target.value}`)}
+              placeholder="Please specify your occupation"
+              required
+              disabled={loading}
+              style={{ marginTop: "8px" }}
+            />
+          )}
         </div>
 
         {/* Salary */}
@@ -268,7 +316,6 @@ export default function VerificationModal({ isOpen, onClose }) {
   /* ── Card container ── */
   const card = (
     <div className="vm-container" onClick={(e) => e.stopPropagation()}>
-      {/* Form mode: show X at top right */}
       {isModal && !showConfirmation && (
         <button className="vm-close-btn vm-close-top" onClick={handleClose} type="button">
           <X size={20} />

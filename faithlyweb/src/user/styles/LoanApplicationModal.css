@@ -202,6 +202,71 @@
   margin: 0;
 }
 
+/* Upload Section */
+.loan-application-upload-section {
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Upload Box */
+.loan-upload-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1.5px dashed #d1d5dc;
+  border-radius: 10px;
+  padding: 20px 12px;
+  cursor: pointer;
+  background: #f9fafb;
+  transition: border-color 0.2s, background 0.2s;
+  min-height: 110px;
+  text-align: center;
+}
+
+.loan-upload-box:hover {
+  border-color: #155dfc;
+  background: #eff6ff;
+}
+
+.loan-upload-box-done {
+  border-color: #16a34a;
+  background: #f0fdf4;
+  border-style: solid;
+}
+
+.loan-upload-icon {
+  flex-shrink: 0;
+}
+
+.loan-upload-text {
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.loan-upload-text-done {
+  color: #16a34a;
+}
+
+.loan-upload-subtext {
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  color: #9ca3af;
+  margin: 0;
+  line-height: 1.3;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* Note Box */
 .loan-application-note-box {
   background: #eff6ff;

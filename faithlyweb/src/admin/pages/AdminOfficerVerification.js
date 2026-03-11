@@ -1,16 +1,26 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import '../styles/AdminOfficerVerification.css';
 import svgPaths from "../../imports/svg-icons";
 
+const API = process.env.REACT_APP_API_URL;
+const PER_PAGE = 5;
+
+const fmtDate = (d) => {
+  if (!d) return '—';
+  return new Date(d).toLocaleString('en-PH', {
+    year: 'numeric', month: 'short', day: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+};
 
 /* ═══════════════════════════════════════════════════════════════════════════
    VERIFICATION DETAILS MODAL
 ═══════════════════════════════════════════════════════════════════════════ */
 function VerificationDetailsModal({ request, onClose, onApprove, onReject }) {
   const [showApproveModal, setShowApproveModal] = useState(false);
-  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [showRejectModal,  setShowRejectModal]  = useState(false);
 
   return (
     <>
@@ -20,7 +30,7 @@ function VerificationDetailsModal({ request, onClose, onApprove, onReject }) {
           <div className="admin-offver-modal-header">
             <div>
               <h2 className="admin-offver-modal-title">Verification Details</h2>
-              <p className="admin-offver-modal-request-id">Request ID: {request.id}</p>
+              <p className="admin-offver-modal-request-id">Request ID: {request._id}</p>
             </div>
             <button className="admin-offver-modal-close" onClick={onClose}>
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -36,7 +46,7 @@ function VerificationDetailsModal({ request, onClose, onApprove, onReject }) {
             <div className="admin-offver-info-grid">
               <div className="admin-offver-info-item">
                 <span className="admin-offver-info-label">Full Name</span>
-                <span className="admin-offver-info-value">{request.name}</span>
+                <span className="admin-offver-info-value">{request.memberName}</span>
               </div>
               <div className="admin-offver-info-item">
                 <span className="admin-offver-info-label">Email</span>
@@ -44,20 +54,38 @@ function VerificationDetailsModal({ request, onClose, onApprove, onReject }) {
               </div>
               <div className="admin-offver-info-item">
                 <span className="admin-offver-info-label">Church ID Number</span>
-                <span className="admin-offver-info-value">{request.churchId || 'CH-2024-001'}</span>
+                <span className="admin-offver-info-value">{request.churchId || '—'}</span>
               </div>
               <div className="admin-offver-info-item">
                 <span className="admin-offver-info-label">Church Position</span>
-                <span className="admin-offver-info-value">{request.churchPosition}</span>
+                <span className="admin-offver-info-value">{request.position || '—'}</span>
               </div>
               <div className="admin-offver-info-item">
                 <span className="admin-offver-info-label">Occupation</span>
-                <span className="admin-offver-info-value">{request.occupation}</span>
+                <span className="admin-offver-info-value">{request.occupation || '—'}</span>
               </div>
               <div className="admin-offver-info-item">
                 <span className="admin-offver-info-label">Monthly Income</span>
-                <span className="admin-offver-info-value">₱{request.income || '25,000'}</span>
+                <span className="admin-offver-info-value">
+                  {request.salary ? `₱${Number(request.salary).toLocaleString()}` : '—'}
+                </span>
               </div>
+              <div className="admin-offver-info-item">
+                <span className="admin-offver-info-label">Submitted</span>
+                <span className="admin-offver-info-value">{fmtDate(request.submittedAt)}</span>
+              </div>
+              <div className="admin-offver-info-item">
+                <span className="admin-offver-info-label">Status</span>
+                <span className={`admin-offver-status-badge admin-offver-status-${request.status}`}>
+                  {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                </span>
+              </div>
+              {request.status === 'rejected' && request.rejectionReason && (
+                <div className="admin-offver-info-item" style={{ gridColumn: '1 / -1' }}>
+                  <span className="admin-offver-info-label">Rejection Reason</span>
+                  <span className="admin-offver-info-value" style={{ color: '#DC2626' }}>{request.rejectionReason}</span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -67,8 +95,12 @@ function VerificationDetailsModal({ request, onClose, onApprove, onReject }) {
             <div className="admin-offver-documents-grid">
               <div className="admin-offver-document-item">
                 <span className="admin-offver-document-label">Selfie with ID & Date</span>
-                <div className="admin-offver-document-preview">
-                  <img alt="Selfie with ID" className="admin-offver-document-image" />
+                <div className="admin-offver-document-preview admin-offver-document-placeholder">
+                  <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+                    <rect width="80" height="80" rx="8" fill="#f3f4f6"/>
+                    <path d="M30 50L40 40L50 50M40 40L50 30" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <circle cx="32" cy="32" r="3" fill="#9ca3af"/>
+                  </svg>
                 </div>
               </div>
               <div className="admin-offver-document-item">
@@ -84,33 +116,34 @@ function VerificationDetailsModal({ request, onClose, onApprove, onReject }) {
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="admin-offver-modal-actions">
-            <button 
-              className="admin-offver-btn admin-offver-btn-reject"
-              onClick={() => setShowRejectModal(true)}
-            >
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <circle cx="10" cy="10" r="8.5" stroke="currentColor" strokeWidth="1.5"/>
-                <path d="M12.5 7.5L7.5 12.5M7.5 7.5L12.5 12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
-              Reject Request
-            </button>
-            <button 
-              className="admin-offver-btn admin-offver-btn-approve"
-              onClick={() => setShowApproveModal(true)}
-            >
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <circle cx="10" cy="10" r="8.5" stroke="currentColor" strokeWidth="1.5"/>
-                <path d="M6.5 10L9 12.5L13.5 7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              Approve for Level 2
-            </button>
-          </div>
+          {/* Action Buttons — only show for pending */}
+          {request.status === 'pending' && (
+            <div className="admin-offver-modal-actions">
+              <button
+                className="admin-offver-btn admin-offver-btn-reject"
+                onClick={() => setShowRejectModal(true)}
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <circle cx="10" cy="10" r="8.5" stroke="currentColor" strokeWidth="1.5"/>
+                  <path d="M12.5 7.5L7.5 12.5M7.5 7.5L12.5 12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+                Reject Request
+              </button>
+              <button
+                className="admin-offver-btn admin-offver-btn-approve"
+                onClick={() => setShowApproveModal(true)}
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <circle cx="10" cy="10" r="8.5" stroke="currentColor" strokeWidth="1.5"/>
+                  <path d="M6.5 10L9 12.5L13.5 7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Approve for Level 2
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Nested Modals */}
       {showRejectModal && (
         <RejectModal
           request={request}
@@ -142,24 +175,25 @@ function VerificationDetailsModal({ request, onClose, onApprove, onReject }) {
    REJECT MODAL
 ═══════════════════════════════════════════════════════════════════════════ */
 function RejectModal({ request, onClose, onConfirm }) {
-  const [reason, setReason] = useState('');
+  const [reason,  setReason]  = useState('');
   const [loading, setLoading] = useState(false);
+  const token = localStorage.getItem('adminToken');
 
   const handleReject = async () => {
-    if (!reason.trim()) {
-      toast.error('Please enter a reason for rejection');
-      return;
-    }
-
+    if (!reason.trim()) { toast.error('Please enter a reason for rejection'); return; }
     setLoading(true);
     try {
-      // API call here
-      // await fetch(`${API}/api/admin/verification/reject`, { ... });
-      
+      const res = await fetch(`${API}/api/admin/verifications/${request._id}/reject`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ reason })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message);
       toast.success('Request rejected successfully');
       onConfirm(reason);
     } catch (err) {
-      toast.error('Failed to reject request');
+      toast.error(err.message || 'Failed to reject request');
     } finally {
       setLoading(false);
     }
@@ -174,15 +208,13 @@ function RejectModal({ request, onClose, onConfirm }) {
             <path d="M15 9L9 15M9 9L15 15" stroke="#EF4444" strokeWidth="2" strokeLinecap="round"/>
           </svg>
         </div>
-
         <h3 className="admin-offver-confirm-title">Reject Verification?</h3>
         <p className="admin-offver-confirm-text">
-          Are you sure you want to reject <strong>{request.name}</strong>'s verification request?
+          Are you sure you want to reject <strong>{request.memberName}</strong>'s verification request?
         </p>
         <p className="admin-offver-confirm-subtext">
           The member will remain at Level 1 and will not have access to loans.
         </p>
-
         <div className="admin-offver-form-group">
           <label className="admin-offver-form-label">Reason for Rejection:</label>
           <textarea
@@ -193,20 +225,9 @@ function RejectModal({ request, onClose, onConfirm }) {
             rows={3}
           />
         </div>
-
         <div className="admin-offver-confirm-actions">
-          <button 
-            className="admin-offver-btn admin-offver-btn-secondary"
-            onClick={onClose}
-            disabled={loading}
-          >
-            Cancel
-          </button>
-          <button 
-            className="admin-offver-btn admin-offver-btn-danger"
-            onClick={handleReject}
-            disabled={loading}
-          >
+          <button className="admin-offver-btn admin-offver-btn-secondary" onClick={onClose} disabled={loading}>Cancel</button>
+          <button className="admin-offver-btn admin-offver-btn-danger" onClick={handleReject} disabled={loading}>
             {loading ? 'Rejecting...' : 'Reject'}
           </button>
         </div>
@@ -220,17 +241,21 @@ function RejectModal({ request, onClose, onConfirm }) {
 ═══════════════════════════════════════════════════════════════════════════ */
 function ApproveModal({ request, onClose, onConfirm }) {
   const [loading, setLoading] = useState(false);
+  const token = localStorage.getItem('adminToken');
 
   const handleApprove = async () => {
     setLoading(true);
     try {
-      // API call here
-      // await fetch(`${API}/api/admin/verification/approve`, { ... });
-      
-      toast.success('Request approved successfully');
+      const res = await fetch(`${API}/api/admin/verifications/${request._id}/approve`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message);
+      toast.success('Request approved — member promoted to Level 2');
       onConfirm();
     } catch (err) {
-      toast.error('Failed to approve request');
+      toast.error(err.message || 'Failed to approve request');
     } finally {
       setLoading(false);
     }
@@ -245,12 +270,10 @@ function ApproveModal({ request, onClose, onConfirm }) {
             <path d="M8 12L11 15L16 9" stroke="#00A63E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </div>
-
         <h3 className="admin-offver-confirm-title">Approve Verification?</h3>
         <p className="admin-offver-confirm-text">
-          Are you sure you want to approve <strong>{request.name}</strong> for Level 2 access?
+          Are you sure you want to approve <strong>{request.memberName}</strong> for Level 2 access?
         </p>
-
         <div className="admin-offver-benefits">
           <p className="admin-offver-benefits-title">This will grant the member:</p>
           <ul className="admin-offver-benefits-list">
@@ -259,20 +282,9 @@ function ApproveModal({ request, onClose, onConfirm }) {
             <li>Level 2 status badge</li>
           </ul>
         </div>
-
         <div className="admin-offver-confirm-actions">
-          <button 
-            className="admin-offver-btn admin-offver-btn-secondary"
-            onClick={onClose}
-            disabled={loading}
-          >
-            Cancel
-          </button>
-          <button 
-            className="admin-offver-btn admin-offver-btn-success"
-            onClick={handleApprove}
-            disabled={loading}
-          >
+          <button className="admin-offver-btn admin-offver-btn-secondary" onClick={onClose} disabled={loading}>Cancel</button>
+          <button className="admin-offver-btn admin-offver-btn-success" onClick={handleApprove} disabled={loading}>
             {loading ? 'Approving...' : 'Approve'}
           </button>
         </div>
@@ -286,121 +298,70 @@ function ApproveModal({ request, onClose, onConfirm }) {
 ═══════════════════════════════════════════════════════════════════════════ */
 export default function AdminOfficerVerification() {
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [selectedRequest, setSelectedRequest] = useState(null);
-  const [requests, setRequests] = useState([
-    {
-      id: 'VR-001',
-      name: 'Juan Dela Cruz',
-      email: 'juandelacruz@gmail.com',
-      churchId: 'CH-2024-001',
-      churchPosition: 'Deacon',
-      occupation: 'Teacher',
-      income: '25,000',
-      submitted: '2026-03-06 10:30 AM',
-      status: 'pending'
-    },
-    {
-      id: 'VR-002',
-      name: 'Maria Santos',
-      email: 'maria@email.com',
-      churchId: 'CH-2024-002',
-      churchPosition: 'Elder',
-      occupation: 'Nurse',
-      income: '35,000',
-      submitted: '2026-03-06 02:15 PM',
-      status: 'pending'
-    },
-    {
-      id: 'VR-003',
-      name: 'Pedro Garcia',
-      email: 'pedro@email.com',
-      churchId: 'CH-2024-003',
-      churchPosition: 'Trustee',
-      occupation: 'Engineer',
-      income: '45,000',
-      submitted: '2026-03-05 09:00 AM',
-      status: 'approved'
-    },
-    {
-      id: 'VR-004',
-      name: 'Ana Reyes',
-      email: 'ana@email.com',
-      churchId: 'CH-2024-004',
-      churchPosition: 'Deacon',
-      occupation: 'Accountant',
-      income: '40,000',
-      submitted: '2026-03-04 03:45 PM',
-      status: 'approved'
-    },
-    {
-      id: 'VR-005',
-      name: 'Carlos Mendoza',
-      email: 'carlos@email.com',
-      churchId: 'CH-2024-005',
-      churchPosition: 'Elder',
-      occupation: 'Business Owner',
-      income: '50,000',
-      submitted: '2026-03-03 11:20 AM',
-      status: 'rejected'
+  const [requests,         setRequests]         = useState([]);
+  const [stats,            setStats]            = useState({ pending: 0, approved: 0, rejected: 0 });
+  const [searchQuery,      setSearchQuery]      = useState('');
+  const [currentPage,      setCurrentPage]      = useState(1);
+  const [selectedRequest,  setSelectedRequest]  = useState(null);
+  const [loading,          setLoading]          = useState(true);
+
+  const token = localStorage.getItem('adminToken');
+
+  useEffect(() => {
+    const adminEmail = localStorage.getItem('adminEmail');
+    if (!adminEmail) { navigate('/admin/login'); return; }
+    fetchVerifications();
+  }, [navigate]);
+
+  const fetchVerifications = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res  = await fetch(`${API}/api/admin/verifications`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setRequests(data.verifications);
+        setStats(data.stats);
+      } else {
+        toast.error('Failed to load verifications');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to load verifications');
+    } finally {
+      setLoading(false);
     }
-  ]);
+  }, [token]);
 
-  const pendingCount = requests.filter(r => r.status === 'pending').length;
-  const approvedCount = requests.filter(r => r.status === 'approved').length;
-  const rejectedCount = requests.filter(r => r.status === 'rejected').length;
+  const handleApprove = async () => {
+    await fetchVerifications();
+    setSelectedRequest(null);
+  };
 
-  const filteredRequests = requests.filter(request => {
-    const query = searchQuery.toLowerCase();
+  const handleReject = async () => {
+    await fetchVerifications();
+    setSelectedRequest(null);
+  };
+
+  // Filter
+  const filtered = requests.filter(r => {
+    const q = searchQuery.toLowerCase();
     return (
-      request.id.toLowerCase().includes(query) ||
-      request.name.toLowerCase().includes(query) ||
-      request.email.toLowerCase().includes(query)
+      r._id?.toString().toLowerCase().includes(q) ||
+      (r.memberName || '').toLowerCase().includes(q) ||
+      (r.email      || '').toLowerCase().includes(q) ||
+      (r.position   || '').toLowerCase().includes(q)
     );
   });
 
-  const totalPages = Math.ceil(filteredRequests.length / 5);
-  const startIndex = (currentPage - 1) * 5;
-  const endIndex = startIndex + 5;
-  const paginatedRequests = filteredRequests.slice(startIndex, endIndex);
+  const totalPages      = Math.ceil(filtered.length / PER_PAGE);
+  const paginated       = filtered.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
 
-  const handleViewDetails = (request) => {
-    setSelectedRequest(request);
-  };
-
-  const handleApprove = () => {
-    setRequests(prev => prev.map(r => 
-      r.id === selectedRequest.id ? { ...r, status: 'approved' } : r
-    ));
-  };
-
-  const handleReject = (reason) => {
-    setRequests(prev => prev.map(r => 
-      r.id === selectedRequest.id ? { ...r, status: 'rejected', rejectionReason: reason } : r
-    ));
-  };
-
-  const getStatusBadgeClass = (status) => {
-    switch (status) {
-      case 'pending':
-        return 'admin-offver-status-pending';
-      case 'approved':
-        return 'admin-offver-status-approved';
-      case 'rejected':
-        return 'admin-offver-status-rejected';
-      default:
-        return '';
-    }
-  };
-
-  const getStatusText = (status) => {
-    return status.charAt(0).toUpperCase() + status.slice(1);
-  };
+  const getStatusBadgeClass = (s) => `admin-offver-status-${s}`;
 
   return (
     <div className="admin-offver-main">
-      {/* Verification Details Modal */}
       {selectedRequest && (
         <VerificationDetailsModal
           request={selectedRequest}
@@ -413,9 +374,7 @@ export default function AdminOfficerVerification() {
       {/* Header */}
       <div className="admin-offver-header">
         <h1 className="admin-offver-title">Officer Verification</h1>
-        <p className="admin-offver-subtitle">
-          Review and approve Level 2 upgrade requests from members
-        </p>
+        <p className="admin-offver-subtitle">Review and approve Level 2 upgrade requests from members</p>
       </div>
 
       {/* Stats Cards */}
@@ -425,11 +384,11 @@ export default function AdminOfficerVerification() {
             <span className="admin-offver-stat-label">Pending Review</span>
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
               <path d={svgPaths.p25397b80} stroke="#F59E0B" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d={svgPaths.p2c4f400} stroke="#F59E0B" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+              <path d={svgPaths.p2c4f400}  stroke="#F59E0B" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
               <path d={svgPaths.p2f5eb900} stroke="#F59E0B" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-          <p className="admin-offver-stat-value admin-offver-stat-value-pending">{pendingCount}</p>
+          <p className="admin-offver-stat-value admin-offver-stat-value-pending">{loading ? '—' : stats.pending}</p>
         </div>
 
         <div className="admin-offver-stat-card">
@@ -440,7 +399,7 @@ export default function AdminOfficerVerification() {
               <path d={svgPaths.p3fe63d80} stroke="#00A63E" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-          <p className="admin-offver-stat-value admin-offver-stat-value-approved">{approvedCount}</p>
+          <p className="admin-offver-stat-value admin-offver-stat-value-approved">{loading ? '—' : stats.approved}</p>
         </div>
 
         <div className="admin-offver-stat-card">
@@ -452,25 +411,23 @@ export default function AdminOfficerVerification() {
               <path d="M7.5 7.5L12.5 12.5" stroke="#EF4444" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-          <p className="admin-offver-stat-value admin-offver-stat-value-rejected">{rejectedCount}</p>
+          <p className="admin-offver-stat-value admin-offver-stat-value-rejected">{loading ? '—' : stats.rejected}</p>
         </div>
       </div>
 
       {/* Info Box */}
       <div className="admin-offver-info">
-        <div className="admin-offver-info-icon">
-          <p>i</p>
-        </div>
+        <div className="admin-offver-info-icon"><p>i</p></div>
         <div className="admin-offver-info-content">
           <p className="admin-offver-info-text">
-            <strong>About Verification Levels:</strong> Members start at Level 1 (Unverified). After members submit 
-            verification documents, they appear in the pending list below. Once approved, members are promoted to 
+            <strong>About Verification Levels:</strong> Members start at Level 1 (Unverified). After members submit
+            verification documents, they appear in the pending list below. Once approved, members are promoted to
             Level 2 (Verified). After verification approval, members gain access to the Loan module.
           </p>
         </div>
       </div>
 
-      {/* Search Bar */}
+      {/* Search */}
       <div className="admin-offver-search-section">
         <div className="admin-offver-search-wrapper">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="admin-offver-search-icon">
@@ -479,97 +436,91 @@ export default function AdminOfficerVerification() {
           </svg>
           <input
             type="text"
-            placeholder="Search by request ID, name, or email..."
+            placeholder="Search by name, email, or position..."
             value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
+            onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }}
             className="admin-offver-search-input"
           />
         </div>
       </div>
 
-      {/* Requests Table */}
+      {/* Table */}
       <div className="admin-offver-table-section">
-        <table className="admin-offver-table">
-          <thead>
-            <tr className="admin-offver-table-header">
-              <th className="admin-offver-table-header-cell">Request ID</th>
-              <th className="admin-offver-table-header-cell">Name</th>
-              <th className="admin-offver-table-header-cell">Email</th>
-              <th className="admin-offver-table-header-cell">Church Position</th>
-              <th className="admin-offver-table-header-cell">Occupation</th>
-              <th className="admin-offver-table-header-cell">Submitted</th>
-              <th className="admin-offver-table-header-cell">Status</th>
-              <th className="admin-offver-table-header-cell">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginatedRequests.length === 0 ? (
-              <tr>
-                <td colSpan={8} className="admin-offver-table-cell admin-offver-empty">
-                  No verification requests found
-                </td>
-              </tr>
-            ) : (
-              paginatedRequests.map(request => (
-                <tr key={request.id} className="admin-offver-table-row">
-                  <td className="admin-offver-table-cell">
-                    <span className="admin-offver-request-id">{request.id}</span>
-                  </td>
-                  <td className="admin-offver-table-cell">{request.name}</td>
-                  <td className="admin-offver-table-cell">{request.email}</td>
-                  <td className="admin-offver-table-cell">{request.churchPosition}</td>
-                  <td className="admin-offver-table-cell">{request.occupation}</td>
-                  <td className="admin-offver-table-cell">{request.submitted}</td>
-                  <td className="admin-offver-table-cell">
-                    <span className={`admin-offver-status-badge ${getStatusBadgeClass(request.status)}`}>
-                      {getStatusText(request.status)}
-                    </span>
-                  </td>
-                  <td className="admin-offver-table-cell">
-                    <button
-                      className="admin-offver-view-btn"
-                      onClick={() => handleViewDetails(request)}
-                    >
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                        <path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.2"/>
-                      </svg>
-                      View Details
-                    </button>
-                  </td>
+        {loading ? (
+          <p style={{ fontSize: 14, color: '#9ca3af', padding: '32px 0', textAlign: 'center', margin: 0 }}>
+            Loading verifications…
+          </p>
+        ) : (
+          <>
+            <table className="admin-offver-table">
+              <thead>
+                <tr className="admin-offver-table-header">
+                  <th className="admin-offver-table-header-cell">Name</th>
+                  <th className="admin-offver-table-header-cell">Email</th>
+                  <th className="admin-offver-table-header-cell">Church Position</th>
+                  <th className="admin-offver-table-header-cell">Occupation</th>
+                  <th className="admin-offver-table-header-cell">Submitted</th>
+                  <th className="admin-offver-table-header-cell">Status</th>
+                  <th className="admin-offver-table-header-cell">Actions</th>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              </thead>
+              <tbody>
+                {paginated.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="admin-offver-table-cell admin-offver-empty">
+                      {searchQuery ? 'No results found.' : 'No verification requests yet.'}
+                    </td>
+                  </tr>
+                ) : (
+                  paginated.map(r => (
+                    <tr key={r._id} className="admin-offver-table-row">
+                      <td className="admin-offver-table-cell" style={{ fontWeight: 500 }}>{r.memberName}</td>
+                      <td className="admin-offver-table-cell">{r.email}</td>
+                      <td className="admin-offver-table-cell">{r.position}</td>
+                      <td className="admin-offver-table-cell">{r.occupation}</td>
+                      <td className="admin-offver-table-cell" style={{ whiteSpace: 'nowrap' }}>{fmtDate(r.submittedAt)}</td>
+                      <td className="admin-offver-table-cell">
+                        <span className={`admin-offver-status-badge ${getStatusBadgeClass(r.status)}`}>
+                          {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
+                        </span>
+                      </td>
+                      <td className="admin-offver-table-cell">
+                        <button className="admin-offver-view-btn" onClick={() => setSelectedRequest(r)}>
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                            <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.2"/>
+                          </svg>
+                          View Details
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="admin-offver-pagination">
-            <button
-              className="admin-offver-pagination-btn"
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-            >
-              Previous
-            </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-              <button
-                key={page}
-                className={`admin-offver-pagination-number ${currentPage === page ? 'active' : ''}`}
-                onClick={() => setCurrentPage(page)}
-              >
-                {page}
-              </button>
-            ))}
-            <button
-              className="admin-offver-pagination-btn"
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-            >
-              Next
-            </button>
-          </div>
+            {totalPages > 1 && (
+              <div className="admin-offver-pagination">
+                <button
+                  className="admin-offver-pagination-btn"
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >Previous</button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                  <button
+                    key={p}
+                    className={`admin-offver-pagination-number${currentPage === p ? ' active' : ''}`}
+                    onClick={() => setCurrentPage(p)}
+                  >{p}</button>
+                ))}
+                <button
+                  className="admin-offver-pagination-btn"
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                >Next</button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
