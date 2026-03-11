@@ -2,7 +2,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
   LayoutGrid,
-  FileText,
+  Bell,
+  UserCheck,
   Users,
   Heart,
   Calendar,
@@ -36,7 +37,7 @@ export default function AdminSidebar() {
           </div>
           <div className="admin-sidebar-logo-text">
             <h1>FaithLy</h1>
-            <p>Admin Portal</p>
+            <p>Main Admin Portal</p>
           </div>
         </div>
       </div>
@@ -52,11 +53,19 @@ export default function AdminSidebar() {
         </button>
 
         <button
-          onClick={() => navigate('/admin/loans')}
-          className={`admin-sidebar-nav-button ${isActive('/admin/loans') ? 'active' : ''}`}
+          onClick={() => navigate('/admin/notification')}
+          className={`admin-sidebar-nav-button ${isActive('/admin/notification') ? 'active' : ''}`}
         >
-          <FileText size={20} />
-          <span>Loan Management</span>
+          <Bell size={20} />
+          <span>Notifications</span>
+        </button>
+
+        <button
+          onClick={() => navigate('/admin/officerverification')}
+          className={`admin-sidebar-nav-button ${isActive('/admin/officerverification') ? 'active' : ''}`}
+        >
+          <UserCheck size={20} />
+          <span>Officer Verification</span>
         </button>
 
         <button
@@ -91,7 +100,10 @@ export default function AdminSidebar() {
           <span>Branches</span>
         </button>
 
-        <button className="admin-sidebar-nav-button">
+        <button
+          onClick={() => navigate('/admin/reports')}
+          className={`admin-sidebar-nav-button ${isActive('/admin/reports') ? 'active' : ''}`}
+        >
           <BarChart3 size={20} />
           <span>Reports</span>
         </button>

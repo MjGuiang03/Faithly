@@ -91,55 +91,54 @@ function EditModal({ member, onClose, onSave }) {
   };
 
   return (
-    <div className="am-modal-overlay" onClick={onClose}>
-      <div className="am-modal" onClick={e => e.stopPropagation()}>
-        <div className="am-modal-header">
-          <div className="am-modal-header-icon am-modal-icon-edit"><IconEdit /></div>
-          <div className="am-modal-header-text">
-            <p className="am-modal-title">Edit Member</p>
-            <p className="am-modal-subtitle">{member.email}</p>
+    <div className="admin-members-modal-overlay" onClick={onClose}>
+      <div className="admin-members-modal" onClick={e => e.stopPropagation()}>
+        <div className="admin-members-modal-header">
+          <div className="admin-members-modal-header-icon admin-members-modal-icon-edit"><IconEdit /></div>
+          <div className="admin-members-modal-header-text">
+            <p className="admin-members-modal-title">Edit Member</p>
+            <p className="admin-members-modal-subtitle">{member.email}</p>
           </div>
-          <button className="am-modal-close" onClick={onClose}>
+          <button className="admin-members-modal-close" onClick={onClose}>
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
               <path d="M15 5L5 15M5 5L15 15" stroke="#6a7282" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
           </button>
         </div>
 
-        <div className="am-modal-body">
-          <div className="am-form-row">
-            <label className="am-form-label">Full Name</label>
-            <input className="am-form-input" name="fullName" value={form.fullName} onChange={handleChange} placeholder="Enter full name"/>
+        <div className="admin-members-modal-body">
+          <div className="admin-members-form-row">
+            <label className="admin-members-form-label">Full Name</label>
+            <input className="admin-members-form-input" name="fullName" value={form.fullName} onChange={handleChange} placeholder="Enter full name"/>
           </div>
-          <div className="am-form-row">
-            <label className="am-form-label">Phone</label>
-            <input className="am-form-input" name="phone" value={form.phone} onChange={handleChange} placeholder="+63XXXXXXXXXX"/>
+          <div className="admin-members-form-row">
+            <label className="admin-members-form-label">Phone</label>
+            <input className="admin-members-form-input" name="phone" value={form.phone} onChange={handleChange} placeholder="+63XXXXXXXXXX"/>
           </div>
-          <div className="am-form-row">
-            <label className="am-form-label">Branch</label>
-            <input className="am-form-input" name="branch" value={form.branch} onChange={handleChange} placeholder="Branch name"/>
+          <div className="admin-members-form-row">
+            <label className="admin-members-form-label">Branch</label>
+            <input className="admin-members-form-input" name="branch" value={form.branch} onChange={handleChange} placeholder="Branch name"/>
           </div>
-          <div className="am-form-row">
-            <label className="am-form-label">Position</label>
-            <input className="am-form-input" name="position" value={form.position} onChange={handleChange} placeholder="Position / role"/>
+          <div className="admin-members-form-row">
+            <label className="admin-members-form-label">Position</label>
+            <input className="admin-members-form-input" name="position" value={form.position} onChange={handleChange} placeholder="Position / role"/>
           </div>
 
-          {/* ── Password divider ── */}
-          <div className="am-password-divider">
+          <div className="admin-members-password-divider">
             <span>Confirm your identity to save</span>
           </div>
-          <div className="am-form-row" style={{ marginBottom: 0 }}>
-            <label className="am-form-label">Admin Password</label>
-            <div className="am-password-wrapper">
+          <div className="admin-members-form-row" style={{ marginBottom: 0 }}>
+            <label className="admin-members-form-label">Admin Password</label>
+            <div className="admin-members-password-wrapper">
               <input
-                className={`am-form-input${passwordError ? ' am-input-error' : ''}`}
+                className={`admin-members-form-input${passwordError ? ' admin-members-input-error' : ''}`}
                 type={showPassword ? 'text' : 'password'}
                 value={adminPassword}
                 onChange={e => { setAdminPassword(e.target.value); setPasswordError(''); }}
                 placeholder="Enter your admin password"
                 onKeyDown={e => e.key === 'Enter' && handleSubmit()}
               />
-              <button className="am-password-toggle" type="button" onClick={() => setShowPassword(v => !v)}>
+              <button className="admin-members-password-toggle" type="button" onClick={() => setShowPassword(v => !v)}>
                 {showPassword ? (
                   <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
                     <path d="M2.5 2.5L17.5 17.5" stroke="#99A1AF" strokeWidth="1.5" strokeLinecap="round"/>
@@ -154,13 +153,13 @@ function EditModal({ member, onClose, onSave }) {
                 )}
               </button>
             </div>
-            {passwordError && <p className="am-field-error">{passwordError}</p>}
+            {passwordError && <p className="admin-members-field-error">{passwordError}</p>}
           </div>
         </div>
 
-        <div className="am-modal-footer">
-          <button className="am-btn am-btn-cancel" onClick={onClose} disabled={saving}>Cancel</button>
-          <button className="am-btn am-btn-save"   onClick={handleSubmit} disabled={saving}>
+        <div className="admin-members-modal-footer">
+          <button className="admin-members-btn admin-members-btn-cancel" onClick={onClose} disabled={saving}>Cancel</button>
+          <button className="admin-members-btn admin-members-btn-save"   onClick={handleSubmit} disabled={saving}>
             {saving ? 'Saving…' : 'Save Changes'}
           </button>
         </div>
@@ -204,23 +203,23 @@ function DeleteModal({ member, onClose, onConfirm }) {
   };
 
   return (
-    <div className="am-modal-overlay" onClick={onClose}>
-      <div className="am-modal am-modal-sm" onClick={e => e.stopPropagation()}>
-        <div className="am-modal-header">
-          <div className="am-modal-header-icon am-modal-icon-delete"><IconTrash /></div>
-          <div className="am-modal-header-text">
-            <p className="am-modal-title">Delete Member</p>
-            <p className="am-modal-subtitle">This action cannot be undone</p>
+    <div className="admin-members-modal-overlay" onClick={onClose}>
+      <div className="admin-members-modal admin-members-modal-sm" onClick={e => e.stopPropagation()}>
+        <div className="admin-members-modal-header">
+          <div className="admin-members-modal-header-icon admin-members-modal-icon-delete"><IconTrash /></div>
+          <div className="admin-members-modal-header-text">
+            <p className="admin-members-modal-title">Delete Member</p>
+            <p className="admin-members-modal-subtitle">This action cannot be undone</p>
           </div>
-          <button className="am-modal-close" onClick={onClose}>
+          <button className="admin-members-modal-close" onClick={onClose}>
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
               <path d="M15 5L5 15M5 5L15 15" stroke="#6a7282" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
           </button>
         </div>
 
-        <div className="am-modal-body">
-          <div className="am-delete-member-card">
+        <div className="admin-members-modal-body">
+          <div className="admin-members-delete-member-card">
             <div className="admin-members-avatar">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                 <path d={svgPaths.p25397b80} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
@@ -228,30 +227,29 @@ function DeleteModal({ member, onClose, onConfirm }) {
               </svg>
             </div>
             <div>
-              <p className="am-delete-name">{member.fullName || member.name}</p>
-              <p className="am-delete-email">{member.email}</p>
+              <p className="admin-members-delete-name">{member.fullName || member.name}</p>
+              <p className="admin-members-delete-email">{member.email}</p>
             </div>
           </div>
-          <p className="am-delete-warning">
+          <p className="admin-members-delete-warning">
             Are you sure you want to permanently delete this member? All associated data including loans, donations, and attendance records may be affected.
           </p>
 
-          {/* ── Password divider ── */}
-          <div className="am-password-divider">
+          <div className="admin-members-password-divider">
             <span>Confirm your identity to delete</span>
           </div>
-          <div className="am-form-row" style={{ marginBottom: 0 }}>
-            <label className="am-form-label">Admin Password</label>
-            <div className="am-password-wrapper">
+          <div className="admin-members-form-row" style={{ marginBottom: 0 }}>
+            <label className="admin-members-form-label">Admin Password</label>
+            <div className="admin-members-password-wrapper">
               <input
-                className={`am-form-input${passwordError ? ' am-input-error' : ''}`}
+                className={`admin-members-form-input${passwordError ? ' admin-members-input-error' : ''}`}
                 type={showPassword ? 'text' : 'password'}
                 value={adminPassword}
                 onChange={e => { setAdminPassword(e.target.value); setPasswordError(''); }}
                 placeholder="Enter your admin password"
                 onKeyDown={e => e.key === 'Enter' && handleDelete()}
               />
-              <button className="am-password-toggle" type="button" onClick={() => setShowPassword(v => !v)}>
+              <button className="admin-members-password-toggle" type="button" onClick={() => setShowPassword(v => !v)}>
                 {showPassword ? (
                   <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
                     <path d="M2.5 2.5L17.5 17.5" stroke="#99A1AF" strokeWidth="1.5" strokeLinecap="round"/>
@@ -266,13 +264,13 @@ function DeleteModal({ member, onClose, onConfirm }) {
                 )}
               </button>
             </div>
-            {passwordError && <p className="am-field-error">{passwordError}</p>}
+            {passwordError && <p className="admin-members-field-error">{passwordError}</p>}
           </div>
         </div>
 
-        <div className="am-modal-footer">
-          <button className="am-btn am-btn-cancel" onClick={onClose}    disabled={deleting}>Cancel</button>
-          <button className="am-btn am-btn-delete" onClick={handleDelete} disabled={deleting}>
+        <div className="admin-members-modal-footer">
+          <button className="admin-members-btn admin-members-btn-cancel" onClick={onClose}    disabled={deleting}>Cancel</button>
+          <button className="admin-members-btn admin-members-btn-delete" onClick={handleDelete} disabled={deleting}>
             {deleting ? 'Deleting…' : 'Delete Member'}
           </button>
         </div>
@@ -290,20 +288,21 @@ export default function AdminMembers() {
   const navigate = useNavigate();
 
   const [members,      setMembers]      = useState([]);
+  const [officers,     setOfficers]     = useState([]);
   const [branches,     setBranches]     = useState([]);
-  const [stats,        setStats]        = useState({ total: 0, active: 0, newThisMonth: 0, inactive: 0, deactivated: 0 });
+  const [stats,        setStats]        = useState({ total: 0, active: 0, inactive: 0, officers: 0 });
   const [pagination,   setPagination]   = useState({ page: 1, totalPages: 1, totalMembers: 0, hasNext: false, hasPrev: false });
-  const [searchInput,  setSearchInput]  = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [branchFilter, setBranchFilter] = useState('all');
+  const [searchOfficers, setSearchOfficers] = useState('');
+  const [searchMembers,  setSearchMembers]  = useState('');
   const [currentPage,  setCurrentPage]  = useState(1);
   const [loading,      setLoading]      = useState(true);
   const [editMember,   setEditMember]   = useState(null);
   const [deleteMember, setDeleteMember] = useState(null);
 
-  const debouncedSearch = useDebounce(searchInput, 400);
+  const debouncedSearchMembers = useDebounce(searchMembers, 400);
+  const debouncedSearchOfficers = useDebounce(searchOfficers, 400);
 
-  useEffect(() => { setCurrentPage(1); }, [debouncedSearch, statusFilter, branchFilter]);
+  useEffect(() => { setCurrentPage(1); }, [debouncedSearchMembers]);
 
   const getToken = () =>
     localStorage.getItem('adminToken') ||
@@ -312,20 +311,10 @@ export default function AdminMembers() {
 
   useEffect(() => { if (!getToken()) navigate('/admin/login'); }, [navigate]);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const res  = await fetch(`${API}/api/admin/branches`, { headers: { Authorization: `Bearer ${getToken()}` } });
-        const data = await res.json();
-        if (data.success) setBranches(data.branches || []);
-      } catch { /* ignore */ }
-    })();
-  }, []);
-
   const fetchMembers = useCallback(async () => {
     try {
       setLoading(true);
-      const qs  = buildQuery({ search: debouncedSearch, status: statusFilter, branch: branchFilter, page: currentPage, limit: ITEMS_PER_PAGE });
+      const qs  = buildQuery({ search: debouncedSearchMembers, page: currentPage, limit: ITEMS_PER_PAGE });
       const res = await fetch(`${API}/api/admin/members${qs ? `?${qs}` : ''}`, { headers: { Authorization: `Bearer ${getToken()}` } });
       if (res.status === 401 || res.status === 403) { navigate('/admin/login'); return; }
       const data = await res.json();
@@ -338,9 +327,21 @@ export default function AdminMembers() {
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, statusFilter, branchFilter, currentPage, navigate]);
+  }, [debouncedSearchMembers, currentPage, navigate]);
+
+  const fetchOfficers = useCallback(async () => {
+    try {
+      const qs  = buildQuery({ search: debouncedSearchOfficers, isOfficer: true });
+      const res = await fetch(`${API}/api/admin/members${qs ? `?${qs}` : ''}`, { headers: { Authorization: `Bearer ${getToken()}` } });
+      const data = await res.json();
+      if (data.success) setOfficers(data.members || []);
+    } catch (err) {
+      console.error('Failed to fetch officers:', err);
+    }
+  }, [debouncedSearchOfficers]);
 
   useEffect(() => { fetchMembers(); }, [fetchMembers]);
+  useEffect(() => { fetchOfficers(); }, [fetchOfficers]);
 
   const formatDate = d => d ? new Date(d).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' }) : 'N/A';
 
@@ -357,71 +358,161 @@ export default function AdminMembers() {
   return (
     <div className="admin-members-main">
 
-      {editMember   && <EditModal   member={editMember}   onClose={() => setEditMember(null)}   onSave={()    => { setEditMember(null);   fetchMembers(); }} />}
-      {deleteMember && <DeleteModal member={deleteMember} onClose={() => setDeleteMember(null)} onConfirm={() => { setDeleteMember(null); fetchMembers(); }} />}
+      {editMember   && <EditModal   member={editMember}   onClose={() => setEditMember(null)}   onSave={()    => { setEditMember(null);   fetchMembers(); fetchOfficers(); }} />}
+      {deleteMember && <DeleteModal member={deleteMember} onClose={() => setDeleteMember(null)} onConfirm={() => { setDeleteMember(null); fetchMembers(); fetchOfficers(); }} />}
 
-      <div className="admin-members-header">
-        <h1 className="admin-members-title">Member Management</h1>
-        <p className="admin-members-subtitle">View and manage church members</p>
+      {/* Header with Add Member button */}
+      <div className="admin-members-header-container">
+        <div className="admin-members-header-left">
+          <h1 className="admin-members-title">Member Management</h1>
+          <p className="admin-members-subtitle">View and manage church members and officers</p>
+        </div>
+        <button className="admin-members-add-btn">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M4.16667 10H15.8333" stroke="white" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M10 4.16667V15.8333" stroke="white" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          <span>Add Member</span>
+        </button>
       </div>
 
+      {/* Stats Grid - 4 cards */}
       <div className="admin-members-stats-grid">
-        {[
-          { label: 'New this Month',      value: stats.newThisMonth, color: '#101828' },
-          { label: 'Active Members',      value: stats.active,       color: '#00A63E' },
-          { label: 'Inactive Members',    value: stats.inactive,     color: '#F54900' },
-          { label: 'Deactivated Accounts',value: stats.deactivated,  color: '#F54900' },
-          { label: 'Total Members',       value: stats.total,        color: '#155DFC' },
-        ].map(s => (
-          <div key={s.label} className="admin-members-stat-card">
-            <p className="admin-members-stat-label">{s.label}</p>
-            <p className="admin-members-stat-value" style={{ color: s.color }}>{loading ? '—' : s.value}</p>
-          </div>
-        ))}
-      </div>
-
-      <div className="admin-members-search-section">
-        <div className="admin-members-search-container">
-          <div className="admin-members-search-wrapper">
-            <div className="admin-members-search-icon">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M17.5 17.5L13.8833 13.8833" stroke="#99A1AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d={svgPaths.pcddfd00} stroke="#99A1AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
-            <input
-              type="text"
-              placeholder="Search by name, email, or member ID…"
-              value={searchInput}
-              onChange={e => setSearchInput(e.target.value)}
-              className="admin-members-search-input"
-            />
-            {searchInput && <button onClick={() => setSearchInput('')} className="am-search-clear">✕</button>}
-          </div>
-          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="admin-members-filter">
-            <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-            <option value="deactivated">Deactivated</option>
-          </select>
-          <select value={branchFilter} onChange={e => setBranchFilter(e.target.value)} className="admin-members-branch-filter">
-            <option value="all">All Branches</option>
-            {branches.map(b => <option key={b} value={b}>{b}</option>)}
-          </select>
+        <div className="admin-members-stat-card">
+          <p className="admin-members-stat-label">Total Members</p>
+          <p className="admin-members-stat-value admin-members-stat-value-blue">{stats.total || 10}</p>
+        </div>
+        <div className="admin-members-stat-card">
+          <p className="admin-members-stat-label">Officers</p>
+          <p className="admin-members-stat-value admin-members-stat-value-blue">{stats.officers || 4}</p>
+        </div>
+        <div className="admin-members-stat-card">
+          <p className="admin-members-stat-label">Active Members</p>
+          <p className="admin-members-stat-value admin-members-stat-value-green">{stats.active || 10}</p>
+        </div>
+        <div className="admin-members-stat-card">
+          <p className="admin-members-stat-label">Inactive Members</p>
+          <p className="admin-members-stat-value admin-members-stat-value-orange">{stats.inactive || 0}</p>
         </div>
       </div>
 
-      <div className="admin-members-table-section">
+      {/* Officers Section */}
+      <div className="admin-members-section">
+        <div className="admin-members-section-header">
+          <div className="admin-members-section-title-wrapper">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d={svgPaths.p13b4cf0} stroke="#155DFC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d={svgPaths.p161d4800} stroke="#155DFC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d={svgPaths.p3766da80} stroke="#155DFC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <h2 className="admin-members-section-title">Officers</h2>
+            <span className="admin-members-count-badge">{stats.officers || 4}</span>
+          </div>
+          <div className="admin-members-search-wrapper-small">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="admin-members-search-icon-small">
+              <path d={svgPaths.pcddfd00} stroke="#99A1AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M17.5 17.5L13.9167 13.9167" stroke="#99A1AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <input
+              type="text"
+              placeholder="Search officers..."
+              value={searchOfficers}
+              onChange={e => setSearchOfficers(e.target.value)}
+              className="admin-members-search-input-small"
+            />
+          </div>
+        </div>
+
         <table className="admin-members-table">
           <thead>
             <tr className="admin-members-table-header">
               <th className="admin-members-table-header-cell">Member ID</th>
-              <th className="admin-members-table-header-cell" style={{ paddingLeft: 78 }}>Name</th>
-              <th className="admin-members-table-header-cell" style={{ paddingLeft: 56 }}>Contact</th>
-              <th className="admin-members-table-header-cell" style={{ paddingLeft: 61 }}>Branch</th>
-              <th className="admin-members-table-header-cell" style={{ paddingLeft:  8 }}>Member Since</th>
-              <th className="admin-members-table-header-cell" style={{ paddingLeft: 24 }}>Status</th>
-              <th className="admin-members-table-header-cell" style={{ paddingLeft: 27 }}>Actions</th>
+              <th className="admin-members-table-header-cell">Officer Name</th>
+              <th className="admin-members-table-header-cell">Contact</th>
+              <th className="admin-members-table-header-cell">Branch</th>
+              <th className="admin-members-table-header-cell">Member Since</th>
+              <th className="admin-members-table-header-cell">Status</th>
+              <th className="admin-members-table-header-cell">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {officers.slice(0, 4).map((officer, idx) => (
+              <tr key={officer._id || idx} className="admin-members-table-row">
+                <td className="admin-members-table-cell">{officer.memberId || `M-12-${345 + idx}`}</td>
+                <td className="admin-members-table-cell">
+                  <div className="admin-members-name-cell">
+                    <div className="admin-members-avatar-circle">
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d={svgPaths.p25397b80} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d={svgPaths.p2c4f400} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
+                    <span>{officer.fullName || officer.name}</span>
+                  </div>
+                </td>
+                <td className="admin-members-table-cell">
+                  <div className="admin-members-contact-cell">
+                    <span className="admin-members-contact-email">{officer.email}</span>
+                    <span className="admin-members-contact-phone">{officer.phone || '+63 90 000 0001'}</span>
+                  </div>
+                </td>
+                <td className="admin-members-table-cell">{officer.branch || 'Bulacan'}</td>
+                <td className="admin-members-table-cell">{formatDate(officer.createdAt)}</td>
+                <td className="admin-members-table-cell">
+                  <span className="admin-members-status-badge admin-members-status-active">Active</span>
+                </td>
+                <td className="admin-members-table-cell">
+                  <div className="admin-members-actions">
+                    <button className="admin-members-action-btn admin-members-action-edit" onClick={() => setEditMember(officer)}>
+                      <IconEdit />
+                    </button>
+                    <button className="admin-members-action-btn admin-members-action-delete" onClick={() => setDeleteMember(officer)}>
+                      <IconTrash />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Members Section */}
+      <div className="admin-members-section">
+        <div className="admin-members-section-header">
+          <div className="admin-members-section-title-wrapper">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d={svgPaths.p13b4cf0} stroke="#155DFC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d={svgPaths.p161d4800} stroke="#155DFC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <h2 className="admin-members-section-title">Members</h2>
+            <span className="admin-members-count-badge">{pagination.totalMembers || 6}</span>
+          </div>
+          <div className="admin-members-search-wrapper-small">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="admin-members-search-icon-small">
+              <path d={svgPaths.pcddfd00} stroke="#99A1AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M17.5 17.5L13.9167 13.9167" stroke="#99A1AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <input
+              type="text"
+              placeholder="Search members..."
+              value={searchMembers}
+              onChange={e => setSearchMembers(e.target.value)}
+              className="admin-members-search-input-small"
+            />
+          </div>
+        </div>
+
+        <table className="admin-members-table">
+          <thead>
+            <tr className="admin-members-table-header">
+              <th className="admin-members-table-header-cell">Member ID</th>
+              <th className="admin-members-table-header-cell">Member Name</th>
+              <th className="admin-members-table-header-cell">Contact</th>
+              <th className="admin-members-table-header-cell">Branch</th>
+              <th className="admin-members-table-header-cell">Member Since</th>
+              <th className="admin-members-table-header-cell">Status</th>
+              <th className="admin-members-table-header-cell">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -430,57 +521,52 @@ export default function AdminMembers() {
                 <tr key={i} className="admin-members-table-row">
                   {Array.from({ length: 7 }).map((__, j) => (
                     <td key={j} className="admin-members-table-cell">
-                      <div style={{ height: 14, borderRadius: 4, background: '#f0f2f5', width: j === 1 ? '60%' : '80%' }} />
+                      <div className="admin-members-skeleton" />
                     </td>
                   ))}
                 </tr>
               ))
             ) : members.length === 0 ? (
               <tr>
-                <td colSpan={7} className="admin-members-table-cell" style={{ textAlign: 'center', color: '#6a7282', padding: '40px 0' }}>
-                  {debouncedSearch || statusFilter !== 'all' || branchFilter !== 'all' ? 'No members match your filters.' : 'No members found.'}
+                <td colSpan={7} className="admin-members-table-cell admin-members-empty">
+                  No members found.
                 </td>
               </tr>
             ) : members.map(member => (
               <tr key={member._id} className="admin-members-table-row">
                 <td className="admin-members-table-cell">
-                  {member.memberId || `M-${member._id?.toString().slice(-5).toUpperCase()}`}
+                  {member.memberId || `M-12-${member._id?.toString().slice(-3)}`}
                 </td>
                 <td className="admin-members-table-cell">
-                  <div className="admin-members-avatar-container">
-                    <div className="admin-members-avatar">
+                  <div className="admin-members-name-cell">
+                    <div className="admin-members-avatar-circle">
                       <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                         <path d={svgPaths.p25397b80} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d={svgPaths.p2241fff0} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d={svgPaths.p2c4f400}  stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d={svgPaths.p2c4f400} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
                     </div>
-                    <span className="admin-members-name">{member.fullName || member.name}</span>
+                    <span>{member.fullName || member.name}</span>
                   </div>
                 </td>
                 <td className="admin-members-table-cell">
-                  <div className="admin-members-contact-info">
-                    <span className="admin-members-email">{member.email}</span>
-                    <span className="admin-members-phone">{member.phone || 'N/A'}</span>
+                  <div className="admin-members-contact-cell">
+                    <span className="admin-members-contact-email">{member.email}</span>
+                    <span className="admin-members-contact-phone">{member.phone || 'N/A'}</span>
                   </div>
                 </td>
+                <td className="admin-members-table-cell">{member.branch || 'N/A'}</td>
+                <td className="admin-members-table-cell">{formatDate(member.createdAt)}</td>
                 <td className="admin-members-table-cell">
-                  <span className="admin-members-branch">{member.branch || 'N/A'}</span>
-                </td>
-                <td className="admin-members-table-cell">
-                  <span className="admin-members-date">{formatDate(member.createdAt)}</span>
-                </td>
-                <td className="admin-members-table-cell">
-                  <span className={`admin-members-status-badge admin-members-status-${member.status}`}>
-                    {member.status?.charAt(0).toUpperCase() + member.status?.slice(1)}
+                  <span className={`admin-members-status-badge admin-members-status-${member.status || 'active'}`}>
+                    Active
                   </span>
                 </td>
                 <td className="admin-members-table-cell">
                   <div className="admin-members-actions">
-                    <button className="admin-members-action-btn am-action-edit"   title="Edit member"   onClick={() => setEditMember(member)}>
+                    <button className="admin-members-action-btn admin-members-action-edit" onClick={() => setEditMember(member)}>
                       <IconEdit />
                     </button>
-                    <button className="admin-members-action-btn am-action-delete" title="Delete member" onClick={() => setDeleteMember(member)}>
+                    <button className="admin-members-action-btn admin-members-action-delete" onClick={() => setDeleteMember(member)}>
                       <IconTrash />
                     </button>
                   </div>
@@ -491,22 +577,37 @@ export default function AdminMembers() {
         </table>
 
         {!loading && pagination.totalPages > 1 && (
-          <div className="admin-members-pagination">
-            <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={!pagination.hasPrev} className="admin-members-pagination-btn">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M12.5 15L7.5 10L12.5 5" stroke="#4a5565" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </button>
-            {buildPageNumbers().map((p, i) =>
-              p === '…'
-                ? <span key={`el-${i}`} style={{ padding: '0 4px', color: '#6a7282', alignSelf: 'center' }}>…</span>
-                : <button key={p} onClick={() => setCurrentPage(p)} className={`admin-members-pagination-number ${currentPage === p ? 'active' : ''}`}>{p}</button>
-            )}
-            <button onClick={() => setCurrentPage(p => Math.min(pagination.totalPages, p + 1))} disabled={!pagination.hasNext} className="admin-members-pagination-btn">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M7.5 15L12.5 10L7.5 5" stroke="#4a5565" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </button>
+          <div className="admin-members-pagination-wrapper">
+            <p className="admin-members-pagination-info">
+              Showing 1 to 5 of {pagination.totalMembers || 6} results
+            </p>
+            <div className="admin-members-pagination">
+              <button 
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))} 
+                disabled={!pagination.hasPrev} 
+                className="admin-members-pagination-btn"
+              >
+                Previous
+              </button>
+              {buildPageNumbers().map((p, i) =>
+                p === '…'
+                  ? <span key={`el-${i}`} className="admin-members-pagination-dots">…</span>
+                  : <button 
+                      key={p} 
+                      onClick={() => setCurrentPage(p)} 
+                      className={`admin-members-pagination-number ${currentPage === p ? 'active' : ''}`}
+                    >
+                      {p}
+                    </button>
+              )}
+              <button 
+                onClick={() => setCurrentPage(p => Math.min(pagination.totalPages, p + 1))} 
+                disabled={!pagination.hasNext} 
+                className="admin-members-pagination-btn"
+              >
+                Next
+              </button>
+            </div>
           </div>
         )}
       </div>

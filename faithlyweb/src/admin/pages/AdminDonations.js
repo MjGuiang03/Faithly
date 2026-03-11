@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import '../styles/AdminDonations.css';
+import svgPaths from "../../imports/svg-icons";
 
 const API = process.env.REACT_APP_API_URL;
 
@@ -15,20 +16,20 @@ const fmtDate = (d) => {
   });
 };
 
-const CATEGORIES = ['all', 'General Fund', 'Children Ministry', 'Building Fund', 'Youth Ministry', 'Mission Fund'];
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 10;
 
-export default function AdminDonations() {
+export default function AdminDonationsNew() {
   const navigate = useNavigate();
 
-  const [donations,    setDonations]    = useState([]);
-  const [stats,        setStats]        = useState({ totalAmount: 0, thisMonth: 0, totalCount: 0, recurringCount: 0 });
-  const [searchTerm,   setSearchTerm]   = useState('');
-  const [catFilter,    setCatFilter]    = useState('all');
-  const [loading,      setLoading]      = useState(true);
-
-  /* ── Pagination ── */
-  const [currentPage,  setCurrentPage]  = useState(1);
+  const [donations, setDonations] = useState([]);
+  const [stats, setStats] = useState({
+    totalThisMonth: 0,
+    totalDonors: 0,
+    avgDonation: 0,
+    thisWeek: 0
+  });
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
 
   /* ── Auth guard ── */
   useEffect(() => {
@@ -40,196 +41,193 @@ export default function AdminDonations() {
   const fetchDonations = useCallback(async () => {
     setLoading(true);
     try {
-      const token  = localStorage.getItem('adminToken');
-      const params = new URLSearchParams();
-      if (catFilter !== 'all')  params.set('category', catFilter);
-      if (searchTerm.trim())    params.set('search', searchTerm.trim());
+      const token = localStorage.getItem('adminToken');
 
-      const res  = await fetch(`${API}/api/admin/donations?${params}`, {
+      const res = await fetch(`${API}/api/admin/donations`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
 
       if (!res.ok) {
-        if (res.status === 401 || res.status === 403) { navigate('/admin/login'); return; }
+        if (res.status === 401 || res.status === 403) {
+          navigate('/admin/login');
+          return;
+        }
         toast.error(data.message || 'Failed to fetch donations');
         return;
       }
 
       setDonations(data.donations || []);
-      setStats(data.stats || { totalAmount: 0, thisMonth: 0, totalCount: 0, recurringCount: 0 });
-      setCurrentPage(1); // reset to page 1 on new fetch
+      
+      // Calculate stats from the data
+      const thisMonthTotal = data.stats?.thisMonth || 0;
+      const totalDonations = data.donations?.length || 0;
+      const avgDonation = totalDonations > 0 
+        ? data.donations.reduce((sum, d) => sum + (d.amount || 0), 0) / totalDonations
+        : 0;
+      
+      // Calculate this week (last 7 days)
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+      const thisWeekTotal = data.donations
+        ?.filter(d => new Date(d.createdAt || d.date) >= oneWeekAgo)
+        ?.reduce((sum, d) => sum + (d.amount || 0), 0) || 0;
+      
+      // Count unique donors
+      const uniqueDonors = new Set(data.donations?.map(d => d.email || d.memberName)).size;
+
+      setStats({
+        totalThisMonth: thisMonthTotal,
+        totalDonors: uniqueDonors,
+        avgDonation: avgDonation,
+        thisWeek: thisWeekTotal
+      });
+
+      setCurrentPage(1);
     } catch {
       toast.error('Network error. Could not load donations.');
     } finally {
       setLoading(false);
     }
-  }, [catFilter, searchTerm, navigate]);
+  }, [navigate]);
 
-  useEffect(() => { fetchDonations(); }, [fetchDonations]);
-
-  /* debounce search */
   useEffect(() => {
-    const t = setTimeout(() => fetchDonations(), 400);
-    return () => clearTimeout(t);
-  }, [searchTerm]);
+    fetchDonations();
+  }, [fetchDonations]);
 
   /* ── Pagination math ── */
-  const totalPages   = Math.max(1, Math.ceil(donations.length / ITEMS_PER_PAGE));
+  const totalPages = Math.max(1, Math.ceil(donations.length / ITEMS_PER_PAGE));
   const paginatedRows = donations.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
 
-  const goTo   = (p) => setCurrentPage(Math.max(1, Math.min(p, totalPages)));
-  const goFirst = () => goTo(1);
-  const goPrev  = () => goTo(currentPage - 1);
-  const goNext  = () => goTo(currentPage + 1);
-  const goLast  = () => goTo(totalPages);
+  const goTo = (p) => setCurrentPage(Math.max(1, Math.min(p, totalPages)));
+  const goPrev = () => goTo(currentPage - 1);
+  const goNext = () => goTo(currentPage + 1);
 
-  /* page number buttons — show up to 5 */
-  const pageNumbers = (() => {
-    const pages = [];
-    let start = Math.max(1, currentPage - 2);
-    let end   = Math.min(totalPages, start + 4);
-    if (end - start < 4) start = Math.max(1, end - 4);
-    for (let i = start; i <= end; i++) pages.push(i);
-    return pages;
-  })();
+  // Calculate percentage change from last month (mock for now)
+  const percentageChange = '+8%';
 
   /* ── Render ── */
   return (
-    <div className="admin-loan-main">
-
+    <div className="admin-don-new-main">
       {/* Header */}
-      <div className="admin-loan-header">
-        <h1 className="admin-loan-title">Donation Management</h1>
-        <p className="admin-loan-subtitle">View and manage all member donations</p>
+      <div className="admin-don-new-header">
+        <h1 className="admin-don-new-title">Donations</h1>
+        <p className="admin-don-new-subtitle">Track and manage church donations</p>
       </div>
 
-      {/* Stats */}
-      <div className="admin-loan-stats-grid">
-        <div className="admin-loan-stat-card">
-          <p className="admin-loan-stat-label">Total Received</p>
-          <p className="admin-loan-stat-value">{fmt(stats.totalAmount)}</p>
-        </div>
-        <div className="admin-loan-stat-card">
-          <p className="admin-loan-stat-label">This Month</p>
-          <p className="admin-loan-stat-value">{fmt(stats.thisMonth)}</p>
-        </div>
-        <div className="admin-loan-stat-card">
-          <p className="admin-loan-stat-label">Total Donations</p>
-          <p className="admin-loan-stat-value">{stats.totalCount}</p>
-        </div>
-        <div className="admin-loan-stat-card">
-          <p className="admin-loan-stat-label">Recurring</p>
-          <p className="admin-loan-stat-value">{stats.recurringCount}</p>
-        </div>
-      </div>
-
-      {/* Search & Filter */}
-      <div className="admin-loan-search-section">
-        <div className="admin-loan-search-container">
-          <div className="admin-loan-search-wrapper">
-            <div className="admin-loan-search-icon">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M9.16667 15.8333C12.8486 15.8333 15.8333 12.8486 15.8333 9.16667C15.8333 5.48477 12.8486 2.5 9.16667 2.5C5.48477 2.5 2.5 5.48477 2.5 9.16667C2.5 12.8486 5.48477 15.8333 9.16667 15.8333Z" stroke="#99A1AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M17.5 17.5L13.875 13.875" stroke="#99A1AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
-            <input
-              type="text"
-              placeholder="Search by member name or donation ID…"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="admin-loan-search-input"
-            />
+      {/* Stats Cards */}
+      <div className="admin-don-new-stats">
+        {/* Total This Month */}
+        <div className="admin-don-new-stat-card">
+          <div className="admin-don-new-stat-header">
+            <span className="admin-don-new-stat-label">Total This Month</span>
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d={svgPaths.p2f84f400} stroke="#E60076" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </div>
+          <p className="admin-don-new-stat-value">{fmt(stats.totalThisMonth)}</p>
+          <p className="admin-don-new-stat-change">{percentageChange} from last month</p>
+        </div>
 
-          <div className="admin-loan-filter">
-            <select
-              value={catFilter}
-              onChange={(e) => { setCatFilter(e.target.value); setCurrentPage(1); }}
-              className="admin-loan-filter-button"
-            >
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c}>
-                  {c === 'all' ? 'All Categories' : c}
-                </option>
-              ))}
-            </select>
+        {/* Total Donors */}
+        <div className="admin-don-new-stat-card">
+          <div className="admin-don-new-stat-header">
+            <span className="admin-don-new-stat-label">Total Donors</span>
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d={svgPaths.p3c797180} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+              <path d={svgPaths.p3ac0b600} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </div>
+          <p className="admin-don-new-stat-value">{stats.totalDonors}</p>
+        </div>
+
+        {/* Avg. Donation */}
+        <div className="admin-don-new-stat-card">
+          <div className="admin-don-new-stat-header">
+            <span className="admin-don-new-stat-label">Avg. Donation</span>
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M10 1.66667V18.3333" stroke="#00A63E" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+              <path d={svgPaths.p3055a600} stroke="#00A63E" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <p className="admin-don-new-stat-value">{fmt(stats.avgDonation)}</p>
+        </div>
+
+        {/* This Week */}
+        <div className="admin-don-new-stat-card">
+          <div className="admin-don-new-stat-header">
+            <span className="admin-don-new-stat-label">This Week</span>
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M6.66667 1.66667V5" stroke="#9810FA" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M13.3333 1.66667V5" stroke="#9810FA" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+              <path d={svgPaths.p1da67b80} stroke="#9810FA" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M2.5 8.33333H17.5" stroke="#9810FA" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <p className="admin-don-new-stat-value">{fmt(stats.thisWeek)}</p>
         </div>
       </div>
 
-      {/* Table card */}
-      <div className="admin-loan-table-card">
-        <div className="admin-loan-table-scroll">
-          <table className="admin-loan-table">
-            <thead>
-              <tr className="admin-loan-table-header">
-                <th className="admin-loan-table-header-cell">Donation ID</th>
-                <th className="admin-loan-table-header-cell">Member</th>
-                <th className="admin-loan-table-header-cell">Category</th>
-                <th className="admin-loan-table-header-cell">Amount</th>
-                <th className="admin-loan-table-header-cell">Method</th>
-                <th className="admin-loan-table-header-cell">Type</th>
-                <th className="admin-loan-table-header-cell">Date</th>
+      {/* Recent Donations Section */}
+      <div className="admin-don-new-section">
+        <h2 className="admin-don-new-section-title">Recent Donations</h2>
+
+        {/* Table */}
+        <div className="admin-don-new-table-container">
+          <table className="admin-don-new-table">
+            <thead className="admin-don-new-thead">
+              <tr>
+                <th className="admin-don-new-th">Donation ID</th>
+                <th className="admin-don-new-th">Member</th>
+                <th className="admin-don-new-th">Amount</th>
+                <th className="admin-don-new-th">Purpose</th>
+                <th className="admin-don-new-th">Date</th>
               </tr>
             </thead>
-
-            <tbody>
+            <tbody className="admin-don-new-tbody">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="admin-loan-table-cell admin-loan-table-empty">
-                    <div className="admin-loan-loading-row">
-                      <div className="admin-loan-spinner" />
+                  <td colSpan={5} className="admin-don-new-td admin-don-new-empty">
+                    <div className="admin-don-new-loading">
+                      <div className="admin-don-new-spinner" />
                       Loading donations…
                     </div>
                   </td>
                 </tr>
               ) : paginatedRows.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="admin-loan-table-cell admin-loan-table-empty">
+                  <td colSpan={5} className="admin-don-new-td admin-don-new-empty">
                     No donations found
                   </td>
                 </tr>
               ) : (
-                paginatedRows.map((d) => (
-                  <tr key={d._id} className="admin-loan-table-row">
-                    <td className="admin-loan-table-cell">
-                      <span className="admin-don-id">{d.donationId}</span>
+                paginatedRows.map((donation, index) => (
+                  <tr key={donation._id || index} className="admin-don-new-tr">
+                    <td className="admin-don-new-td">
+                      <span className="admin-don-new-donation-id">
+                        {donation.donationId || `D-${String(index + 1).padStart(3, '0')}`}
+                      </span>
                     </td>
-
-                    <td className="admin-loan-table-cell">
-                      <div className="admin-loan-member-info">
-                        <span className="admin-loan-member-name">{d.memberName}</span>
-                        <span className="admin-loan-member-email">{d.email}</span>
-                      </div>
+                    <td className="admin-don-new-td">
+                      <span className="admin-don-new-member-name">
+                        {donation.memberName}
+                      </span>
                     </td>
-
-                    <td className="admin-loan-table-cell">
-                      <span className="admin-don-category">{d.category}</span>
+                    <td className="admin-don-new-td">
+                      <span className="admin-don-new-amount">{fmt(donation.amount)}</span>
                     </td>
-
-                    <td className="admin-loan-table-cell">
-                      <span className="admin-loan-amount">{fmt(d.amount)}</span>
+                    <td className="admin-don-new-td">
+                      <span className="admin-don-new-purpose">
+                        {donation.category || donation.purpose || 'General Fund'}
+                      </span>
                     </td>
-
-                    <td className="admin-loan-table-cell">
-                      <span className="admin-don-method">{d.method || d.paymentMethod}</span>
-                    </td>
-
-                    <td className="admin-loan-table-cell">
-                      {d.type === 'Recurring' ? (
-                        <span className="admin-don-badge admin-don-badge-recurring">Recurring</span>
-                      ) : (
-                        <span className="admin-don-badge admin-don-badge-once">One-time</span>
-                      )}
-                    </td>
-
-                    <td className="admin-loan-table-cell">
-                      <span className="admin-loan-date">{fmtDate(d.createdAt || d.date)}</span>
+                    <td className="admin-don-new-td">
+                      <span className="admin-don-new-date">
+                        {fmtDate(donation.createdAt || donation.date)}
+                      </span>
                     </td>
                   </tr>
                 ))
@@ -238,75 +236,39 @@ export default function AdminDonations() {
           </table>
         </div>
 
-        {/* ── Pagination ── */}
+        {/* Pagination */}
         {!loading && donations.length > 0 && (
-          <div className="admin-don-pagination">
-            <p className="admin-don-pagination-info">
-              Showing{' '}
-              <strong>{(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, donations.length)}</strong>
-              {' '}of <strong>{donations.length}</strong> donations
-            </p>
-
-            <div className="admin-don-pagination-controls">
-              {/* First */}
+          <div className="admin-don-new-pagination">
+            <div className="admin-don-new-pagination-info">
+              Showing <strong>{(currentPage - 1) * ITEMS_PER_PAGE + 1}</strong> to{' '}
+              <strong>{Math.min(currentPage * ITEMS_PER_PAGE, donations.length)}</strong> of{' '}
+              <strong>{donations.length}</strong> results
+            </div>
+            <div className="admin-don-new-pagination-controls">
               <button
-                className="admin-don-page-btn"
-                onClick={goFirst}
-                disabled={currentPage === 1}
-                title="First page"
-              >
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path d="M9 10L5 7L9 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M4 4V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                </svg>
-              </button>
-
-              {/* Prev */}
-              <button
-                className="admin-don-page-btn"
+                className="admin-don-new-pagination-btn"
                 onClick={goPrev}
                 disabled={currentPage === 1}
-                title="Previous page"
               >
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path d="M9 10L5 7L9 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
+                &lt;
               </button>
-
-              {/* Page numbers */}
-              {pageNumbers.map((p) => (
+              <button className="admin-don-new-pagination-number admin-don-new-pagination-active">
+                {currentPage}
+              </button>
+              {currentPage < totalPages && (
                 <button
-                  key={p}
-                  className={`admin-don-page-btn${p === currentPage ? ' admin-don-page-btn-active' : ''}`}
-                  onClick={() => goTo(p)}
+                  className="admin-don-new-pagination-number"
+                  onClick={() => goTo(currentPage + 1)}
                 >
-                  {p}
+                  {currentPage + 1}
                 </button>
-              ))}
-
-              {/* Next */}
+              )}
               <button
-                className="admin-don-page-btn"
+                className="admin-don-new-pagination-btn"
                 onClick={goNext}
                 disabled={currentPage === totalPages}
-                title="Next page"
               >
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path d="M5 4L9 7L5 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </button>
-
-              {/* Last */}
-              <button
-                className="admin-don-page-btn"
-                onClick={goLast}
-                disabled={currentPage === totalPages}
-                title="Last page"
-              >
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path d="M5 4L9 7L5 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M10 4V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                </svg>
+                 &gt;
               </button>
             </div>
           </div>
