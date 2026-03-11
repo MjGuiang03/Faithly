@@ -1,0 +1,319 @@
+/* AdminDonationsNew.css - Donations Page Styles */
+/* All classes are prefixed with admin-don-new- to prevent conflicts */
+
+.admin-don-new-main {
+  flex: 1;
+  max-width: 100%;
+}
+
+/* Header */
+.admin-don-new-header {
+  margin-bottom: 32px;
+}
+
+.admin-don-new-title {
+  font-family: 'Inter', 'Arial', sans-serif;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 36px;
+  color: #101828;
+  margin: 0 0 8px 0;
+}
+
+.admin-don-new-subtitle {
+  font-family: 'Inter', 'Arial', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  color: #4a5565;
+  margin: 0;
+}
+
+/* Stats Cards */
+.admin-don-new-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.admin-don-new-stat-card {
+  background: white;
+  border: 0.8px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 24.8px;
+  min-height: 80px;
+}
+
+.admin-don-new-stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.admin-don-new-stat-label {
+  font-family: 'Inter', 'Arial', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #4a5565;
+}
+
+.admin-don-new-stat-value {
+  font-family: 'Inter', 'Arial', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 32px;
+  color: #101828;
+  margin: 0 0 4px 0;
+}
+
+.admin-don-new-stat-change {
+  font-family: 'Inter', 'Arial', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  color: #00a63e;
+  margin: 0;
+}
+
+/* Section */
+.admin-don-new-section {
+  background: white;
+  border: 0.8px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 24.8px;
+}
+
+.admin-don-new-section-title {
+  font-family: 'Inter', 'Arial', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
+  color: #101828;
+  margin: 0 0 24px 0;
+}
+
+/* Table */
+.admin-don-new-table-container {
+  overflow-x: auto;
+  margin-bottom: 24px;
+}
+
+.admin-don-new-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-don-new-thead {
+  background: #f9fafb;
+}
+
+.admin-don-new-thead tr {
+  border-bottom: 0.8px solid #e5e7eb;
+}
+
+.admin-don-new-th {
+  font-family: 'Inter', 'Arial', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #4a5565;
+  text-align: left;
+  padding: 11.8px 16px;
+  white-space: nowrap;
+}
+
+.admin-don-new-tbody {
+  background: white;
+}
+
+.admin-don-new-tr {
+  border-top: 0.8px solid #f3f4f6;
+}
+
+.admin-don-new-td {
+  font-family: 'Inter', 'Arial', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  color: #364153;
+  padding: 14.2px 16px;
+  vertical-align: middle;
+}
+
+.admin-don-new-donation-id {
+  font-weight: 500;
+  color: #101828;
+}
+
+.admin-don-new-member-name {
+  color: #101828;
+}
+
+.admin-don-new-amount {
+  font-weight: 700;
+  color: #e60076;
+}
+
+.admin-don-new-purpose {
+  color: #364153;
+}
+
+.admin-don-new-date {
+  color: #364153;
+}
+
+.admin-don-new-empty {
+  text-align: center;
+  padding: 40px 16px;
+  color: #6a7282;
+}
+
+.admin-don-new-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.admin-don-new-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e5e7eb;
+  border-top-color: #155dfc;
+  border-radius: 50%;
+  animation: admin-don-new-spin 0.8s linear infinite;
+}
+
+@keyframes admin-don-new-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Pagination */
+.admin-don-new-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+  border-top: 0.8px solid #e5e7eb;
+}
+
+.admin-don-new-pagination-info {
+  font-family: 'Inter', 'Arial', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #4a5565;
+}
+
+.admin-don-new-pagination-info strong {
+  font-weight: 500;
+  color: #101828;
+}
+
+.admin-don-new-pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-don-new-pagination-btn {
+  background: white;
+  border: 0.8px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-family: 'Inter', 'Arial', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: #4a5565;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-don-new-pagination-btn:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #155dfc;
+  color: #155dfc;
+}
+
+.admin-don-new-pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.admin-don-new-pagination-number {
+  background: white;
+  border: 0.8px solid #e5e7eb;
+  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Inter', 'Arial', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: #4a5565;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-don-new-pagination-number:hover {
+  background: #f9fafb;
+  border-color: #155dfc;
+  color: #155dfc;
+}
+
+.admin-don-new-pagination-active {
+  background: #155dfc;
+  border-color: #155dfc;
+  color: white;
+  font-weight: 700;
+}
+
+.admin-don-new-pagination-active:hover {
+  background: #155dfc;
+  border-color: #155dfc;
+  color: white;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .admin-don-new-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-don-new-main {
+    max-width: 100%;
+  }
+
+  .admin-don-new-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-don-new-table-container {
+    overflow-x: auto;
+  }
+
+  .admin-don-new-table {
+    min-width: 600px;
+  }
+
+  .admin-don-new-pagination {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .admin-don-new-pagination-controls {
+    justify-content: center;
+  }
+}
