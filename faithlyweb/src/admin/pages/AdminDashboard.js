@@ -32,14 +32,9 @@ export default function AdminDashboard() {
   const MODAL_PER_PAGE = 10;
   const [loading,       setLoading]       = useState(true);
 
-  const token = localStorage.getItem('adminToken');
-
-  useEffect(() => {
-    fetchAll();
-  }, [fetchAll]);
-
   const fetchAll = useCallback(async () => {
     setLoading(true);
+    const token = localStorage.getItem('adminToken'); // Moved token retrieval inside fetchAll
     const headers = { Authorization: `Bearer ${token}` };
     try {
       const [membersRes, loansRes, donationsRes, attendRes] = await Promise.all([
@@ -146,7 +141,7 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [token, navigate]);
+  }, [navigate]);
 
   const dash = (v) => loading ? '—' : v;
 

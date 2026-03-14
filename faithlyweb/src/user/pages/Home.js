@@ -20,11 +20,6 @@ export default function Home() {
   const token = localStorage.getItem('token');
   const memberSince = user?.created_at ? new Date(user.created_at).getFullYear() : new Date().getFullYear();
 
-  useEffect(() => {
-    if (!token) return;
-    fetchAllData();
-  }, [token, fetchAllData]);
-
   const fetchAllData = useCallback(async () => {
     setLoading(true);
     try {
@@ -42,12 +37,16 @@ export default function Home() {
         attendanceRes.json(),
       ]);
 
-      if (loansData.success) {
-        setLoanStats(loansData.stats);
+      if (loansRes.ok && loansData.success) {
+        setLoanStats(loansData.stats || { activeCount: 0, remainingBalance: 0 });
         setActiveLoans(loansData.loans?.filter(l => l.status === 'active') || []);
       }
-      if (donationsData.success)  setDonationStats(donationsData.stats);
-      if (attendanceData.success) setAttendanceStats(attendanceData.stats);
+      if (donationsRes.ok && donationsData.success) {
+        setDonationStats(donationsData.stats || { totalDonated: 0 });
+      }
+      if (attendanceRes.ok && attendanceData.success) {
+        setAttendanceStats(attendanceData.stats || { total: 0 });
+      }
 
       // Build recent activity from all three sources
       const activities = [];
@@ -97,6 +96,11 @@ export default function Home() {
       setLoading(false);
     }
   }, [token]);
+
+  useEffect(() => {
+    if (!token) return;
+    fetchAllData();
+  }, [token, fetchAllData]);
 
   const formatTimeAgo = (date) => {
     const diff  = Date.now() - date.getTime();

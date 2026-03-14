@@ -1,11 +1,10 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import LoanAdminSidebar from './loanAdminSidebar';
-import svgPaths from "../../imports/svg-icons";
 import '../styles/loanAdminReports.css';
 
 export default function LoanAdminReports() {
-    const [selectedPeriod, setSelectedPeriod] = useState('monthly');
+    // const [selectedPeriod, setSelectedPeriod] = useState('monthly');
 
     const moneyFlowData = [
         { month: 'Jan', received: 950000, disbursed: 850000 },

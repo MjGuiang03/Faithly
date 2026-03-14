@@ -288,7 +288,7 @@ export default function AdminOfficerVerification() {
     const adminEmail = localStorage.getItem('adminEmail');
     if (!adminEmail) { navigate('/admin/login'); return; }
     fetchVerifications();
-  }, [navigate]);
+  }, [navigate, fetchVerifications]);
 
   const fetchVerifications = useCallback(async () => {
     setLoading(true);

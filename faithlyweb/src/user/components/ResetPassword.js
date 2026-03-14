@@ -42,7 +42,7 @@ function RateLimitBanner({ seconds, onExpire }) {
       setRemaining(prev => { if (prev <= 1) { clearInterval(t); onExpire(); return 0; } return prev - 1; });
     }, 1000);
     return () => clearInterval(t);
-  }, []);
+  }, [onExpire, remaining]);
 
   const m = Math.floor(remaining / 60), s = remaining % 60;
 

@@ -33,19 +33,11 @@ export default function AdminNotifications() {
   const [page,          setPage]          = useState(1);
   const [loading,       setLoading]       = useState(true);
 
-  const token = localStorage.getItem('adminToken');
-
-  useEffect(() => {
-    fetchNotifications();
-  }, [fetchNotifications]);
-
   const fetchNotifications = useCallback(async () => {
-    const adminEmail = localStorage.getItem('adminEmail');
-    if (!adminEmail) { navigate('/admin/login'); return; }
-    
     setLoading(true);
     try {
-      const res  = await fetch(`${API}/api/admin/notifications`, {
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch(`${API}/api/admin/notifications`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -60,7 +52,16 @@ export default function AdminNotifications() {
     } finally {
       setLoading(false);
     }
-  }, [navigate, token]);
+  }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem('adminToken');
+    if (!token) {
+      navigate('/admin/login');
+      return;
+    }
+    fetchNotifications();
+  }, [navigate, fetchNotifications]);
 
   // Derive isRead from persisted set
   const enriched = notifications.map(n => ({ ...n, isRead: readIds.has(n.id) }));

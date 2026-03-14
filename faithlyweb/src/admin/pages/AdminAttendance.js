@@ -150,14 +150,14 @@ export default function AdminAttendance() {
     avgPerService: 1087
   });
 
-  const [branches, setBranches] = useState([
+  const [branches] = useState([
     { name: 'Bulacan', services: 45, avg: 1234 },
     { name: 'Valenzuela', services: 38, avg: 892 },
     { name: 'Pangasinan', services: 52, avg: 1567 },
     { name: 'Rizal', services: 29, avg: 654 }
   ]);
 
-  const [recentServices, setRecentServices] = useState([
+  const [recentServices] = useState([
     { id: 'S-001', branch: 'Bulacan', serviceType: 'Sunday Service', attendance: 1250, date: '3/7/2026' },
     { id: 'S-002', branch: 'Valenzuela', serviceType: 'Bible Study', attendance: 85, date: '3/7/2026' },
     { id: 'S-003', branch: 'Pangasinan', serviceType: 'Sunday Service', attendance: 1580, date: '3/7/2026' }
@@ -166,15 +166,6 @@ export default function AdminAttendance() {
   const [loading, setLoading] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState(null);
-
-  useEffect(() => {
-    const token = localStorage.getItem('adminToken');
-    if (!token) {
-      navigate('/admin/login');
-      return;
-    }
-    fetchAttendance();
-  }, [navigate, fetchAttendance]);
 
   const fetchAttendance = useCallback(async () => {
     setLoading(true);
@@ -196,6 +187,15 @@ export default function AdminAttendance() {
       setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem('adminToken');
+    if (!token) {
+      navigate('/admin/login');
+      return;
+    }
+    fetchAttendance();
+  }, [navigate, fetchAttendance]);
 
   const handleAddService = (branchName) => {
     setSelectedBranch(branchName);

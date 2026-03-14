@@ -70,10 +70,12 @@ export default function SecretaryLoanProcess() {
         setShowDetailsModal(true);
     };
 
+    /*
     const handleOpenProcessModal = (loan) => {
         setSelectedLoan(loan);
         setShowProcessModal(true);
     };
+    */
 
     const handleProcessLoan = async (paymentMethod) => {
         if (!selectedLoan || !selectedLoan._id) return;

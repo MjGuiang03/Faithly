@@ -24,7 +24,7 @@ import svgPaths from "../../imports/svg-icons";
 export default function AdminReports() {
   const navigate = useNavigate();
 
-  const [stats, setStats] = useState({
+  const [stats] = useState({
     totalMembers: 1245,
     totalMembersChange: '+150 this year',
     totalDonations: '₱3.5M',
@@ -39,7 +39,7 @@ export default function AdminReports() {
     totalDisbursedPeriod: 'Total expenses'
   });
 
-  const [financialFlowData, setFinancialFlowData] = useState([
+  const [financialFlowData] = useState([
     { month: 'Jan', received: 650, released: 420 },
     { month: 'Feb', received: 590, released: 380 },
     { month: 'Mar', received: 800, released: 550 },
@@ -48,28 +48,28 @@ export default function AdminReports() {
     { month: 'Jun', received: 900, released: 630 }
   ]);
 
-  const [donationCategories, setDonationCategories] = useState([
+  const [donationCategories] = useState([
     { name: 'Tithes', value: 1800000, color: '#155DFC' },
     { name: 'Offerings', value: 1300000, color: '#00A63E' },
     { name: 'Special Gifts', value: 800000, color: '#F59E0B' },
     { name: 'Other', value: 270000, color: '#EF4444' }
   ]);
 
-  const [membersByBranch, setMembersByBranch] = useState([
+  const [membersByBranch] = useState([
     { branch: 'Main Branch', count: 450 },
     { branch: 'North Branch', count: 320 },
     { branch: 'South Branch', count: 280 },
     { branch: 'East Branch', count: 195 }
   ]);
 
-  const [activeLoans, setActiveLoans] = useState([
+  const [activeLoans] = useState([
     { branch: 'Main Branch', amount: '₱450,000', count: 45 },
     { branch: 'North Branch', amount: '₱320,000', count: 32 },
     { branch: 'South Branch', amount: '₱280,000', count: 28 },
     { branch: 'East Branch', amount: '₱195,000', count: 18 }
   ]);
 
-  const [memberGrowthData, setMemberGrowthData] = useState([
+  const [memberGrowthData] = useState([
     { month: 'Jan', totalMembers: 950, newMembers: 25, verifiedOfficers: 45 },
     { month: 'Feb', totalMembers: 980, newMembers: 30, verifiedOfficers: 48 },
     { month: 'Mar', totalMembers: 1050, newMembers: 70, verifiedOfficers: 52 },
@@ -78,7 +78,7 @@ export default function AdminReports() {
     { month: 'Jun', totalMembers: 1245, newMembers: 65, verifiedOfficers: 60 }
   ]);
 
-  const [attendanceVsDonations, setAttendanceVsDonations] = useState([
+  const [attendanceVsDonations] = useState([
     { month: 'Jan', attendance: 850, donations: 650 },
     { month: 'Feb', attendance: 920, donations: 590 },
     { month: 'Mar', attendance: 1050, donations: 800 },
@@ -88,15 +88,6 @@ export default function AdminReports() {
   ]);
 
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const token = localStorage.getItem('adminToken');
-    if (!token) {
-      navigate('/admin/login');
-      return;
-    }
-    fetchReports();
-  }, [navigate, fetchReports]);
 
   const fetchReports = useCallback(async () => {
     setLoading(true);

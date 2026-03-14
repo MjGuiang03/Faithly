@@ -123,6 +123,7 @@ export default function Loans() {
   /* ────────────────────────────────────────────────────────
      Verification status badge
   ──────────────────────────────────────────────────────── */
+  /*
   const renderVerificationBadge = () => {
     if (verificationStatus === null) return null;
 
@@ -150,6 +151,7 @@ export default function Loans() {
       </div>
     );
   };
+  */
 
   /* ────────────────────────────────────────────────────────
      Locked state (shown when not yet verified)

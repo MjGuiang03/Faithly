@@ -4,7 +4,6 @@ import { useAuth } from '../../context/AuthContext';
 import { CheckCircle, AlertCircle, Loader } from 'lucide-react';
 import { toast } from 'sonner';
 import puacLogo from '../../assets/puaclogo.png';
-import svgPaths from "../../imports/svg-icons";
 import '../styles/Verify.css';
 
 // Change the function signature to accept optional override props:

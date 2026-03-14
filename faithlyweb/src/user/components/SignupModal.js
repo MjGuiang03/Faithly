@@ -104,7 +104,7 @@ const CommunitySelect = ({ value, onChange }) => (
 );
 
 export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: '', lastName: '', email: '', phone: '',
     gender: '', birthday: '', community: '',

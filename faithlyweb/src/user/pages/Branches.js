@@ -135,8 +135,7 @@ const COMMUNITY_MAP = {
 };
 
 export default function Branches() {
-  const navigate = useNavigate();
-  const { signOut, profile } = useAuth();
+  const { profile } = useAuth();
 
   const [selectedRegion, setSelectedRegion] = useState('All');
   const [selectedProvince, setSelectedProvince] = useState('All');
@@ -148,11 +147,6 @@ export default function Branches() {
   // Resolve user's community branch name
   const userBranchName = profile?.branch ? (COMMUNITY_MAP[profile.branch] ?? profile.branch) : null;
   const userBranch = userBranchName ? branchData.find(b => b.name === userBranchName) : null;
-
-  const handleSignOut = async () => {
-    const result = await signOut();
-    if (result.success) navigate('/');
-  };
 
   const openDrawer = (branch) => {
     setDrawerBranch(branch);

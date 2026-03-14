@@ -14,7 +14,7 @@ export default function AdminBranches() {
     growthRate: '+12%'
   });
 
-  const [branches, setBranches] = useState([
+  const [branches] = useState([
     {
       id: 1,
       name: 'Bulacan Main Branch',
@@ -53,7 +53,20 @@ export default function AdminBranches() {
     }
   ]);
 
-  const [loading, setLoading] = useState(false);
+  const fetchBranches = useCallback(async () => {
+    try {
+      // In production, fetch from API:
+      // const token = localStorage.getItem('adminToken');
+      // const res = await fetch(`${API}/api/admin/branches`, {
+      //   headers: { Authorization: `Bearer ${token}` }
+      // });
+      // const data = await res.json();
+      // setBranches(data.branches);
+      // setStats(data.stats);
+    } catch (err) {
+      toast.error('Failed to fetch branches');
+    }
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
@@ -63,25 +76,6 @@ export default function AdminBranches() {
     }
     fetchBranches();
   }, [navigate, fetchBranches]);
-
-  const fetchBranches = useCallback(async () => {
-    setLoading(true);
-    try {
-      
-      // In production, fetch from API:
-      // const res = await fetch(`${API}/api/admin/branches`, {
-      //   headers: { Authorization: `Bearer ${token}` }
-      // });
-      // const data = await res.json();
-      // setBranches(data.branches);
-      // setStats(data.stats);
-      
-    } catch (err) {
-      toast.error('Failed to fetch branches');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   return (
     <div className="admin-branch-main">
