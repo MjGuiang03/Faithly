@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 import svgPaths from '../../imports/svg-icons';
@@ -9,7 +9,6 @@ const PAGE_SIZE = 5;
 
 export default function Attendance() {
   const navigate = useNavigate();
-  useAuth();
 
   const [attendanceData, setAttendanceData] = useState([]);
   const [stats,          setStats]          = useState({ total: 0, thisMonth: 0 });
@@ -21,9 +20,9 @@ export default function Attendance() {
 
   useEffect(() => {
     fetchAttendance();
-  }, []);
+  }, [fetchAttendance]);
 
-  const fetchAttendance = async () => {
+  const fetchAttendance = useCallback(async () => {
     setLoading(true);
     try {
       const res  = await fetch(`${API}/api/attendance/my-attendance`, {
@@ -39,7 +38,7 @@ export default function Attendance() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
 
   // Attendance rate = thisMonth / weeks in current month * 100 (capped at 100)
   const attendanceRate = useMemo(() => {

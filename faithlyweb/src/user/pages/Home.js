@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 import svgPaths from '../../imports/svg-icons';
@@ -23,9 +23,9 @@ export default function Home() {
   useEffect(() => {
     if (!token) return;
     fetchAllData();
-  }, [token]);
+  }, [token, fetchAllData]);
 
-  const fetchAllData = async () => {
+  const fetchAllData = useCallback(async () => {
     setLoading(true);
     try {
       const headers = { Authorization: `Bearer ${token}` };
@@ -96,7 +96,7 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
 
   const formatTimeAgo = (date) => {
     const diff  = Date.now() - date.getTime();
