@@ -17,12 +17,7 @@ import notificationRoutes from './routes/notifications.js';
 
 const app = express();
 
-/* ================== GLOBAL MIDDLEWARE ================== */
-app.use(globalLimiter);
-app.use(helmet());
-app.use(mongoSanitize());
-
-// Dynamic CORS based on environment
+// 1. Move CORS to the very top so even error/limited responses get headers
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:3001',
@@ -32,13 +27,13 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl)
     if (!origin) return callback(null, true);
     
-    // Automatically allow any Vercel preview/production domains
+    // allow all vercel domains
     if (origin.endsWith('.vercel.app')) return callback(null, true);
 
     if (allowedOrigins.indexOf(origin) === -1) {
+      console.warn(`CORS blocked request from origin: ${origin}`);
       return callback(new Error('CORS Policy: Access from this origin is not allowed'), false);
     }
     return callback(null, true);
@@ -46,6 +41,10 @@ app.use(cors({
   credentials: true
 }));
 
+/* ================== GLOBAL MIDDLEWARE ================== */
+app.use(globalLimiter);
+app.use(helmet());
+app.use(mongoSanitize());
 app.use(express.json({ limit: '10mb' }));
 
 /* ================== ROUTES ================== */
