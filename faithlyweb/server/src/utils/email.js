@@ -6,13 +6,19 @@ export const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
   port: 587,
   secure: false, // true for 465, false for other ports
+  requireTLS: true,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
   },
   tls: {
     rejectUnauthorized: false
-  }
+  },
+  // Advanced settings to combat cloud firewalls & IPv6 issues
+  logger: true,
+  debug: true,
+  connectionTimeout: 15000, // 15 seconds
+  socketTimeout: 15000
 });
 
 export const generateOTP = () =>
