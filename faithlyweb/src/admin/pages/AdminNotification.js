@@ -2,23 +2,18 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import '../styles/AdminNotification.css';
+import svgPaths from "../../imports/svg-icons";
 
-const API = process.env.REACT_APP_API_URL;
+import API from '../../utils/api';
 const STORAGE_KEY = 'faithly_admin_read_notifications';
 const PER_PAGE = 10;
 
 const fmtTime = (date) => {
   if (!date) return '';
   const d = new Date(date);
-  const diff = Date.now() - d.getTime();
-  const mins  = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days  = Math.floor(diff / 86400000);
-  if (mins  < 1)  return 'Just now';
-  if (mins  < 60) return `${mins} hour${mins > 1 ? 's' : ''} ago`;
-  if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-  if (days  < 30) return `${days} day${days > 1 ? 's' : ''} ago`;
-  return d.toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' });
+  const datePart = d.toLocaleDateString('en-CA');
+  const timePart = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+  return `${datePart} ${timePart}`;
 };
 
 const loadReadSet = () => {
@@ -27,43 +22,8 @@ const loadReadSet = () => {
 };
 
 const saveReadSet = (set) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify([...set]));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); window.dispatchEvent(new Event("admin-notif-read-update"));
 };
-
-// Icon components
-const DonationIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <path d="M10 17.5C10 17.5 2.5 12.5 2.5 7.08333C2.5 5.85181 2.98874 4.67054 3.86609 3.79318C4.74345 2.91583 5.92472 2.42708 7.15625 2.42708C8.38778 2.42708 9.82292 3.125 10 5C10.1771 3.125 11.6122 2.42708 12.8438 2.42708C14.0753 2.42708 15.2565 2.91583 16.1339 3.79318C17.0113 4.67054 17.5 5.85181 17.5 7.08333C17.5 12.5 10 17.5 10 17.5Z" stroke="#E60076" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
-
-const MemberIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <circle cx="10" cy="6.5" r="3" stroke="#9810FA" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M15.8333 17.5C15.8333 14.2783 13.2217 11.6667 10 11.6667C6.77834 11.6667 4.16667 14.2783 4.16667 17.5" stroke="#9810FA" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
-
-const AttendanceIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <path d="M16.6667 5L7.5 14.1667L3.33334 10" stroke="#15803D" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
-
-const VerificationIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <path d="M10 1.66667L12.5 4.16667H15.8333V7.5L18.3333 10L15.8333 12.5V15.8333H12.5L10 18.3333L7.5 15.8333H4.16667V12.5L1.66667 10L4.16667 7.5V4.16667H7.5L10 1.66667Z" stroke="#F59E0B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M7.5 10L9.16667 11.6667L12.5 8.33333" stroke="#F59E0B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
-
-const AlertIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <circle cx="10" cy="10" r="7.5" stroke="#EF4444" strokeWidth="1.5"/>
-    <path d="M10 6.5V10.5" stroke="#EF4444" strokeWidth="1.5" strokeLinecap="round"/>
-    <circle cx="10" cy="13.5" r="0.5" fill="#EF4444"/>
-  </svg>
-);
 
 export default function AdminNotifications() {
   const navigate = useNavigate();
@@ -139,26 +99,11 @@ export default function AdminNotifications() {
     setPage(1);
   };
 
-  const getIcon = (type) => {
-    switch (type) {
-      case 'donation': return <DonationIcon />;
-      case 'member': return <MemberIcon />;
-      case 'attendance': return <AttendanceIcon />;
-      case 'verification': return <VerificationIcon />;
-      case 'alert': return <AlertIcon />;
-      default: return <MemberIcon />;
-    }
-  };
-
   const getIconBg = (type) => {
-    switch (type) {
-      case 'donation': return 'admin-notif-icon-donation';
-      case 'member': return 'admin-notif-icon-member';
-      case 'attendance': return 'admin-notif-icon-attendance';
-      case 'verification': return 'admin-notif-icon-verification';
-      case 'alert': return 'admin-notif-icon-alert';
-      default: return 'admin-notif-icon-member';
-    }
+    if (type === 'donation')   return 'admin-notif-icon-donation';
+    if (type === 'member')     return 'admin-notif-icon-member';
+    if (type === 'attendance') return 'admin-notif-icon-attendance';
+    return '';
   };
 
   return (
@@ -174,6 +119,9 @@ export default function AdminNotifications() {
           </div>
           {unreadCount > 0 && (
             <button className="admin-notif-mark-all-btn" onClick={markAllAsRead}>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d={svgPaths.p32ddfd00} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
               Mark all as read
             </button>
           )}
@@ -215,19 +163,45 @@ export default function AdminNotifications() {
                 className={`admin-notif-item${!n.isRead ? ' admin-notif-item-unread' : ''}`}
               >
                 <div className={`admin-notif-icon ${getIconBg(n.type)}`}>
-                  {getIcon(n.type)}
+                  {n.type === 'donation' && (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="#E60076" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  )}
+                  {n.type === 'member' && (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="#9810FA" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                      <circle cx="12" cy="7" r="4" stroke="#9810FA" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  )}
+                  {n.type === 'attendance' && (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="#15803D" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                      <line x1="16" y1="2" x2="16" y2="6" stroke="#15803D" strokeWidth="1.8" strokeLinecap="round"/>
+                      <line x1="8" y1="2" x2="8" y2="6" stroke="#15803D" strokeWidth="1.8" strokeLinecap="round"/>
+                      <line x1="3" y1="10" x2="21" y2="10" stroke="#15803D" strokeWidth="1.8" strokeLinecap="round"/>
+                    </svg>
+                  )}
                 </div>
 
                 <div className="admin-notif-content">
-                  <h3 className="admin-notif-title-text">{n.title}</h3>
-                  <p className="admin-notif-message">{n.message}</p>
-                  
-                  <div className="admin-notif-footer">
+                  <div className="admin-notif-content-header">
+                    <h3 className={`admin-notif-content-title${n.isRead ? ' admin-notif-content-title-read' : ''}`}>
+                      {n.title}
+                    </h3>
+                    {!n.isRead && <div className="admin-notif-unread-indicator" />}
+                  </div>
+
+                  <p className={`admin-notif-content-message${n.isRead ? ' admin-notif-content-message-read' : ''}`}>
+                    {n.message}
+                  </p>
+
+                  <div className="admin-notif-content-footer">
                     <span className="admin-notif-timestamp">{fmtTime(n.timestamp)}</span>
                     <div className="admin-notif-actions">
                       {!n.isRead ? (
                         <>
-                          <span className="admin-notif-unread-label">Unread</span>
+                          <span className="admin-notif-unread-badge">Unread</span>
                           <button
                             className="admin-notif-mark-read-btn"
                             onClick={() => markAsRead(n.id)}
@@ -235,7 +209,9 @@ export default function AdminNotifications() {
                             Mark as read
                           </button>
                         </>
-                      ) : null}
+                      ) : (
+                        <span className="admin-notif-read-badge">Read</span>
+                      )}
                     </div>
                   </div>
                 </div>

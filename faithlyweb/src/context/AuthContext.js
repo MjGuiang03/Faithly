@@ -1,10 +1,10 @@
 import { createContext, useContext, useState } from 'react';
+import API from '../utils/api';
 import { toast } from 'sonner';
 
 const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
 
-const API = process.env.REACT_APP_API_URL;
 
 console.log('🔥 API URL:', API);
 
@@ -271,6 +271,9 @@ export const AuthProvider = ({ children }) => {
         branch:   data.user.branch   || formData.branch,
         position: data.user.position || formData.position,
       };
+      if (formData.photoUrl) {
+        updatedProfile.photoUrl = formData.photoUrl;
+      }
 
       setProfile(updatedProfile);
       setUser(updatedProfile);

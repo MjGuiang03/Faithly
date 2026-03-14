@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import API from '../../utils/api';
 import { useNavigate } from 'react-router';
 import { Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
@@ -192,7 +193,7 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
         gender: formData.gender, branch: formData.community,
         password: formData.password
       };
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/register`, {
+      const response = await fetch(`${API}/api/register`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(submitData)
       });

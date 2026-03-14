@@ -27,7 +27,8 @@ export const authenticateAdmin = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
 
-    if (decoded.role !== 'admin') {
+    const allowedRoles = ['admin', 'loanAdmin', 'secretaryAdmin'];
+    if (!allowedRoles.includes(decoded.role)) {
       return res.status(403).json({ message: 'Admin access required' });
     }
 

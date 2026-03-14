@@ -21,7 +21,7 @@ import {
 import '../styles/AdminReports.css';
 import svgPaths from "../../imports/svg-icons";
 
-const API = process.env.REACT_APP_API_URL;
+import API from '../../utils/api';
 
 export default function AdminReports() {
   const navigate = useNavigate();

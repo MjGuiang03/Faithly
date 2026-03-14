@@ -1,5 +1,8 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import '../styles/LoanApplicationModal.css';
+
+import API from '../../utils/api';
 
 export default function LoanApplicationModal({ isOpen, onClose }) {
   const [formData, setFormData] = useState({
@@ -12,13 +15,53 @@ export default function LoanApplicationModal({ isOpen, onClose }) {
   });
   const [selfieFile, setSelfieFile] = useState(null);
   const [idFile,     setIdFile]     = useState(null);
+  const [loading, setLoading] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData, { selfieFile, idFile });
-    onClose();
+    setLoading(true);
+    
+    // File reading for base64 could be done here if the backend supports file upload for loans,
+    // but the main issue is the loan itself isn't being saved. We'll send the main data to the API.
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API}/api/loans/apply`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          amount: Number(formData.loanAmount),
+          purpose: formData.loanPurpose,
+          termMonths: Number(formData.repaymentPeriod),
+          monthlyIncome: Number(formData.monthlyIncome),
+          guarantorName: formData.guarantorName,
+          guarantorPhone: formData.guarantorPhone
+        })
+      });
+      
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to submit application');
+      
+      toast.success('Loan application submitted successfully!');
+      
+      // Reset form
+      setFormData({
+        loanAmount: '', loanPurpose: '', repaymentPeriod: '',
+        monthlyIncome: '', guarantorName: '', guarantorPhone: ''
+      });
+      setSelfieFile(null);
+      setIdFile(null);
+      
+      onClose(); // This triggers fetchAll in Loans.js to refresh the list
+    } catch (err) {
+      toast.error(err.message || 'Network error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (e) => {
@@ -265,8 +308,12 @@ export default function LoanApplicationModal({ isOpen, onClose }) {
 
           {/* Form Actions */}
           <div className="loan-application-actions">
-            <button type="submit" className="loan-application-submit-btn">Submit Application</button>
-            <button type="button" className="loan-application-cancel-btn" onClick={onClose}>Cancel</button>
+            <button type="submit" className="loan-application-submit-btn" disabled={loading}>
+              {loading ? 'Submitting...' : 'Submit Application'}
+            </button>
+            <button type="button" className="loan-application-cancel-btn" onClick={onClose} disabled={loading}>
+              Cancel
+            </button>
           </div>
 
         </form>

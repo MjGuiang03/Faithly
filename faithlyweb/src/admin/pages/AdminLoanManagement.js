@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import '../styles/AdminLoanManagement.css';
 
-const API = process.env.REACT_APP_API_URL;
+import API from '../../utils/api';
 
 const fmt = (n) =>
   n != null ? `₱${Number(n).toLocaleString('en-PH')}` : '₱0';

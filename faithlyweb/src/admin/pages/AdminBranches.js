@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import '../styles/AdminBranches.css';
 import svgPaths from "../../imports/svg-icons";
 
-const API = process.env.REACT_APP_API_URL;
+import API from '../../utils/api';
 
 export default function AdminBranches() {
   const navigate = useNavigate();

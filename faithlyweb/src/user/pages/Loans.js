@@ -6,7 +6,7 @@ import LoanApplicationModal from '../components/LoanApplicationModal';
 import VerificationModal from '../components/OfficerVerification';
 import '../styles/Loans.css';
 
-const API = process.env.REACT_APP_API_URL;
+import API from '../../utils/api';
 
 const fmt = (n) =>
   n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : '₱0.00';

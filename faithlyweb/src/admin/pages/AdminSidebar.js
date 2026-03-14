@@ -1,32 +1,69 @@
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import {
-  LayoutGrid,
-  Bell,
-  UserCheck,
-  Users,
-  Heart,
-  Calendar,
-  Building2,
-  BarChart3,
-  Settings,
-  LogOut
+  LayoutGrid, Bell, UserCheck, Users, Heart,
+  Calendar, Building2, BarChart3, Settings, LogOut
 } from 'lucide-react';
 import puacLogo from '../../assets/puaclogo.png';
 import '../styles/AdminSidebar.css';
 
+import API from '../../utils/api';
+const ADMIN_READ_KEY = 'faithly_admin_read_notifications';
+
 export default function AdminSidebar() {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const navigate  = useNavigate();
+  const location  = useLocation();
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const handleSignOut = () => {
     localStorage.removeItem('adminEmail');
     localStorage.removeItem('adminRole');
     toast.success('Signed out successfully');
+    setShowLogoutModal(false);
     navigate('/admin/login');
   };
 
   const isActive = (path) => location.pathname === path;
+
+  /* ── Fetch admin unread count ── */
+  useEffect(() => {
+    const token = localStorage.getItem('adminToken');
+    if (!token) return;
+
+    const calcUnread = async () => {
+      try {
+        const readIds = new Set(JSON.parse(localStorage.getItem(ADMIN_READ_KEY) || '[]'));
+        const res  = await fetch(`${API}/api/admin/notifications`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.success) {
+          const count = (data.notifications || []).filter(n => !readIds.has(n.id)).length;
+          setUnreadCount(count);
+        }
+      } catch { /* silent */ }
+    };
+
+    calcUnread();
+
+    const onUpdate = () => calcUnread();
+    window.addEventListener('admin-notif-read-update', onUpdate);
+    window.addEventListener('storage', (e) => {
+      if (e.key === ADMIN_READ_KEY) calcUnread();
+    });
+    
+    // Poll every 30 seconds for live updates
+    const intervalId = setInterval(calcUnread, 30000);
+    
+    return () => {
+      window.removeEventListener('admin-notif-read-update', onUpdate);
+      window.removeEventListener('storage', calcUnread);
+      clearInterval(intervalId);
+    };
+  }, []);
 
   return (
     <div className="admin-sidebar">
@@ -43,7 +80,6 @@ export default function AdminSidebar() {
       </div>
 
       <div className="admin-sidebar-nav">
-
         <button
           onClick={() => navigate('/admin/dashboard')}
           className={`admin-sidebar-nav-button ${isActive('/admin/dashboard') || location.pathname === '/admin' ? 'active' : ''}`}
@@ -58,6 +94,9 @@ export default function AdminSidebar() {
         >
           <Bell size={20} />
           <span>Notifications</span>
+          {unreadCount > 0 && (
+            <span className="sidebar-notif-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>
+          )}
         </button>
 
         <button
@@ -115,7 +154,6 @@ export default function AdminSidebar() {
           <Settings size={20} />
           <span>Settings</span>
         </button>
-
       </div>
 
       <div className="admin-sidebar-profile">
@@ -130,12 +168,25 @@ export default function AdminSidebar() {
             </p>
           </div>
         </div>
-
-        <button onClick={handleSignOut} className="admin-sidebar-profile-signout">
+        <button onClick={() => setShowLogoutModal(true)} className="admin-sidebar-profile-signout">
           <LogOut size={20} />
           Sign Out
         </button>
       </div>
+
+      {/* Logout Modal */}
+      {showLogoutModal && (
+        <div className="logout-modal-overlay">
+          <div className="logout-modal-content">
+            <h2 className="logout-modal-title">Confirm Logout</h2>
+            <p className="logout-modal-message">Are you sure you want to log out?</p>
+            <div className="logout-modal-actions">
+              <button className="logout-modal-cancel" onClick={() => setShowLogoutModal(false)}>Cancel</button>
+              <button className="logout-modal-confirm" onClick={handleSignOut}>Sign Out</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

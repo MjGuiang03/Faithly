@@ -21,8 +21,28 @@ const app = express();
 app.use(globalLimiter);
 app.use(helmet());
 app.use(mongoSanitize());
-app.use(cors());
-app.use(express.json({ limit: '10kb' }));
+
+// Dynamic CORS based on environment
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://127.0.0.1:3000',
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      return callback(new Error('CORS Policy: Access from this origin is not allowed'), false);
+    }
+    return callback(null, true);
+  },
+  credentials: true
+}));
+
+app.use(express.json({ limit: '10mb' }));
 
 /* ================== ROUTES ================== */
 app.use('/api',        authRoutes);

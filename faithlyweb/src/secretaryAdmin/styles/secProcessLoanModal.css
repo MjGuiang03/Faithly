@@ -1,0 +1,206 @@
+/* Process Modal Overlay */
+.sec-process-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+/* Process Modal Container */
+.sec-process-modal-container {
+    background: white;
+    border-radius: 10px;
+    padding: 32px;
+    max-width: 448px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Icon */
+.sec-process-modal-icon {
+    width: 64px;
+    height: 64px;
+    background: #dbeafe;
+    border-radius: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+/* Title */
+.sec-process-modal-title {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 24px;
+    line-height: 32px;
+    color: #101828;
+    text-align: center;
+    margin: 0;
+}
+
+/* Subtitle */
+.sec-process-modal-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    color: #4a5565;
+    text-align: center;
+    margin: 0;
+}
+
+.sec-process-modal-subtitle strong {
+    font-weight: 700;
+    color: #101828;
+}
+
+/* Info Box */
+.sec-process-modal-info {
+    background: #f9fafb;
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sec-process-modal-info-text {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 20px;
+    color: #4a5565;
+    margin: 0;
+}
+
+.sec-process-modal-info-text .label {
+    color: #4a5565;
+}
+
+.sec-process-modal-info-text strong {
+    font-weight: 700;
+    color: #101828;
+}
+
+/* Payment Method Section */
+.sec-process-modal-payment-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.sec-process-modal-label {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 20px;
+    color: #4a5565;
+    margin: 0;
+}
+
+/* Payment Options */
+.sec-process-modal-payment-options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.sec-process-payment-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 18px 8px;
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.sec-process-payment-option:hover {
+    border-color: #d1d5db;
+}
+
+.sec-process-payment-option.active {
+    background: #dbeafe;
+    border-color: #155dfc;
+}
+
+.sec-process-payment-option span {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 24px;
+    color: #4a5565;
+}
+
+.sec-process-payment-option.active span {
+    color: #155dfc;
+}
+
+/* Action Buttons */
+.sec-process-modal-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.sec-process-btn-cancel,
+.sec-process-btn-confirm {
+    flex: 1;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 24px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.sec-process-btn-cancel {
+    background: white;
+    color: #0a0a0a;
+    border: 1px solid #d1d5dc;
+}
+
+.sec-process-btn-cancel:hover {
+    background: #f9fafb;
+}
+
+.sec-process-btn-confirm {
+    background: #155dfc;
+    color: white;
+}
+
+.sec-process-btn-confirm:hover {
+    background: #0d47d4;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .sec-process-modal-container {
+        padding: 24px;
+    }
+
+    .sec-process-modal-payment-options {
+        grid-template-columns: 1fr;
+    }
+
+    .sec-process-modal-actions {
+        flex-direction: column;
+    }
+}

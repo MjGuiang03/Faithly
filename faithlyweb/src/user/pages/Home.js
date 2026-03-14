@@ -3,9 +3,8 @@ import { useNavigate } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 import svgPaths from '../../imports/svg-icons';
 import Sidebar from '../components/Sidebar';
+import API from '../../utils/api';
 import '../styles/Home.css';
-
-const API = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 export default function Home() {
   const navigate = useNavigate();

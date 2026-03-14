@@ -1,48 +1,42 @@
-/* AdminOfficerVerification.css - Officer Verification Page Styles */
-/* All classes prefixed with admin-offver- */
+/* AdminOfficerVerification.css */
 
 .admin-offver-main {
   flex: 1;
   max-width: 100%;
 }
 
-/* ═══ Header ═══ */
-.admin-offver-header {
-  margin-bottom: 32px;
-}
+.admin-offver-header { margin-bottom: 28px; }
 
 .admin-offver-title {
-  font-family: 'Inter', 'Arial', sans-serif;
-  font-size: 30px;
+  font-family: Arial, sans-serif;
+  font-size: 26px;
   font-weight: 700;
-  line-height: 36px;
   color: #101828;
-  margin: 0 0 8px 0;
+  margin: 0 0 6px 0;
+  line-height: 34px;
 }
 
 .admin-offver-subtitle {
-  font-family: 'Inter', 'Arial', sans-serif;
-  font-size: 16px;
-  font-weight: 400;
-  line-height: 24px;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
   color: #4a5565;
   margin: 0;
+  line-height: 20px;
 }
 
-/* ═══ Stats Cards ═══ */
+/* Stats */
 .admin-offver-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-  margin-bottom: 32px;
+  gap: 16px;
+  margin-bottom: 20px;
 }
 
 .admin-offver-stat-card {
   background: white;
   border: 0.8px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 24.8px;
-  min-height: 109.588px;
+  border-radius: 12px;
+  padding: 18px 20px;
 }
 
 .admin-offver-stat-header {
@@ -53,42 +47,33 @@
 }
 
 .admin-offver-stat-label {
-  font-family: 'Inter', 'Arial', sans-serif;
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 20px;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
   color: #4a5565;
+  line-height: 18px;
 }
 
 .admin-offver-stat-value {
-  font-family: 'Inter', 'Arial', sans-serif;
-  font-size: 24px;
+  font-family: Arial, sans-serif;
+  font-size: 28px;
   font-weight: 700;
-  line-height: 32px;
   margin: 0;
+  line-height: 36px;
 }
 
-.admin-offver-stat-value-pending {
-  color: #F59E0B;
-}
+.admin-offver-stat-value-pending  { color: #F59E0B; }
+.admin-offver-stat-value-approved { color: #00A63E; }
+.admin-offver-stat-value-rejected { color: #EF4444; }
 
-.admin-offver-stat-value-approved {
-  color: #00A63E;
-}
-
-.admin-offver-stat-value-rejected {
-  color: #EF4444;
-}
-
-/* ═══ Info Box ═══ */
+/* Info box */
 .admin-offver-info {
   background: #e7f0ff;
   border: 0.8px solid #b3d4ff;
   border-radius: 10px;
-  padding: 16px;
+  padding: 14px 16px;
   display: flex;
   gap: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .admin-offver-info-icon {
@@ -101,37 +86,29 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  font-family: 'Inter', 'Arial', sans-serif;
+  font-family: Arial, sans-serif;
   font-size: 12px;
   font-weight: 700;
 }
 
-.admin-offver-info-content {
-  flex: 1;
-}
-
 .admin-offver-info-text {
-  font-family: 'Inter', 'Arial', sans-serif;
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 20px;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
   color: #1e3a8a;
   margin: 0;
+  line-height: 19px;
 }
 
-/* ═══ Search Section ═══ */
+/* Search */
 .admin-offver-search-section {
   background: white;
   border: 0.8px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 16px;
-  margin-bottom: 24px;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
 }
 
-.admin-offver-search-wrapper {
-  position: relative;
-  width: 100%;
-}
+.admin-offver-search-wrapper { position: relative; }
 
 .admin-offver-search-icon {
   position: absolute;
@@ -143,32 +120,28 @@
 
 .admin-offver-search-input {
   width: 100%;
-  height: 42px;
+  height: 40px;
   border: 0.8px solid #d1d5dc;
   border-radius: 10px;
   padding: 8px 16px 8px 40px;
-  font-family: 'Inter', 'Arial', sans-serif;
-  font-size: 14px;
-  color: #0a0a0a;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  color: #101828;
   outline: none;
+  box-sizing: border-box;
   transition: border-color 0.2s;
 }
 
-.admin-offver-search-input:focus {
-  border-color: #155dfc;
-}
+.admin-offver-search-input:focus        { border-color: #155dfc; }
+.admin-offver-search-input::placeholder { color: rgba(10,10,10,0.4); }
 
-.admin-offver-search-input::placeholder {
-  color: rgba(10, 10, 10, 0.4);
-}
-
-/* ═══ Table Section ═══ */
+/* Table */
 .admin-offver-table-section {
   background: white;
   border: 0.8px solid #e5e7eb;
-  border-radius: 14px;
+  border-radius: 12px;
   overflow: hidden;
-  padding: 24px;
+  padding: 0 20px 20px 20px;
 }
 
 .admin-offver-table {
@@ -176,377 +149,288 @@
   border-collapse: collapse;
 }
 
-.admin-offver-table-header {
-  border-bottom: 0.8px solid #e5e7eb;
-}
+.admin-offver-table-header { border-bottom: 0.8px solid #e5e7eb; }
 
 .admin-offver-table-header-cell {
-  font-family: 'Inter', 'Arial', sans-serif;
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 20px;
-  color: #4a5565;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  color: #6a7282;
   text-align: left;
-  padding: 12px 16px;
+  padding: 14px 12px;
   white-space: nowrap;
+  font-weight: 500;
 }
 
 .admin-offver-table-row {
   border-bottom: 0.8px solid #f3f4f6;
-  transition: background 0.2s;
+  transition: background 0.15s;
 }
 
-.admin-offver-table-row:hover {
-  background: #f9fafb;
-}
+.admin-offver-table-row:hover    { background: #f9fafb; }
+.admin-offver-table-row:last-child { border-bottom: none; }
 
 .admin-offver-table-cell {
-  font-family: 'Inter', 'Arial', sans-serif;
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 20px;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
   color: #101828;
-  padding: 16px;
+  padding: 14px 12px;
   vertical-align: middle;
-}
-
-.admin-offver-request-id {
-  font-weight: 500;
-  color: #155dfc;
+  line-height: 18px;
 }
 
 .admin-offver-status-badge {
   display: inline-flex;
   align-items: center;
-  padding: 4px 12px;
-  border-radius: 16px;
-  font-family: 'Inter', 'Arial', sans-serif;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-family: Arial, sans-serif;
   font-size: 12px;
   font-weight: 500;
-  line-height: 16px;
+  line-height: 18px;
 }
 
-.admin-offver-status-pending {
-  background: #FEF3C7;
-  color: #D97706;
-}
-
-.admin-offver-status-approved {
-  background: #D1FAE5;
-  color: #059669;
-}
-
-.admin-offver-status-rejected {
-  background: #FEE2E2;
-  color: #DC2626;
-}
+.admin-offver-status-pending  { background: #FEF3C7; color: #D97706; }
+.admin-offver-status-approved { background: #D1FAE5; color: #059669; }
+.admin-offver-status-rejected { background: #FEE2E2; color: #DC2626; }
 
 .admin-offver-view-btn {
   background: #155dfc;
   border: none;
   border-radius: 6px;
   padding: 6px 12px;
-  font-family: 'Inter', 'Arial', sans-serif;
-  font-size: 14px;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
   font-weight: 500;
   color: white;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition: background 0.2s;
+  transition: background 0.15s;
+  white-space: nowrap;
 }
 
-.admin-offver-view-btn:hover {
-  background: #0d4ed4;
-}
+.admin-offver-view-btn:hover { background: #0d4ed4; }
 
 .admin-offver-empty {
   text-align: center;
   padding: 40px 16px;
-  color: #6a7282;
+  color: #9ca3af;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
 }
 
-/* ═══ Pagination ═══ */
+/* Pagination */
 .admin-offver-pagination {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   align-items: center;
   justify-content: center;
-  margin-top: 24px;
-  padding-top: 24px;
-  border-top: 0.8px solid #e5e7eb;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 0.8px solid #f3f4f6;
 }
 
 .admin-offver-pagination-btn {
-  padding: 8px 16px;
+  padding: 7px 14px;
   border: 0.8px solid #d1d5dc;
   border-radius: 6px;
   background: white;
-  font-family: 'Inter', 'Arial', sans-serif;
-  font-size: 14px;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
   font-weight: 500;
   color: #4a5565;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s;
 }
 
-.admin-offver-pagination-btn:hover:not(:disabled) {
-  background: #f9fafb;
-  border-color: #155dfc;
-}
-
-.admin-offver-pagination-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+.admin-offver-pagination-btn:hover:not(:disabled) { background: #f3f4f6; border-color: #155dfc; }
+.admin-offver-pagination-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .admin-offver-pagination-number {
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   border: 0.8px solid #d1d5dc;
   border-radius: 6px;
   background: white;
-  font-family: 'Inter', 'Arial', sans-serif;
-  font-size: 14px;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
   font-weight: 500;
   color: #4a5565;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.admin-offver-pagination-number:hover {
-  background: #f9fafb;
-  border-color: #155dfc;
-}
+.admin-offver-pagination-number:hover         { background: #f3f4f6; }
+.admin-offver-pagination-number.active        { background: #155dfc; border-color: #155dfc; color: white; }
 
-.admin-offver-pagination-number.active {
-  background: #155dfc;
-  border-color: #155dfc;
-  color: white;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   VERIFICATION DETAILS MODAL
-═══════════════════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════
+   COMPACT DETAILS MODAL
+═══════════════════════════════════════════════════════ */
 .admin-offver-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
-  backdrop-filter: blur(4px);
- 
+  backdrop-filter: blur(3px);
+  padding: 24px;
+  animation: fadeIn 0.15s ease;
 }
 
 .admin-offver-modal-details {
   background: white;
-  border-radius: 10px;
-  width: 90%;
-  max-width: 788px;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-  /* Hide scrollbar — all browsers */
-  scrollbar-width: none;        /* Firefox */
-  -ms-overflow-style: none;     /* IE/Edge */
+  border-radius: 16px;
+  width: 100%;
+  max-width: 460px;
+  box-shadow: 0 24px 48px rgba(0,0,0,0.16);
+  overflow: hidden;
+  animation: slideUp 0.2s cubic-bezier(0.34,1.56,0.64,1);
 }
 
 .admin-offver-modal-header {
-  padding: 32px 32px 24px 32px;
-  border-bottom: 0.8px solid #e5e7eb;
+  padding: 22px 24px 14px 24px;
+  border-bottom: 0.8px solid #f3f4f6;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
 }
 
 .admin-offver-modal-title {
-  font-family: 'Inter', 'Arial', sans-serif;
-  font-size: 24px;
+  font-family: Arial, sans-serif;
+  font-size: 17px;
   font-weight: 700;
-  line-height: 32px;
   color: #101828;
-  margin: 0 0 4px 0;
+  margin: 0 0 2px 0;
+  line-height: 24px;
 }
 
 .admin-offver-modal-request-id {
-  font-family: 'Inter', 'Arial', sans-serif;
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 20px;
-  color: #6a7282;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  color: #9ca3af;
   margin: 0;
+  line-height: 17px;
 }
 
 .admin-offver-modal-close {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border: none;
-  background: transparent;
+  background: #f3f4f6;
   cursor: pointer;
   padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
-  transition: background 0.2s;
+  border-radius: 6px;
+  flex-shrink: 0;
+  transition: background 0.15s;
 }
 
-.admin-offver-modal-close:hover {
-  background: #f3f4f6;
-}
+.admin-offver-modal-close:hover { background: #e5e7eb; }
 
-.admin-offver-modal-section {
-  padding: 24px 32px;
-  border-bottom: 0.8px solid #e5e7eb;
-}
-
-.admin-offver-modal-section:last-of-type {
-  border-bottom: none;
+.admin-offver-modal-body {
+  padding: 20px 24px 4px 24px;
 }
 
 .admin-offver-section-heading {
-  font-family: 'Inter', 'Arial', sans-serif;
-  font-size: 18px;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
   font-weight: 700;
-  line-height: 28px;
   color: #101828;
-  margin: 0 0 16px 0;
+  margin: 0 0 14px 0;
+  line-height: 18px;
 }
 
-/* Info Grid */
 .admin-offver-info-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  gap: 14px 24px;
 }
 
 .admin-offver-info-item {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .admin-offver-info-label {
-  font-family: 'Inter', 'Arial', sans-serif;
-  font-size: 12px;
+  font-family: Arial, sans-serif;
+  font-size: 11px;
   font-weight: 500;
-  line-height: 16px;
-  color: #6a7282;
+  color: #9ca3af;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
+  line-height: 15px;
 }
 
 .admin-offver-info-value {
-  font-family: 'Inter', 'Arial', sans-serif;
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 24px;
-  color: #101828;
-}
-
-/* Documents Grid */
-.admin-offver-documents-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-}
-
-.admin-offver-document-item {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.admin-offver-document-label {
-  font-family: 'Inter', 'Arial', sans-serif;
+  font-family: Arial, sans-serif;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
+  color: #101828;
   line-height: 20px;
-  color: #4a5565;
 }
 
-.admin-offver-document-preview {
-  border: 0.8px solid #e5e7eb;
-  border-radius: 10px;
-  overflow: hidden;
-  aspect-ratio: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f9fafb;
-}
-
-.admin-offver-document-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.admin-offver-document-placeholder {
-  background: #f3f4f6;
-}
-
-/* Modal Actions */
 .admin-offver-modal-actions {
-  padding: 24px 32px 32px 32px;
+  padding: 16px 24px 22px 24px;
   display: flex;
-  gap: 12px;
+  gap: 10px;
 }
 
+/* ── Buttons ── */
 .admin-offver-btn {
   flex: 1;
-  height: 48px;
+  height: 44px;
   border-radius: 10px;
-  font-family: 'Inter', 'Arial', sans-serif;
-  font-size: 16px;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
   font-weight: 600;
-  line-height: 24px;
   cursor: pointer;
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  transition: all 0.2s;
+  gap: 7px;
+  transition: all 0.15s;
 }
 
-.admin-offver-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
+.admin-offver-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-.admin-offver-btn-reject {
-  background: #EF4444;
+.admin-offver-btn-cancel {
+  background: #6b7280;
   color: white;
 }
-
-.admin-offver-btn-reject:hover:not(:disabled) {
-  background: #DC2626;
-}
+.admin-offver-btn-cancel:hover:not(:disabled)  { background: #4b5563; }
 
 .admin-offver-btn-approve {
   background: #00A63E;
   color: white;
 }
+.admin-offver-btn-approve:hover:not(:disabled) { background: #059669; }
 
-.admin-offver-btn-approve:hover:not(:disabled) {
-  background: #059669;
+.admin-offver-btn-reject {
+  background: #EF4444;
+  color: white;
 }
+.admin-offver-btn-reject:hover:not(:disabled)  { background: #DC2626; }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   CONFIRMATION MODALS (Approve/Reject)
-═══════════════════════════════════════════════════════════════════════════ */
+/* ═══ Confirmation Modals ═══ */
 .admin-offver-modal-confirm {
   background: white;
-  border-radius: 16px;
-  width: 90%;
-  max-width: 480px;
-  padding: 32px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 400px;
+  padding: 32px 28px 26px 28px;
+  box-shadow: 0 24px 48px rgba(0,0,0,0.16);
   text-align: center;
+  animation: slideUp 0.22s cubic-bezier(0.34,1.56,0.64,1);
 }
 
 .admin-offver-confirm-icon {
@@ -556,57 +440,47 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 24px auto;
+  margin: 0 auto 20px auto;
 }
 
-.admin-offver-confirm-icon-reject {
-  background: #FEE2E2;
-}
-
-.admin-offver-confirm-icon-approve {
-  background: #D1FAE5;
-}
+.admin-offver-confirm-icon-reject  { background: #fee2e2; }
+.admin-offver-confirm-icon-approve { background: #dcfce7; }
 
 .admin-offver-confirm-title {
-  font-family: 'Inter', 'Arial', sans-serif;
-  font-size: 24px;
+  font-family: Arial, sans-serif;
+  font-size: 20px;
   font-weight: 700;
-  line-height: 32px;
   color: #101828;
-  margin: 0 0 12px 0;
+  margin: 0 0 10px 0;
+  line-height: 28px;
 }
 
 .admin-offver-confirm-text {
-  font-family: 'Inter', 'Arial', sans-serif;
-  font-size: 16px;
-  font-weight: 400;
-  line-height: 24px;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
   color: #4a5565;
-  margin: 0 0 8px 0;
+  margin: 0 0 6px 0;
+  line-height: 20px;
 }
 
 .admin-offver-confirm-subtext {
-  font-family: 'Inter', 'Arial', sans-serif;
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 20px;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
   color: #6a7282;
-  margin: 0 0 24px 0;
+  margin: 0 0 20px 0;
+  line-height: 18px;
 }
 
-.admin-offver-form-group {
-  margin-bottom: 24px;
-  text-align: left;
-}
+.admin-offver-form-group { margin-bottom: 20px; text-align: left; }
 
 .admin-offver-form-label {
   display: block;
-  font-family: 'Inter', 'Arial', sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 20px;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
   color: #101828;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
+  line-height: 18px;
 }
 
 .admin-offver-form-textarea {
@@ -614,137 +488,91 @@
   min-height: 80px;
   border: 0.8px solid #d1d5dc;
   border-radius: 8px;
-  padding: 12px;
-  font-family: 'Inter', 'Arial', sans-serif;
-  font-size: 14px;
+  padding: 10px 12px;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
   color: #101828;
   outline: none;
   resize: vertical;
-  transition: border-color 0.2s;
   box-sizing: border-box;
+  transition: border-color 0.2s;
 }
 
-.admin-offver-form-textarea:focus {
-  border-color: #155dfc;
-}
-
-.admin-offver-form-textarea::placeholder {
-  color: #9ca3af;
-}
+.admin-offver-form-textarea:focus        { border-color: #155dfc; }
+.admin-offver-form-textarea::placeholder { color: #9ca3af; }
 
 .admin-offver-benefits {
   background: #D1FAE5;
   border: 0.8px solid #6EE7B7;
   border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 24px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
   text-align: left;
 }
 
 .admin-offver-benefits-title {
-  font-family: 'Inter', 'Arial', sans-serif;
-  font-size: 14px;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
   font-weight: 600;
-  line-height: 20px;
   color: #065F46;
-  margin: 0 0 8px 0;
+  margin: 0 0 6px 0;
 }
 
 .admin-offver-benefits-list {
   margin: 0;
-  padding-left: 20px;
-  list-style: none;
+  padding-left: 16px;
+  list-style: disc;
 }
 
 .admin-offver-benefits-list li {
-  font-family: 'Inter', 'Arial', sans-serif;
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 20px;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
   color: #047857;
-  margin-bottom: 4px;
-  position: relative;
-  padding-left: 8px;
-}
-
-.admin-offver-benefits-list li::before {
-  content: '•';
-  position: absolute;
-  left: -12px;
-  color: #10B981;
+  line-height: 20px;
 }
 
 .admin-offver-confirm-actions {
   display: flex;
-  gap: 12px;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.admin-offver-confirm-actions .admin-offver-btn {
+  flex: 1;
+  height: 44px;
 }
 
 .admin-offver-btn-secondary {
-  background: white;
-  border: 0.8px solid #d1d5dc;
-  color: #4a5565;
+  background: #f3f4f6;
+  border: none;
+  color: #374151;
+  font-weight: 600;
 }
-
-.admin-offver-btn-secondary:hover:not(:disabled) {
-  background: #f9fafb;
-}
+.admin-offver-btn-secondary:hover:not(:disabled) { background: #e5e7eb; }
 
 .admin-offver-btn-danger {
   background: #EF4444;
   color: white;
+  border: none;
 }
-
-.admin-offver-btn-danger:hover:not(:disabled) {
-  background: #DC2626;
-}
+.admin-offver-btn-danger:hover:not(:disabled) { background: #DC2626; }
 
 .admin-offver-btn-success {
   background: #00A63E;
   color: white;
+  border: none;
 }
+.admin-offver-btn-success:hover:not(:disabled) { background: #059669; }
 
-.admin-offver-btn-success:hover:not(:disabled) {
-  background: #059669;
-}
+@keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(16px) scale(0.98); } to { opacity: 1; transform: none; } }
 
-/* ═══ Responsive ═══ */
-@media (max-width: 1024px) {
-  .admin-offver-stats {
-    grid-template-columns: 1fr;
-  }
-
-  .admin-offver-info-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .admin-offver-documents-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
+/* Responsive */
 @media (max-width: 768px) {
-  .admin-offver-modal-details {
-    width: 95%;
-    max-height: 95vh;
-  }
-
-  .admin-offver-modal-header,
-  .admin-offver-modal-section,
-  .admin-offver-modal-actions {
-    padding-left: 20px;
-    padding-right: 20px;
-  }
-
-  .admin-offver-table {
-    display: block;
-    overflow-x: auto;
-  }
-
-  .admin-offver-modal-actions {
-    flex-direction: column;
-  }
-
-  .admin-offver-confirm-actions {
-    flex-direction: column;
-  }
+  .admin-offver-stats           { grid-template-columns: 1fr; }
+  .admin-offver-modal-details   { max-width: 95vw; }
+  .admin-offver-modal-actions   { flex-direction: column; }
+  .admin-offver-confirm-actions { flex-direction: column; }
+  .admin-offver-info-grid       { grid-template-columns: 1fr; }
+  .admin-offver-table           { display: block; overflow-x: auto; }
 }

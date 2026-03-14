@@ -2,7 +2,7 @@ import { useState } from "react";
 import { X, Info, Clock, AlertTriangle } from "lucide-react";
 import "../styles/OfficerVerification.css";
 
-const API = process.env.REACT_APP_API_URL;
+import API from '../../utils/api';
 
 export default function VerificationModal({ isOpen, onClose }) {
   const [showConfirmation, setShowConfirmation] = useState(false);

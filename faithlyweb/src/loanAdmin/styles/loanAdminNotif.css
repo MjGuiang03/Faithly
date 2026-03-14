@@ -1,0 +1,248 @@
+.loan-admin-notif-page {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f3f4f6;
+}
+
+.loan-admin-notif-content {
+    margin-left: 256px;
+    padding: 40px 48px;
+    flex: 1;
+}
+
+/* Header Section */
+.loan-admin-notif-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 32px;
+}
+
+.loan-admin-notif-header-left {
+    flex: 1;
+}
+
+.loan-admin-notif-title {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 30px;
+    line-height: 36px;
+    color: #101828;
+    margin: 0 0 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.loan-admin-notif-badge {
+    background: #155DFC;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    padding: 2px 10px;
+    border-radius: 12px;
+}
+
+.loan-admin-notif-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    color: #6B7280;
+    margin: 0;
+}
+
+.loan-admin-notif-mark-all {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 20px;
+    color: #155DFC;
+    padding: 8px 0;
+}
+
+.loan-admin-notif-mark-all:hover {
+    opacity: 0.8;
+}
+
+/* Filter Tabs */
+.loan-admin-notif-filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.loan-admin-notif-filter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: #ffffff;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 20px;
+    color: #6B7280;
+    transition: all 0.2s;
+}
+
+.loan-admin-notif-filter:hover {
+    border-color: #155DFC;
+    color: #155DFC;
+}
+
+.loan-admin-notif-filter.active {
+    background: #155DFC;
+    border-color: #155DFC;
+    color: #ffffff;
+}
+
+.loan-admin-notif-filter-count {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+/* Notifications List */
+.loan-admin-notif-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.loan-admin-notif-card {
+    background: #ffffff;
+    border: 2px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    gap: 16px;
+    transition: all 0.2s;
+}
+
+.loan-admin-notif-card.unread {
+    border-color: #155DFC;
+    background: #F0F5FF;
+}
+
+.loan-admin-notif-card.read {
+    border-color: #E5E7EB;
+    background: #ffffff;
+}
+
+.loan-admin-notif-card-icon {
+    width: 44px;
+    height: 44px;
+    background: #EEF2FF;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.loan-admin-notif-card-content {
+    flex: 1;
+}
+
+.loan-admin-notif-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.loan-admin-notif-card-title {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 24px;
+    color: #101828;
+    margin: 0;
+}
+
+.loan-admin-notif-unread-dot {
+    width: 8px;
+    height: 8px;
+    background: #155DFC;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.loan-admin-notif-card-message {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 20px;
+    color: #4B5563;
+    margin: 0 0 12px 0;
+}
+
+.loan-admin-notif-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.loan-admin-notif-card-timestamp {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 16px;
+    color: #9CA3AF;
+    margin: 0;
+}
+
+.loan-admin-notif-card-mark-read {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 20px;
+    color: #155DFC;
+    padding: 0;
+}
+
+.loan-admin-notif-card-mark-read:hover {
+    text-decoration: underline;
+}
+
+.loan-admin-notif-card-read-badge {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 16px;
+    color: #9CA3AF;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .loan-admin-notif-content {
+        margin-left: 0;
+        padding: 24px;
+    }
+
+    .loan-admin-notif-header {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .loan-admin-notif-filters {
+        flex-wrap: wrap;
+    }
+}

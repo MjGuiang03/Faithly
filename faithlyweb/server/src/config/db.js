@@ -3,9 +3,27 @@ import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const client = new MongoClient(process.env.MONGODB_URI);
-await client.connect();
-console.log('✅ Connected to MongoDB');
+// Validate environment variables
+const requiredEnv = ['MONGODB_URI', 'DB_NAME', 'JWT_SECRET'];
+requiredEnv.forEach(env => {
+  if (!process.env[env]) {
+    console.error(`❌ CRITICAL ERROR: Environment variable "${env}" is missing.`);
+    process.exit(1);
+  }
+});
+
+let client;
+try {
+  client = new MongoClient(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+  await client.connect();
+  console.log('✅ Connected to MongoDB');
+} catch (error) {
+  console.error('❌ MongoDB Connection Error:', error.message);
+  process.exit(1);
+}
 
 const db = client.db(process.env.DB_NAME);
 
@@ -26,19 +44,24 @@ await attendance.createIndex({ email: 1 });
 await verifications.createIndex({ email: 1 });
 await otps.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
-/* ================== CREATE DEFAULT ADMIN ================== */
-const DEFAULT_ADMIN_EMAIL = process.env.ADMIN_EMAIL;
-const DEFAULT_ADMIN_PASS  = process.env.ADMIN_PASS;
+/* ================== CREATE DEFAULT ADMINS ================== */
+const adminSeeds = [
+  { email: process.env.ADMIN_EMAIL,           password: process.env.ADMIN_PASS,           role: 'admin' },
+  { email: process.env.LOAN_ADMIN_EMAIL,      password: process.env.LOAN_ADMIN_PASS,      role: 'loanAdmin' },
+  { email: process.env.SECRETARY_ADMIN_EMAIL, password: process.env.SECRETARY_ADMIN_PASS, role: 'secretaryAdmin' },
+];
 
-const defaultAdmin = await admins.findOne({ email: DEFAULT_ADMIN_EMAIL });
-
-if (!defaultAdmin) {
-  const adminPasswordHash = await bcrypt.hash(DEFAULT_ADMIN_PASS, 12);
-  await admins.insertOne({
-    email: DEFAULT_ADMIN_EMAIL,
-    passwordHash: adminPasswordHash,
-    role: 'admin',
-    createdAt: new Date()
-  });
-  console.log('✅ Default admin created');
+for (const seed of adminSeeds) {
+  if (!seed.email || !seed.password) continue;
+  const exists = await admins.findOne({ email: seed.email });
+  if (!exists) {
+    const hash = await bcrypt.hash(seed.password, 12);
+    await admins.insertOne({
+      email: seed.email,
+      passwordHash: hash,
+      role: seed.role,
+      createdAt: new Date()
+    });
+    console.log(`✅ ${seed.role} admin created (${seed.email})`);
+  }
 }

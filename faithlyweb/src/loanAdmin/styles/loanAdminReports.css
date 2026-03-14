@@ -1,0 +1,259 @@
+.loan-admin-reports-page {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f3f4f6;
+}
+
+.loan-admin-reports-content {
+    margin-left: 256px;
+    padding: 40px 48px;
+    flex: 1;
+}
+
+/* Header Section */
+.loan-admin-reports-header {
+    margin-bottom: 32px;
+}
+
+.loan-admin-reports-title {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 30px;
+    line-height: 36px;
+    color: #101828;
+    margin: 0 0 8px 0;
+}
+
+.loan-admin-reports-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    color: #6B7280;
+    margin: 0;
+}
+
+/* Summary Cards */
+.loan-admin-reports-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.loan-admin-reports-summary-card {
+    background: #ffffff;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 20px 24px;
+    position: relative;
+}
+
+.loan-admin-reports-summary-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    border-radius: 12px 12px 0 0;
+}
+
+.loan-admin-reports-summary-card.green::before {
+    background: #00A63E;
+}
+
+.loan-admin-reports-summary-card.red::before {
+    background: #FF6467;
+}
+
+.loan-admin-reports-summary-card.blue::before {
+    background: #155DFC;
+}
+
+.loan-admin-reports-summary-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.loan-admin-reports-summary-label {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 20px;
+    color: #6B7280;
+    margin: 0;
+}
+
+.loan-admin-reports-summary-value {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 30px;
+    line-height: 36px;
+    margin: 0 0 4px 0;
+}
+
+.loan-admin-reports-summary-card.green .loan-admin-reports-summary-value {
+    color: #00A63E;
+}
+
+.loan-admin-reports-summary-card.red .loan-admin-reports-summary-value {
+    color: #FF6467;
+}
+
+.loan-admin-reports-summary-card.blue .loan-admin-reports-summary-value {
+    color: #155DFC;
+}
+
+.loan-admin-reports-summary-period {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 16px;
+    color: #9CA3AF;
+    margin: 0;
+}
+
+/* Chart Section */
+.loan-admin-reports-chart-section {
+    background: #ffffff;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.loan-admin-reports-chart-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.loan-admin-reports-chart-title {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 28px;
+    color: #101828;
+    margin: 0 0 4px 0;
+}
+
+.loan-admin-reports-chart-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 20px;
+    color: #6B7280;
+    margin: 0;
+}
+
+.loan-admin-reports-chart-container {
+    width: 100%;
+    margin-top: 16px;
+}
+
+/* Data Table */
+.loan-admin-reports-table-container {
+    margin-top: 32px;
+    border-top: 1px solid #E5E7EB;
+    padding-top: 24px;
+}
+
+.loan-admin-reports-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.loan-admin-reports-table thead {
+    background: #F9FAFB;
+}
+
+.loan-admin-reports-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    line-height: 16px;
+    color: #6B7280;
+    text-transform: uppercase;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.loan-admin-reports-table td {
+    padding: 16px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 20px;
+    color: #101828;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.loan-admin-reports-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.loan-admin-reports-table tbody tr:hover {
+    background: #F9FAFB;
+}
+
+.loan-admin-reports-table-purpose {
+    font-weight: 500;
+}
+
+.loan-admin-reports-table-amount {
+    font-weight: 600;
+    color: #155DFC;
+}
+
+/* Recharts Custom Styles */
+.recharts-legend-wrapper {
+    margin-top: 20px !important;
+}
+
+.recharts-default-tooltip {
+    background: #ffffff !important;
+    border: 1px solid #E5E7EB !important;
+    border-radius: 8px !important;
+    padding: 12px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.recharts-tooltip-label {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    color: #101828;
+    margin-bottom: 8px;
+}
+
+.recharts-tooltip-item {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: #4B5563;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .loan-admin-reports-summary {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .loan-admin-reports-content {
+        margin-left: 0;
+        padding: 24px;
+    }
+
+    .loan-admin-reports-chart-container {
+        overflow-x: auto;
+    }
+
+    .loan-admin-reports-table-container {
+        overflow-x: auto;
+    }
+}

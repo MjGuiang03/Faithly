@@ -7,12 +7,11 @@
 
 /* Main Content */
 .main-content {
-  margin-left: 256px;
-  flex: 1;
   padding: 20px 24px;
   display: flex;
   flex-direction: column;
   gap: 20px;
+
 }
 
 /* Welcome Header */
@@ -52,7 +51,8 @@
   border-radius: 12px;
   padding: 16px 18px;
   display: flex;
-  flex-direction: row;       /* icon + text side by side */
+  flex-direction: row;
+  /* icon + text side by side */
   align-items: center;
   gap: 14px;
 }
@@ -67,15 +67,37 @@
   flex-shrink: 0;
 }
 
-.stat-blue  .stat-icon-box { background: #155dfc; }
-.stat-green .stat-icon-box { background: #00a63e; }
-.stat-navy  .stat-icon-box { background: #0f2854; }
-.stat-orange .stat-icon-box { background: #f54900; }
+.stat-blue .stat-icon-box {
+  background: #155dfc;
+}
 
-.stat-blue   { background: #eff6ff; }
-.stat-green  { background: #f0fdf4; }
-.stat-navy   { background: #faf5ff; }
-.stat-orange { background: #fff7ed; }
+.stat-green .stat-icon-box {
+  background: #00a63e;
+}
+
+.stat-navy .stat-icon-box {
+  background: #0f2854;
+}
+
+.stat-orange .stat-icon-box {
+  background: #f54900;
+}
+
+.stat-blue {
+  background: #eff6ff;
+}
+
+.stat-green {
+  background: #f0fdf4;
+}
+
+.stat-navy {
+  background: #faf5ff;
+}
+
+.stat-orange {
+  background: #fff7ed;
+}
 
 .stat-icon {
   width: 22px;
@@ -148,7 +170,9 @@
   font-family: Arial, sans-serif;
 }
 
-.view-all-btn:hover { text-decoration: underline; }
+.view-all-btn:hover {
+  text-decoration: underline;
+}
 
 /* Quick Actions */
 .quick-actions-grid {
@@ -391,14 +415,33 @@
 
 /* Responsive */
 @media (max-width: 1200px) {
-  .stats-grid    { grid-template-columns: repeat(2, 1fr); }
-  .content-grid  { grid-template-columns: 1fr; }
-  .quick-actions-grid { grid-template-columns: repeat(3, 1fr); }
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-actions-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 @media (max-width: 768px) {
-  .main-content  { margin-left: 0; padding: 16px; }
-  .stats-grid    { grid-template-columns: 1fr; }
-  .quick-actions-grid { grid-template-columns: 1fr; }
-  .page-title    { font-size: 22px; }
+  .main-content {
+    padding: 16px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-actions-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .page-title {
+    font-size: 22px;
+  }
 }

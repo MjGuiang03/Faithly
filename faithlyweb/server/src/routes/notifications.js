@@ -1,20 +1,21 @@
 import { Router } from 'express';
-import { users, donations, attendance } from '../config/db.js';
+import { users, donations, attendance, loans } from '../config/db.js';
 import { authenticateAdmin } from '../middleware/auth.js';
 
 const router = Router();
 
 /* ================== GET ALL NOTIFICATIONS ================== */
-// Builds a unified notification feed from donations, members, attendance
+// Builds a unified notification feed from donations, members, attendance, loans
 router.get('/notifications', authenticateAdmin, async (req, res) => {
   try {
     const limit = Math.min(200, parseInt(req.query.limit) || 100);
 
     // Fetch recent events in parallel
-    const [recentDonations, recentMembers, recentAttendance] = await Promise.all([
+    const [recentDonations, recentMembers, recentAttendance, recentLoans] = await Promise.all([
       donations.find({}).sort({ createdAt: -1 }).limit(limit).toArray(),
       users.find({ isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(limit).toArray(),
       attendance.find({}).sort({ createdAt: -1 }).limit(limit).toArray(),
+      loans.find({}).sort({ appliedDate: -1 }).limit(limit).toArray(),
     ]);
 
     const notifications = [];
@@ -71,6 +72,43 @@ router.get('/notifications', authenticateAdmin, async (req, res) => {
           service:  a.service,
           branch:   a.branch,
           method:   a.method,
+        }
+      });
+    });
+
+    // Loans → notification
+    recentLoans.forEach(l => {
+      let title, message;
+      if (l.status === 'pending') {
+        title   = 'New loan application submitted';
+        message = `${l.memberName} has submitted a loan application for ₱${Number(l.amount).toLocaleString()} for ${l.purpose} purposes.`;
+      } else if (l.status === 'active') {
+        title   = 'Loan application approved';
+        message = `Loan ${l.loanId} for ${l.memberName} (₱${Number(l.amount).toLocaleString()}) has been approved.`;
+      } else if (l.status === 'rejected') {
+        title   = 'Loan application rejected';
+        message = `Loan ${l.loanId} for ${l.memberName} (₱${Number(l.amount).toLocaleString()}) has been rejected.${l.rejectionReason ? ' Reason: ' + l.rejectionReason : ''}`;
+      } else if (l.status === 'completed') {
+        title   = 'Loan completed';
+        message = `Loan ${l.loanId} for ${l.memberName} has been fully paid.`;
+      } else {
+        title   = 'Loan update';
+        message = `Loan ${l.loanId} status changed to ${l.status}.`;
+      }
+
+      notifications.push({
+        id:        `loan-${l._id}`,
+        type:      'loan',
+        title,
+        message,
+        timestamp: l.updatedAt || l.appliedDate,
+        isRead:    false,
+        meta: {
+          loanId:     l.loanId,
+          memberName: l.memberName,
+          amount:     l.amount,
+          purpose:    l.purpose,
+          status:     l.status,
         }
       });
     });

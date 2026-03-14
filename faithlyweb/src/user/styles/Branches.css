@@ -1,234 +1,658 @@
-/* Branches Header */
+/* ─── Header ─────────────────────────────────────────────── */
 .branches-header {
-  margin-bottom: 32px;
+  margin-bottom: 16px;
 }
 
-/* Branches Stats */
+/* ─── My Community Banner ────────────────────────────────── */
+.my-community-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: linear-gradient(135deg, #eff4ff 0%, #e0eaff 100%);
+  border: 1.5px solid #c7d7fe;
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.15s;
+}
+
+.my-community-banner:hover {
+  box-shadow: 0 4px 18px rgba(21, 93, 252, 0.13);
+  transform: translateY(-1px);
+}
+
+.mcb-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mcb-icon {
+  width: 40px;
+  height: 40px;
+  background: white;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 1px 4px rgba(21, 93, 252, 0.12);
+}
+
+.mcb-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.mcb-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  color: #155dfc;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  font-family: Arial, sans-serif;
+}
+
+.mcb-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #101828;
+  font-family: Arial, sans-serif;
+  line-height: 22px;
+}
+
+.mcb-province {
+  font-size: 12px;
+  color: #6b7280;
+  font-family: Arial, sans-serif;
+}
+
+.mcb-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.mcb-services {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  justify-content: flex-end;
+}
+
+.mcb-day-tag {
+  font-size: 11px;
+  font-weight: 600;
+  font-family: Arial, sans-serif;
+  border-radius: 5px;
+  padding: 3px 8px;
+}
+
+.mcb-chevron {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* ─── Stats ──────────────────────────────────────────────── */
 .branches-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
-  margin-bottom: 32px;
+  gap: 10px;
+  margin-bottom: 14px;
 }
 
 .branch-stat-card {
   background: white;
   border: 0.8px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 24.8px;
+  border-radius: 12px;
+  padding: 12px 16px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .branch-stat-label {
-  font-size: 14px;
-  color: #4a5565;
+  font-size: 11px;
+  color: #6b7280;
   margin: 0;
-  line-height: 20px;
   font-family: Arial, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .branch-stat-value {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
   color: #101828;
   margin: 0;
-  line-height: 32px;
   font-family: Arial, sans-serif;
 }
 
-/* Branches Grid */
-.branches-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
-  margin-bottom: 32px;
-}
-
-/* Branch Card */
-.branch-card {
+/* ─── Filter Bar ─────────────────────────────────────────── */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   background: white;
   border: 0.8px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  border-radius: 12px;
+  padding: 9px 14px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
 }
 
-.branch-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
+.search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 130px;
 }
 
-.branch-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.search-icon {
+  position: absolute;
+  left: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
 }
 
-.branch-name {
-  font-size: 20px;
+.branch-search {
+  width: 100%;
+  height: 33px;
+  padding: 0 10px 0 29px;
+  border: 0.8px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #101828;
+  font-family: Arial, sans-serif;
+  background: #f9fafb;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.branch-search:focus {
+  border-color: #155dfc;
+  background: white;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.filter-label {
+  font-size: 12px;
+  color: #6b7280;
+  font-family: Arial, sans-serif;
+  white-space: nowrap;
+}
+
+.filter-select {
+  height: 33px;
+  padding: 0 24px 0 9px;
+  border: 0.8px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #101828;
+  font-family: Arial, sans-serif;
+  background: #f9fafb url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M4 6L8 10L12 6' stroke='%2399A1AF' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 8px center;
+  appearance: none;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.filter-select:focus {
+  border-color: #155dfc;
+  background-color: white;
+}
+
+.filter-count {
+  margin-left: auto;
+  font-size: 12px;
+  color: #6b7280;
+  font-family: Arial, sans-serif;
+  white-space: nowrap;
+  padding: 3px 10px;
+  background: #f3f4f6;
+  border-radius: 20px;
+}
+
+/* ─── Branch Groups ──────────────────────────────────────── */
+.branch-group {
+  margin-bottom: 18px;
+}
+
+.branch-group-header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 8px;
+  padding: 0 2px;
+}
+
+.group-region-badge {
+  font-size: 10px;
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+  color: #155dfc;
+  background: #eff4ff;
+  border: 0.8px solid #c7d7fe;
+  border-radius: 20px;
+  padding: 1px 7px;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+.group-province {
+  font-size: 13px;
   font-weight: 700;
   color: #101828;
-  margin: 0;
-  line-height: 28px;
   font-family: Arial, sans-serif;
 }
 
-.branch-leader {
-  font-size: 14px;
-  color: #4a5565;
-  margin: 0;
-  line-height: 20px;
+.group-count {
+  font-size: 11px;
+  color: #9ca3af;
   font-family: Arial, sans-serif;
+  background: #f3f4f6;
+  border-radius: 10px;
+  padding: 1px 7px;
+  margin-left: auto;
 }
 
-.branch-distance {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: 4px;
+/* ─── Card Grid ──────────────────────────────────────────── */
+.branch-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 8px;
 }
 
-.distance-icon {
-  width: 16px;
-  height: 16px;
-}
-
-.branch-distance span {
-  font-size: 14px;
-  color: #155dfc;
-  font-family: Arial, sans-serif;
-  line-height: 20px;
-}
-
-.branch-members {
+/* ─── Branch Card Item ───────────────────────────────────── */
+.branch-card-item {
+  position: relative;
+  background: white;
+  border: 0.8px solid #e5e7eb;
+  border-radius: 11px;
+  padding: 12px;
+  cursor: pointer;
+  text-align: left;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 0;
+  gap: 8px;
+  transition: border-color 0.18s, box-shadow 0.18s, transform 0.15s;
+  width: 100%;
+  overflow: hidden;
 }
 
-.members-count {
-  font-size: 24px;
+.branch-card-item:hover {
+  border-color: #a5b4fc;
+  box-shadow: 0 3px 12px rgba(21, 93, 252, 0.08);
+  transform: translateY(-1px);
+}
+
+.branch-card-item:active {
+  transform: translateY(0);
+}
+
+/* My Community highlighted card */
+.branch-card-item.my-branch {
+  border-color: #155dfc;
+  background: linear-gradient(135deg, #f5f8ff 0%, #eef3ff 100%);
+  box-shadow: 0 2px 10px rgba(21, 93, 252, 0.12);
+}
+
+.branch-card-item.my-branch:hover {
+  box-shadow: 0 5px 18px rgba(21, 93, 252, 0.18);
+}
+
+/* "My Community" badge on card */
+.my-branch-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: #155dfc;
+  color: white;
+  font-size: 9px;
   font-weight: 700;
-  color: #155dfc;
-  margin: 0;
-  line-height: 32px;
   font-family: Arial, sans-serif;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-bottom-left-radius: 8px;
 }
 
-.members-label {
-  font-size: 12px;
-  color: #4a5565;
-  margin: 0;
-  line-height: 16px;
-  font-family: Arial, sans-serif;
-}
-
-/* Branch Contact Info */
-.branch-contact-info {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding-bottom: 16px;
-  border-bottom: 0.8px solid #e5e7eb;
-}
-
-.contact-item {
+.bci-top {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
-.contact-icon {
-  width: 20px;
-  height: 20px;
+.bci-icon {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  background: #eff4ff;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bci-icon.my-branch-icon {
+  background: #155dfc;
+}
+
+.bci-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #101828;
+  font-family: Arial, sans-serif;
+  line-height: 17px;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bci-arrow {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.branch-card-item:hover .bci-arrow {
+  opacity: 1;
+}
+
+.bci-days {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.bci-day-tag {
+  font-size: 10px;
+  font-weight: 600;
+  font-family: Arial, sans-serif;
+  border-radius: 4px;
+  padding: 2px 6px;
+  letter-spacing: 0.01em;
+}
+
+/* ─── Drawer Overlay ─────────────────────────────────────── */
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(16, 24, 40, 0);
+  z-index: 100;
+  transition: background 0.3s ease;
+  backdrop-filter: blur(0px);
+}
+
+.drawer-overlay.visible {
+  background: rgba(16, 24, 40, 0.35);
+  backdrop-filter: blur(2px);
+}
+
+/* ─── Drawer ─────────────────────────────────────────────── */
+.branch-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 390px;
+  max-width: 100vw;
+  height: 100vh;
+  background: white;
+  z-index: 101;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -8px 0 40px rgba(16, 24, 40, 0.12);
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.branch-drawer.visible {
+  transform: translateX(0);
+}
+
+.drawer-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 18px 18px 14px;
+  border-bottom: 0.8px solid #f3f4f6;
   flex-shrink: 0;
 }
 
-.contact-item span {
-  font-size: 14px;
-  color: #364153;
-  font-family: Arial, sans-serif;
-  line-height: 20px;
-}
-
-/* Branch Service Times */
-.branch-service-times {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.service-times-header {
+.drawer-header-icon {
+  width: 42px;
+  height: 42px;
+  background: #eff4ff;
+  border-radius: 10px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-.clock-icon {
-  width: 20px;
-  height: 20px;
+.drawer-header-icon.my-branch-icon {
+  background: #155dfc;
 }
 
-.service-times-title {
-  font-size: 16px;
+.drawer-header-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.drawer-branch-name {
+  font-size: 17px;
   font-weight: 700;
   color: #101828;
-  margin: 0;
-  line-height: 24px;
+  margin: 0 0 5px 0;
+  font-family: Arial, sans-serif;
+  line-height: 22px;
+}
+
+.drawer-my-badge {
+  font-size: 10px;
+  font-weight: 700;
+  font-family: Arial, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: #eff4ff;
+  color: #155dfc;
+  border: 1px solid #c7d7fe;
+  border-radius: 20px;
+  padding: 2px 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.drawer-branch-meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.detail-region-badge {
+  font-size: 10px;
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+  color: #155dfc;
+  background: #eff4ff;
+  border: 0.8px solid #c7d7fe;
+  border-radius: 20px;
+  padding: 2px 8px;
+}
+
+.drawer-province {
+  font-size: 12px;
+  color: #6b7280;
   font-family: Arial, sans-serif;
 }
 
-.service-times-list {
+.drawer-close {
+  width: 30px;
+  height: 30px;
+  background: #f3f4f6;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.drawer-close:hover {
+  background: #e5e7eb;
+}
+
+.drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  scrollbar-width: thin;
+  scrollbar-color: #e5e7eb transparent;
+}
+
+.drawer-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.drawer-body::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 4px;
+}
+
+.drawer-section {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.service-time-item {
-  background: #f9fafb;
-  border-radius: 10px;
-  padding: 8px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.service-day {
-  font-size: 14px;
-  color: #101828;
+.drawer-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
   font-family: Arial, sans-serif;
-  line-height: 20px;
+  margin: 0;
 }
 
-.service-time {
-  font-size: 14px;
+.drawer-contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.drawer-contact-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f9fafb;
+  border: 0.8px solid #f3f4f6;
+  border-radius: 8px;
+  padding: 9px 11px;
+}
+
+.drawer-contact-emoji {
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.drawer-contact-val {
+  font-size: 13px;
   color: #364153;
   font-family: Arial, sans-serif;
-  line-height: 20px;
 }
 
-/* Branch Card Actions */
-.branch-card-actions {
+.drawer-service-list {
   display: flex;
-  gap: 12px;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.drawer-service-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 11px;
+  background: #f9fafb;
+  border: 0.8px solid #f3f4f6;
+  border-radius: 8px;
+}
+
+.drawer-day-pill {
+  font-size: 12px;
+  font-weight: 700;
+  font-family: Arial, sans-serif;
+  border-radius: 5px;
+  padding: 3px 10px;
+  min-width: 84px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.drawer-time {
+  font-size: 13px;
+  color: #364153;
+  font-family: Arial, sans-serif;
+}
+
+.drawer-map-placeholder {
+  background: #f3f4f6;
+  border-radius: 10px;
+  min-height: 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.drawer-map-placeholder span {
+  font-size: 12px;
+  color: #9ca3af;
+  font-family: Arial, sans-serif;
+}
+
+.drawer-footer {
+  display: flex;
+  gap: 10px;
+  padding: 14px 18px;
+  border-top: 0.8px solid #f3f4f6;
+  flex-shrink: 0;
+  background: white;
 }
 
 .get-directions-btn {
   flex: 1;
-  height: 40px;
+  height: 38px;
   background: #155dfc;
   border: none;
-  border-radius: 10px;
+  border-radius: 9px;
   color: white;
-  font-size: 14px;
+  font-size: 13px;
   font-family: Arial, sans-serif;
+  font-weight: 600;
   cursor: pointer;
   transition: background 0.2s;
 }
@@ -238,13 +662,13 @@
 }
 
 .contact-btn {
-  height: 40px;
-  padding: 0 20px;
+  height: 38px;
+  padding: 0 16px;
   background: white;
   border: 0.8px solid #e5e7eb;
-  border-radius: 10px;
+  border-radius: 9px;
   color: #101828;
-  font-size: 14px;
+  font-size: 13px;
   font-family: Arial, sans-serif;
   cursor: pointer;
   transition: all 0.2s;
@@ -255,89 +679,62 @@
   color: #155dfc;
 }
 
-/* Map Section */
-.map-section {
+/* ─── Misc ───────────────────────────────────────────────── */
+.no-results {
+  padding: 40px;
+  text-align: center;
+  color: #6b7280;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
   background: white;
   border: 0.8px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 24px;
+  border-radius: 12px;
 }
 
-.section-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: #101828;
-  margin: 0 0 16px 0;
-  line-height: 28px;
-  font-family: Arial, sans-serif;
-}
-
-.map-placeholder {
-  background: #f3f4f6;
-  border-radius: 10px;
-  min-height: 300px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 40px;
-}
-
-.map-icon {
-  width: 48px;
-  height: 48px;
-  opacity: 0.5;
-}
-
-.map-text {
-  font-size: 16px;
-  color: #6b7280;
-  margin: 0;
-  font-family: Arial, sans-serif;
-  line-height: 24px;
-}
-
-.map-subtext {
-  font-size: 14px;
-  color: #9ca3af;
-  margin: 0;
-  font-family: Arial, sans-serif;
-  line-height: 20px;
-}
-
-/* Responsive Design */
+/* ─── Responsive ─────────────────────────────────────────── */
 @media (max-width: 1200px) {
   .branches-stats {
     grid-template-columns: repeat(2, 1fr);
   }
-
-  .branches-grid {
-    grid-template-columns: 1fr;
-  }
 }
 
 @media (max-width: 768px) {
-  .branches-stats {
-    grid-template-columns: 1fr;
+  .branch-drawer {
+    width: 100vw;
   }
 
-  .branch-card-header {
+  .branch-card-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .my-community-banner {
     flex-direction: column;
-  }
-
-  .branch-members {
     align-items: flex-start;
+    gap: 10px;
   }
 
-  .branch-card-actions {
-    flex-direction: column;
+  .mcb-right {
+    width: 100%;
+    justify-content: space-between;
   }
 }
 
-@media (max-width: 480px) {
-  .map-placeholder {
-    min-height: 200px;
-    padding: 20px;
+@media (max-width: 600px) {
+  .branches-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-count {
+    margin-left: 0;
+    text-align: center;
+  }
+
+  .branch-card-grid {
+    grid-template-columns: 1fr;
   }
 }

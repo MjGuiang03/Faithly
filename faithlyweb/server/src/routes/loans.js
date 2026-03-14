@@ -80,10 +80,17 @@ router.get('/admin/loans', authenticateAdmin, async (req, res) => {
       { $group: { _id: null, total: { $sum: '$amount' } } }
     ]).toArray();
 
+    // Count loans applied this month
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const totalThisMonth = await loans.countDocuments({ appliedDate: { $gte: monthStart } });
+
     const stats = {
       pending:        await loans.countDocuments({ status: 'pending' }),
       active:         await loans.countDocuments({ status: 'active' }),
       completed:      await loans.countDocuments({ status: 'completed' }),
+      rejected:       await loans.countDocuments({ status: 'rejected' }),
+      totalThisMonth,
       totalDisbursed: totalDisbursedResult[0]?.total || 0
     };
 
@@ -120,6 +127,7 @@ router.put('/admin/loans/:id/approve', authenticateAdmin, async (req, res) => {
 router.put('/admin/loans/:id/reject', authenticateAdmin, async (req, res) => {
   try {
     const { id } = req.params;
+    const { rejectionReason } = req.body;
     const loan = await loans.findOne({ _id: new ObjectId(id) });
     if (!loan) return res.status(404).json({ success: false, message: 'Loan not found' });
     if (loan.status !== 'pending') {
@@ -128,13 +136,53 @@ router.put('/admin/loans/:id/reject', authenticateAdmin, async (req, res) => {
 
     await loans.updateOne(
       { _id: new ObjectId(id) },
-      { $set: { status: 'rejected', rejectedDate: new Date(), updatedAt: new Date() } }
+      { $set: { status: 'rejected', rejectionReason: rejectionReason || '', rejectedDate: new Date(), updatedAt: new Date() } }
     );
 
     res.status(200).json({ success: true, message: 'Loan rejected successfully' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Failed to reject loan' });
+  }
+});
+
+/* ================== ADMIN - PROCESS LOAN DISBURSEMENT ================== */
+router.put('/admin/loans/:id/process', authenticateAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { paymentMethod } = req.body;
+
+    if (!paymentMethod) {
+      return res.status(400).json({ success: false, message: 'Payment method is required' });
+    }
+
+    const loan = await loans.findOne({ _id: new ObjectId(id) });
+    if (!loan) return res.status(404).json({ success: false, message: 'Loan not found' });
+
+    // Ensure the loan is approved/active and hasn't already been disbursed
+    if (loan.status !== 'active') {
+      return res.status(400).json({ success: false, message: 'Only active loans can be processed' });
+    }
+    if (loan.disbursed) {
+      return res.status(400).json({ success: false, message: 'This loan has already been disbursed' });
+    }
+
+    await loans.updateOne(
+      { _id: new ObjectId(id) },
+      { 
+        $set: { 
+          disbursed: true, 
+          disbursementDate: new Date(), 
+          paymentMethod, 
+          updatedAt: new Date() 
+        } 
+      }
+    );
+
+    res.status(200).json({ success: true, message: 'Loan disbursed successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to process loan disbursement' });
   }
 });
 

@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import '../styles/AdminDonations.css';
 import svgPaths from "../../imports/svg-icons";
 
-const API = process.env.REACT_APP_API_URL;
+import API from '../../utils/api';
 
 const fmt = (n) =>
   n != null ? `₱${Number(n).toLocaleString('en-PH')}` : '₱0';
@@ -59,22 +59,20 @@ export default function AdminDonationsNew() {
 
       setDonations(data.donations || []);
       
-      // Calculate stats from the data
       const thisMonthTotal = data.stats?.thisMonth || 0;
       const totalDonations = data.donations?.length || 0;
       const avgDonation = totalDonations > 0 
         ? data.donations.reduce((sum, d) => sum + (d.amount || 0), 0) / totalDonations
         : 0;
       
-      // Calculate this week (last 7 days)
       const oneWeekAgo = new Date();
       oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
       const thisWeekTotal = data.donations
         ?.filter(d => new Date(d.createdAt || d.date) >= oneWeekAgo)
         ?.reduce((sum, d) => sum + (d.amount || 0), 0) || 0;
       
-      // Count unique donors
-      const uniqueDonors = new Set(data.donations?.map(d => d.email || d.memberName)).size;
+      // FIX: use d.member (the actual DB field), fallback to d.email
+      const uniqueDonors = new Set(data.donations?.map(d => d.member || d.email)).size;
 
       setStats({
         totalThisMonth: thisMonthTotal,
@@ -106,7 +104,6 @@ export default function AdminDonationsNew() {
   const goPrev = () => goTo(currentPage - 1);
   const goNext = () => goTo(currentPage + 1);
 
-  // Calculate percentage change from last month (mock for now)
   const percentageChange = '+8%';
 
   /* ── Render ── */
@@ -120,7 +117,6 @@ export default function AdminDonationsNew() {
 
       {/* Stats Cards */}
       <div className="admin-don-new-stats">
-        {/* Total This Month */}
         <div className="admin-don-new-stat-card">
           <div className="admin-don-new-stat-header">
             <span className="admin-don-new-stat-label">Total This Month</span>
@@ -132,7 +128,6 @@ export default function AdminDonationsNew() {
           <p className="admin-don-new-stat-change">{percentageChange} from last month</p>
         </div>
 
-        {/* Total Donors */}
         <div className="admin-don-new-stat-card">
           <div className="admin-don-new-stat-header">
             <span className="admin-don-new-stat-label">Total Donors</span>
@@ -144,7 +139,6 @@ export default function AdminDonationsNew() {
           <p className="admin-don-new-stat-value">{stats.totalDonors}</p>
         </div>
 
-        {/* Avg. Donation */}
         <div className="admin-don-new-stat-card">
           <div className="admin-don-new-stat-header">
             <span className="admin-don-new-stat-label">Avg. Donation</span>
@@ -156,7 +150,6 @@ export default function AdminDonationsNew() {
           <p className="admin-don-new-stat-value">{fmt(stats.avgDonation)}</p>
         </div>
 
-        {/* This Week */}
         <div className="admin-don-new-stat-card">
           <div className="admin-don-new-stat-header">
             <span className="admin-don-new-stat-label">This Week</span>
@@ -175,7 +168,6 @@ export default function AdminDonationsNew() {
       <div className="admin-don-new-section">
         <h2 className="admin-don-new-section-title">Recent Donations</h2>
 
-        {/* Table */}
         <div className="admin-don-new-table-container">
           <table className="admin-don-new-table">
             <thead className="admin-don-new-thead">
@@ -213,7 +205,8 @@ export default function AdminDonationsNew() {
                     </td>
                     <td className="admin-don-new-td">
                       <span className="admin-don-new-member-name">
-                        {donation.memberName}
+                        {/* FIX: backend stores donor name as 'member', not 'memberName' */}
+                        {donation.member || '—'}
                       </span>
                     </td>
                     <td className="admin-don-new-td">
@@ -268,7 +261,7 @@ export default function AdminDonationsNew() {
                 onClick={goNext}
                 disabled={currentPage === totalPages}
               >
-                 &gt;
+                &gt;
               </button>
             </div>
           </div>

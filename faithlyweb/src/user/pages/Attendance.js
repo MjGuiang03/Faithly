@@ -4,8 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import svgPaths from '../../imports/svg-icons';
 import '../styles/Attendance.css';
 import Sidebar from '../components/Sidebar';
-
-const API = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+import API from '../../utils/api';
 const PAGE_SIZE = 5;
 
 export default function Attendance() {

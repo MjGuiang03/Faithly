@@ -131,6 +131,32 @@
   }
 }
 
+/* Global Layout Rules for Sidebar Layout */
+.main-content {
+  margin-left: 256px;
+  flex: 1;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-collapsed + .main-content {
+  margin-left: 72px;
+}
+
+@media (max-width: 1024px) {
+  .main-content,
+  .sidebar-collapsed + .main-content {
+    margin-left: 72px; 
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content,
+  .sidebar-collapsed + .main-content {
+    margin-left: 0;
+    padding-top: 64px; /* Space for mobile hamburger menu */
+  }
+}
+
 /**
  * Base typography. This is not applied to elements which have an ancestor with a Tailwind text class.
  */

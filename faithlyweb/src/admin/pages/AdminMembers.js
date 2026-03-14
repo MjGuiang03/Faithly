@@ -4,9 +4,9 @@ import { toast } from 'sonner';
 import '../styles/AdminMembers.css';
 import svgPaths from "../../imports/svg-icons";
 
-const API = process.env.REACT_APP_API_URL;
+import API from '../../utils/api';
 
-/* ─── debounce hook ────────────────────────────────────────────────────── */
+/* ─── debounce hook ─────────────────────────────────────────────────────── */
 function useDebounce(value, delay = 400) {
   const [debounced, setDebounced] = useState(value);
   useEffect(() => {
@@ -16,15 +16,15 @@ function useDebounce(value, delay = 400) {
   return debounced;
 }
 
-/* ─── query-string builder ─────────────────────────────────────────────── */
+/* ─── query-string builder ──────────────────────────────────────────────── */
 function buildQuery(params) {
   return Object.entries(params)
-    .filter(([, v]) => v !== '' && v !== 'all' && v != null)
+    .filter(([, v]) => v !== '' && v !== 'all' && v != null && v !== false)
     .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
     .join('&');
 }
 
-/* ─── Pencil (Edit) icon ───────────────────────────────────────────────── */
+/* ─── Pencil (Edit) icon ────────────────────────────────────────────────── */
 const IconEdit = () => (
   <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
     <path d="M1.5 12.4999V14.9999H4L12.6733 6.32659L10.1733 3.82659L1.5 12.4999Z"
@@ -34,7 +34,7 @@ const IconEdit = () => (
   </svg>
 );
 
-/* ─── Trash (Delete) icon ──────────────────────────────────────────────── */
+/* ─── Trash (Delete) icon ───────────────────────────────────────────────── */
 const IconTrash = () => (
   <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
     <path d="M1 3.5H16" stroke="#F04438" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
@@ -57,10 +57,10 @@ function EditModal({ member, onClose, onSave }) {
     branch:   member.branch   || '',
     position: member.position || '',
   });
-  const [adminPassword,     setAdminPassword]     = useState('');
-  const [showPassword,      setShowPassword]      = useState(false);
-  const [passwordError,     setPasswordError]     = useState('');
-  const [saving,            setSaving]            = useState(false);
+  const [adminPassword, setAdminPassword] = useState('');
+  const [showPassword,  setShowPassword]  = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [saving,        setSaving]        = useState(false);
 
   const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
@@ -159,7 +159,7 @@ function EditModal({ member, onClose, onSave }) {
 
         <div className="admin-members-modal-footer">
           <button className="admin-members-btn admin-members-btn-cancel" onClick={onClose} disabled={saving}>Cancel</button>
-          <button className="admin-members-btn admin-members-btn-save"   onClick={handleSubmit} disabled={saving}>
+          <button className="admin-members-btn admin-members-btn-save" onClick={handleSubmit} disabled={saving}>
             {saving ? 'Saving…' : 'Save Changes'}
           </button>
         </div>
@@ -269,7 +269,7 @@ function DeleteModal({ member, onClose, onConfirm }) {
         </div>
 
         <div className="admin-members-modal-footer">
-          <button className="admin-members-btn admin-members-btn-cancel" onClick={onClose}    disabled={deleting}>Cancel</button>
+          <button className="admin-members-btn admin-members-btn-cancel" onClick={onClose} disabled={deleting}>Cancel</button>
           <button className="admin-members-btn admin-members-btn-delete" onClick={handleDelete} disabled={deleting}>
             {deleting ? 'Deleting…' : 'Delete Member'}
           </button>
@@ -287,19 +287,20 @@ const ITEMS_PER_PAGE = 5;
 export default function AdminMembers() {
   const navigate = useNavigate();
 
-  const [members,      setMembers]      = useState([]);
-  const [officers,     setOfficers]     = useState([]);
-  const [branches,     setBranches]     = useState([]);
-  const [stats,        setStats]        = useState({ total: 0, active: 0, inactive: 0, officers: 0 });
-  const [pagination,   setPagination]   = useState({ page: 1, totalPages: 1, totalMembers: 0, hasNext: false, hasPrev: false });
+  const [members,        setMembers]        = useState([]);
+  const [officers,       setOfficers]       = useState([]);
+  const [stats,          setStats]          = useState({ total: 0, active: 0, inactive: 0, officers: 0 });
+  const [pagination,     setPagination]     = useState({ page: 1, totalPages: 1, totalMembers: 0, hasNext: false, hasPrev: false });
+  const [officerPagination, setOfficerPagination] = useState({ totalMembers: 0 });
   const [searchOfficers, setSearchOfficers] = useState('');
   const [searchMembers,  setSearchMembers]  = useState('');
-  const [currentPage,  setCurrentPage]  = useState(1);
-  const [loading,      setLoading]      = useState(true);
-  const [editMember,   setEditMember]   = useState(null);
-  const [deleteMember, setDeleteMember] = useState(null);
+  const [currentPage,    setCurrentPage]    = useState(1);
+  const [loading,        setLoading]        = useState(true);
+  const [loadingOfficers, setLoadingOfficers] = useState(true);
+  const [editMember,     setEditMember]     = useState(null);
+  const [deleteMember,   setDeleteMember]   = useState(null);
 
-  const debouncedSearchMembers = useDebounce(searchMembers, 400);
+  const debouncedSearchMembers  = useDebounce(searchMembers,  400);
   const debouncedSearchOfficers = useDebounce(searchOfficers, 400);
 
   useEffect(() => { setCurrentPage(1); }, [debouncedSearchMembers]);
@@ -311,16 +312,19 @@ export default function AdminMembers() {
 
   useEffect(() => { if (!getToken()) navigate('/admin/login'); }, [navigate]);
 
+  /* ── Fetch regular (non-officer) members ── */
   const fetchMembers = useCallback(async () => {
     try {
       setLoading(true);
-      const qs  = buildQuery({ search: debouncedSearchMembers, page: currentPage, limit: ITEMS_PER_PAGE });
-      const res = await fetch(`${API}/api/admin/members${qs ? `?${qs}` : ''}`, { headers: { Authorization: `Bearer ${getToken()}` } });
+      const qs  = buildQuery({ search: debouncedSearchMembers, page: currentPage, limit: ITEMS_PER_PAGE, isOfficer: false });
+      const res = await fetch(`${API}/api/admin/members${qs ? `?${qs}` : ''}`, {
+        headers: { Authorization: `Bearer ${getToken()}` }
+      });
       if (res.status === 401 || res.status === 403) { navigate('/admin/login'); return; }
       const data = await res.json();
       if (!data.success) throw new Error(data.message || 'Failed to load members');
-      setMembers(data.members      || []);
-      setStats(data.stats          || {});
+      setMembers(data.members    || []);
+      setStats(data.stats        || {});
       setPagination(data.pagination || { page: 1, totalPages: 1, totalMembers: 0 });
     } catch (err) {
       toast.error(err.message || 'Failed to fetch members');
@@ -329,29 +333,43 @@ export default function AdminMembers() {
     }
   }, [debouncedSearchMembers, currentPage, navigate]);
 
+  /* ── Fetch officers (verified members) ── */
   const fetchOfficers = useCallback(async () => {
     try {
-      const qs  = buildQuery({ search: debouncedSearchOfficers, isOfficer: true });
-      const res = await fetch(`${API}/api/admin/members${qs ? `?${qs}` : ''}`, { headers: { Authorization: `Bearer ${getToken()}` } });
+      setLoadingOfficers(true);
+      const qs  = buildQuery({ search: debouncedSearchOfficers, isOfficer: true, limit: 100 });
+      const res = await fetch(`${API}/api/admin/members${qs ? `?${qs}` : ''}`, {
+        headers: { Authorization: `Bearer ${getToken()}` }
+      });
       const data = await res.json();
-      if (data.success) setOfficers(data.members || []);
+      if (data.success) {
+        setOfficers(data.members || []);
+        setOfficerPagination(data.pagination || { totalMembers: 0 });
+      }
     } catch (err) {
       console.error('Failed to fetch officers:', err);
+    } finally {
+      setLoadingOfficers(false);
     }
   }, [debouncedSearchOfficers]);
 
-  useEffect(() => { fetchMembers(); }, [fetchMembers]);
+  useEffect(() => { fetchMembers();  }, [fetchMembers]);
   useEffect(() => { fetchOfficers(); }, [fetchOfficers]);
 
-  const formatDate = d => d ? new Date(d).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' }) : 'N/A';
+  const formatDate = d =>
+    d ? new Date(d).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' }) : 'N/A';
+
+  /* ── Pagination range text ── */
+  const paginationStart = pagination.totalMembers === 0 ? 0 : (currentPage - 1) * ITEMS_PER_PAGE + 1;
+  const paginationEnd   = Math.min(currentPage * ITEMS_PER_PAGE, pagination.totalMembers);
 
   const buildPageNumbers = () => {
     const { totalPages } = pagination;
     if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
     const pages = [];
-    if (currentPage <= 4)                   pages.push(1, 2, 3, 4, 5, '…', totalPages);
-    else if (currentPage >= totalPages - 3) pages.push(1, '…', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
-    else                                    pages.push(1, '…', currentPage - 1, currentPage, currentPage + 1, '…', totalPages);
+    if (currentPage <= 4)                    pages.push(1, 2, 3, 4, 5, '…', totalPages);
+    else if (currentPage >= totalPages - 3)  pages.push(1, '…', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+    else                                     pages.push(1, '…', currentPage - 1, currentPage, currentPage + 1, '…', totalPages);
     return pages;
   };
 
@@ -361,7 +379,7 @@ export default function AdminMembers() {
       {editMember   && <EditModal   member={editMember}   onClose={() => setEditMember(null)}   onSave={()    => { setEditMember(null);   fetchMembers(); fetchOfficers(); }} />}
       {deleteMember && <DeleteModal member={deleteMember} onClose={() => setDeleteMember(null)} onConfirm={() => { setDeleteMember(null); fetchMembers(); fetchOfficers(); }} />}
 
-      {/* Header with Add Member button */}
+      {/* Header */}
       <div className="admin-members-header-container">
         <div className="admin-members-header-left">
           <h1 className="admin-members-title">Member Management</h1>
@@ -376,23 +394,23 @@ export default function AdminMembers() {
         </button>
       </div>
 
-      {/* Stats Grid - 4 cards */}
+      {/* Stats Grid */}
       <div className="admin-members-stats-grid">
         <div className="admin-members-stat-card">
           <p className="admin-members-stat-label">Total Members</p>
-          <p className="admin-members-stat-value admin-members-stat-value-blue">{stats.total || 10}</p>
+          <p className="admin-members-stat-value admin-members-stat-value-blue">{stats.total ?? 0}</p>
         </div>
         <div className="admin-members-stat-card">
           <p className="admin-members-stat-label">Officers</p>
-          <p className="admin-members-stat-value admin-members-stat-value-blue">{stats.officers || 4}</p>
+          <p className="admin-members-stat-value admin-members-stat-value-blue">{stats.officers ?? 0}</p>
         </div>
         <div className="admin-members-stat-card">
           <p className="admin-members-stat-label">Active Members</p>
-          <p className="admin-members-stat-value admin-members-stat-value-green">{stats.active || 10}</p>
+          <p className="admin-members-stat-value admin-members-stat-value-green">{stats.active ?? 0}</p>
         </div>
         <div className="admin-members-stat-card">
           <p className="admin-members-stat-label">Inactive Members</p>
-          <p className="admin-members-stat-value admin-members-stat-value-orange">{stats.inactive || 0}</p>
+          <p className="admin-members-stat-value admin-members-stat-value-orange">{stats.inactive ?? 0}</p>
         </div>
       </div>
 
@@ -401,12 +419,12 @@ export default function AdminMembers() {
         <div className="admin-members-section-header">
           <div className="admin-members-section-title-wrapper">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d={svgPaths.p13b4cf0} stroke="#155DFC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d={svgPaths.p13b4cf0}  stroke="#155DFC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               <path d={svgPaths.p161d4800} stroke="#155DFC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               <path d={svgPaths.p3766da80} stroke="#155DFC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
             <h2 className="admin-members-section-title">Officers</h2>
-            <span className="admin-members-count-badge">{stats.officers || 4}</span>
+            <span className="admin-members-count-badge">{officerPagination.totalMembers ?? 0}</span>
           </div>
           <div className="admin-members-search-wrapper-small">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="admin-members-search-icon-small">
@@ -436,43 +454,61 @@ export default function AdminMembers() {
             </tr>
           </thead>
           <tbody>
-            {officers.slice(0, 4).map((officer, idx) => (
-              <tr key={officer._id || idx} className="admin-members-table-row">
-                <td className="admin-members-table-cell">{officer.memberId || `M-12-${345 + idx}`}</td>
-                <td className="admin-members-table-cell">
-                  <div className="admin-members-name-cell">
-                    <div className="admin-members-avatar-circle">
-                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                        <path d={svgPaths.p25397b80} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d={svgPaths.p2c4f400} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    </div>
-                    <span>{officer.fullName || officer.name}</span>
-                  </div>
-                </td>
-                <td className="admin-members-table-cell">
-                  <div className="admin-members-contact-cell">
-                    <span className="admin-members-contact-email">{officer.email}</span>
-                    <span className="admin-members-contact-phone">{officer.phone || '+63 90 000 0001'}</span>
-                  </div>
-                </td>
-                <td className="admin-members-table-cell">{officer.branch || 'Bulacan'}</td>
-                <td className="admin-members-table-cell">{formatDate(officer.createdAt)}</td>
-                <td className="admin-members-table-cell">
-                  <span className="admin-members-status-badge admin-members-status-active">Active</span>
-                </td>
-                <td className="admin-members-table-cell">
-                  <div className="admin-members-actions">
-                    <button className="admin-members-action-btn admin-members-action-edit" onClick={() => setEditMember(officer)}>
-                      <IconEdit />
-                    </button>
-                    <button className="admin-members-action-btn admin-members-action-delete" onClick={() => setDeleteMember(officer)}>
-                      <IconTrash />
-                    </button>
-                  </div>
+            {loadingOfficers ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <tr key={i} className="admin-members-table-row">
+                  {Array.from({ length: 7 }).map((__, j) => (
+                    <td key={j} className="admin-members-table-cell"><div className="admin-members-skeleton" /></td>
+                  ))}
+                </tr>
+              ))
+            ) : officers.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="admin-members-table-cell admin-members-empty">
+                  {searchOfficers ? 'No officers match your search.' : 'No verified officers yet.'}
                 </td>
               </tr>
-            ))}
+            ) : (
+              officers.map((officer, idx) => (
+                <tr key={officer._id || idx} className="admin-members-table-row">
+                  <td className="admin-members-table-cell">{officer.memberId}</td>
+                  <td className="admin-members-table-cell">
+                    <div className="admin-members-name-cell">
+                      <div className="admin-members-avatar-circle">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                          <path d={svgPaths.p25397b80} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d={svgPaths.p2c4f400}  stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </div>
+                      <span>{officer.fullName || officer.name}</span>
+                    </div>
+                  </td>
+                  <td className="admin-members-table-cell">
+                    <div className="admin-members-contact-cell">
+                      <span className="admin-members-contact-email">{officer.email}</span>
+                      <span className="admin-members-contact-phone">{officer.phone || '—'}</span>
+                    </div>
+                  </td>
+                  <td className="admin-members-table-cell">{officer.branch || '—'}</td>
+                  <td className="admin-members-table-cell">{formatDate(officer.createdAt)}</td>
+                  <td className="admin-members-table-cell">
+                    <span className={`admin-members-status-badge admin-members-status-${officer.status || 'active'}`}>
+                      {officer.status ? officer.status.charAt(0).toUpperCase() + officer.status.slice(1) : 'Active'}
+                    </span>
+                  </td>
+                  <td className="admin-members-table-cell">
+                    <div className="admin-members-actions">
+                      <button className="admin-members-action-btn admin-members-action-edit" onClick={() => setEditMember(officer)}>
+                        <IconEdit />
+                      </button>
+                      <button className="admin-members-action-btn admin-members-action-delete" onClick={() => setDeleteMember(officer)}>
+                        <IconTrash />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -482,11 +518,11 @@ export default function AdminMembers() {
         <div className="admin-members-section-header">
           <div className="admin-members-section-title-wrapper">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d={svgPaths.p13b4cf0} stroke="#155DFC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d={svgPaths.p13b4cf0}  stroke="#155DFC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               <path d={svgPaths.p161d4800} stroke="#155DFC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
             <h2 className="admin-members-section-title">Members</h2>
-            <span className="admin-members-count-badge">{pagination.totalMembers || 6}</span>
+            <span className="admin-members-count-badge">{pagination.totalMembers ?? 0}</span>
           </div>
           <div className="admin-members-search-wrapper-small">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="admin-members-search-icon-small">
@@ -520,71 +556,69 @@ export default function AdminMembers() {
               Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
                 <tr key={i} className="admin-members-table-row">
                   {Array.from({ length: 7 }).map((__, j) => (
-                    <td key={j} className="admin-members-table-cell">
-                      <div className="admin-members-skeleton" />
-                    </td>
+                    <td key={j} className="admin-members-table-cell"><div className="admin-members-skeleton" /></td>
                   ))}
                 </tr>
               ))
             ) : members.length === 0 ? (
               <tr>
                 <td colSpan={7} className="admin-members-table-cell admin-members-empty">
-                  No members found.
+                  {searchMembers ? 'No members match your search.' : 'No members found.'}
                 </td>
               </tr>
-            ) : members.map(member => (
-              <tr key={member._id} className="admin-members-table-row">
-                <td className="admin-members-table-cell">
-                  {member.memberId || `M-12-${member._id?.toString().slice(-3)}`}
-                </td>
-                <td className="admin-members-table-cell">
-                  <div className="admin-members-name-cell">
-                    <div className="admin-members-avatar-circle">
-                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                        <path d={svgPaths.p25397b80} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d={svgPaths.p2c4f400} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
+            ) : (
+              members.map(member => (
+                <tr key={member._id} className="admin-members-table-row">
+                  <td className="admin-members-table-cell">{member.memberId}</td>
+                  <td className="admin-members-table-cell">
+                    <div className="admin-members-name-cell">
+                      <div className="admin-members-avatar-circle">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                          <path d={svgPaths.p25397b80} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d={svgPaths.p2c4f400}  stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </div>
+                      <span>{member.fullName || member.name}</span>
                     </div>
-                    <span>{member.fullName || member.name}</span>
-                  </div>
-                </td>
-                <td className="admin-members-table-cell">
-                  <div className="admin-members-contact-cell">
-                    <span className="admin-members-contact-email">{member.email}</span>
-                    <span className="admin-members-contact-phone">{member.phone || 'N/A'}</span>
-                  </div>
-                </td>
-                <td className="admin-members-table-cell">{member.branch || 'N/A'}</td>
-                <td className="admin-members-table-cell">{formatDate(member.createdAt)}</td>
-                <td className="admin-members-table-cell">
-                  <span className={`admin-members-status-badge admin-members-status-${member.status || 'active'}`}>
-                    Active
-                  </span>
-                </td>
-                <td className="admin-members-table-cell">
-                  <div className="admin-members-actions">
-                    <button className="admin-members-action-btn admin-members-action-edit" onClick={() => setEditMember(member)}>
-                      <IconEdit />
-                    </button>
-                    <button className="admin-members-action-btn admin-members-action-delete" onClick={() => setDeleteMember(member)}>
-                      <IconTrash />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  <td className="admin-members-table-cell">
+                    <div className="admin-members-contact-cell">
+                      <span className="admin-members-contact-email">{member.email}</span>
+                      <span className="admin-members-contact-phone">{member.phone || '—'}</span>
+                    </div>
+                  </td>
+                  <td className="admin-members-table-cell">{member.branch || '—'}</td>
+                  <td className="admin-members-table-cell">{formatDate(member.createdAt)}</td>
+                  <td className="admin-members-table-cell">
+                    <span className={`admin-members-status-badge admin-members-status-${member.status || 'active'}`}>
+                      {member.status ? member.status.charAt(0).toUpperCase() + member.status.slice(1) : 'Active'}
+                    </span>
+                  </td>
+                  <td className="admin-members-table-cell">
+                    <div className="admin-members-actions">
+                      <button className="admin-members-action-btn admin-members-action-edit" onClick={() => setEditMember(member)}>
+                        <IconEdit />
+                      </button>
+                      <button className="admin-members-action-btn admin-members-action-delete" onClick={() => setDeleteMember(member)}>
+                        <IconTrash />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
 
         {!loading && pagination.totalPages > 1 && (
           <div className="admin-members-pagination-wrapper">
             <p className="admin-members-pagination-info">
-              Showing 1 to 5 of {pagination.totalMembers || 6} results
+              Showing {paginationStart}–{paginationEnd} of {pagination.totalMembers} results
             </p>
             <div className="admin-members-pagination">
-              <button 
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))} 
-                disabled={!pagination.hasPrev} 
+              <button
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={!pagination.hasPrev}
                 className="admin-members-pagination-btn"
               >
                 Previous
@@ -592,17 +626,17 @@ export default function AdminMembers() {
               {buildPageNumbers().map((p, i) =>
                 p === '…'
                   ? <span key={`el-${i}`} className="admin-members-pagination-dots">…</span>
-                  : <button 
-                      key={p} 
-                      onClick={() => setCurrentPage(p)} 
+                  : <button
+                      key={p}
+                      onClick={() => setCurrentPage(p)}
                       className={`admin-members-pagination-number ${currentPage === p ? 'active' : ''}`}
                     >
                       {p}
                     </button>
               )}
-              <button 
-                onClick={() => setCurrentPage(p => Math.min(pagination.totalPages, p + 1))} 
-                disabled={!pagination.hasNext} 
+              <button
+                onClick={() => setCurrentPage(p => Math.min(pagination.totalPages, p + 1))}
+                disabled={!pagination.hasNext}
                 className="admin-members-pagination-btn"
               >
                 Next

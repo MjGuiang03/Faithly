@@ -1,0 +1,243 @@
+.loan-admin-dashboard-page {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f9fafb;
+}
+
+.loan-admin-dashboard-content {
+    margin-left: 256px;
+    padding: 40px 48px;
+    flex: 1;
+}
+
+/* Header Section */
+.loan-admin-dashboard-header {
+    margin-bottom: 32px;
+}
+
+.loan-admin-dashboard-title {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 30px;
+    line-height: 36px;
+    color: #101828;
+    margin: 0 0 8px 0;
+}
+
+.loan-admin-dashboard-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    color: #4a5565;
+    margin: 0;
+}
+
+/* Stats Grid */
+.loan-admin-dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    margin-bottom: 40px;
+}
+
+.loan-admin-dashboard-stat-card {
+    background: #ffffff;
+    border: 0.8px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 24.8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.loan-admin-dashboard-stat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.loan-admin-dashboard-stat-label {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 20px;
+    color: #4a5565;
+    margin: 0;
+}
+
+.loan-admin-dashboard-stat-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.loan-admin-dashboard-stat-value {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 30px;
+    line-height: 36px;
+    margin: 0;
+}
+
+/* Payments Section */
+.loan-admin-dashboard-payments-section {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 24px;
+}
+
+.loan-admin-dashboard-payments-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.loan-admin-dashboard-payments-title {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 28px;
+    color: #101828;
+    margin: 0;
+}
+
+.loan-admin-dashboard-view-all {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 20px;
+    color: #00a63e;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
+
+.loan-admin-dashboard-view-all:hover {
+    text-decoration: underline;
+}
+
+.loan-admin-dashboard-payments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.loan-admin-dashboard-payment-card {
+    background: #f9fafb;
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 84px;
+}
+
+.loan-admin-dashboard-payment-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.loan-admin-dashboard-payment-icon {
+    width: 40px;
+    height: 40px;
+    background: #fff7ed;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.loan-admin-dashboard-payment-icon.overdue {
+    background: #fef2f2;
+}
+
+.loan-admin-dashboard-payment-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+.loan-admin-dashboard-payment-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.loan-admin-dashboard-payment-name {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 20px;
+    color: #101828;
+    margin: 0;
+}
+
+.loan-admin-dashboard-payment-number {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 16px;
+    color: #6a7282;
+    margin: 0;
+}
+
+.loan-admin-dashboard-payment-due {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 16px;
+    color: #6a7282;
+    margin: 0;
+}
+
+.loan-admin-dashboard-payment-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.loan-admin-dashboard-payment-amount {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 24px;
+    color: #101828;
+    margin: 0;
+}
+
+.loan-admin-dashboard-payment-days {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 16px;
+    color: #6a7282;
+    margin: 0;
+}
+
+.loan-admin-dashboard-payment-days.overdue {
+    color: #dc2626;
+    font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .loan-admin-dashboard-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .loan-admin-dashboard-content {
+        margin-left: 0;
+        padding: 24px;
+    }
+
+    .loan-admin-dashboard-stats {
+        grid-template-columns: 1fr;
+    }
+}

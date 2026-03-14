@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import Sidebar from '../components/Sidebar';
 import '../styles/Donation.css';
 
-const API = process.env.REACT_APP_API_URL;
+import API from '../../utils/api';
 
 const fmt = (n) =>
   n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 0 })}` : '₱0';

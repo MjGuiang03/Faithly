@@ -18,19 +18,25 @@ router.post('/login',
   loginLimiter,
   validate([
     body('email').trim().notEmpty().withMessage('Email required'),
-    body('password').notEmpty().withMessage('Password required')
+    body('password').notEmpty().withMessage('Password required'),
+    body('role').optional().trim()
   ]),
   async (req, res) => {
     try {
-      const { email, password } = req.body;
+      const { email, password, role } = req.body;
       const admin = await admins.findOne({ email });
       if (!admin) return res.status(400).json({ message: 'Invalid credentials' });
+
+      // If a role was specified from the frontend, ensure it matches
+      if (role && admin.role !== role) {
+        return res.status(400).json({ message: 'Invalid credentials for this role' });
+      }
 
       const match = await bcrypt.compare(password, admin.passwordHash);
       if (!match) return res.status(400).json({ message: 'Invalid credentials' });
 
       const token = jwt.sign(
-        { email: admin.email, role: 'admin' },
+        { email: admin.email, role: admin.role },
         JWT_SECRET,
         { expiresIn: '2h', issuer: 'faithly-api', audience: 'faithly-admin' }
       );
@@ -50,7 +56,7 @@ router.post('/login',
 /* ================== GET ALL MEMBERS ================== */
 router.get('/members', authenticateAdmin, async (req, res) => {
   try {
-    const { search, status, branch } = req.query;
+    const { search, status, branch, isOfficer } = req.query;
     const page  = Math.max(1, parseInt(req.query.page)  || 1);
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 10));
     const skip  = (page - 1) * limit;
@@ -64,6 +70,9 @@ router.get('/members', authenticateAdmin, async (req, res) => {
       ];
     }
     if (branch && branch !== 'all') baseQuery.branch = branch;
+    // Officers = verified members (Level 2)
+    if (isOfficer === 'true')  baseQuery.verificationStatus = 'verified';
+    if (isOfficer === 'false') baseQuery.verificationStatus = { $ne: 'verified' };
 
     const allUsers   = await users.find(baseQuery).toArray();
     const now        = new Date();
@@ -91,6 +100,7 @@ router.get('/members', authenticateAdmin, async (req, res) => {
       active:       statsWithStatus.filter(u => u.status === 'active').length,
       inactive:     statsWithStatus.filter(u => u.status === 'inactive').length,
       deactivated:  statsWithStatus.filter(u => u.status === 'deactivated').length,
+      officers:     allForStats.filter(u => u.verificationStatus === 'verified').length,
       newThisMonth: allForStats.filter(u => {
         const created = new Date(u.createdAt);
         return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();

@@ -141,4 +141,36 @@ router.post('/verify-email-change', authenticateUser, async (req, res) => {
   }
 });
 
+/* ================== UPLOAD PROFILE PHOTO ================== */
+router.put('/upload-photo', authenticateUser, async (req, res) => {
+  try {
+    const email = req.user.email;
+    const { photoBase64 } = req.body;
+
+    if (!photoBase64) {
+      return res.status(400).json({ success: false, message: 'Photo is required' });
+    }
+
+    // Rough size check: base64 string length * (3/4) is approx bytes
+    const approximateBytes = photoBase64.length * 0.75;
+    if (approximateBytes > 2 * 1024 * 1024) { // 2MB limit
+      return res.status(400).json({ success: false, message: 'Image size exceeds 2MB limit' });
+    }
+
+    await users.updateOne(
+      { email },
+      { $set: { photoUrl: photoBase64 } }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile photo updated successfully',
+      photoUrl: photoBase64
+    });
+  } catch (err) {
+    console.error('Error uploading photo:', err);
+    res.status(500).json({ success: false, message: 'Failed to upload photo' });
+  }
+});
+
 export default router;

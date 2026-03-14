@@ -7,7 +7,7 @@ import Sidebar from '../components/Sidebar';
 import VerifyEmailModal from '../components/VerifyEmail';
 import VerificationModal from '../components/OfficerVerification';
 
-const API = process.env.REACT_APP_API_URL;
+import API from '../../utils/api';
 
 /* ─── Community options ──────────────────────────────────────────────── */
 const COMMUNITIES = {
@@ -101,6 +101,19 @@ export default function Settings() {
     if (!editForm.fullName.trim()) { setFormError('Full name is required.'); return; }
     setIsSaving(true);
     try {
+      let uploadedPhotoUrl = null;
+      if (editForm.photoFile && photoPreview) {
+        const token = localStorage.getItem('token');
+        const photoRes = await fetch(`${API}/api/upload-photo`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ photoBase64: photoPreview })
+        });
+        const photoData = await photoRes.json();
+        if (!photoRes.ok) throw new Error(photoData.message || 'Failed to upload photo');
+        uploadedPhotoUrl = photoData.photoUrl;
+      }
+
       const emailChanged = editForm.email.trim().toLowerCase() !== (user?.email || '').trim().toLowerCase();
       if (emailChanged) {
         if (!editForm.email.includes('@') || !editForm.email.includes('.')) {
@@ -116,6 +129,7 @@ export default function Settings() {
         fullName: editForm.fullName.trim(),
         phone:    editForm.phone.trim(),
         branch:   editForm.community,
+        photoUrl: uploadedPhotoUrl || profile?.photoUrl,
       });
       if (!result.success) { setFormError(result.message || 'Failed to update profile.'); return; }
       setIsEditing(false);

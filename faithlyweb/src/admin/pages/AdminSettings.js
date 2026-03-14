@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import '../styles/AdminSettings.css';
 
-const API = process.env.REACT_APP_API_URL;
+import API from '../../utils/api';
 
 export default function AdminSettings() {
   const navigate = useNavigate();
