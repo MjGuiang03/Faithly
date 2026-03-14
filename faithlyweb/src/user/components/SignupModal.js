@@ -241,29 +241,41 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
           {/* ROW 1: First Name + Last Name */}
           <div className="signup-form-row">
             <div className="signup-form-group">
-              <label className="signup-form-label">First Name:</label>
+              <label htmlFor="firstName" className="signup-form-label">First Name:</label>
               <div className="signup-input-wrapper">
                 <svg className="signup-input-icon" fill="none" viewBox="0 0 20 20">
                   <path d={svgPaths.p1beb9580} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                   <path d={svgPaths.p32ab0300} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 </svg>
-                <input name="firstName" value={formData.firstName} onChange={handleChange}
+                <input 
+                  id="firstName"
+                  name="firstName" 
+                  value={formData.firstName} 
+                  onChange={handleChange}
                   className={`signup-form-input${errors.firstName ? ' input-error' : ''}`}
-                  placeholder="Enter your first name" />
+                  placeholder="Enter your first name" 
+                  autoComplete="given-name"
+                />
               </div>
               {errors.firstName && <span className="signup-error-text">{errors.firstName}</span>}
             </div>
 
             <div className="signup-form-group">
-              <label className="signup-form-label">Last Name:</label>
+              <label htmlFor="lastName" className="signup-form-label">Last Name:</label>
               <div className="signup-input-wrapper">
                 <svg className="signup-input-icon" fill="none" viewBox="0 0 20 20">
                   <path d={svgPaths.p1beb9580} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                   <path d={svgPaths.p32ab0300} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 </svg>
-                <input name="lastName" value={formData.lastName} onChange={handleChange}
+                <input 
+                  id="lastName"
+                  name="lastName" 
+                  value={formData.lastName} 
+                  onChange={handleChange}
                   className={`signup-form-input${errors.lastName ? ' input-error' : ''}`}
-                  placeholder="Enter your last name" />
+                  placeholder="Enter your last name" 
+                  autoComplete="family-name"
+                />
               </div>
               {errors.lastName && <span className="signup-error-text">{errors.lastName}</span>}
             </div>
@@ -272,28 +284,42 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
           {/* ROW 2: Email + Phone */}
           <div className="signup-form-row">
             <div className="signup-form-group">
-              <label className="signup-form-label">Email:</label>
+              <label htmlFor="email" className="signup-form-label">Email:</label>
               <div className="signup-input-wrapper">
                 <svg className="signup-input-icon" fill="none" viewBox="0 0 20 20">
                   <path d={svgPaths.p24d83580} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                   <path d={svgPaths.pd919a80}  stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 </svg>
-                <input name="email" value={formData.email} onChange={handleChange}
+                <input 
+                  id="email"
+                  name="email" 
+                  type="email"
+                  value={formData.email} 
+                  onChange={handleChange}
                   className={`signup-form-input${errors.email ? ' input-error' : ''}`}
-                  placeholder="your.email@example.com" />
+                  placeholder="your.email@example.com" 
+                  autoComplete="email"
+                />
               </div>
               {errors.email && <span className="signup-error-text">{errors.email}</span>}
             </div>
 
             <div className="signup-form-group">
-              <label className="signup-form-label">Phone Number:</label>
+              <label htmlFor="phone" className="signup-form-label">Phone Number:</label>
               <div className="signup-input-wrapper">
                 <svg className="signup-input-icon" fill="none" viewBox="0 0 20 20">
                   <path d={svgPaths.p24c7c480} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 </svg>
-                <input name="phone" value={`+63${formData.phone}`} onChange={handleChange}
+                <input 
+                  id="phone"
+                  name="phone" 
+                  type="tel"
+                  value={`+63${formData.phone}`} 
+                  onChange={handleChange}
                   className={`signup-form-input${errors.phone ? ' input-error' : ''}`}
-                  placeholder="+63 00 000 0000" />
+                  placeholder="+63 00 000 0000" 
+                  autoComplete="tel"
+                />
               </div>
               {errors.phone && <span className="signup-error-text">{errors.phone}</span>}
             </div>
@@ -320,7 +346,7 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
             </div>
 
             <div className="signup-form-group">
-              <label className="signup-form-label">
+              <label htmlFor="birthday" className="signup-form-label">
                 Birthday:
                 {calculatedAge !== null && (
                   <span className="signup-age-badge">(Age: {calculatedAge})</span>
@@ -333,12 +359,19 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
                   <path d={svgPaths.p1da67b80} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                   <path d="M2.5 8.33333H17.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 </svg>
-                <input type="date" name="birthday" value={formData.birthday} onChange={handleChange}
+                <input 
+                  id="birthday"
+                  type="date" 
+                  name="birthday" 
+                  value={formData.birthday} 
+                  onChange={handleChange}
                   onKeyDown={e => e.preventDefault()}
                   min={minBirthDate.toISOString().split('T')[0]}
                   max={maxBirthDate.toISOString().split('T')[0]}
                   className={`signup-form-input${errors.birthday ? ' input-error' : ''}`}
-                  placeholder="MM-DD-YYYY" />
+                  placeholder="MM-DD-YYYY" 
+                  autoComplete="bday"
+                />
               </div>
               {errors.birthday && <span className="signup-error-text">{errors.birthday}</span>}
             </div>
@@ -362,16 +395,21 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
           <div className="password-section">
             <div className="password-fields">
               <div className="signup-form-group">
-                <label className="signup-form-label">Password:</label>
+                <label htmlFor="password" className="signup-form-label">Password:</label>
                 <div className="signup-input-wrapper">
                   <svg className="signup-input-icon" fill="none" viewBox="0 0 20 20">
                     <path d={svgPaths.p2566d000} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                     <path d={svgPaths.p1bf79e00} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                   </svg>
-                  <input type={showPassword ? 'text' : 'password'} name="password"
+                  <input 
+                    id="password"
+                    type={showPassword ? 'text' : 'password'} 
+                    name="password"
                     value={formData.password} onChange={handleChange}
                     className={`signup-form-input${hasPasswordErrors ? ' input-error' : ''}`}
-                    placeholder="Create a password" />
+                    placeholder="Create a password" 
+                    autoComplete="new-password"
+                  />
                   <button type="button" onClick={() => setShowPassword(p => !p)} className="signup-password-toggle">
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -384,10 +422,15 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
                     <path d={svgPaths.p2566d000} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                     <path d={svgPaths.p1bf79e00} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                   </svg>
-                  <input type={showConfirmPassword ? 'text' : 'password'} name="confirmPassword"
+                  <input 
+                    id="confirmPassword"
+                    type={showConfirmPassword ? 'text' : 'password'} 
+                    name="confirmPassword"
                     value={formData.confirmPassword} onChange={handleChange}
                     className={`signup-form-input${errors.confirmPassword ? ' input-error' : ''}`}
-                    placeholder="Confirm your password" />
+                    placeholder="Confirm your password" 
+                    autoComplete="new-password"
+                  />
                   <button type="button" onClick={() => setShowConfirmPassword(p => !p)} className="signup-password-toggle">
                     {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>

@@ -33,7 +33,8 @@ export const admins        = db.collection('admins');
 export const loans         = db.collection('loans');
 export const donations     = db.collection('donations');
 export const attendance    = db.collection('attendance');
-export const verifications = db.collection('verifications');
+export const verifications       = db.collection('verifications');
+export const pendingRegistrations = db.collection('pending_registrations');
 
 /* ================== DATABASE INDEXES ================== */
 await users.createIndex({ email: 1 }, { unique: true });
@@ -43,6 +44,10 @@ await loans.createIndex({ loanId: 1 });
 await attendance.createIndex({ email: 1 });
 await verifications.createIndex({ email: 1 });
 await otps.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+
+// TTL index for pending registrations (auto-delete if not verified within 24 hours)
+await pendingRegistrations.createIndex({ createdAt: 1 }, { expireAfterSeconds: 86400 });
+await pendingRegistrations.createIndex({ email: 1 }, { unique: true });
 
 /* ================== CREATE DEFAULT ADMINS ================== */
 const adminSeeds = [

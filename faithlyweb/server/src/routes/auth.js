@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { users, otps } from '../config/db.js';
+import { users, otps, pendingRegistrations } from '../config/db.js';
 import { validate } from '../middleware/validate.js';
 import { loginLimiter, registerLimiter, otpLimiter, resendOtpLimiter } from '../middleware/rateLimiter.js';
 import { authenticateUser } from '../middleware/auth.js';
@@ -44,20 +44,23 @@ router.post('/register',
       console.log('📝 Registration payload:', req.body);
       const { email, password, fullName, phone, branch, position, gender, birthday } = req.body;
 
-      const existing = await users.findOne({ email });
-      if (existing) {
-        if (existing.isDeleted) {
+      const existingUser = await users.findOne({ email });
+      if (existingUser) {
+        if (existingUser.isDeleted) {
           return res.status(400).json({
             message: 'This email was previously registered and deleted. Please use a different email.'
           });
         }
         return res.status(400).json({
-          message: 'Unable to complete registration. Please try a different email.'
+          message: 'Unable to complete registration. This email is already registered.'
         });
       }
 
+      // Check if there's an existing pending registration
+      await pendingRegistrations.deleteOne({ email });
+
       const passwordHash = await bcrypt.hash(password, 10);
-      await users.insertOne({
+      await pendingRegistrations.insertOne({
         email, passwordHash, fullName, phone, branch, position, gender, birthday,
         isVerified: false, failedLoginAttempts: 0, lockUntil: null,
         isPermanentlyLocked: false, createdAt: new Date()
@@ -90,7 +93,24 @@ router.post('/verify-otp',
 
       if (!record) return res.status(400).json({ message: 'Invalid or expired OTP' });
 
-      await users.updateOne({ email }, { $set: { isVerified: true } });
+      // Find from pending
+      const pendingData = await pendingRegistrations.findOne({ email });
+      if (!pendingData) {
+        // Double check if already verified moved to users
+        const alreadyVerified = await users.findOne({ email });
+        if (alreadyVerified) return res.json({ message: 'Email already verified' });
+        return res.status(400).json({ message: 'No registration data found for this email' });
+      }
+
+      // Move to users
+      await users.insertOne({
+        ...pendingData,
+        isVerified: true,
+        verifiedAt: new Date()
+      });
+
+      // Cleanup
+      await pendingRegistrations.deleteOne({ email });
       await otps.deleteMany({ email, type: 'verify' });
 
       res.json({ message: 'Email verified successfully' });
@@ -108,9 +128,12 @@ router.post('/resend-otp',
   async (req, res) => {
     try {
       const { email } = req.body;
+      
       const user = await users.findOne({ email });
-      if (!user) return res.status(400).json({ message: 'Invalid request' });
-      if (user.isVerified) return res.status(400).json({ message: 'Email already verified' });
+      if (user && user.isVerified) return res.status(400).json({ message: 'Email already verified' });
+
+      const pending = await pendingRegistrations.findOne({ email });
+      if (!pending) return res.status(400).json({ message: 'Invalid request or registration expired' });
 
       const otp = generateOTP();
       await otps.deleteMany({ email, type: 'verify' });
