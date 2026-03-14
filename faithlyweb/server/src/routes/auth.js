@@ -75,9 +75,16 @@ router.post('/register',
       await otps.insertOne({ email, otp, type: 'verify', expiresAt: new Date(Date.now() + 15 * 60 * 1000) });
       console.log('✅ OTP record saved.');
 
-      await sendOTP(email, otp);
-      console.log('✅ OTP email sent successfully.');
-      res.json({ message: 'Signup successful. OTP sent to email.' });
+      // Send email asynchronously so it doesn't block the response.
+      // If Render's free tier blocks the SMTP connection, the user can still proceed 
+      // if the admin shares the fallback OTP logged in the console.
+      sendOTP(email, otp).then(() => {
+        console.log('✅ OTP email sent successfully.');
+      }).catch(err => {
+        console.error('❌ BACKGROUND EMAIL ERROR:', err.message);
+      });
+
+      res.json({ message: 'Signup successful. Processing email...' });
     } catch (err) {
       console.error('❌ SIGNUP ERROR:', err);
       res.status(500).json({ 
@@ -148,8 +155,14 @@ router.post('/resend-otp',
       await otps.deleteMany({ email, type: 'verify' });
       await otps.insertOne({ email, otp, type: 'verify', expiresAt: new Date(Date.now() + 15 * 60 * 1000) });
 
-      await sendOTP(email, otp);
-      res.json({ message: 'OTP resent successfully' });
+      // Send asynchronously
+      sendOTP(email, otp).then(() => {
+        console.log('✅ OTP resent successfully.');
+      }).catch(err => {
+        console.error('❌ BACKGROUND EMAIL ERROR:', err.message);
+      });
+
+      res.json({ message: 'OTP resent successfully. Check your email.' });
     } catch (err) {
       console.error(err);
       res.status(500).json({ message: 'Failed to resend OTP' });

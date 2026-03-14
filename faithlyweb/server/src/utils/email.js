@@ -25,6 +25,13 @@ export const generateOTP = () =>
   Math.floor(100000 + Math.random() * 900000).toString();
 
 export const sendOTP = async (email, otp) => {
+  // EMERGENCY FALLBACK: Since Render's free tier frequently blocks SMTP,
+  // we log the OTP directly to the console so the admin can read it
+  // and share it with the user if the email fails to send.
+  console.log(`\n\n🚨 ================================== 🚨`);
+  console.log(`📩 FALLBACK OTP FOR ${email}: [ ${otp} ]`);
+  console.log(`🚨 ================================== 🚨\n\n`);
+
   await transporter.sendMail({
     from: `"Faithly" <${process.env.EMAIL_USER}>`,
     to: email,
