@@ -22,7 +22,6 @@ import Settings from './user/pages/Settings';
 import AdminLogin from './admin/pages/AdminLogin';
 import AdminLayout from './admin/pages/AdminLayout';
 import AdminDashboard from './admin/pages/AdminDashboard';
-import AdminLoanManagement from './admin/pages/AdminLoanManagement';
 import AdminMembers from './admin/pages/AdminMembers';
 import AdminDonations from './admin/pages/AdminDonations';
 import AdminAttendance from './admin/pages/AdminAttendance';

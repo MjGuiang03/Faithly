@@ -4,12 +4,10 @@ import { toast } from 'sonner';
 import '../styles/AdminBranches.css';
 import svgPaths from "../../imports/svg-icons";
 
-import API from '../../utils/api';
-
 export default function AdminBranches() {
   const navigate = useNavigate();
 
-  const [stats, setStats] = useState({
+  const [stats] = useState({
     totalBranches: 4,
     totalMembers: 4347,
     totalServices: 164,
@@ -64,12 +62,11 @@ export default function AdminBranches() {
       return;
     }
     fetchBranches();
-  }, [navigate]);
+  }, [navigate, fetchBranches]);
 
-  const fetchBranches = async () => {
+  const fetchBranches = useCallback(async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('adminToken');
       
       // In production, fetch from API:
       // const res = await fetch(`${API}/api/admin/branches`, {
@@ -84,7 +81,7 @@ export default function AdminBranches() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   return (
     <div className="admin-branch-main">

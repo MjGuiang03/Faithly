@@ -21,8 +21,6 @@ import {
 import '../styles/AdminReports.css';
 import svgPaths from "../../imports/svg-icons";
 
-import API from '../../utils/api';
-
 export default function AdminReports() {
   const navigate = useNavigate();
 
@@ -98,16 +96,14 @@ export default function AdminReports() {
       return;
     }
     fetchReports();
-  }, [navigate]);
+  }, [navigate, fetchReports]);
 
-  const fetchReports = async () => {
+  const fetchReports = useCallback(async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('adminToken');
-      
       // In production, fetch from API:
       // const res = await fetch(`${API}/api/admin/reports`, {
-      //   headers: { Authorization: `Bearer ${token}` }
+      //   headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
       // });
       // const data = await res.json();
       
@@ -116,7 +112,7 @@ export default function AdminReports() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   return (
     <div className="admin-reports-main">

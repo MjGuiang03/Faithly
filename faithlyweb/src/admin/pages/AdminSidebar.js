@@ -50,17 +50,18 @@ export default function AdminSidebar() {
     calcUnread();
 
     const onUpdate = () => calcUnread();
-    window.addEventListener('admin-notif-read-update', onUpdate);
-    window.addEventListener('storage', (e) => {
+    const onStorage = (e) => {
       if (e.key === ADMIN_READ_KEY) calcUnread();
-    });
+    };
+    window.addEventListener('admin-notif-read-update', onUpdate);
+    window.addEventListener('storage', onStorage);
     
     // Poll every 30 seconds for live updates
     const intervalId = setInterval(calcUnread, 30000);
     
     return () => {
       window.removeEventListener('admin-notif-read-update', onUpdate);
-      window.removeEventListener('storage', calcUnread);
+      window.removeEventListener('storage', onStorage);
       clearInterval(intervalId);
     };
   }, []);

@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import '../styles/AdminSettings.css';
 
-import API from '../../utils/api';
-
 export default function AdminSettings() {
   const navigate = useNavigate();
   const [settings, setSettings] = useState({

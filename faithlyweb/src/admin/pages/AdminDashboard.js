@@ -35,12 +35,10 @@ export default function AdminDashboard() {
   const token = localStorage.getItem('adminToken');
 
   useEffect(() => {
-    const adminEmail = localStorage.getItem('adminEmail');
-    if (!adminEmail) { navigate('/admin/login'); return; }
     fetchAll();
-  }, [navigate]);
+  }, [fetchAll]);
 
-  const fetchAll = async () => {
+  const fetchAll = useCallback(async () => {
     setLoading(true);
     const headers = { Authorization: `Bearer ${token}` };
     try {
@@ -148,7 +146,7 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token, navigate]);
 
   const dash = (v) => loading ? '—' : v;
 

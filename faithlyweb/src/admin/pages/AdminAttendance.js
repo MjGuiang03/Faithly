@@ -4,8 +4,6 @@ import { toast } from 'sonner';
 import '../styles/AdminAttendance.css';
 import svgPaths from "../../imports/svg-icons";
 
-import API from '../../utils/api';
-
 /* ═══════════════════════════════════════════════════════════════════════════
    ADD SERVICE MODAL
 ═══════════════════════════════════════════════════════════════════════════ */
@@ -47,7 +45,6 @@ function AddServiceModal({ branch, onClose, onSave }) {
 
     setSaving(true);
     try {
-      const token = localStorage.getItem('adminToken');
       
       // In production, call API:
       // const res = await fetch(`${API}/api/admin/attendance/add-service`, {
@@ -147,7 +144,7 @@ function AddServiceModal({ branch, onClose, onSave }) {
 export default function AdminAttendance() {
   const navigate = useNavigate();
 
-  const [stats, setStats] = useState({
+  const [stats] = useState({
     totalToday: 2915,
     servicesThisWeek: 24,
     avgPerService: 1087
@@ -177,12 +174,11 @@ export default function AdminAttendance() {
       return;
     }
     fetchAttendance();
-  }, [navigate]);
+  }, [navigate, fetchAttendance]);
 
-  const fetchAttendance = async () => {
+  const fetchAttendance = useCallback(async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('adminToken');
       
       // In production, fetch from API:
       // const res = await fetch(`${API}/api/admin/attendance`, {
@@ -194,13 +190,12 @@ export default function AdminAttendance() {
       // setStats(data.stats);
       // setBranches(data.branches);
       // setRecentServices(data.recentServices);
-      
     } catch (err) {
       toast.error('Failed to fetch attendance data');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const handleAddService = (branchName) => {
     setSelectedBranch(branchName);
