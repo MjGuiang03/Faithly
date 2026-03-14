@@ -24,7 +24,7 @@ const STATUS_CLASS = {
 
 export default function Loans() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  useAuth();
 
   /* ── modal visibility ── */
   const [isLoanModalOpen,    setIsLoanModalOpen]    = useState(false);

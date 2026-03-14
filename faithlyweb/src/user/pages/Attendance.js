@@ -9,7 +9,7 @@ const PAGE_SIZE = 5;
 
 export default function Attendance() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  useAuth();
 
   const [attendanceData, setAttendanceData] = useState([]);
   const [stats,          setStats]          = useState({ total: 0, thisMonth: 0 });
