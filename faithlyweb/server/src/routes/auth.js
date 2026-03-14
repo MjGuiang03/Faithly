@@ -56,8 +56,11 @@ router.post('/register',
         });
       }
 
+      console.log('✅ Duplicate check passed.');
+
       // Check if there's an existing pending registration
       await pendingRegistrations.deleteOne({ email });
+      console.log('✅ Old pending registration cleared.');
 
       const passwordHash = await bcrypt.hash(password, 10);
       await pendingRegistrations.insertOne({
@@ -65,16 +68,22 @@ router.post('/register',
         isVerified: false, failedLoginAttempts: 0, lockUntil: null,
         isPermanentlyLocked: false, createdAt: new Date()
       });
+      console.log('✅ New pending registration saved.');
 
       const otp = generateOTP();
       await otps.deleteMany({ email, type: 'verify' });
       await otps.insertOne({ email, otp, type: 'verify', expiresAt: new Date(Date.now() + 15 * 60 * 1000) });
+      console.log('✅ OTP record saved.');
 
       await sendOTP(email, otp);
+      console.log('✅ OTP email sent successfully.');
       res.json({ message: 'Signup successful. OTP sent to email.' });
     } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: 'Server error during signup' });
+      console.error('❌ SIGNUP ERROR:', err);
+      res.status(500).json({ 
+        message: 'Server error during signup',
+        details: err.message
+      });
     }
   }
 );
