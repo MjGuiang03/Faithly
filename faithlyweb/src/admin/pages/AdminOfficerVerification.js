@@ -284,12 +284,6 @@ export default function AdminOfficerVerification() {
 
   const token = localStorage.getItem('adminToken');
 
-  useEffect(() => {
-    const adminEmail = localStorage.getItem('adminEmail');
-    if (!adminEmail) { navigate('/admin/login'); return; }
-    fetchVerifications();
-  }, [navigate, fetchVerifications]);
-
   const fetchVerifications = useCallback(async () => {
     setLoading(true);
     try {
@@ -301,15 +295,21 @@ export default function AdminOfficerVerification() {
         setRequests(data.verifications);
         setStats(data.stats);
       } else {
-        toast.error('Failed to load verifications');
+        // toast.error('Failed to load verifications');
       }
     } catch (err) {
       console.error(err);
-      toast.error('Failed to load verifications');
+      // toast.error('Failed to load verifications');
     } finally {
       setLoading(false);
     }
   }, [token]);
+
+  useEffect(() => {
+    const adminEmail = localStorage.getItem('adminEmail');
+    if (!adminEmail) { navigate('/admin/login'); return; }
+    fetchVerifications();
+  }, [navigate, fetchVerifications]);
 
   const handleApprove = async () => {
     await fetchVerifications();

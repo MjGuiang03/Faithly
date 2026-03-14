@@ -43,6 +43,7 @@ export default function VerifyEmailModal({ isOpen, onClose, email, onVerify, onR
     return () => {
       document.body.style.overflow = '';
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   const handleChange = (index, value) => {

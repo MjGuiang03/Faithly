@@ -1,4 +1,3 @@
-import { useState, useMemo } from 'react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import LoanAdminSidebar from './loanAdminSidebar';
 import '../styles/loanAdminReports.css';

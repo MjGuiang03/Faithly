@@ -6,6 +6,7 @@ import '../styles/secretaryAdminReports.css';
 import API from '../../utils/api';
 
 export default function SecretaryLoanReports() {
+    // eslint-disable-next-line no-unused-vars
     const [loading, setLoading] = useState(false);
     const [stats, setStats] = useState({
         totalReceived: 0,

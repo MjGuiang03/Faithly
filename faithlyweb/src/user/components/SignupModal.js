@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import API from '../../utils/api';
-import { useNavigate } from 'react-router';
 import { Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import svgPaths from "../../imports/svg-icons";

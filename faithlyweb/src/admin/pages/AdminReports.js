@@ -87,6 +87,7 @@ export default function AdminReports() {
     { month: 'Jun', attendance: 1100, donations: 900 }
   ]);
 
+  // eslint-disable-next-line no-unused-vars
   const [loading, setLoading] = useState(false);
 
   const fetchReports = useCallback(async () => {
@@ -104,6 +105,12 @@ export default function AdminReports() {
       setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem('adminToken');
+    if (!token) { navigate('/admin/login'); return; }
+    fetchReports();
+  }, [navigate, fetchReports]);
 
   return (
     <div className="admin-reports-main">

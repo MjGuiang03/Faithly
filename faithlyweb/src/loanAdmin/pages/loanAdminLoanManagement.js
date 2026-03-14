@@ -71,7 +71,7 @@ export default function LoanAdminLoanManagement() {
     useEffect(() => {
         const t = setTimeout(() => fetchLoans(), 400);
         return () => clearTimeout(t);
-    }, [searchQuery]);
+    }, [searchQuery, fetchLoans]);
 
     /* ── Approve ── */
     const handleApprove = (loan) => {

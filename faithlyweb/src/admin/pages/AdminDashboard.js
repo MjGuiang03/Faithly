@@ -141,7 +141,16 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [navigate]);
+  }, []); // fixed dependency array
+
+  useEffect(() => {
+    const token = localStorage.getItem('adminToken');
+    if (!token) {
+      navigate('/admin/login');
+      return;
+    }
+    fetchAll();
+  }, [navigate, fetchAll]);
 
   const dash = (v) => loading ? '—' : v;
 

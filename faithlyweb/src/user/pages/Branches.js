@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 import svgPaths from '../../imports/svg-icons';
 import '../styles/Branches.css';
