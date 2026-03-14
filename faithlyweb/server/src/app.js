@@ -26,19 +26,10 @@ const allowedOrigins = [
 ].filter(Boolean);
 
 app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true);
-    
-    // allow all vercel domains
-    if (origin.endsWith('.vercel.app')) return callback(null, true);
-
-    if (allowedOrigins.indexOf(origin) === -1) {
-      console.warn(`CORS blocked request from origin: ${origin}`);
-      return callback(new Error('CORS Policy: Access from this origin is not allowed'), false);
-    }
-    return callback(null, true);
-  },
-  credentials: true
+  origin: true, // Allow all origins during high-priority debugging
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 /* ================== GLOBAL MIDDLEWARE ================== */

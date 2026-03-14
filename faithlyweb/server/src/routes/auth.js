@@ -41,6 +41,7 @@ router.post('/register',
   ]),
   async (req, res) => {
     try {
+      console.log('📝 Registration payload:', req.body);
       const { email, password, fullName, phone, branch, position, gender, birthday } = req.body;
 
       const existing = await users.findOne({ email });
