@@ -7,15 +7,15 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 export const generateOTP = () =>
   Math.floor(100000 + Math.random() * 900000).toString();
 
-export const sendOTP = async (email, otp) => {
+export const sendOTP = async (email, otp, subject = 'Your Email Verification Code', title = 'Your OTP Code') => {
   try {
     const data = await resend.emails.send({
       from: 'Faithly <onboarding@resend.dev>', // Use this test email until you buy a custom domain
       to: email,
-      subject: 'Your Email Verification Code',
-      html: `<h2>Your OTP Code</h2><h1>${otp}</h1><p>Expires in 15 minutes</p>`
+      subject: subject,
+      html: `<h2>${title}</h2><h1>${otp}</h1><p>Expires in 15 minutes</p>`
     });
-    console.log('✅ Resend Email sent successfully:', data);
+    console.log(`✅ Resend Email [${subject}] sent successfully:`, data);
   } catch (error) {
     console.error('❌ Resend Error:', error);
   }

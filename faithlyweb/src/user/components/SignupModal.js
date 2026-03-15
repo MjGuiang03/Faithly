@@ -74,16 +74,8 @@ const validateEmailAdvanced = (email) => {
 
 /* ─── Field Validators ──────────────────────────────────────── */
 const validators = {
-  firstName(value) {
-    if (!value?.trim()) return 'First name is required';
-    if (value.trim().length < 2) return 'At least 2 characters required';
-    if (value.length > 30) return 'Max 30 characters';
-    if (!nameRegex.test(value)) return 'Letters, spaces, hyphens, or apostrophes only';
-    if (/\s{2,}/.test(value)) return 'No consecutive spaces allowed';
-    return '';
-  },
-  lastName(value) {
-    if (!value?.trim()) return 'Last name is required';
+  name(value, fieldLabel) {
+    if (!value?.trim()) return `${fieldLabel} is required`;
     if (value.trim().length < 2) return 'At least 2 characters required';
     if (value.length > 30) return 'Max 30 characters';
     if (!nameRegex.test(value)) return 'Letters, spaces, hyphens, or apostrophes only';
@@ -214,6 +206,8 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
       error = validators.password(value);
     } else if (name === 'confirmPassword') {
       error = validators.confirmPassword(value, password);
+    } else if (name === 'firstName' || name === 'lastName') {
+      error = validators.name(value, name === 'firstName' ? 'First name' : 'Last name');
     } else if (validators[name]) {
       error = validators[name](value);
     }
@@ -230,7 +224,7 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
       sanitized = value.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ\s'-]/g, '').slice(0, 30);
     }
     if (name === 'phone') {
-      sanitized = value.replace(/^\+63/, '').replace(/\D/g, '').slice(0, 10);
+      sanitized = value.replace(/\D/g, '').slice(0, 10);
     }
     if (name === 'birthday' && sanitized) {
       const age = calculateAge(sanitized);
@@ -394,14 +388,17 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
                 <svg className="signup-input-icon" fill="none" viewBox="0 0 20 20">
                   <path d={svgPaths.p24c7c480} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 </svg>
-                <input
-                  id="phone" name="phone" type="tel"
-                  value={`+63${formData.phone}`}
-                  onChange={handleChange} onBlur={handleBlur}
-                  className={`signup-form-input${touched.phone && errors.phone ? ' input-error' : ''}`}
-                  placeholder="+63 00 000 0000"
-                  autoComplete="tel"
-                />
+                <div className="signup-phone-input-container">
+                  <span className="signup-phone-prefix">+63</span>
+                  <input
+                    id="phone" name="phone" type="tel"
+                    value={formData.phone}
+                    onChange={handleChange} onBlur={handleBlur}
+                    className={`signup-form-input signup-phone-input${touched.phone && errors.phone ? ' input-error' : ''}`}
+                    placeholder="917 123 4567"
+                    autoComplete="tel"
+                  />
+                </div>
               </div>
               {touched.phone && errors.phone && (
                 <span className="signup-error-text">{errors.phone}</span>
@@ -572,8 +569,19 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
 
           {/* TERMS */}
           <div className="signup-checkbox-wrapper">
-            <input type="checkbox" checked={isAllAgreed} onChange={() => { }}
-              onClick={e => e.preventDefault()} className="signup-checkbox" readOnly />
+            <input
+              type="checkbox"
+              checked={isAllAgreed}
+              onChange={() => { }}
+              onClick={(e) => {
+                e.preventDefault();
+                if (!isAllAgreed) {
+                  toast.info('Please read and agree to the Terms and Privacy Policy below to proceed.');
+                }
+              }}
+              className="signup-checkbox"
+              style={{ cursor: 'pointer', pointerEvents: 'auto' }}
+            />
             <label className="signup-checkbox-label">
               I agree to the{' '}
               <button type="button" onClick={() => setShowTerms(true)} className="signup-link">Terms and Conditions</button>
@@ -592,8 +600,26 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
         {showTerms && (
           <div className="policy-modal-overlay" onClick={() => setShowTerms(false)}>
             <div className="policy-modal-content" onClick={e => e.stopPropagation()}>
-              <h3>Terms & Conditions</h3>
-              <p>Please read and agree to the terms and conditions...</p>
+              <div className="policy-modal-header">
+                <h3>Terms & Conditions</h3>
+                <button className="policy-close-x" onClick={() => setShowTerms(false)}>&times;</button>
+              </div>
+              <div className="policy-modal-body">
+                <ol className="policy-list">
+                  <li><strong>Acceptance of Terms</strong><br />By accessing and using FaithLy, a loan management system developed for the Philippine United Apostolic Church, you agree to comply with and be bound by these Terms and Conditions. If you do not agree, you must discontinue use of the system.</li>
+                  <li><strong>Purpose of the System</strong><br />FaithLy is designed to facilitate transparent and accountable management of church-related loan applications, approvals, payments, and member records in support of responsible financial stewardship.</li>
+                  <li><strong>Authorized Users</strong><br />Only registered and approved church members, officers, and administrators are permitted to access FaithLy. Access rights are assigned based on user roles defined by church authorities.</li>
+                  <li><strong>User Responsibilities</strong><br />Users are responsible for maintaining the confidentiality of their login credentials and for all activities performed under their accounts. Any unauthorized use must be reported immediately.</li>
+                  <li><strong>Loan Application and Approval</strong><br />Submitting a loan application through FaithLy does not guarantee approval. All loan requests are subject to review, verification, and approval by authorized church officers in accordance with church policies.</li>
+                  <li><strong>Loan Terms, Interest, and Penalties</strong><br />Approved loans are governed by agreed terms, including loan amount, repayment schedule, interest rates, and applicable penalties for late payments. These details are displayed within the system and serve as the official reference.</li>
+                  <li><strong>Payments and Monitoring</strong><br />Borrowers are responsible for making payments on or before the due dates shown in FaithLy. The system provides automated monitoring of balances, payment history, and loan status for reference purposes.</li>
+                  <li><strong>AI Assistance Disclaimer</strong><br />FaithLy may include an AI-powered chatbot (GuideLy) to assist with inquiries related to loan status, payment schedules, and system navigation. The chatbot provides informational support only and does not replace official decisions made by church authorities.</li>
+                  <li><strong>Prohibited Use</strong><br />Users shall not misuse the system, attempt unauthorized access, manipulate records, or engage in activities that compromise the security or integrity of FaithLy.</li>
+                  <li><strong>Termination of Access</strong><br />The church reserves the right to suspend or terminate access to FaithLy for violations of these Terms and Conditions or other valid administrative reasons.</li>
+                  <li><strong>Limitation of Liability</strong><br />FaithLy is provided for administrative support purposes only. The church shall not be held liable for any direct or indirect damages arising from the use or inability to use the system.</li>
+                  <li><strong>Governing Principles</strong><br />FaithLy operates under the principles of faith, integrity, transparency, accountability, and responsible stewardship in alignment with church values.</li>
+                </ol>
+              </div>
               <button onClick={() => { setAgreeTerms(true); setShowTerms(false); }} className="policy-modal-button">Agree</button>
             </div>
           </div>
@@ -603,8 +629,23 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
         {showPrivacy && (
           <div className="policy-modal-overlay" onClick={() => setShowPrivacy(false)}>
             <div className="policy-modal-content" onClick={e => e.stopPropagation()}>
-              <h3>Privacy Policy</h3>
-              <p>Please read and agree to the privacy policy...</p>
+              <div className="policy-modal-header">
+                <h3>Privacy Policy</h3>
+                <button className="policy-close-x" onClick={() => setShowPrivacy(false)}>&times;</button>
+              </div>
+              <div className="policy-modal-body">
+                <ol className="policy-list">
+                  <li><strong>Data Collection</strong><br />FaithLy collects personal information such as names, contact details, loan records, payment history, and system usage data necessary for loan management and administrative purposes.</li>
+                  <li><strong>Use of Information</strong><br />Collected information is used solely to process loan applications, monitor payments, maintain records, provide system support, and improve FaithLy services.</li>
+                  <li><strong>Data Protection and Security</strong><br />FaithLy implements reasonable administrative, technical, and organizational measures to protect personal data against unauthorized access, alteration, disclosure, or loss.</li>
+                  <li><strong>Data Privacy Compliance</strong><br />All personal data is processed in accordance with the Data Privacy Act of 2012 (Republic Act No. 10173) and its implementing rules and regulations.</li>
+                  <li><strong>Data Sharing</strong><br />Personal information shall not be shared with third parties except when required by law or authorized by church administration for official purposes.</li>
+                  <li><strong>User Rights</strong><br />Users have the right to access, correct, and request updates to their personal information in accordance with applicable data privacy laws.</li>
+                  <li><strong>Data Retention</strong><br />Personal data is retained only for as long as necessary to fulfill the purposes of the system or as required by church policy and applicable laws.</li>
+                  <li><strong>Changes to the Privacy Policy</strong><br />The church reserves the right to update this Privacy Policy as needed. Users will be informed of significant changes, and continued use of FaithLy constitutes acceptance of the updated policy.</li>
+                  <li><strong>Contact Information</strong><br />For questions or concerns regarding these Terms and Conditions or the Privacy Policy, users may contact the church administration through official communication channels.</li>
+                </ol>
+              </div>
               <button onClick={() => { setAgreePrivacy(true); setShowPrivacy(false); }} className="policy-modal-button">Agree</button>
             </div>
           </div>

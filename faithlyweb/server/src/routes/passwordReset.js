@@ -7,7 +7,7 @@ dotenv.config();
 import { users, otps } from '../config/db.js';
 import { validate } from '../middleware/validate.js';
 import { resetRequestLimiter, resetVerifyLimiter, resetUpdateLimiter } from '../middleware/rateLimiter.js';
-import { transporter, generateOTP } from '../utils/email.js';
+import { sendOTP, generateOTP } from '../utils/email.js';
 
 const router = Router();
 
@@ -25,12 +25,7 @@ router.post('/reset-password-request',
       await otps.deleteMany({ email, type: 'reset-password' });
       await otps.insertOne({ email, otp, type: 'reset-password', expiresAt: new Date(Date.now() + 15 * 60 * 1000) });
 
-      await transporter.sendMail({
-        from: `"Faithly" <${process.env.EMAIL_USER}>`,
-        to: email,
-        subject: 'Password Reset Code',
-        html: `<h2>Password Reset OTP</h2><h1>${otp}</h1><p>This code expires in 15 minutes.</p>`
-      });
+      await sendOTP(email, otp, 'Password Reset Code', 'Password Reset OTP');
 
       res.json({ message: 'OTP sent to your email' });
     } catch (err) {
