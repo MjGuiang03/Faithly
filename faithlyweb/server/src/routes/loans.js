@@ -42,17 +42,32 @@ router.post('/loans/apply', authenticateUser, async (req, res) => {
 router.get('/loans/my-loans', authenticateUser, async (req, res) => {
   try {
     const email = req.user.email;
-    const userLoans = await loans.find({ email }).sort({ appliedDate: -1 }).toArray();
+    const page  = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 1000; // Default to "all" if limit not provided
+    const skip  = (page - 1) * limit;
 
-    const totalBorrowed    = userLoans
+    const findQuery = { email };
+    const totalCount = await loans.countDocuments(findQuery);
+    const userLoans = await loans.find(findQuery)
+      .sort({ appliedDate: -1 })
+      .skip(skip)
+      .limit(limit)
+      .toArray();
+
+    // Stats still need all loans to calculate totals accurately
+    const allUserLoans = await loans.find(findQuery).toArray();
+    const totalBorrowed    = allUserLoans
       .filter(l => l.disbursed || l.status === 'completed')
       .reduce((sum, l) => sum + l.amount, 0);
-    const activeLoans      = userLoans.filter(l => l.status === 'active');
+    const activeLoans      = allUserLoans.filter(l => l.status === 'active');
     const remainingBalance = activeLoans.reduce((sum, l) => sum + (l.remainingBalance || l.amount), 0);
 
     res.status(200).json({
       success: true,
       loans: userLoans,
+      totalCount,
+      totalPages: Math.ceil(totalCount / limit),
+      currentPage: page,
       stats: { totalBorrowed, remainingBalance, activeCount: activeLoans.length }
     });
   } catch (err) {

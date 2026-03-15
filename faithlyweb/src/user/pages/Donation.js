@@ -30,7 +30,7 @@ const GCashIcon = () => (
   <img
     src={gcashLogo}
     alt="GCash"
-    style={{ width: 50, height: 20, objectFit: 'contain' }}
+    style={{ width: 60, height: 30, objectFit: 'contain' }}
   />
 );
 
@@ -38,7 +38,7 @@ const BankIcon = () => (
   <img
     src={bankLogo}
     alt="Bank Transfer"
-    style={{ width: 24, height: 24, objectFit: 'contain' }}
+    style={{ width: 32, height: 32, objectFit: 'contain' }}
   />
 );
 
@@ -53,6 +53,7 @@ export default function Donations() {
   const [stats, setStats] = useState({ totalDonated: 0, thisYearTotal: 0, totalCount: 0 });
   const [loading, setLoading] = useState(true);
   const [historyPage, setHistoryPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
   const [successModal, setSuccessModal] = useState(null);
   const HISTORY_PER_PAGE = 5;
 
@@ -60,25 +61,23 @@ export default function Donations() {
     setLoading(true);
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`${API}/api/donations/my-donations`, {
+      const res = await fetch(`${API}/api/donations/my-donations?page=${historyPage}&limit=${HISTORY_PER_PAGE}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       if (res.ok && data.success) {
         setDonationHistory(data.donations || []);
         setStats(data.stats || { totalDonated: 0, thisYearTotal: 0, totalCount: 0 });
+        setTotalCount(data.totalCount || 0);
       }
     } catch { /* silent */ }
     finally { setLoading(false); }
-  }, []);
+  }, [historyPage]);
 
   useEffect(() => { fetchHistory(); }, [fetchHistory]);
 
-  const historyTotalPages = Math.max(1, Math.ceil(donationHistory.length / HISTORY_PER_PAGE));
-  const paginatedHistory = donationHistory.slice(
-    (historyPage - 1) * HISTORY_PER_PAGE,
-    historyPage * HISTORY_PER_PAGE
-  );
+  const historyTotalPages = Math.max(1, Math.ceil(totalCount / HISTORY_PER_PAGE));
+  const paginatedHistory = donationHistory;
 
   const handleDonate = async () => {
     setFormError('');
@@ -279,7 +278,10 @@ export default function Donations() {
 
           {/* Donation History */}
           <div className="donation-categories-section">
-            <h2 className="section-title" style={{ marginBottom: 0 }}>Donation History</h2>
+            <div className="history-header-row">
+              <h2 className="section-title" style={{ marginBottom: 0 }}>Donation History</h2>
+              <button className="view-all-btn" onClick={() => setHistoryPage(1)}>View All History</button>
+            </div>
 
             {loading && <p className="donations-loading-text">Loading…</p>}
 
@@ -315,7 +317,7 @@ export default function Donations() {
                 {historyTotalPages > 1 && (
                   <div className="don-hist-pagination">
                     <span className="don-hist-info">
-                      Showing {(historyPage - 1) * HISTORY_PER_PAGE + 1}–{Math.min(historyPage * HISTORY_PER_PAGE, donationHistory.length)} of {donationHistory.length}
+                      Showing {(historyPage - 1) * HISTORY_PER_PAGE + 1}–{Math.min(historyPage * HISTORY_PER_PAGE, totalCount)} of {totalCount}
                     </span>
                     <div className="don-hist-controls">
                       <button

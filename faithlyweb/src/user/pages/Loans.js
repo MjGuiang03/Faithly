@@ -36,6 +36,9 @@ export default function Loans() {
   const [verificationStatus,  setVerificationStatus]  = useState(null); // null = loading
   const [dataLoading,         setDataLoading]         = useState(true);
   const [error,               setError]               = useState('');
+  const [page,                setPage]                = useState(1);
+  const [totalCount,          setTotalCount]          = useState(0);
+  const LIMIT = 5;
 
   /* ────────────────────────────────────────────────────────
      Fetch loans + verification status in parallel
@@ -57,7 +60,7 @@ export default function Loans() {
 
     try {
       const [loansRes, verifyRes] = await Promise.all([
-        fetch(`${API}/api/loans/my-loans`,       { headers }),
+        fetch(`${API}/api/loans/my-loans?page=${page}&limit=${LIMIT}`, { headers }),
         fetch(`${API}/api/verification/status`,  { headers }),
       ]);
 
@@ -74,6 +77,7 @@ export default function Loans() {
       if (loansRes.ok && loansData.success) {
         setLoans(loansData.loans  || []);
         setStats(loansData.stats  || { totalBorrowed: 0, remainingBalance: 0, activeCount: 0 });
+        setTotalCount(loansData.totalCount || 0);
       } else {
         // 404 means user was deleted from DB — clear loans silently
         setLoans([]);
@@ -93,7 +97,7 @@ export default function Loans() {
     } finally {
       setDataLoading(false);
     }
-  }, [navigate]);
+  }, [navigate, page]);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
@@ -258,8 +262,9 @@ export default function Loans() {
             {/* Loans list — only shown when verified */}
             {verificationStatus === 'verified' && (
               <div className="all-loans-section">
-                <div className="all-loans-header">
+                <div className="history-header-row">
                   <h2 className="section-title">All Loans</h2>
+                  <button className="view-all-btn" onClick={() => setPage(1)}>View All History</button>
                 </div>
 
                 {loans.length === 0 ? (
@@ -321,6 +326,40 @@ export default function Loans() {
                         </div>
                       </div>
                     ))}
+                  </div>
+                )}
+
+                {/* Pagination Controls */}
+                {totalCount > LIMIT && (
+                  <div className="pagination">
+                    <p className="pagination-info">
+                      Showing {((page - 1) * LIMIT) + 1} to {Math.min(page * LIMIT, totalCount)} of {totalCount} records
+                    </p>
+                    <div className="pagination-controls">
+                      <button 
+                        className="page-btn" 
+                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                      >
+                        Previous
+                      </button>
+                      {Array.from({ length: Math.ceil(totalCount / LIMIT) }, (_, i) => (
+                        <button
+                          key={i + 1}
+                          className={`page-btn ${page === i + 1 ? 'page-btn-active' : ''}`}
+                          onClick={() => setPage(i + 1)}
+                        >
+                          {i + 1}
+                        </button>
+                      ))}
+                      <button 
+                        className="page-btn" 
+                        onClick={() => setPage(p => Math.min(Math.ceil(totalCount / LIMIT), p + 1))}
+                        disabled={page === Math.ceil(totalCount / LIMIT)}
+                      >
+                        Next
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>

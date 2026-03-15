@@ -42,19 +42,33 @@ router.post('/donations', authenticateUser, async (req, res) => {
 router.get('/donations/my-donations', authenticateUser, async (req, res) => {
   try {
     const email = req.user.email;
-    const userDonations = await donations.find({ email }).sort({ createdAt: -1 }).toArray();
+    const page  = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 1000;
+    const skip  = (page - 1) * limit;
 
-    const totalDonated = userDonations.reduce((sum, d) => sum + d.amount, 0);
+    const findQuery = { email };
+    const totalCount = await donations.countDocuments(findQuery);
+    const userDonations = await donations.find(findQuery)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .toArray();
+
+    // Stats need full set or aggregation
+    const allUserDonations = await donations.find(findQuery).toArray();
+    const totalDonated = allUserDonations.reduce((sum, d) => sum + d.amount, 0);
     const now = new Date();
-    const thisYearDonations = userDonations.filter(
-      d => new Date(d.createdAt).getFullYear() === now.getFullYear()
-    );
-    const thisYearTotal = thisYearDonations.reduce((sum, d) => sum + d.amount, 0);
+    const thisYearTotal = allUserDonations
+      .filter(d => new Date(d.createdAt).getFullYear() === now.getFullYear())
+      .reduce((sum, d) => sum + d.amount, 0);
 
     res.status(200).json({
       success: true,
       donations: userDonations,
-      stats: { totalDonated, thisYearTotal, totalCount: userDonations.length }
+      totalCount,
+      totalPages: Math.ceil(totalCount / limit),
+      currentPage: page,
+      stats: { totalDonated, thisYearTotal, totalCount: allUserDonations.length }
     });
   } catch (err) {
     console.error(err);

@@ -14,6 +14,7 @@ export default function Attendance() {
   const [loading,        setLoading]        = useState(true);
   const [search,         setSearch]         = useState('');
   const [page,           setPage]           = useState(1);
+  const [totalCount,     setTotalCount]     = useState(0);
 
 
   const token = localStorage.getItem('token');
@@ -23,7 +24,7 @@ export default function Attendance() {
     try {
       const headers = { Authorization: `Bearer ${token}` };
       const [attRes, upRes] = await Promise.all([
-        fetch(`${API}/api/attendance/my-attendance`, { headers }),
+        fetch(`${API}/api/attendance/my-attendance?page=${page}&limit=${PAGE_SIZE}`, { headers }),
         fetch(`${API}/api/upcoming`, { headers }) // Fixed: fetch from the new upcoming route
       ]);
       
@@ -33,6 +34,7 @@ export default function Attendance() {
       if (attData.success) {
         setAttendanceData(attData.attendance || []);
         setStats(attData.stats || { total: 0, thisMonth: 0 });
+        setTotalCount(attData.totalCount || 0);
       }
       if (upData.success) {
         setUpcomingData(upData.announcements || []);
@@ -42,7 +44,7 @@ export default function Attendance() {
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, [token, page]);
 
 
   useEffect(() => {
@@ -70,8 +72,8 @@ export default function Attendance() {
   }, [attendanceData, search]);
 
   // Pagination
-  const totalPages  = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const paginated   = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const totalPages  = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  const paginated   = attendanceData;
 
   const handleSearch = (e) => {
     setSearch(e.target.value);
@@ -215,6 +217,7 @@ export default function Attendance() {
         <div className="attendance-history-section">
           <div className="history-header">
             <h2 className="section-title">Attendance History</h2>
+            <button className="view-all-btn" onClick={() => setPage(1)}>View All</button>
             <div className="history-search-box">
               <svg fill="none" viewBox="0 0 16 16" width="14" height="14" className="search-icon-inner">
                 <circle cx="7" cy="7" r="5" stroke="#9ca3af" strokeWidth="1.5" />
@@ -270,7 +273,7 @@ export default function Attendance() {
                 {totalPages > 1 && (
                   <div className="pagination">
                     <span className="pagination-info">
-                      Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}
+                      Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, totalCount)} of {totalCount}
                     </span>
                     <div className="pagination-controls">
                       <button

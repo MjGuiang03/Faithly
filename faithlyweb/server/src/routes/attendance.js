@@ -43,10 +43,21 @@ router.post('/attendance/checkin', authenticateUser, async (req, res) => {
 router.get('/attendance/my-attendance', authenticateUser, async (req, res) => {
   try {
     const email = req.user.email;
-    const userAttendance = await attendance.find({ email }).sort({ createdAt: -1 }).toArray();
+    const page  = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 1000;
+    const skip  = (page - 1) * limit;
+
+    const findQuery = { email };
+    const totalCount = await attendance.countDocuments(findQuery);
+    const userAttendance = await attendance.find(findQuery)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .toArray();
 
     const now = new Date();
-    const thisMonth = userAttendance.filter(a =>
+    const allUserAttendance = await attendance.find(findQuery).toArray();
+    const thisMonth = allUserAttendance.filter(a =>
       new Date(a.createdAt).getMonth() === now.getMonth() &&
       new Date(a.createdAt).getFullYear() === now.getFullYear()
     );
@@ -54,7 +65,10 @@ router.get('/attendance/my-attendance', authenticateUser, async (req, res) => {
     res.status(200).json({
       success: true,
       attendance: userAttendance,
-      stats: { total: userAttendance.length, thisMonth: thisMonth.length }
+      totalCount,
+      totalPages: Math.ceil(totalCount / limit),
+      currentPage: page,
+      stats: { total: allUserAttendance.length, thisMonth: thisMonth.length }
     });
   } catch (err) {
     console.error(err);

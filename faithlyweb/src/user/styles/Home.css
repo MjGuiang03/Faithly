@@ -7,11 +7,34 @@
 
 /* Main Content */
 .main-content {
-  padding: 20px 24px;
+  padding: 16px 20px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
+}
 
+.history-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.view-all-btn {
+  background: transparent;
+  border: 1px solid #155DFC;
+  color: #155DFC;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.view-all-btn:hover {
+  background: #155DFC;
+  color: white;
 }
 
 /* Welcome Header */
@@ -49,12 +72,12 @@
   background: white;
   border: 0.8px solid #e5e7eb;
   border-radius: 12px;
-  padding: 16px 18px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: row;
-  /* icon + text side by side */
   align-items: center;
-  gap: 14px;
+  gap: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
 .stat-icon-box {
@@ -130,7 +153,7 @@
 /* Content Grid */
 .content-grid {
   display: grid;
-  grid-template-columns: 1.5fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
 
@@ -139,10 +162,11 @@
   background: white;
   border: 0.8px solid #e5e7eb;
   border-radius: 12px;
-  padding: 18px 20px;
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .card-title {
