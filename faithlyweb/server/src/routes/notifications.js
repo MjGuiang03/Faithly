@@ -77,41 +77,70 @@ router.get('/notifications', authenticateAdmin, async (req, res) => {
     });
 
     // Loans → notification
-    recentLoans.forEach(l => {
-      let title, message;
-      if (l.status === 'pending') {
-        title   = 'New loan application submitted';
-        message = `${l.memberName} has submitted a loan application for ₱${Number(l.amount).toLocaleString()} for ${l.purpose} purposes.`;
-      } else if (l.status === 'active') {
-        title   = 'Loan application approved';
-        message = `Loan ${l.loanId} for ${l.memberName} (₱${Number(l.amount).toLocaleString()}) has been approved.`;
-      } else if (l.status === 'rejected') {
-        title   = 'Loan application rejected';
-        message = `Loan ${l.loanId} for ${l.memberName} (₱${Number(l.amount).toLocaleString()}) has been rejected.${l.rejectionReason ? ' Reason: ' + l.rejectionReason : ''}`;
-      } else if (l.status === 'completed') {
-        title   = 'Loan completed';
-        message = `Loan ${l.loanId} for ${l.memberName} has been fully paid.`;
-      } else {
-        title   = 'Loan update';
-        message = `Loan ${l.loanId} status changed to ${l.status}.`;
-      }
+    if (req.admin.role !== 'admin') {
+      recentLoans.forEach(l => {
+        const base = {
+          type:      'loan',
+          isRead:    false,
+          meta: {
+            loanId:     l.loanId,
+            memberName: l.memberName,
+            amount:     l.amount,
+            purpose:    l.purpose,
+            status:     l.status,
+          }
+        };
 
-      notifications.push({
-        id:        `loan-${l._id}`,
-        type:      'loan',
-        title,
-        message,
-        timestamp: l.updatedAt || l.appliedDate,
-        isRead:    false,
-        meta: {
-          loanId:     l.loanId,
-          memberName: l.memberName,
-          amount:     l.amount,
-          purpose:    l.purpose,
-          status:     l.status,
+        if (l.statusHistory && l.statusHistory.length > 0) {
+          l.statusHistory.forEach(history => {
+            const hBase = { ...base, timestamp: history.date };
+            let title, message;
+            
+            if (req.admin.role === 'loanAdmin') {
+              if (history.status === 'pending') {
+                title   = 'New loan application submitted';
+                message = `${l.memberName} has submitted a loan application for ₱${Number(l.amount).toLocaleString()} for ${l.purpose} purposes.`;
+                notifications.push({ ...hBase, id: `loan-pending-${l._id}`, title, message });
+              } else if (history.status === 'approved') {
+                title   = 'Loan application approved';
+                message = `Loan ${l.loanId} for ${l.memberName} (₱${Number(l.amount).toLocaleString()}) has been approved.`;
+                notifications.push({ ...hBase, id: `loan-approved-${l._id}`, title, message });
+              } else if (history.status === 'rejected') {
+                title   = 'Loan application rejected';
+                message = `Loan ${l.loanId} for ${l.memberName} has been rejected.${history.reason ? ' Reason: ' + history.reason : ''}`;
+                notifications.push({ ...hBase, id: `loan-rejected-${l._id}`, title, message });
+              } else if (history.status === 'processed') {
+                title   = 'Loan application processed';
+                message = `Loan ${l.loanId} for ${l.memberName} has been disbursed by the secretary.`;
+                notifications.push({ ...hBase, id: `loan-processed-${l._id}`, title, message });
+              }
+            } else if (req.admin.role === 'secretaryAdmin') {
+              if (history.status === 'approved') {
+                title   = 'Loan approved and ready for processing';
+                message = `Loan ${l.loanId} for ${l.memberName} (₱${Number(l.amount).toLocaleString()}) has been approved by the loan officer and is ready for disbursement.`;
+                notifications.push({ ...hBase, id: `loan-approved-${l._id}`, title, message });
+              }
+            }
+          });
+        } else {
+          // Fallback for older loans without statusHistory array
+          let title, message;
+          if (l.status === 'pending' && req.admin.role === 'loanAdmin') {
+            title   = 'New loan application submitted';
+            message = `${l.memberName} has submitted a loan application for ₱${Number(l.amount).toLocaleString()}.`;
+            notifications.push({ ...base, id: `loan-pending-${l._id}`, title, message, timestamp: l.appliedDate });
+          } else if ((l.status === 'active' || l.status === 'completed') && (req.admin.role === 'loanAdmin' || req.admin.role === 'secretaryAdmin')) {
+            title   = req.admin.role === 'secretaryAdmin' ? 'Loan approved and ready for processing' : 'Loan application approved';
+            message = `Loan ${l.loanId} for ${l.memberName} has been approved.`;
+            notifications.push({ ...base, id: `loan-approved-${l._id}`, title, message, timestamp: l.approvedDate || l.updatedAt });
+          } else if (l.status === 'rejected' && req.admin.role === 'loanAdmin') {
+            title   = 'Loan application rejected';
+            message = `Loan ${l.loanId} for ${l.memberName} has been rejected.`;
+            notifications.push({ ...base, id: `loan-rejected-${l._id}`, title, message, timestamp: l.rejectedDate || l.updatedAt });
+          }
         }
       });
-    });
+    }
 
     // Sort all by most recent
     notifications.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));

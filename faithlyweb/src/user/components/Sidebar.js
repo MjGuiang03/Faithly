@@ -93,9 +93,29 @@ export default function Sidebar() {
 
         let count = 0;
         (lData.loans || []).forEach((l) => {
-          const ids = [`loan-approved-${l._id}`, `loan-pending-${l._id}`, `loan-rejected-${l._id}`, `loan-done-${l._id}`];
-          if (l.status === 'active' && l.nextPaymentDate) ids.push(`loan-reminder-${l._id}`);
-          ids.forEach(id => { if (!readIds.has(id)) count++; });
+          if (l.statusHistory && l.statusHistory.length > 0) {
+            l.statusHistory.forEach((history) => {
+              let idStr = '';
+              if (history.status === 'pending') idStr = `loan-pending-${l._id}`;
+              else if (history.status === 'approved') idStr = `loan-approved-${l._id}`;
+              else if (history.status === 'rejected') idStr = `loan-rejected-${l._id}`;
+              else if (history.status === 'processed') idStr = `loan-processed-${l._id}`;
+              
+              if (idStr && !readIds.has(idStr)) count++;
+            });
+          } else {
+            let idStr = '';
+            if (l.status === 'approved' || l.status === 'active') idStr = `loan-approved-${l._id}`;
+            else if (l.status === 'pending') idStr = `loan-pending-${l._id}`;
+            else if (l.status === 'rejected') idStr = `loan-rejected-${l._id}`;
+            else if (l.status === 'completed') idStr = `loan-done-${l._id}`;
+
+            if (idStr && !readIds.has(idStr)) count++;
+          }
+
+          if (l.status === 'active' && l.nextPaymentDate) {
+            if (!readIds.has(`loan-reminder-${l._id}`)) count++;
+          }
         });
         (dData.donations || []).forEach((d) => { if (!readIds.has(`donation-${d._id}`)) count++; });
         (aData.attendance || []).forEach((a) => { if (!readIds.has(`attendance-${a._id}`)) count++; });

@@ -26,7 +26,8 @@ router.post('/loans/apply', authenticateUser, async (req, res) => {
     const newLoan = {
       loanId, email, memberName: user.fullName, amount: Number(amount),
       purpose, termMonths: termMonths || 12, status: 'pending',
-      appliedDate: new Date(), updatedAt: new Date()
+      appliedDate: new Date(), updatedAt: new Date(),
+      statusHistory: [{ status: 'pending', date: new Date() }]
     };
 
     await loans.insertOne(newLoan);
@@ -43,7 +44,9 @@ router.get('/loans/my-loans', authenticateUser, async (req, res) => {
     const email = req.user.email;
     const userLoans = await loans.find({ email }).sort({ appliedDate: -1 }).toArray();
 
-    const totalBorrowed    = userLoans.reduce((sum, l) => sum + l.amount, 0);
+    const totalBorrowed    = userLoans
+      .filter(l => l.disbursed || l.status === 'completed')
+      .reduce((sum, l) => sum + l.amount, 0);
     const activeLoans      = userLoans.filter(l => l.status === 'active');
     const remainingBalance = activeLoans.reduce((sum, l) => sum + (l.remainingBalance || l.amount), 0);
 
@@ -113,7 +116,10 @@ router.put('/admin/loans/:id/approve', authenticateAdmin, async (req, res) => {
 
     await loans.updateOne(
       { _id: new ObjectId(id) },
-      { $set: { status: 'active', approvedDate: new Date(), updatedAt: new Date() } }
+      { 
+        $set: { status: 'active', approvedDate: new Date(), updatedAt: new Date() },
+        $push: { statusHistory: { status: 'approved', date: new Date() } }
+      }
     );
 
     res.status(200).json({ success: true, message: 'Loan approved successfully' });
@@ -136,7 +142,10 @@ router.put('/admin/loans/:id/reject', authenticateAdmin, async (req, res) => {
 
     await loans.updateOne(
       { _id: new ObjectId(id) },
-      { $set: { status: 'rejected', rejectionReason: rejectionReason || '', rejectedDate: new Date(), updatedAt: new Date() } }
+      { 
+        $set: { status: 'rejected', rejectionReason: rejectionReason || '', rejectedDate: new Date(), updatedAt: new Date() },
+        $push: { statusHistory: { status: 'rejected', date: new Date(), reason: rejectionReason || '' } }
+      }
     );
 
     res.status(200).json({ success: true, message: 'Loan rejected successfully' });
@@ -175,7 +184,8 @@ router.put('/admin/loans/:id/process', authenticateAdmin, async (req, res) => {
           disbursementDate: new Date(), 
           paymentMethod, 
           updatedAt: new Date() 
-        } 
+        },
+        $push: { statusHistory: { status: 'processed', date: new Date() } }
       }
     );
 

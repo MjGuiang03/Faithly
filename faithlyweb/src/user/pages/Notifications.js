@@ -55,26 +55,54 @@ export default function Notifications() {
       (lData.loans || []).forEach((l) => {
         const base = { id: `loan-${l._id}`, type: 'loan', timestamp: l.appliedDate || l.createdAt };
 
-        if (l.status === 'approved' || l.status === 'active') {
-          items.push({ ...base, id: `loan-approved-${l._id}`,
-            title:   'Loan Application Approved',
-            message: `Your loan application ${l.loanId ? `#${l.loanId}` : ''} for ₱${Number(l.amount).toLocaleString()} has been approved and is ready for release.`,
+        if (l.statusHistory && l.statusHistory.length > 0) {
+          l.statusHistory.forEach((history) => {
+            const hBase = { ...base, timestamp: history.date };
+            if (history.status === 'pending') {
+              items.push({ ...hBase, id: `loan-pending-${l._id}`,
+                title:   'Loan Application Submitted',
+                message: `Your loan application ${l.loanId ? `#${l.loanId}` : ''} for ₱${Number(l.amount).toLocaleString()} is under review.`,
+              });
+            } else if (history.status === 'approved') {
+              items.push({ ...hBase, id: `loan-approved-${l._id}`,
+                title:   'Loan Application Approved',
+                message: `Your loan application ${l.loanId ? `#${l.loanId}` : ''} has been approved by the loan officer.`,
+              });
+            } else if (history.status === 'rejected') {
+              items.push({ ...hBase, id: `loan-rejected-${l._id}`,
+                title:   'Loan Application Rejected',
+                message: `Your loan application ${l.loanId ? `#${l.loanId}` : ''} was not approved.${history.reason ? ` Reason: ${history.reason}` : ''}`,
+              });
+            } else if (history.status === 'processed') {
+              items.push({ ...hBase, id: `loan-processed-${l._id}`,
+                title:   'Loan Processed',
+                message: `Your loan ${l.loanId ? `#${l.loanId}` : ''} for ₱${Number(l.amount).toLocaleString()} has been processed and disbursed by the secretary.`,
+              });
+            }
           });
-        } else if (l.status === 'pending') {
-          items.push({ ...base, id: `loan-pending-${l._id}`,
-            title:   'Loan Application Submitted',
-            message: `Your loan application ${l.loanId ? `#${l.loanId}` : ''} for ₱${Number(l.amount).toLocaleString()} is under review.`,
-          });
-        } else if (l.status === 'rejected') {
-          items.push({ ...base, id: `loan-rejected-${l._id}`,
-            title:   'Loan Application Update',
-            message: `Your loan application ${l.loanId ? `#${l.loanId}` : ''} for ₱${Number(l.amount).toLocaleString()} was not approved.`,
-          });
-        } else if (l.status === 'completed') {
-          items.push({ ...base, id: `loan-done-${l._id}`,
-            title:   'Loan Completed',
-            message: `Your loan ${l.loanId ? `#${l.loanId}` : ''} has been fully paid. Thank you!`,
-          });
+        } else {
+          // Fallback for older loans without statusHistory
+          if (l.status === 'approved' || l.status === 'active') {
+            items.push({ ...base, id: `loan-approved-${l._id}`,
+              title:   'Loan Application Approved',
+              message: `Your loan application ${l.loanId ? `#${l.loanId}` : ''} for ₱${Number(l.amount).toLocaleString()} has been approved and is ready for release.`,
+            });
+          } else if (l.status === 'pending') {
+            items.push({ ...base, id: `loan-pending-${l._id}`,
+              title:   'Loan Application Submitted',
+              message: `Your loan application ${l.loanId ? `#${l.loanId}` : ''} for ₱${Number(l.amount).toLocaleString()} is under review.`,
+            });
+          } else if (l.status === 'rejected') {
+            items.push({ ...base, id: `loan-rejected-${l._id}`,
+              title:   'Loan Application Update',
+              message: `Your loan application ${l.loanId ? `#${l.loanId}` : ''} for ₱${Number(l.amount).toLocaleString()} was not approved.`,
+            });
+          } else if (l.status === 'completed') {
+            items.push({ ...base, id: `loan-done-${l._id}`,
+              title:   'Loan Completed',
+              message: `Your loan ${l.loanId ? `#${l.loanId}` : ''} has been fully paid. Thank you!`,
+            });
+          }
         }
 
         /* Payment reminder for active loans */
