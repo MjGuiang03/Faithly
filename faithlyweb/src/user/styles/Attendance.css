@@ -177,29 +177,134 @@
   gap: 12px;
 }
 
+.upcoming-loading {
+  font-size: 13px;
+  color: #64748b;
+  text-align: center;
+  padding: 20px 0;
+}
+
+.upcoming-active-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.upcoming-service-item {
+  display: flex;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.upcoming-service-item:hover {
+  transform: translateX(4px);
+  border-color: #cbd5e1;
+}
+
+.upcoming-service-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #155DFC;
+  margin-top: 6px;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 4px rgba(21, 93, 252, 0.1);
+}
+
+.upcoming-service-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.upcoming-service-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.upcoming-service-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.upcoming-type-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+}
+
+.upcoming-type-badge.type-svc {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.upcoming-type-badge.type-notif {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.upcoming-service-message {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.upcoming-service-meta {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.upcoming-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.upcoming-meta-item svg {
+  color: #cbd5e1;
+}
+
 .upcoming-empty {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 24px 0;
-  gap: 8px;
+  padding: 32px 0;
+  gap: 12px;
   text-align: center;
+  background: #f9fafb;
+  border-radius: 12px;
+  border: 1px dashed #e2e8f0;
 }
 
 .upcoming-empty-text {
   font-size: 14px;
   font-weight: 600;
-  color: #6a7282;
+  color: #64748b;
   margin: 0;
-  font-family: Arial, sans-serif;
 }
 
 .upcoming-empty-sub {
   font-size: 12px;
-  color: #9ca3af;
+  color: #94a3b8;
   margin: 0;
-  font-family: Arial, sans-serif;
 }
 
 /* Attendance History */

@@ -8,6 +8,11 @@ export const generateOTP = () =>
   Math.floor(100000 + Math.random() * 900000).toString();
 
 export const sendOTP = async (email, otp, subject = 'Your Email Verification Code', title = 'Your OTP Code') => {
+  // EMERGENCY FALLBACK: Log the Email OTP to the console
+  console.log(`\n\n📧 ================================== 📧`);
+  console.log(`✉️ FALLBACK EMAIL OTP FOR ${email}: [ ${otp} ]`);
+  console.log(`📧 ================================== 📧\n\n`);
+
   try {
     const data = await resend.emails.send({
       from: 'Faithly <onboarding@resend.dev>', // Use this test email until you buy a custom domain

@@ -224,28 +224,45 @@ export default function VerifyEmailModal({ isOpen, onClose, email, onVerify, onR
           <div className="verify-footer">
             <p className="verify-footer-text">Didn't receive the code?</p>
             
-            <div className="resend-options-wrapper" style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '15px' }}>
-              <select 
-                value={resendMethod}
-                onChange={(e) => setResendMethod(e.target.value)}
-                className="signup-form-select"
-                style={{ width: 'auto', padding: '8px', fontSize: '14px' }}
+            <div className="resend-methods-pill">
+              <button 
+                type="button"
+                className={`resend-method-btn ${resendMethod === 'sms' ? 'active' : ''}`}
+                onClick={() => setResendMethod('sms')}
                 disabled={resendLoading || loading}
               >
-                <option value="email">Send via Email</option>
-                <option value="sms">Send via SMS (Phone)</option>
-              </select>
+                <div className={`check-circle ${resendMethod === 'sms' ? 'active' : ''}`}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </div>
+                <span>Phone</span>
+              </button>
 
               <button 
                 type="button"
-                onClick={handleResend}
-                className="resend-button"
+                className={`resend-method-btn ${resendMethod === 'email' ? 'active' : ''}`}
+                onClick={() => setResendMethod('email')}
                 disabled={resendLoading || loading}
-                style={{ margin: 0 }}
               >
-                {resendLoading ? 'Sending...' : 'Resend Code'}
+                <div className={`check-circle ${resendMethod === 'email' ? 'active' : ''}`}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </div>
+                <span>Email</span>
               </button>
             </div>
+
+            <button 
+              type="button"
+              onClick={handleResend}
+              className="resend-trigger-link"
+              disabled={resendLoading || loading}
+            >
+              {resendLoading ? 'Sending...' : 'Resend Code'}
+            </button>
+
 
             <p className="verify-footer-conditions">
               By continuing, you agree to our{" "}

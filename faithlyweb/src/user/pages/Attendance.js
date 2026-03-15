@@ -9,23 +9,33 @@ export default function Attendance() {
   // const navigate = useNavigate();
 
   const [attendanceData, setAttendanceData] = useState([]);
+  const [upcomingData,   setUpcomingData]   = useState([]);
   const [stats,          setStats]          = useState({ total: 0, thisMonth: 0 });
   const [loading,        setLoading]        = useState(true);
   const [search,         setSearch]         = useState('');
   const [page,           setPage]           = useState(1);
+
 
   const token = localStorage.getItem('token');
 
   const fetchAttendance = useCallback(async () => {
     setLoading(true);
     try {
-      const res  = await fetch(`${API}/api/attendance/my-attendance`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (data.success) {
-        setAttendanceData(data.attendance || []);
-        setStats(data.stats || { total: 0, thisMonth: 0 });
+      const headers = { Authorization: `Bearer ${token}` };
+      const [attRes, upRes] = await Promise.all([
+        fetch(`${API}/api/attendance/my-attendance`, { headers }),
+        fetch(`${API}/api/upcoming`, { headers }) // Fixed: fetch from the new upcoming route
+      ]);
+      
+      const attData = await attRes.json();
+      const upData  = await upRes.json();
+
+      if (attData.success) {
+        setAttendanceData(attData.attendance || []);
+        setStats(attData.stats || { total: 0, thisMonth: 0 });
+      }
+      if (upData.success) {
+        setUpcomingData(upData.announcements || []);
       }
     } catch (err) {
       console.error('Failed to fetch attendance:', err);
@@ -33,6 +43,7 @@ export default function Attendance() {
       setLoading(false);
     }
   }, [token]);
+
 
   useEffect(() => {
     fetchAttendance();
@@ -154,18 +165,50 @@ export default function Attendance() {
           <div className="upcoming-services-card">
             <h2 className="section-title">Upcoming Services</h2>
             <div className="upcoming-services-list">
-              <div className="upcoming-empty">
-                <svg fill="none" viewBox="0 0 40 40" width="36" height="36">
-                  <path d="M13.3333 3.33333V10" stroke="#d1d5db" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                  <path d="M26.6667 3.33333V10" stroke="#d1d5db" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                  <path d="M5 16.6667H35" stroke="#d1d5db" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                  <rect x="5" y="6.66667" width="30" height="30" rx="2" stroke="#d1d5db" strokeWidth="2" />
-                </svg>
-                <p className="upcoming-empty-text">No upcoming services announced yet.</p>
-                <p className="upcoming-empty-sub">Check back when your admin posts new schedules.</p>
-              </div>
+              {loading ? (
+                <p className="upcoming-loading">Loading schedules...</p>
+              ) : upcomingData.length === 0 ? (
+                <div className="upcoming-empty">
+                  <svg fill="none" viewBox="0 0 40 40" width="36" height="36">
+                    <path d="M13.3333 3.33333V10" stroke="#d1d5db" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                    <path d="M26.6667 3.33333V10" stroke="#d1d5db" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                    <path d="M5 16.6667H35" stroke="#d1d5db" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                    <rect x="5" y="6.66667" width="30" height="30" rx="2" stroke="#d1d5db" strokeWidth="2" />
+                  </svg>
+                  <p className="upcoming-empty-text">No upcoming services announced yet.</p>
+                  <p className="upcoming-empty-sub">Check back when your admin posts new schedules.</p>
+                </div>
+              ) : (
+                <div className="upcoming-active-list">
+                  {upcomingData.map((item, idx) => (
+                    <div key={idx} className="upcoming-service-item">
+                      <div className="upcoming-service-dot" />
+                      <div className="upcoming-service-info">
+                        <div className="upcoming-service-header">
+                          <h4 className="upcoming-service-title">{item.title}</h4>
+                          <span className={`upcoming-type-badge ${item.type === 'service' ? 'type-svc' : 'type-notif'}`}>
+                            {item.type === 'service' ? 'Service' : 'Update'}
+                          </span>
+                        </div>
+                        <p className="upcoming-service-message">{item.message}</p>
+                        <div className="upcoming-service-meta">
+                           <span className="upcoming-meta-item">
+                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                             {item.branch}
+                           </span>
+                           <span className="upcoming-meta-item">
+                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                             {new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                           </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
+
         </div>
 
         {/* Attendance History */}

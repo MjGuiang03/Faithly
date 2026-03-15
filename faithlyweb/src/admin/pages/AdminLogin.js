@@ -80,6 +80,8 @@ export default function AdminLogin() {
       const data = await res.json();
 
       if (!res.ok) {
+        console.error('❌ Admin Login Failed Status:', res.status);
+        console.error('❌ Admin Login Failed Data:', data);
         throw new Error(data.message || 'Login failed');
       }
 

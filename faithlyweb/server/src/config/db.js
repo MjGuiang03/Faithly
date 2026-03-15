@@ -35,6 +35,8 @@ export const donations     = db.collection('donations');
 export const attendance    = db.collection('attendance');
 export const verifications       = db.collection('verifications');
 export const pendingRegistrations = db.collection('pending_registrations');
+export const announcements      = db.collection('announcements');
+
 
 /* ================== DATABASE INDEXES ================== */
 await users.createIndex({ email: 1 }, { unique: true });
@@ -48,6 +50,8 @@ await otps.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 // TTL index for pending registrations (auto-delete if not verified within 24 hours)
 await pendingRegistrations.createIndex({ createdAt: 1 }, { expireAfterSeconds: 86400 });
 await pendingRegistrations.createIndex({ email: 1 }, { unique: true });
+await announcements.createIndex({ createdAt: -1 });
+
 
 /* ================== CREATE DEFAULT ADMINS ================== */
 const adminSeeds = [
@@ -68,5 +72,16 @@ for (const seed of adminSeeds) {
       createdAt: new Date()
     });
     console.log(`✅ ${seed.role} admin created (${seed.email})`);
+  } else {
+    // Ensure password matches environment variable
+    const match = await bcrypt.compare(seed.password, exists.passwordHash);
+    if (!match) {
+      const hash = await bcrypt.hash(seed.password, 12);
+      await admins.updateOne(
+        { email: seed.email },
+        { $set: { passwordHash: hash, updatedAt: new Date() } }
+      );
+      console.log(`🔄 ${seed.role} admin password updated to match environment variable`);
+    }
   }
 }
