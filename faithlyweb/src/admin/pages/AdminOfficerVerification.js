@@ -10,16 +10,16 @@ import API from '../../utils/api';
 const PER_PAGE = 5;
 
 const fmtDate = (d) => {
-  if (!d) return '—';
+  if (!d) return 'â€”';
   return new Date(d).toLocaleString('en-PH', {
     year: 'numeric', month: 'short', day: 'numeric',
     hour: '2-digit', minute: '2-digit'
   });
 };
 
-/* ═══════════════════════════════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    VERIFICATION DETAILS MODAL
-═══════════════════════════════════════════════════════════════════════════ */
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function VerificationDetailsModal({ request, onClose, onApprove, onReject }) {
   const [showRejectModal,  setShowRejectModal]  = useState(false);
   const [showApproveModal, setShowApproveModal] = useState(false);
@@ -49,20 +49,20 @@ function VerificationDetailsModal({ request, onClose, onApprove, onReject }) {
             <div className="admin-offver-info-grid">
               <div className="admin-offver-info-item">
                 <span className="admin-offver-info-label">Church ID Number</span>
-                <span className="admin-offver-info-value">{request.churchId || '—'}</span>
+                <span className="admin-offver-info-value">{request.churchId || 'â€”'}</span>
               </div>
               <div className="admin-offver-info-item">
                 <span className="admin-offver-info-label">Church Position</span>
-                <span className="admin-offver-info-value">{request.position || '—'}</span>
+                <span className="admin-offver-info-value">{request.position || 'â€”'}</span>
               </div>
               <div className="admin-offver-info-item">
                 <span className="admin-offver-info-label">Occupation</span>
-                <span className="admin-offver-info-value">{request.occupation || '—'}</span>
+                <span className="admin-offver-info-value">{request.occupation || 'â€”'}</span>
               </div>
               <div className="admin-offver-info-item">
                 <span className="admin-offver-info-label">Monthly Income</span>
                 <span className="admin-offver-info-value">
-                  {request.salary ? `₱${Number(request.salary).toLocaleString()}` : '—'}
+                  {request.salary ? `â‚±${Number(request.salary).toLocaleString()}` : 'â€”'}
                 </span>
               </div>
               {request.status === 'rejected' && request.rejectionReason && (
@@ -135,9 +135,9 @@ function VerificationDetailsModal({ request, onClose, onApprove, onReject }) {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    REJECT MODAL
-═══════════════════════════════════════════════════════════════════════════ */
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function RejectModal({ request, onClose, onConfirm }) {
   const [reason,  setReason]  = useState('');
   const [loading, setLoading] = useState(false);
@@ -200,9 +200,9 @@ function RejectModal({ request, onClose, onConfirm }) {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    APPROVE MODAL
-═══════════════════════════════════════════════════════════════════════════ */
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function ApproveModal({ request, onClose, onConfirm }) {
   const [loading, setLoading] = useState(false);
   const token = localStorage.getItem('adminToken');
@@ -216,7 +216,7 @@ function ApproveModal({ request, onClose, onConfirm }) {
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.message);
-      toast.success('Request approved — member promoted to Level 2');
+      toast.success('Request approved â€” member promoted to Level 2');
       onConfirm();
     } catch (err) {
       toast.error(err.message || 'Failed to approve request');
@@ -264,7 +264,7 @@ function ApproveModal({ request, onClose, onConfirm }) {
             onClick={handleApprove}
             disabled={loading}
           >
-            {loading ? 'Approving…' : 'Approve'}
+            {loading ? 'Approvingâ€¦' : 'Approve'}
           </button>
         </div>
       </div>
@@ -272,9 +272,9 @@ function ApproveModal({ request, onClose, onConfirm }) {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    MAIN COMPONENT
-═══════════════════════════════════════════════════════════════════════════ */
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 export default function AdminOfficerVerification() {
   const navigate = useNavigate();
   const [requests,          setRequests]         = useState([]);
@@ -365,7 +365,7 @@ export default function AdminOfficerVerification() {
               <path d={svgPaths.p2f5eb900} stroke="#F59E0B" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-          <p className="admin-offver-stat-value admin-offver-stat-value-pending">{loading ? '—' : stats.pending}</p>
+          <p className="admin-offver-stat-value admin-offver-stat-value-pending">{loading ? 'â€”' : stats.pending}</p>
         </div>
 
         <div className="admin-offver-stat-card">
@@ -376,7 +376,7 @@ export default function AdminOfficerVerification() {
               <path d={svgPaths.p3fe63d80} stroke="#00A63E" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-          <p className="admin-offver-stat-value admin-offver-stat-value-approved">{loading ? '—' : stats.approved}</p>
+          <p className="admin-offver-stat-value admin-offver-stat-value-approved">{loading ? 'â€”' : stats.approved}</p>
         </div>
 
         <div className="admin-offver-stat-card">
@@ -388,7 +388,7 @@ export default function AdminOfficerVerification() {
               <path d="M7.5 7.5L12.5 12.5" stroke="#EF4444" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-          <p className="admin-offver-stat-value admin-offver-stat-value-rejected">{loading ? '—' : stats.rejected}</p>
+          <p className="admin-offver-stat-value admin-offver-stat-value-rejected">{loading ? 'â€”' : stats.rejected}</p>
         </div>
       </div>
 
@@ -421,7 +421,7 @@ export default function AdminOfficerVerification() {
       <div className="admin-offver-table-section">
         {loading ? (
           <div className="admin-offver-loading-spinner">
-            <p>Loading verifications…</p>
+            <p>Loading verificationsâ€¦</p>
           </div>
         ) : (
           <>

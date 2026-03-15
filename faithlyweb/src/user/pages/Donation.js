@@ -76,7 +76,6 @@ export default function Donations() {
       if (res.ok && data.success) {
         setDonationHistory(data.donations || []);
         setStats(data.stats || { totalDonated: 0, thisYearTotal: 0, totalCount: 0 });
-        setTotalCount(data.totalCount || 0);
       }
     } catch { /* silent */ }
     finally { setLoading(false); }

@@ -32,7 +32,6 @@ export default function Attendance() {
       if (attData.success) {
         setAttendanceData(attData.attendance || []);
         setStats(attData.stats || { total: 0, thisMonth: 0 });
-        setTotalCount(attData.totalCount || 0);
       }
       if (upData.success) {
         setUpcomingData(upData.announcements || []);
