@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import Sidebar from '../components/Sidebar';
 import '../styles/Donation.css';
-import useDebounce from '../../hooks/useDebounce';
 import gcashLogo from '../../assets/gcashlogo.png';
 import bankLogo from '../../assets/whitebanklogo.png';
 
@@ -54,7 +53,6 @@ export default function Donations() {
   const [stats, setStats] = useState({ totalDonated: 0, thisYearTotal: 0, totalCount: 0 });
   const [loading, setLoading] = useState(true);
   const [historyPage, setHistoryPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
   const [successModal, setSuccessModal] = useState(null);
   
   /* ── History Modal States ── */

@@ -4,7 +4,6 @@ import { useAuth } from '../../context/AuthContext';
 import Sidebar from '../components/Sidebar';
 import LoanApplicationModal from '../components/LoanApplicationModal';
 import VerificationModal from '../components/OfficerVerification';
-import useDebounce from '../../hooks/useDebounce';
 import '../styles/Loans.css';
 import API from '../../utils/api';
 

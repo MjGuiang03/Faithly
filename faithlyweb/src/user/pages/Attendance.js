@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import svgPaths from '../../imports/svg-icons';
 import '../styles/Attendance.css';
 import Sidebar from '../components/Sidebar';
-import useDebounce from '../../hooks/useDebounce';
 import API from '../../utils/api';
 const PAGE_SIZE = 5;
 
@@ -13,8 +12,7 @@ export default function Attendance() {
   const [upcomingData,   setUpcomingData]   = useState([]);
   const [stats,          setStats]          = useState({ total: 0, thisMonth: 0 });
   const [loading,        setLoading]        = useState(true);
-  const [page,           setPage]           = useState(1);
-  const [totalCount,     setTotalCount]     = useState(0);
+  const [page]           = useState(1);
 
 
   const token = localStorage.getItem('token');
