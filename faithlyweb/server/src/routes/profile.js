@@ -5,7 +5,7 @@ dotenv.config();
 
 import { users, otps } from '../config/db.js';
 import { authenticateUser } from '../middleware/auth.js';
-import { transporter, generateOTP } from '../utils/email.js';
+import { sendOTP, generateOTP } from '../utils/email.js';
 
 const router  = Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
@@ -88,17 +88,7 @@ router.post('/request-email-change', authenticateUser, async (req, res) => {
       createdAt: new Date(), used: false,
     });
 
-    await transporter.sendMail({
-      from:    `"Faithly" <${process.env.EMAIL_USER}>`,
-      to:      normalizedNew,
-      subject: 'Confirm Your New Email Address',
-      html: `
-        <h2>Email Change Request</h2>
-        <p>We received a request to change your Faithly account email to this address.</p>
-        <h1 style="letter-spacing:0.3em">${otp}</h1>
-        <p>This code expires in <strong>15 minutes</strong>. If you did not request this, please ignore this email.</p>
-      `,
-    });
+    await sendOTP(normalizedNew, otp, 'Confirm Your New Email Address', 'Email Change Request');
 
     res.json({ success: true, message: 'Verification code sent to your new email address' });
   } catch (err) {
