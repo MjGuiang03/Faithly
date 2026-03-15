@@ -99,41 +99,45 @@
   line-height: 19px;
 }
 
-/* Search */
-.admin-offver-search-section {
-  background: white;
-  border: 0.8px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 14px 16px;
-  margin-bottom: 16px;
+/* ═══ SEARCH TOOLBAR ═══ */
+.admin-offver-toolbar {
+  margin-bottom: 24px;
 }
 
-.admin-offver-search-wrapper { position: relative; }
+.admin-offver-search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 480px;
+}
 
 .admin-offver-search-icon {
   position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
+  left: 14px;
+  color: #667085;
   pointer-events: none;
 }
 
 .admin-offver-search-input {
   width: 100%;
-  height: 40px;
-  border: 0.8px solid #d1d5dc;
-  border-radius: 10px;
-  padding: 8px 16px 8px 40px;
-  font-family: Arial, sans-serif;
-  font-size: 13px;
+  height: 44px;
+  padding: 10px 14px 10px 42px;
+  border: 1px solid #D1D5DC;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
   color: #101828;
-  outline: none;
-  box-sizing: border-box;
-  transition: border-color 0.2s;
+  background: white;
+  box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
+  transition: all 0.2s;
 }
 
-.admin-offver-search-input:focus        { border-color: #155dfc; }
-.admin-offver-search-input::placeholder { color: rgba(10,10,10,0.4); }
+.admin-offver-search-input:focus {
+  border-color: #155DFC;
+  box-shadow: 0px 0px 0px 4px rgba(21, 93, 252, 0.1);
+  outline: none;
+}
+
 
 /* Table */
 .admin-offver-table-section {
@@ -194,23 +198,26 @@
 .admin-offver-status-rejected { background: #FEE2E2; color: #DC2626; }
 
 .admin-offver-view-btn {
-  background: #155dfc;
-  border: none;
-  border-radius: 6px;
-  padding: 6px 12px;
-  font-family: Arial, sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  color: white;
-  cursor: pointer;
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 6px;
-  transition: background 0.15s;
-  white-space: nowrap;
+  gap: 8px;
+  padding: 8px 14px;
+  background: white;
+  border: 1px solid #D1D5DC;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #344054;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
 }
 
-.admin-offver-view-btn:hover { background: #0d4ed4; }
+.admin-offver-view-btn:hover {
+  background: #F9FAFB;
+  color: #101828;
+}
 
 .admin-offver-empty {
   text-align: center;
@@ -232,40 +239,64 @@
 }
 
 .admin-offver-pagination-btn {
-  padding: 7px 14px;
-  border: 0.8px solid #d1d5dc;
-  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid #D1D5DC;
+  border-radius: 8px;
   background: white;
-  font-family: Arial, sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  color: #4a5565;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #344054;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.2s;
+  box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
 }
 
-.admin-offver-pagination-btn:hover:not(:disabled) { background: #f3f4f6; border-color: #155dfc; }
-.admin-offver-pagination-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.admin-offver-pagination-btn:hover:not(:disabled) {
+  background: #F9FAFB;
+  color: #101828;
+}
+
+.admin-offver-pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.admin-offver-pagination-numbers {
+  display: flex;
+  gap: 2px;
+}
 
 .admin-offver-pagination-number {
-  width: 34px;
-  height: 34px;
-  border: 0.8px solid #d1d5dc;
-  border-radius: 6px;
-  background: white;
-  font-family: Arial, sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  color: #4a5565;
-  cursor: pointer;
-  transition: all 0.15s;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #667085;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-.admin-offver-pagination-number:hover         { background: #f3f4f6; }
-.admin-offver-pagination-number.active        { background: #155dfc; border-color: #155dfc; color: white; }
+.admin-offver-pagination-number:hover {
+  background: #F9FAFB;
+  color: #101828;
+}
+
+.admin-offver-pagination-number.active {
+  background: #F9F5FF;
+  color: #155DFC;
+  font-weight: 600;
+}
 
 /* ═══════════════════════════════════════════════════════
    COMPACT DETAILS MODAL

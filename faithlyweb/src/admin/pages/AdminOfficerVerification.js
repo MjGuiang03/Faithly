@@ -1,6 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
+import { Search, History, ShieldCheck, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import '../styles/AdminOfficerVerification.css';
 import svgPaths from "../../imports/svg-icons";
 
@@ -404,13 +402,9 @@ export default function AdminOfficerVerification() {
         </div>
       </div>
 
-      {/* Search */}
-      <div className="admin-offver-search-section">
+      <div className="admin-offver-toolbar">
         <div className="admin-offver-search-wrapper">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="admin-offver-search-icon">
-            <circle cx="9" cy="9" r="6" stroke="#99A1AF" strokeWidth="1.5"/>
-            <path d="M17 17L13.5 13.5" stroke="#99A1AF" strokeWidth="1.5" strokeLinecap="round"/>
-          </svg>
+          <Search size={18} className="admin-offver-search-icon" />
           <input
             type="text"
             placeholder="Search by name, email, or position..."
@@ -424,9 +418,9 @@ export default function AdminOfficerVerification() {
       {/* Table */}
       <div className="admin-offver-table-section">
         {loading ? (
-          <p style={{ fontSize: 14, color: '#9ca3af', padding: '32px 0', textAlign: 'center', margin: 0 }}>
-            Loading verifications…
-          </p>
+          <div className="admin-offver-loading-spinner">
+            <p>Loading verifications…</p>
+          </div>
         ) : (
           <>
             <table className="admin-offver-table">
@@ -463,11 +457,8 @@ export default function AdminOfficerVerification() {
                       </td>
                       <td className="admin-offver-table-cell">
                         <button className="admin-offver-view-btn" onClick={() => setSelectedRequest(r)}>
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                            <path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-                            <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.2"/>
-                          </svg>
-                          View Details
+                          <Eye size={16} />
+                          <span>View Details</span>
                         </button>
                       </td>
                     </tr>
@@ -482,21 +473,30 @@ export default function AdminOfficerVerification() {
                   className="admin-offver-pagination-btn"
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
-                >Previous</button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                  <button
-                    key={p}
-                    className={`admin-offver-pagination-number${currentPage === p ? ' active' : ''}`}
-                    onClick={() => setCurrentPage(p)}
-                  >{p}</button>
-                ))}
+                >
+                  <ChevronLeft size={16} />
+                  <span>Previous</span>
+                </button>
+                <div className="admin-offver-pagination-numbers">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                    <button
+                      key={p}
+                      className={`admin-offver-pagination-number${currentPage === p ? ' active' : ''}`}
+                      onClick={() => setCurrentPage(p)}
+                    >{p}</button>
+                  ))}
+                </div>
                 <button
                   className="admin-offver-pagination-btn"
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
-                >Next</button>
+                >
+                  <span>Next</span>
+                  <ChevronRight size={16} />
+                </button>
               </div>
             )}
+
           </>
         )}
       </div>

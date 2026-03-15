@@ -121,6 +121,63 @@
   flex-shrink: 0;
 }
 
+.admin-sidebar-chevron {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  color: #8ec5ff;
+}
+
+/* ── Dropdown content ── */
+.admin-sidebar-dropdown {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin-sidebar-dropdown-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 0 8px 0;
+}
+
+.admin-sidebar-sub-button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-left: 48px;
+  height: 40px;
+  background: transparent;
+  border: none;
+  color: #8ec5ff;
+  font-size: 14px;
+  font-family: 'Arial', sans-serif;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.admin-sidebar-sub-button:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+}
+
+.admin-sidebar-sub-button.active {
+  color: white;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.admin-sidebar-sub-button .sidebar-notif-badge {
+  margin-left: auto;
+  margin-right: 12px;
+  transform: scale(0.9);
+}
+
 /* ── Profile / sign-out footer ── */
 .admin-sidebar-profile {
   padding: 16px;

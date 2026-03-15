@@ -1,6 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router';
-import { toast } from 'sonner';
+import { Search, UserPlus, Users as UsersIcon, ShieldCheck, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import '../styles/AdminMembers.css';
 import svgPaths from "../../imports/svg-icons";
 
@@ -386,10 +384,7 @@ export default function AdminMembers() {
           <p className="admin-members-subtitle">View and manage church members and officers</p>
         </div>
         <button className="admin-members-add-btn">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M4.16667 10H15.8333" stroke="white" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M10 4.16667V15.8333" stroke="white" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+          <UserPlus size={20} />
           <span>Add Member</span>
         </button>
       </div>
@@ -418,26 +413,21 @@ export default function AdminMembers() {
       <div className="admin-members-section">
         <div className="admin-members-section-header">
           <div className="admin-members-section-title-wrapper">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d={svgPaths.p13b4cf0}  stroke="#155DFC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d={svgPaths.p161d4800} stroke="#155DFC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d={svgPaths.p3766da80} stroke="#155DFC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <h2 className="admin-members-section-title">Officers</h2>
+            <ShieldCheck size={24} color="#155DFC" strokeWidth={2} />
+            <h2 className="admin-members-section-title">Verified Officers</h2>
             <span className="admin-members-count-badge">{officerPagination.totalMembers ?? 0}</span>
           </div>
-          <div className="admin-members-search-wrapper-small">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="admin-members-search-icon-small">
-              <path d={svgPaths.pcddfd00} stroke="#99A1AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M17.5 17.5L13.9167 13.9167" stroke="#99A1AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <input
-              type="text"
-              placeholder="Search officers..."
-              value={searchOfficers}
-              onChange={e => setSearchOfficers(e.target.value)}
-              className="admin-members-search-input-small"
-            />
+          <div className="admin-members-search-toolbar">
+            <div className="admin-members-search-wrapper">
+              <Search size={18} className="admin-members-search-icon" />
+              <input
+                type="text"
+                placeholder="Search by name, ID or email..."
+                value={searchOfficers}
+                onChange={e => setSearchOfficers(e.target.value)}
+                className="admin-members-search-input"
+              />
+            </div>
           </div>
         </div>
 
@@ -517,25 +507,25 @@ export default function AdminMembers() {
       <div className="admin-members-section">
         <div className="admin-members-section-header">
           <div className="admin-members-section-title-wrapper">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d={svgPaths.p13b4cf0}  stroke="#155DFC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d={svgPaths.p161d4800} stroke="#155DFC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <h2 className="admin-members-section-title">Members</h2>
+            <UsersIcon size={24} color="#155DFC" strokeWidth={2} />
+            <h2 className="admin-members-section-title">Member List</h2>
             <span className="admin-members-count-badge">{pagination.totalMembers ?? 0}</span>
           </div>
-          <div className="admin-members-search-wrapper-small">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="admin-members-search-icon-small">
-              <path d={svgPaths.pcddfd00} stroke="#99A1AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M17.5 17.5L13.9167 13.9167" stroke="#99A1AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <input
-              type="text"
-              placeholder="Search members..."
-              value={searchMembers}
-              onChange={e => setSearchMembers(e.target.value)}
-              className="admin-members-search-input-small"
-            />
+          <div className="admin-members-search-toolbar">
+            <div className="admin-members-search-wrapper">
+              <Search size={18} className="admin-members-search-icon" />
+              <input
+                type="text"
+                placeholder="Search by name, ID or email..."
+                value={searchMembers}
+                onChange={e => setSearchMembers(e.target.value)}
+                className="admin-members-search-input"
+              />
+            </div>
+            <button className="admin-members-filter-btn">
+              <Filter size={18} />
+              <span>Filter</span>
+            </button>
           </div>
         </div>
 
@@ -621,27 +611,32 @@ export default function AdminMembers() {
                 disabled={!pagination.hasPrev}
                 className="admin-members-pagination-btn"
               >
-                Previous
+                <ChevronLeft size={16} />
+                <span>Previous</span>
               </button>
-              {buildPageNumbers().map((p, i) =>
-                p === '…'
-                  ? <span key={`el-${i}`} className="admin-members-pagination-dots">…</span>
-                  : <button
-                      key={p}
-                      onClick={() => setCurrentPage(p)}
-                      className={`admin-members-pagination-number ${currentPage === p ? 'active' : ''}`}
-                    >
-                      {p}
-                    </button>
-              )}
+              <div className="admin-members-pagination-numbers">
+                {buildPageNumbers().map((p, i) =>
+                  p === '…'
+                    ? <span key={`el-${i}`} className="admin-members-pagination-dots">…</span>
+                    : <button
+                        key={p}
+                        onClick={() => setCurrentPage(p)}
+                        className={`admin-members-pagination-number ${currentPage === p ? 'active' : ''}`}
+                      >
+                        {p}
+                      </button>
+                )}
+              </div>
               <button
                 onClick={() => setCurrentPage(p => Math.min(pagination.totalPages, p + 1))}
                 disabled={!pagination.hasNext}
                 className="admin-members-pagination-btn"
               >
-                Next
+                <span>Next</span>
+                <ChevronRight size={16} />
               </button>
             </div>
+
           </div>
         )}
       </div>
