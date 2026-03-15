@@ -458,18 +458,18 @@ export default function AdminMembers() {
                   <td className="admin-members-table-cell"><span className="admin-members-id">{m.memberId || '—'}</span></td>
                   <td className="admin-members-table-cell">
                     <div className="admin-members-avatar-name">
-                      <div className="admin-members-avatar-text">{(m.fullName || m.name || 'M').charAt(0)}</div>
+                      <div className="admin-members-avatar-circle">{(m.fullName || m.name || 'M').charAt(0)}</div>
                       <span className="admin-members-name-text">{m.fullName || m.name}</span>
                     </div>
                   </td>
                   <td className="admin-members-table-cell"><span className="admin-members-email">{m.email}</span></td>
                   <td className="admin-members-table-cell"><span className="admin-members-branch">{m.branch || 'Main Branch'}</span></td>
                   <td className="admin-members-table-cell"><span className="admin-members-date">{formatDate(m.createdAt)}</span></td>
-                  <td className="admin-members-table-cell"><span className={`admin-members-status-badge ${m.status?.toLowerCase() === 'active' ? 'status-active' : 'status-inactive'}`}>{m.status || 'Active'}</span></td>
+                  <td className="admin-members-table-cell"><span className={`admin-members-status-badge ${m.status?.toLowerCase() === 'active' ? 'admin-members-status-active' : 'admin-members-status-inactive'}`}>{m.status || 'Active'}</span></td>
                   <td className="admin-members-table-cell">
                     <div className="admin-members-actions">
-                      <button className="admin-members-action-icon edit" onClick={() => setEditMember(m)}><IconEdit /></button>
-                      <button className="admin-members-action-icon delete" onClick={() => setDeleteMember(m)}><IconTrash /></button>
+                      <button className="admin-members-action-btn admin-members-action-edit" onClick={() => setEditMember(m)}><IconEdit /></button>
+                      <button className="admin-members-action-btn admin-members-action-delete" onClick={() => setDeleteMember(m)}><IconTrash /></button>
                     </div>
                   </td>
                 </tr>
@@ -543,7 +543,7 @@ export default function AdminMembers() {
                   <td className="admin-members-table-cell"><span className="admin-members-id">{m.memberId || '—'}</span></td>
                   <td className="admin-members-table-cell">
                     <div className="admin-members-avatar-name">
-                      <div className="admin-members-avatar-text">{(m.fullName || m.name || 'M').charAt(0)}</div>
+                      <div className="admin-members-avatar-circle">{(m.fullName || m.name || 'M').charAt(0)}</div>
                       <span className="admin-members-name-text">{m.fullName || m.name}</span>
                     </div>
                   </td>
@@ -555,11 +555,11 @@ export default function AdminMembers() {
                   </td>
                   <td className="admin-members-table-cell"><span className="admin-members-branch">{m.branch || 'Bulacan Main'}</span></td>
                   <td className="admin-members-table-cell"><span className="admin-members-position">{m.position || 'Member'}</span></td>
-                  <td className="admin-members-table-cell"><span className={`admin-members-status-badge ${m.status?.toLowerCase() === 'active' ? 'status-active' : 'status-inactive'}`}>{m.status || 'Active'}</span></td>
+                  <td className="admin-members-table-cell"><span className={`admin-members-status-badge ${m.status?.toLowerCase() === 'active' ? 'admin-members-status-active' : 'admin-members-status-inactive'}`}>{m.status || 'Active'}</span></td>
                   <td className="admin-members-table-cell">
                     <div className="admin-members-actions">
-                      <button className="admin-members-action-icon edit" onClick={() => setEditMember(m)}><IconEdit /></button>
-                      <button className="admin-members-action-icon delete" onClick={() => setDeleteMember(m)}><IconTrash /></button>
+                      <button className="admin-members-action-btn admin-members-action-edit" onClick={() => setEditMember(m)}><IconEdit /></button>
+                      <button className="admin-members-action-btn admin-members-action-delete" onClick={() => setDeleteMember(m)}><IconTrash /></button>
                     </div>
                   </td>
                 </tr>

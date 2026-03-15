@@ -38,8 +38,6 @@ export default function Loans() {
   const [error,               setError]               = useState('');
   const [page,                setPage]                = useState(1);
   const [totalCount,          setTotalCount]          = useState(0);
-  const [search,              setSearch]              = useState('');
-  const debouncedSearch = useDebounce(search, 400);
   const LIMIT = 5;
 
   /* ────────────────────────────────────────────────────────
@@ -59,11 +57,10 @@ export default function Loans() {
     }
 
     const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
-    const searchParam = debouncedSearch ? `&search=${debouncedSearch}` : '';
 
     try {
       const [loansRes, verifyRes] = await Promise.all([
-        fetch(`${API}/api/loans/my-loans?page=${page}&limit=${LIMIT}${searchParam}`, { headers }),
+        fetch(`${API}/api/loans/my-loans?page=${page}&limit=${LIMIT}`, { headers }),
         fetch(`${API}/api/verification/status`,  { headers }),
       ]);
 
@@ -100,13 +97,9 @@ export default function Loans() {
     } finally {
       setDataLoading(false);
     }
-  }, [navigate, page, debouncedSearch]);
+  }, [navigate, page]);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch]);
   
 
   /* ────────────────────────────────────────────────────────
@@ -282,10 +275,7 @@ export default function Loans() {
                   </div>
                 ) : (
                   <div className="loans-list">
-                    {loans.length === 0 ? (
-                      <p className="loans-empty-text" style={{ padding: '20px' }}>No loans match "{search}"</p>
-                    ) : (
-                      loans.map((loan) => (
+                    {loans.map((loan) => (
                         <div key={loan._id} className="loan-item">
                         {/* Loan Header */}
                         <div className="loan-item-header">
@@ -335,8 +325,7 @@ export default function Loans() {
                           </div>
                         </div>
                       </div>
-                    ))
-                    )}
+                      ))}
                   </div>
                 )}
 

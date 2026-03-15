@@ -55,8 +55,6 @@ export default function Donations() {
   const [loading, setLoading] = useState(true);
   const [historyPage, setHistoryPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-  const [search, setSearch] = useState('');
-  const debouncedSearch = useDebounce(search, 400);
   const [successModal, setSuccessModal] = useState(null);
   
   /* ── History Modal States ── */
@@ -73,8 +71,7 @@ export default function Donations() {
     setLoading(true);
     const token = localStorage.getItem('token');
     try {
-      const searchParam = debouncedSearch ? `&search=${debouncedSearch}` : '';
-      const res = await fetch(`${API}/api/donations/my-donations?page=${historyPage}&limit=${HISTORY_PER_PAGE}${searchParam}`, {
+      const res = await fetch(`${API}/api/donations/my-donations?page=${historyPage}&limit=${HISTORY_PER_PAGE}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -110,12 +107,8 @@ export default function Donations() {
 
   useEffect(() => { fetchHistory(); }, [fetchHistory]);
 
-  useEffect(() => {
-    setHistoryPage(1);
-  }, [debouncedSearch]);
-
-  const historyTotalPages = Math.max(1, Math.ceil(totalCount / HISTORY_PER_PAGE));
-  const paginatedHistory = donationHistory;
+  // const historyTotalPages = Math.max(1, Math.ceil(totalCount / HISTORY_PER_PAGE));
+  // const paginatedHistory = donationHistory;
 
   const handleDonate = async () => {
     setFormError('');

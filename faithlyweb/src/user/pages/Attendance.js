@@ -13,8 +13,6 @@ export default function Attendance() {
   const [upcomingData,   setUpcomingData]   = useState([]);
   const [stats,          setStats]          = useState({ total: 0, thisMonth: 0 });
   const [loading,        setLoading]        = useState(true);
-  const [search,         setSearch]         = useState('');
-  const debouncedSearch = useDebounce(search, 400);
   const [page,           setPage]           = useState(1);
   const [totalCount,     setTotalCount]     = useState(0);
 
@@ -25,9 +23,8 @@ export default function Attendance() {
     setLoading(true);
     try {
       const headers = { Authorization: `Bearer ${token}` };
-      const searchParam = debouncedSearch ? `&search=${debouncedSearch}` : '';
       const [attRes, upRes] = await Promise.all([
-        fetch(`${API}/api/attendance/my-attendance?page=${page}&limit=${PAGE_SIZE}${searchParam}`, { headers }),
+        fetch(`${API}/api/attendance/my-attendance?page=${page}&limit=${PAGE_SIZE}`, { headers }),
         fetch(`${API}/api/upcoming`, { headers }) // Fixed: fetch from the new upcoming route
       ]);
       
@@ -47,16 +44,12 @@ export default function Attendance() {
     } finally {
       setLoading(false);
     }
-  }, [token, page, debouncedSearch]);
+  }, [token, page]);
 
 
   useEffect(() => {
     fetchAttendance();
   }, [fetchAttendance]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch]);
 
   // Attendance rate = thisMonth / weeks in current month * 100 (capped at 100)
   const attendanceRate = useMemo(() => {
@@ -67,7 +60,7 @@ export default function Attendance() {
   }, [stats]);
 
   // Pagination
-  const totalPages  = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  // const totalPages  = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
   /* ── History Modal States ── */
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
