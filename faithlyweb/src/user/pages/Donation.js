@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import Sidebar from '../components/Sidebar';
 import '../styles/Donation.css';
+import gcashLogo from '../../assets/gcashlogo.png';
+import bankLogo from '../../assets/blackbanklogo.png';
 
 import API from '../../utils/api';
 
@@ -26,23 +28,18 @@ const mockProcessPayment = () =>
 /* ── Payment method icons ── */
 const GCashIcon = () => (
   <img
-    src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/GCash_logo.svg/320px-GCash_logo.svg.png"
+    src={gcashLogo}
     alt="GCash"
-    style={{ width: 52, height: 22, objectFit: 'contain' }}
-    onError={(e) => { e.target.style.display = 'none'; }}
+    style={{ width: 50, height: 20, objectFit: 'contain' }}
   />
 );
 
 const BankIcon = () => (
-  <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-    <path d="M3 21H21" stroke="#374151" strokeWidth="1.8" strokeLinecap="round"/>
-    <path d="M3 10H21" stroke="#374151" strokeWidth="1.8" strokeLinecap="round"/>
-    <path d="M5 10V21" stroke="#374151" strokeWidth="1.6" strokeLinecap="round"/>
-    <path d="M19 10V21" stroke="#374151" strokeWidth="1.6" strokeLinecap="round"/>
-    <path d="M9 10V21"  stroke="#374151" strokeWidth="1.6" strokeLinecap="round"/>
-    <path d="M15 10V21" stroke="#374151" strokeWidth="1.6" strokeLinecap="round"/>
-    <path d="M12 3L21 8H3L12 3Z" stroke="#374151" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
+  <img
+    src={bankLogo}
+    alt="Bank Transfer"
+    style={{ width: 24, height: 24, objectFit: 'contain' }}
+  />
 );
 
 export default function Donations() {
