@@ -7,25 +7,32 @@ import imgPuacLogo from "../../assets/puaclogo.png";
 import '../styles/Signup.css';
 import VerifyEmailModal from '../components/VerifyEmail';
 
-/* ─── Regex / Constants ──────────────────────────────────────────── */
-const nameRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s'-]+$/;   // supports accented/hyphenated names
+/* ─── Regex / Constants ─────────────────────────────────────── */
+const nameRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s'-]+$/;
 const phoneRegex = /^\d{10}$/;
 const emailLocalRegex = /^[a-zA-Z0-9._+-]+$/;
 const passwordUppercase = /[A-Z]/;
 const passwordLowercase = /[a-z]/;
 const passwordNumber = /[0-9]/;
 const passwordSymbol = /[^A-Za-z0-9]/;
-const disposableDomains = ['mailinator.com', 'guerrillamail.com', '10minutemail.com', 'tempmail.com', 'throwaway.email', 'yopmail.com'];
-const validDomains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'live.com', 'msn.com', 'aol.com', 'protonmail.com', 'zoho.com', 'mail.com', 'yandex.com'];
+
+const disposableDomains = [
+  'mailinator.com', 'guerrillamail.com', '10minutemail.com', 'tempmail.com',
+  'throwaway.email', 'yopmail.com', 'trashmail.com', 'sharklasers.com'
+];
+const validDomains = [
+  'gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com',
+  'live.com', 'msn.com', 'aol.com', 'protonmail.com', 'zoho.com', 'mail.com', 'yandex.com'
+];
+
 const MIN_AGE = 18;
 const MAX_AGE = 100;
-
 const today = new Date();
 today.setHours(0, 0, 0, 0);
 const maxBirthDate = new Date(today.getFullYear() - MIN_AGE, today.getMonth(), today.getDate());
 const minBirthDate = new Date(today.getFullYear() - MAX_AGE, today.getMonth(), today.getDate());
 
-/* ─── Helpers ────────────────────────────────────────────────────── */
+/* ─── Helpers ───────────────────────────────────────────────── */
 const calculateAge = (birthDate) => {
   const dob = new Date(birthDate);
   let age = today.getFullYear() - dob.getFullYear();
@@ -34,13 +41,12 @@ const calculateAge = (birthDate) => {
   return age;
 };
 
-/* ─── Advanced Email Validator ───────────────────────────────────── */
+/* ─── Email Validator ───────────────────────────────────────── */
 const validateEmailAdvanced = (email) => {
   if (!email) return 'Email is required';
-  const trimmed = email.trim();
-  if (/\s/.test(trimmed)) return 'Email cannot contain spaces';
-  if (!trimmed.includes('@')) return 'Email must contain @';
-  const parts = trimmed.split('@');
+  if (/\s/.test(email)) return 'Email cannot contain spaces';
+  if (!email.includes('@')) return 'Email must contain @';
+  const parts = email.split('@');
   if (parts.length !== 2) return 'Email must have exactly one @';
   const [localPart, domain] = parts;
   if (!localPart) return 'Email must have a local part before @';
@@ -49,8 +55,8 @@ const validateEmailAdvanced = (email) => {
   if (/\.\./.test(localPart)) return 'Local part cannot have consecutive dots';
   if (localPart.length > 64) return 'Local part is too long (max 64 characters)';
   if (!domain) return 'Email must have a domain after @';
-  if (domain.startsWith('-') || domain.endsWith('-')) return 'Domain cannot start or end with a hyphen';
   if (domain.startsWith('.') || domain.endsWith('.')) return 'Domain cannot start or end with a dot';
+  if (domain.startsWith('-') || domain.endsWith('-')) return 'Domain cannot start or end with a hyphen';
   if (!domain.includes('.')) return 'Domain must contain at least one dot';
   const domainParts = domain.split('.');
   if (domainParts.some(p => p.length === 0)) return 'Invalid domain format';
@@ -58,7 +64,6 @@ const validateEmailAdvanced = (email) => {
   if (tld.length < 2) return 'Invalid domain extension';
   if (/^\d+$/.test(tld)) return 'TLD cannot be all numbers';
   if (!/^[a-zA-Z0-9.-]+$/.test(domain)) return 'Domain contains invalid characters';
-  if (domain.length > 255) return 'Domain is too long';
   const lowerDomain = domain.toLowerCase();
   if (disposableDomains.includes(lowerDomain)) return 'Disposable email addresses are not allowed';
   const isKnown = validDomains.includes(lowerDomain);
@@ -67,14 +72,14 @@ const validateEmailAdvanced = (email) => {
   return '';
 };
 
-/* ─── Field Validators ───────────────────────────────────────────── */
+/* ─── Field Validators ──────────────────────────────────────── */
 const validators = {
   firstName(value) {
     if (!value?.trim()) return 'First name is required';
     if (value.trim().length < 2) return 'At least 2 characters required';
     if (value.length > 30) return 'Max 30 characters';
     if (!nameRegex.test(value)) return 'Letters, spaces, hyphens, or apostrophes only';
-    if (/\s{2,}/.test(value)) return 'No double spaces';
+    if (/\s{2,}/.test(value)) return 'No consecutive spaces allowed';
     return '';
   },
   lastName(value) {
@@ -82,15 +87,15 @@ const validators = {
     if (value.trim().length < 2) return 'At least 2 characters required';
     if (value.length > 30) return 'Max 30 characters';
     if (!nameRegex.test(value)) return 'Letters, spaces, hyphens, or apostrophes only';
-    if (/\s{2,}/.test(value)) return 'No double spaces';
+    if (/\s{2,}/.test(value)) return 'No consecutive spaces allowed';
     return '';
   },
   email: validateEmailAdvanced,
   phone(value) {
     if (!value) return 'Phone number is required';
-    if (value.startsWith('0')) return 'Enter 10 digits after +63 (no leading 0)';
     if (!phoneRegex.test(value)) return 'Exactly 10 digits required (e.g. 9171234567)';
-    if (!/^9/.test(value)) return 'Philippine mobile numbers start with 9';
+    if (!/^9/.test(value)) return 'Philippine mobile numbers must start with 9';
+    if (value.startsWith('0')) return 'Enter 10 digits after +63 (no leading 0)';
     return '';
   },
   gender(value) {
@@ -100,8 +105,8 @@ const validators = {
   birthday(value) {
     if (!value) return 'Birthdate is required';
     const age = calculateAge(value);
-    if (age < MIN_AGE) return `Must be at least ${MIN_AGE} years old`;
-    if (age > MAX_AGE) return `Age must not exceed ${MAX_AGE}`;
+    if (age < MIN_AGE) return `You must be at least ${MIN_AGE} years old`;
+    if (age > MAX_AGE) return `Age must not exceed ${MAX_AGE} years`;
     return '';
   },
   community(value) {
@@ -113,29 +118,23 @@ const validators = {
     if (!value) return ['Password is required'];
     if (value.length < 8) errs.push('At least 8 characters');
     if (value.length > 72) errs.push('Maximum 72 characters');
-    if (!passwordUppercase.test(value)) errs.push('At least one uppercase letter (A-Z)');
-    if (!passwordLowercase.test(value)) errs.push('At least one lowercase letter (a-z)');
-    if (!passwordNumber.test(value)) errs.push('At least one number (0-9)');
+    if (!passwordUppercase.test(value)) errs.push('At least one uppercase letter');
+    if (!passwordLowercase.test(value)) errs.push('At least one lowercase letter');
+    if (!passwordNumber.test(value)) errs.push('At least one number');
     if (!passwordSymbol.test(value)) errs.push('At least one symbol (@#$%^&*)');
     return errs;
   },
   confirmPassword(value, password) {
-    if (!value) return 'Please confirm your password';
+    if (!value) return 'Confirm password is required';
     if (value !== password) return 'Passwords do not match';
     return '';
   }
 };
 
-/* ─── Communities ────────────────────────────────────────────────── */
+/* ─── Communities ───────────────────────────────────────────── */
 const CommunitySelect = ({ value, onChange }) => (
-  <select
-    name="community"
-    value={value}
-    onChange={onChange}
-    data-selected={value !== ''}
-    className="signup-form-select"
-  >
-    <option value="">Select Community</option>
+  <select name="community" value={value} onChange={onChange} className="signup-form-select">
+    <option value="">Select your Community</option>
     <optgroup label="Kalinga">
       <option>Tabuk</option><option>Zapote</option><option>Bliss</option>
       <option>Libanon</option><option>Batong Buhay</option><option>Balatoc</option><option>Lat-nog</option>
@@ -157,7 +156,9 @@ const CommunitySelect = ({ value, onChange }) => (
     <optgroup label="Bulacan">
       <option>Meycauayan City</option><option>Camalig</option><option>San Jose Del Monte</option>
     </optgroup>
-    <optgroup label="Tarlac"><option>Pacpaco, San Manuel</option><option>Victoria</option></optgroup>
+    <optgroup label="Tarlac">
+      <option>Pacpaco, San Manuel</option><option>Victoria</option>
+    </optgroup>
     <optgroup label="Nueva Ecija"><option>Bambanaba, Cuyapo</option></optgroup>
     <optgroup label="Pangasinan">
       <option>Dagupan</option><option>Mangatarem</option><option>Laoak Langka</option>
@@ -180,7 +181,7 @@ const CommunitySelect = ({ value, onChange }) => (
   </select>
 );
 
-/* ─── Component ──────────────────────────────────────────────────── */
+/* ─── Component ─────────────────────────────────────────────── */
 export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
   const [formData, setFormData] = useState({
     firstName: '', lastName: '', email: '', phone: '',
@@ -238,7 +239,6 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
 
     setFormData(prev => {
       const updated = { ...prev, [name]: sanitized };
-      // Re-validate confirm password when password changes
       if (name === 'password' && prev.confirmPassword) {
         validateField('confirmPassword', prev.confirmPassword, sanitized);
       }
@@ -249,22 +249,11 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
     validateField(name, sanitized);
   };
 
-  /* ── Handle blur (mark touched) ── */
+  /* ── Handle blur ── */
   const handleBlur = (e) => {
     const { name, value } = e.target;
     setTouched(prev => ({ ...prev, [name]: true }));
     validateField(name, value);
-  };
-
-  /* ── Determine input class ── */
-  const inputClass = (name) => {
-    const err = errors[name];
-    const hasErr = Array.isArray(err) ? err.length > 0 : !!err;
-    const val = formData[name];
-    const isTouched = touched[name];
-    if (isTouched && hasErr) return 'signup-form-input input-error';
-    if (isTouched && !hasErr && val) return 'signup-form-input input-valid';
-    return 'signup-form-input';
   };
 
   /* ── Submit ── */
@@ -273,8 +262,9 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
     if (!isFormValid) return;
     setLoading(true);
     try {
+      const fullName = `${formData.firstName.trim()} ${formData.lastName.trim()}`;
       const submitData = {
-        fullName: `${formData.firstName.trim()} ${formData.lastName.trim()}`,
+        fullName,
         email: formData.email.trim().toLowerCase(),
         phone: `+63${formData.phone}`,
         birthday: formData.birthday,
@@ -301,22 +291,20 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
   };
 
   const hasPasswordErrors = Array.isArray(errors.password) && errors.password.length > 0;
-  const passwordFieldClass = `signup-form-input${hasPasswordErrors && touched.password ? ' input-error' : (!hasPasswordErrors && formData.password && touched.password ? ' input-valid' : '')}`;
-  const confirmFieldClass = inputClass('confirmPassword');
 
   const isFormValid =
     formData.firstName && formData.lastName && formData.email &&
     formData.phone && formData.birthday && formData.gender &&
     formData.community && formData.password && formData.confirmPassword &&
-    Object.entries(errors).every(([, err]) => Array.isArray(err) ? err.length === 0 : !err) &&
+    Object.values(errors).every(err => Array.isArray(err) ? err.length === 0 : !err) &&
     isAllAgreed;
 
   return (
     <div className="signup-modal-overlay">
       <div className="signup-modal-card" onClick={e => e.stopPropagation()}>
 
-        {/* BACK */}
-        <button onClick={onClose} className="signup-back-btn" type="button" aria-label="Go back">
+        {/* BACK BUTTON */}
+        <button onClick={onClose} className="signup-back-btn" type="button">
           <svg width="16" height="16" fill="none" viewBox="0 0 16 16">
             <path d={svgPaths.p203476e0} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
             <path d="M12.6667 8H3.33333" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
@@ -325,34 +313,30 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
 
         {/* HEADER */}
         <div className="signup-header">
-          <img src={imgPuacLogo} alt="PUAC Logo" className="signup-logo" />
+          <img src={imgPuacLogo} alt="Logo" className="signup-logo" />
           <h1 className="signup-title">Create Your Account</h1>
           <p className="signup-subtitle">Join our church community today</p>
         </div>
 
-        <div className="signup-divider">
-          <div className="signup-divider-line" />
-          <div className="signup-divider-diamond" />
-          <div className="signup-divider-line" />
-        </div>
-
         <form onSubmit={handleSubmit} className="signup-form" noValidate>
 
-          {/* ── Personal Info ── */}
-          <p className="signup-section-label">Personal Information</p>
-
+          {/* ROW 1: First Name + Last Name */}
           <div className="signup-form-row">
             <div className="signup-form-group">
-              <label htmlFor="firstName" className="signup-form-label">First Name</label>
+              <label htmlFor="firstName" className="signup-form-label">First Name:</label>
               <div className="signup-input-wrapper">
                 <svg className="signup-input-icon" fill="none" viewBox="0 0 20 20">
                   <path d={svgPaths.p1beb9580} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                   <path d={svgPaths.p32ab0300} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 </svg>
-                <input id="firstName" name="firstName" value={formData.firstName}
+                <input
+                  id="firstName" name="firstName"
+                  value={formData.firstName}
                   onChange={handleChange} onBlur={handleBlur}
-                  className={inputClass('firstName')}
-                  placeholder="e.g. Juan" autoComplete="given-name" />
+                  className={`signup-form-input${touched.firstName && errors.firstName ? ' input-error' : ''}`}
+                  placeholder="Enter your first name"
+                  autoComplete="given-name"
+                />
               </div>
               {touched.firstName && errors.firstName && (
                 <span className="signup-error-text">{errors.firstName}</span>
@@ -360,16 +344,20 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
             </div>
 
             <div className="signup-form-group">
-              <label htmlFor="lastName" className="signup-form-label">Last Name</label>
+              <label htmlFor="lastName" className="signup-form-label">Last Name:</label>
               <div className="signup-input-wrapper">
                 <svg className="signup-input-icon" fill="none" viewBox="0 0 20 20">
                   <path d={svgPaths.p1beb9580} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                   <path d={svgPaths.p32ab0300} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 </svg>
-                <input id="lastName" name="lastName" value={formData.lastName}
+                <input
+                  id="lastName" name="lastName"
+                  value={formData.lastName}
                   onChange={handleChange} onBlur={handleBlur}
-                  className={inputClass('lastName')}
-                  placeholder="e.g. dela Cruz" autoComplete="family-name" />
+                  className={`signup-form-input${touched.lastName && errors.lastName ? ' input-error' : ''}`}
+                  placeholder="Enter your last name"
+                  autoComplete="family-name"
+                />
               </div>
               {touched.lastName && errors.lastName && (
                 <span className="signup-error-text">{errors.lastName}</span>
@@ -377,21 +365,23 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
             </div>
           </div>
 
-          {/* ── Contact ── */}
-          <p className="signup-section-label">Contact Details</p>
-
+          {/* ROW 2: Email + Phone */}
           <div className="signup-form-row">
             <div className="signup-form-group">
-              <label htmlFor="email" className="signup-form-label">Email Address</label>
+              <label htmlFor="email" className="signup-form-label">Email:</label>
               <div className="signup-input-wrapper">
                 <svg className="signup-input-icon" fill="none" viewBox="0 0 20 20">
                   <path d={svgPaths.p24d83580} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                   <path d={svgPaths.pd919a80} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 </svg>
-                <input id="email" name="email" type="email" value={formData.email}
+                <input
+                  id="email" name="email" type="email"
+                  value={formData.email}
                   onChange={handleChange} onBlur={handleBlur}
-                  className={inputClass('email')}
-                  placeholder="juan@gmail.com" autoComplete="email" />
+                  className={`signup-form-input${touched.email && errors.email ? ' input-error' : ''}`}
+                  placeholder="your.email@example.com"
+                  autoComplete="email"
+                />
               </div>
               {touched.email && errors.email && (
                 <span className="signup-error-text">{errors.email}</span>
@@ -399,16 +389,19 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
             </div>
 
             <div className="signup-form-group">
-              <label htmlFor="phone" className="signup-form-label">Phone Number</label>
+              <label htmlFor="phone" className="signup-form-label">Phone Number:</label>
               <div className="signup-input-wrapper">
                 <svg className="signup-input-icon" fill="none" viewBox="0 0 20 20">
                   <path d={svgPaths.p24c7c480} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 </svg>
-                <input id="phone" name="phone" type="tel"
+                <input
+                  id="phone" name="phone" type="tel"
                   value={`+63${formData.phone}`}
                   onChange={handleChange} onBlur={handleBlur}
-                  className={inputClass('phone')}
-                  placeholder="+63 9XX XXX XXXX" autoComplete="tel" />
+                  className={`signup-form-input${touched.phone && errors.phone ? ' input-error' : ''}`}
+                  placeholder="+63 00 000 0000"
+                  autoComplete="tel"
+                />
               </div>
               {touched.phone && errors.phone && (
                 <span className="signup-error-text">{errors.phone}</span>
@@ -416,20 +409,20 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
             </div>
           </div>
 
-          {/* ── Profile ── */}
-          <p className="signup-section-label">Profile</p>
-
+          {/* ROW 3: Gender + Birthday + Community */}
           <div className="signup-form-row-3">
+
+            {/* GENDER — radio buttons */}
             <div className="signup-form-group">
-              <label className="signup-form-label">Gender</label>
+              <label className="signup-form-label">Gender:</label>
               <div className="gender-radio-group">
                 {[
-                  { value: 'male', label: 'Male', icon: '♂' },
-                  { value: 'female', label: 'Female', icon: '♀' },
-                ].map(({ value, label, icon }) => (
+                  { value: 'male', label: 'Male' },
+                  { value: 'female', label: 'Female' },
+                ].map(({ value, label }) => (
                   <label
                     key={value}
-                    className={`gender-radio-card${formData.gender === value ? ' gender-radio-card--selected' : ''}`}
+                    className={`gender-radio-card${formData.gender === value ? ' gender-radio-card--selected' : ''}${touched.gender && errors.gender ? ' input-error' : ''}`}
                   >
                     <input
                       type="radio"
@@ -440,9 +433,8 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
                       onBlur={handleBlur}
                       className="gender-radio-input"
                     />
-                    <span className="gender-radio-icon">{icon}</span>
-                    <span className="gender-radio-label">{label}</span>
                     <span className="gender-radio-dot" />
+                    <span className="gender-radio-text">{label}</span>
                   </label>
                 ))}
               </div>
@@ -451,11 +443,12 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
               )}
             </div>
 
+            {/* BIRTHDAY */}
             <div className="signup-form-group">
               <label htmlFor="birthday" className="signup-form-label">
-                Birthday
+                Birthday:
                 {calculatedAge !== null && (
-                  <span className="signup-age-badge">Age: {calculatedAge}</span>
+                  <span className="signup-age-badge">(Age: {calculatedAge})</span>
                 )}
               </label>
               <div className="signup-input-wrapper">
@@ -465,28 +458,32 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
                   <path d={svgPaths.p1da67b80} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                   <path d="M2.5 8.33333H17.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 </svg>
-                <input id="birthday" type="date" name="birthday"
+                <input
+                  id="birthday" type="date" name="birthday"
                   value={formData.birthday}
                   onChange={handleChange} onBlur={handleBlur}
                   onKeyDown={e => e.preventDefault()}
                   min={minBirthDate.toISOString().split('T')[0]}
                   max={maxBirthDate.toISOString().split('T')[0]}
-                  className={inputClass('birthday')}
-                  autoComplete="bday" />
+                  className={`signup-form-input${touched.birthday && errors.birthday ? ' input-error' : ''}`}
+                  placeholder="MM-DD-YYYY"
+                  autoComplete="bday"
+                />
               </div>
               {touched.birthday && errors.birthday && (
                 <span className="signup-error-text">{errors.birthday}</span>
               )}
             </div>
 
+            {/* COMMUNITY */}
             <div className="signup-form-group">
-              <label className="signup-form-label">Community</label>
+              <label className="signup-form-label">Community:</label>
               <div className="signup-select-wrapper">
                 <svg className="signup-select-icon" fill="none" viewBox="0 0 20 20">
                   <path d={svgPaths.p1beb9580} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                   <path d={svgPaths.p32ab0300} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 </svg>
-                <CommunitySelect value={formData.community} onChange={(e) => { handleChange(e); handleBlur(e); }} />
+                <CommunitySelect value={formData.community} onChange={handleChange} />
                 <svg className="signup-select-dropdown" fill="none" viewBox="0 0 20 20">
                   <path d={svgPaths.p1ae0b780} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 </svg>
@@ -497,47 +494,50 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
             </div>
           </div>
 
-          {/* ── Security ── */}
-          <p className="signup-section-label">Security</p>
-
+          {/* ROW 4: Password (left) + Requirements box (right) */}
           <div className="password-section">
             <div className="password-fields">
               <div className="signup-form-group">
-                <label htmlFor="password" className="signup-form-label">Password</label>
+                <label htmlFor="password" className="signup-form-label">Password:</label>
                 <div className="signup-input-wrapper">
                   <svg className="signup-input-icon" fill="none" viewBox="0 0 20 20">
                     <path d={svgPaths.p2566d000} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                     <path d={svgPaths.p1bf79e00} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                   </svg>
-                  <input id="password"
+                  <input
+                    id="password"
                     type={showPassword ? 'text' : 'password'}
-                    name="password" value={formData.password}
+                    name="password"
+                    value={formData.password}
                     onChange={handleChange} onBlur={handleBlur}
-                    className={passwordFieldClass}
+                    className={`signup-form-input${touched.password && hasPasswordErrors ? ' input-error' : ''}`}
                     placeholder="Create a password"
-                    autoComplete="new-password" />
-                  <button type="button" onClick={() => setShowPassword(p => !p)} className="signup-password-toggle" aria-label="Toggle password">
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    autoComplete="new-password"
+                  />
+                  <button type="button" onClick={() => setShowPassword(p => !p)} className="signup-password-toggle">
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
               </div>
 
               <div className="signup-form-group">
-                <label htmlFor="confirmPassword" className="signup-form-label">Confirm Password</label>
                 <div className="signup-input-wrapper">
                   <svg className="signup-input-icon" fill="none" viewBox="0 0 20 20">
                     <path d={svgPaths.p2566d000} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                     <path d={svgPaths.p1bf79e00} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                   </svg>
-                  <input id="confirmPassword"
+                  <input
+                    id="confirmPassword"
                     type={showConfirmPassword ? 'text' : 'password'}
-                    name="confirmPassword" value={formData.confirmPassword}
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
                     onChange={handleChange} onBlur={handleBlur}
-                    className={confirmFieldClass}
-                    placeholder="Re-enter your password"
-                    autoComplete="new-password" />
-                  <button type="button" onClick={() => setShowConfirmPassword(p => !p)} className="signup-password-toggle" aria-label="Toggle confirm password">
-                    {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    className={`signup-form-input${touched.confirmPassword && errors.confirmPassword ? ' input-error' : ''}`}
+                    placeholder="Confirm your password"
+                    autoComplete="new-password"
+                  />
+                  <button type="button" onClick={() => setShowConfirmPassword(p => !p)} className="signup-password-toggle">
+                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
                 {touched.confirmPassword && errors.confirmPassword && (
@@ -549,13 +549,13 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
             {/* Requirements box */}
             <div className="password-requirements-box">
               <p className="password-requirements-title">Password must contain:</p>
-              {touched.password && (hasPasswordErrors || errors.confirmPassword) ? (
+              {(touched.password && hasPasswordErrors) || (touched.confirmPassword && errors.confirmPassword) ? (
                 <div className="password-error-message">
-                  {hasPasswordErrors && errors.password.map((err, i) => (
-                    <p key={i} className="error-item">✕ {err}</p>
+                  {touched.password && hasPasswordErrors && errors.password.map((err, i) => (
+                    <p key={i} className="error-item">• {err}</p>
                   ))}
                   {touched.confirmPassword && errors.confirmPassword && (
-                    <p className="error-item">✕ {errors.confirmPassword}</p>
+                    <p className="error-item">• {errors.confirmPassword}</p>
                   )}
                 </div>
               ) : (
@@ -563,8 +563,8 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
                   <li>• At least 8 characters</li>
                   <li>• One uppercase letter (A-Z)</li>
                   <li>• One lowercase letter (a-z)</li>
-                  <li>• At least one number (0-9)</li>
-                  <li>• At least one symbol (@#$%^&*)</li>
+                  <li>• At least 1 number or more</li>
+                  <li>• At least 1 symbol (@#$%*_)</li>
                 </ul>
               )}
             </div>
@@ -577,14 +577,14 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
             <label className="signup-checkbox-label">
               I agree to the{' '}
               <button type="button" onClick={() => setShowTerms(true)} className="signup-link">Terms and Conditions</button>
-              {' '}and{' '}
+              {' and '}
               <button type="button" onClick={() => setShowPrivacy(true)} className="signup-link">Privacy Policy</button>
             </label>
           </div>
 
           {/* SUBMIT */}
           <button type="submit" className="signup-submit-button" disabled={!isFormValid || loading}>
-            {loading ? 'Creating Account…' : 'Create Account'}
+            {loading ? 'Creating...' : 'Create Account'}
           </button>
         </form>
 
@@ -593,8 +593,8 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
           <div className="policy-modal-overlay" onClick={() => setShowTerms(false)}>
             <div className="policy-modal-content" onClick={e => e.stopPropagation()}>
               <h3>Terms & Conditions</h3>
-              <p>Please read and agree to the terms and conditions before creating your account.</p>
-              <button onClick={() => { setAgreeTerms(true); setShowTerms(false); }} className="policy-modal-button">I Agree</button>
+              <p>Please read and agree to the terms and conditions...</p>
+              <button onClick={() => { setAgreeTerms(true); setShowTerms(false); }} className="policy-modal-button">Agree</button>
             </div>
           </div>
         )}
@@ -604,19 +604,15 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
           <div className="policy-modal-overlay" onClick={() => setShowPrivacy(false)}>
             <div className="policy-modal-content" onClick={e => e.stopPropagation()}>
               <h3>Privacy Policy</h3>
-              <p>Please read and agree to the privacy policy before creating your account.</p>
-              <button onClick={() => { setAgreePrivacy(true); setShowPrivacy(false); }} className="policy-modal-button">I Agree</button>
+              <p>Please read and agree to the privacy policy...</p>
+              <button onClick={() => { setAgreePrivacy(true); setShowPrivacy(false); }} className="policy-modal-button">Agree</button>
             </div>
           </div>
         )}
       </div>
 
       {showVerifyModal && (
-        <VerifyEmailModal
-          isOpen={showVerifyModal}
-          onClose={() => setShowVerifyModal(false)}
-          email={registeredEmail}
-        />
+        <VerifyEmailModal isOpen={showVerifyModal} onClose={() => setShowVerifyModal(false)} email={registeredEmail} />
       )}
     </div>
   );
