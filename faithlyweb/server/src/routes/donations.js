@@ -42,11 +42,14 @@ router.post('/donations', authenticateUser, async (req, res) => {
 router.get('/donations/my-donations', authenticateUser, async (req, res) => {
   try {
     const email = req.user.email;
+    const { category } = req.query;
     const page  = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 1000;
+    const limit = parseInt(req.query.limit) || 10;
     const skip  = (page - 1) * limit;
 
     const findQuery = { email };
+    if (category) findQuery.category = category;
+
     const totalCount = await donations.countDocuments(findQuery);
     const userDonations = await donations.find(findQuery)
       .sort({ createdAt: -1 })

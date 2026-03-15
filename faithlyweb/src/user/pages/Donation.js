@@ -58,6 +58,15 @@ export default function Donations() {
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 400);
   const [successModal, setSuccessModal] = useState(null);
+  
+  /* ── History Modal States ── */
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [modalPage, setModalPage] = useState(1);
+  const [modalCategory, setModalCategory] = useState('');
+  const [modalHistory, setModalHistory] = useState([]);
+  const [modalTotalPages, setModalTotalPages] = useState(1);
+  const [modalLoading, setModalLoading] = useState(false);
+  const MODAL_LIMIT = 10;
   const HISTORY_PER_PAGE = 5;
 
   const fetchHistory = useCallback(async () => {
@@ -76,7 +85,28 @@ export default function Donations() {
       }
     } catch { /* silent */ }
     finally { setLoading(false); }
-  }, [historyPage, debouncedSearch]);
+  }, [historyPage]);
+
+  const fetchModalHistory = useCallback(async () => {
+    setModalLoading(true);
+    const token = localStorage.getItem('token');
+    try {
+      const catParam = modalCategory ? `&category=${modalCategory}` : '';
+      const res = await fetch(`${API}/api/donations/my-donations?page=${modalPage}&limit=${MODAL_LIMIT}${catParam}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setModalHistory(data.donations || []);
+        setModalTotalPages(data.totalPages || 1);
+      }
+    } catch { /* silent */ }
+    finally { setModalLoading(false); }
+  }, [modalPage, modalCategory]);
+
+  useEffect(() => {
+    if (isHistoryModalOpen) fetchModalHistory();
+  }, [isHistoryModalOpen, fetchModalHistory]);
 
   useEffect(() => { fetchHistory(); }, [fetchHistory]);
 
@@ -115,6 +145,12 @@ export default function Donations() {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleOpenHistory = () => {
+    setModalPage(1);
+    setModalCategory('');
+    setIsHistoryModalOpen(true);
   };
 
   return (
@@ -284,24 +320,11 @@ export default function Donations() {
             </div>
           </div>
 
-          {/* Donation History */}
+          {/* Donation History (Preview) */}
           <div className="donation-categories-section">
             <div className="history-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h2 className="section-title" style={{ marginBottom: 0 }}>Donation History</h2>
-              <div className="history-search-box">
-                <svg fill="none" viewBox="0 0 16 16" width="14" height="14" className="search-icon-inner">
-                  <circle cx="7" cy="7" r="5" stroke="#9ca3af" strokeWidth="1.5" />
-                  <path d="M10.5 10.5L13.5 13.5" stroke="#9ca3af" strokeLinecap="round" strokeWidth="1.5" />
-                </svg>
-                <input
-                  type="text"
-                  className="history-search-input"
-                  placeholder="Search ID, category..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </div>
-              <button className="view-all-btn" onClick={() => setHistoryPage(1)}>View All History</button>
+              <h2 className="section-title" style={{ marginBottom: 0 }}>Recent Donation History</h2>
+              <button className="view-history-btn" onClick={handleOpenHistory}>View History</button>
             </div>
 
             {loading && <p className="donations-loading-text">Loading…</p>}
@@ -311,57 +334,28 @@ export default function Donations() {
             )}
 
             {!loading && donationHistory.length > 0 && (
-              <>
-                <div className="donation-history-list">
-                  {paginatedHistory.map((d) => (
-                    <div key={d._id || d.donationId} className="donation-history-item">
-                      <div className="donation-history-main">
-                        <svg className="donation-history-icon" fill="none" viewBox="0 0 20 20">
-                          <path d="M17.3667 3.84167C16.941 3.41583 16.4357 3.07803 15.8794 2.84757C15.3231 2.61712 14.7267 2.49854 14.1245 2.49854C13.5224 2.49854 12.9259 2.61712 12.3696 2.84757C11.8133 3.07803 11.308 3.41583 10.8823 3.84167L10.0001 4.72417L9.11793 3.84167C8.25853 2.98227 7.09337 2.49898 5.87593 2.49898C4.65849 2.49898 3.49334 2.98227 2.63393 3.84167C1.77453 4.70108 1.29124 5.86623 1.29124 7.08367C1.29124 8.30111 1.77453 9.46626 2.63393 10.3257L10.0001 17.6917L17.3662 10.3257C17.792 9.89993 18.1298 9.39461 18.3602 8.83831C18.5907 8.28202 18.7092 7.68556 18.7092 7.08334C18.7092 6.48112 18.5907 5.88465 18.3602 5.32836C18.1298 4.77207 17.792 4.26743 17.3662 3.84167H17.3667Z" stroke="#E60076" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                        </svg>
-                        <div className="donation-history-info">
-                          <h3 className="donation-fund">{d.category}</h3>
-                          <p className="donation-id">{d.donationId}</p>
-                          <p className="donation-details">
-                            {fmtDate(d.createdAt || d.date)} · {d.method || d.paymentMethod}
-                          </p>
-                          {d.type === 'Recurring' && (
-                            <span className="recurring-badge">Recurring</span>
-                          )}
-                        </div>
+              <div className="donation-history-list">
+                {donationHistory.slice(0, 5).map((d) => (
+                  <div key={d._id || d.donationId} className="donation-history-item">
+                    <div className="donation-history-main">
+                      <svg className="donation-history-icon" fill="none" viewBox="0 0 20 20">
+                        <path d="M17.3667 3.84167C16.941 3.41583 16.4357 3.07803 15.8794 2.84757C15.3231 2.61712 14.7267 2.49854 14.1245 2.49854C13.5224 2.49854 12.9259 2.61712 12.3696 2.84757C11.8133 3.07803 11.308 3.41583 10.8823 3.84167L10.0001 4.72417L9.11793 3.84167C8.25853 2.98227 7.09337 2.49898 5.87593 2.49898C4.65849 2.49898 3.49334 2.98227 2.63393 3.84167C1.77453 4.70108 1.29124 5.86623 1.29124 7.08367C1.29124 8.30111 1.77453 9.46626 2.63393 10.3257L10.0001 17.6917L17.3662 10.3257C17.792 9.89993 18.1298 9.39461 18.3602 8.83831C18.5907 8.28202 18.7092 7.68556 18.7092 7.08334C18.7092 6.48112 18.5907 5.88465 18.3602 5.32836C18.1298 4.77207 17.792 4.26743 17.3662 3.84167H17.3667Z" stroke="#E60076" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                      </svg>
+                      <div className="donation-history-info">
+                        <h3 className="donation-fund">{d.category}</h3>
+                        <p className="donation-id">{d.donationId}</p>
+                        <p className="donation-details">
+                          {fmtDate(d.createdAt || d.date)} · {d.method || d.paymentMethod}
+                        </p>
+                        {d.type === 'Recurring' && (
+                          <span className="recurring-badge">Recurring</span>
+                        )}
                       </div>
-                      <p className="donation-history-amount">{fmt(d.amount)}</p>
                     </div>
-                  ))}
-                </div>
-
-                {historyTotalPages > 1 && (
-                  <div className="don-hist-pagination">
-                    <span className="don-hist-info">
-                      Showing {(historyPage - 1) * HISTORY_PER_PAGE + 1}–{Math.min(historyPage * HISTORY_PER_PAGE, totalCount)} of {totalCount}
-                    </span>
-                    <div className="don-hist-controls">
-                      <button
-                        className="don-hist-page-btn"
-                        onClick={() => setHistoryPage(p => Math.max(1, p - 1))}
-                        disabled={historyPage === 1}
-                      >‹</button>
-                      {Array.from({ length: historyTotalPages }, (_, i) => i + 1).map((p) => (
-                        <button
-                          key={p}
-                          className={`don-hist-page-btn${p === historyPage ? ' don-hist-page-btn-active' : ''}`}
-                          onClick={() => setHistoryPage(p)}
-                        >{p}</button>
-                      ))}
-                      <button
-                        className="don-hist-page-btn"
-                        onClick={() => setHistoryPage(p => Math.min(historyTotalPages, p + 1))}
-                        disabled={historyPage === historyTotalPages}
-                      >›</button>
-                    </div>
+                    <p className="donation-history-amount">{fmt(d.amount)}</p>
                   </div>
-                )}
-              </>
+                ))}
+              </div>
             )}
           </div>
 
@@ -402,6 +396,75 @@ export default function Donations() {
             <button className="donation-success-close" onClick={() => setSuccessModal(null)}>
               Close
             </button>
+          </div>
+        </div>
+      )}
+      {/* ── Donation History Modal ── */}
+      {isHistoryModalOpen && (
+        <div className="donation-modal-overlay" onClick={() => setIsHistoryModalOpen(false)}>
+          <div className="donation-modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Donation History</h2>
+              <button className="modal-close-btn" onClick={() => setIsHistoryModalOpen(false)}>×</button>
+            </div>
+
+            <div className="modal-filters">
+              <div className="filter-group">
+                <label className="filter-label" style={{ marginRight: '8px' }}>Filter by Category:</label>
+                <select
+                  className="filter-select"
+                  value={modalCategory}
+                  onChange={(e) => {
+                    setModalCategory(e.target.value);
+                    setModalPage(1);
+                  }}
+                >
+                  <option value="">All Categories</option>
+                  {CATEGORIES.map(c => (
+                    <option key={c.name} value={c.name}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="modal-body history-modal-body">
+              {modalLoading ? (
+                <p className="modal-loading">Loading history...</p>
+              ) : modalHistory.length === 0 ? (
+                <p className="modal-empty">No donations found for this filter.</p>
+              ) : (
+                <div className="modal-history-list">
+                  {modalHistory.map((d) => (
+                    <div key={d._id || d.donationId} className="donation-history-item modal-item">
+                      <div className="donation-history-main">
+                        <div className="donation-history-info">
+                          <h3 className="donation-fund">{d.category}</h3>
+                          <p className="donation-id">{d.donationId} · {fmtDate(d.createdAt || d.date)}</p>
+                          <p className="donation-details">{d.method || d.paymentMethod}</p>
+                        </div>
+                      </div>
+                      <p className="donation-history-amount">{fmt(d.amount)}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {modalTotalPages > 1 && (
+              <div className="modal-pagination">
+                <button
+                  className="modal-page-btn"
+                  onClick={() => setModalPage(p => Math.max(1, p - 1))}
+                  disabled={modalPage === 1 || modalLoading}
+                >‹ Prev</button>
+                <span className="modal-page-info">Page {modalPage} of {modalTotalPages}</span>
+                <button
+                  className="modal-page-btn"
+                  onClick={() => setModalPage(p => Math.min(modalTotalPages, p + 1))}
+                  disabled={modalPage === modalTotalPages || modalLoading}
+                >Next ›</button>
+              </div>
+            )}
           </div>
         </div>
       )}

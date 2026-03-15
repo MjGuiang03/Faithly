@@ -69,8 +69,37 @@ export default function Attendance() {
   // Pagination
   const totalPages  = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
-  const handleSearch = (e) => {
-    setSearch(e.target.value);
+  /* ── History Modal States ── */
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [modalPage, setModalPage] = useState(1);
+  const [modalHistory, setModalHistory] = useState([]);
+  const [modalTotalPages, setModalTotalPages] = useState(1);
+  const [modalLoading, setModalLoading] = useState(false);
+  const MODAL_LIMIT = 10;
+
+  const fetchModalHistory = useCallback(async () => {
+    setModalLoading(true);
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`${API}/api/attendance/my-attendance?page=${modalPage}&limit=${MODAL_LIMIT}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setModalHistory(data.attendance || []);
+        setModalTotalPages(data.totalPages || 1);
+      }
+    } catch { /* silent */ }
+    finally { setModalLoading(false); }
+  }, [modalPage]);
+
+  useEffect(() => {
+    if (isHistoryModalOpen) fetchModalHistory();
+  }, [isHistoryModalOpen, fetchModalHistory]);
+
+  const handleOpenHistory = () => {
+    setModalPage(1);
+    setIsHistoryModalOpen(true);
   };
 
   return (
@@ -156,7 +185,7 @@ export default function Attendance() {
             </div>
           </div>
 
-          {/* Upcoming Services — admin-driven, empty state shown */}
+          {/* Upcoming Services */}
           <div className="upcoming-services-card">
             <h2 className="section-title">Upcoming Services</h2>
             <div className="upcoming-services-list">
@@ -206,96 +235,37 @@ export default function Attendance() {
 
         </div>
 
-        {/* Attendance History */}
+        {/* Attendance History (Preview) */}
         <div className="attendance-history-section">
           <div className="history-header-row">
-            <h2 className="section-title">Attendance History</h2>
-            <div className="history-search-box">
-              <svg fill="none" viewBox="0 0 16 16" width="14" height="14" className="search-icon-inner">
-                <circle cx="7" cy="7" r="5" stroke="#9ca3af" strokeWidth="1.5" />
-                <path d="M10.5 10.5L13.5 13.5" stroke="#9ca3af" strokeLinecap="round" strokeWidth="1.5" />
-              </svg>
-              <input
-                type="text"
-                className="history-search-input"
-                placeholder="Search service, branch..."
-                value={search}
-                onChange={handleSearch}
-              />
-            </div>
-            <button className="view-all-btn" onClick={() => setPage(1)}>View All History</button>
+            <h2 className="section-title">Recent Attendance History</h2>
+            <button className="view-history-btn" onClick={handleOpenHistory}>View History</button>
           </div>
 
-          <div className="attendance-table-wrapper">
+          <div className="attendance-table-wrapper preview-table">
             {loading ? (
               <p className="empty-text" style={{ padding: '16px' }}>Loading...</p>
             ) : attendanceData.length === 0 ? (
-              <p className="empty-text" style={{ padding: '16px' }}>
-                {search ? 'No records match your search.' : 'No attendance records yet.'}
-              </p>
+              <p className="empty-text" style={{ padding: '16px' }}>No attendance records yet.</p>
             ) : (
-              <>
-                <table className="attendance-table">
-                  <thead>
-                    <tr>
-                      <th>Service</th>
-                      <th>Date</th>
-                      <th>Time</th>
-                      <th>Branch</th>
-                      <th>Check-in Method</th>
+              <table className="attendance-table">
+                <thead>
+                  <tr>
+                    <th>Service</th>
+                    <th>Date</th>
+                    <th>Branch</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {attendanceData.slice(0, 5).map((record, index) => (
+                    <tr key={index}>
+                      <td>{record.service}</td>
+                      <td>{record.date}</td>
+                      <td>{record.branch}</td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {attendanceData.map((record, index) => (
-                      <tr key={index}>
-                        <td>{record.service}</td>
-                        <td>{record.date}</td>
-                        <td>{record.time}</td>
-                        <td>{record.branch}</td>
-                        <td>
-                          <span className={`method-badge method-${record.method?.toLowerCase()}`}>
-                            {record.method}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-
-                {/* Pagination */}
-                {totalPages > 1 && (
-                  <div className="pagination">
-                    <span className="pagination-info">
-                      Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, totalCount)} of {totalCount}
-                    </span>
-                    <div className="pagination-controls">
-                      <button
-                        className="page-btn"
-                        onClick={() => setPage(p => p - 1)}
-                        disabled={page === 1}
-                      >
-                        ‹
-                      </button>
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                        <button
-                          key={p}
-                          className={`page-btn ${p === page ? 'page-btn-active' : ''}`}
-                          onClick={() => setPage(p)}
-                        >
-                          {p}
-                        </button>
-                      ))}
-                      <button
-                        className="page-btn"
-                        onClick={() => setPage(p => p + 1)}
-                        disabled={page === totalPages}
-                      >
-                        ›
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </>
+                  ))}
+                </tbody>
+              </table>
             )}
           </div>
         </div>
@@ -308,6 +278,71 @@ export default function Attendance() {
           <path d={svgPaths.p261dfb00} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
         </svg>
       </button>
+
+      {/* ── Attendance History Modal ── */}
+      {isHistoryModalOpen && (
+        <div className="attendance-modal-overlay" onClick={() => setIsHistoryModalOpen(false)}>
+          <div className="attendance-modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Attendance History</h2>
+              <button className="modal-close-btn" onClick={() => setIsHistoryModalOpen(false)}>×</button>
+            </div>
+
+            <div className="modal-body history-modal-body">
+              {modalLoading ? (
+                <p className="modal-loading">Loading history...</p>
+              ) : modalHistory.length === 0 ? (
+                <p className="modal-empty">No attendance records found.</p>
+              ) : (
+                <div className="attendance-table-wrapper">
+                  <table className="attendance-table modal-table">
+                    <thead>
+                      <tr>
+                        <th>Service</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Branch</th>
+                        <th>Method</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {modalHistory.map((record, index) => (
+                        <tr key={index}>
+                          <td>{record.service}</td>
+                          <td>{record.date}</td>
+                          <td>{record.time}</td>
+                          <td>{record.branch}</td>
+                          <td>
+                            <span className={`method-badge method-${record.method?.toLowerCase()}`}>
+                              {record.method}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {modalTotalPages > 1 && (
+              <div className="modal-pagination">
+                <button
+                  className="modal-page-btn"
+                  onClick={() => setModalPage(p => Math.max(1, p - 1))}
+                  disabled={modalPage === 1 || modalLoading}
+                >‹ Prev</button>
+                <span className="modal-page-info">Page {modalPage} of {modalTotalPages}</span>
+                <button
+                  className="modal-page-btn"
+                  onClick={() => setModalPage(p => Math.min(modalTotalPages, p + 1))}
+                  disabled={modalPage === modalTotalPages || modalLoading}
+                >Next ›</button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

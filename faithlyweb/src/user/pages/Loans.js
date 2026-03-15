@@ -272,19 +272,6 @@ export default function Loans() {
               <div className="all-loans-section">
                 <div className="history-header-row">
                   <h2 className="section-title">All Loans</h2>
-                  <div className="history-search-box">
-                    <svg fill="none" viewBox="0 0 16 16" width="14" height="14" className="search-icon-inner">
-                      <circle cx="7" cy="7" r="5" stroke="#9ca3af" strokeWidth="1.5" />
-                      <path d="M10.5 10.5L13.5 13.5" stroke="#9ca3af" strokeLinecap="round" strokeWidth="1.5" />
-                    </svg>
-                    <input
-                      type="text"
-                      className="history-search-input"
-                      placeholder="Search ID, purpose..."
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                    />
-                  </div>
                 </div>
 
                 {loans.length === 0 ? (
