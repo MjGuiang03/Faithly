@@ -14,6 +14,7 @@ export default function VerifyEmailModal({ isOpen, onClose, email, onVerify, onR
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
+  const [resendMethod, setResendMethod] = useState('email'); // 'email' or 'sms'
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   
@@ -131,10 +132,10 @@ export default function VerifyEmailModal({ isOpen, onClose, email, onVerify, onR
   setOtp(['', '', '', '', '', '']);
 
   // If a custom onResend is passed (e.g. from Settings), use it
-  const result = onResend ? await onResend() : await resendOTP(email);
+  const result = onResend ? await onResend() : await resendOTP(email, resendMethod);
 
   if (result?.success) {
-    toast.success('New OTP sent to your email');
+    toast.success(`New OTP sent via ${resendMethod.toUpperCase()}`);
   } else {
     toast.error(result?.message || 'Failed to resend OTP. Please try again.');
   }
@@ -171,9 +172,9 @@ export default function VerifyEmailModal({ isOpen, onClose, email, onVerify, onR
             <div className="verify-icon-wrapper">
               <img src={puacLogo} alt="PUAC Logo" className="verify-mail-icon" size={48} />
             </div>
-            <h1 className="verify-title">Check Your Email</h1>
+            <h1 className="verify-title">Enter Verification Code</h1>
             <p className="verify-text">
-              We've sent a 6-digit verification code to
+              We sent a 6-digit code to your email (and phone if requested).
             </p>
             <p className="verify-email">{email}</p>
           </div>
@@ -222,14 +223,30 @@ export default function VerifyEmailModal({ isOpen, onClose, email, onVerify, onR
 
           <div className="verify-footer">
             <p className="verify-footer-text">Didn't receive the code?</p>
-            <button 
-              type="button"
-              onClick={handleResend}
-              className="resend-button"
-              disabled={resendLoading || loading}
-            >
-              {resendLoading ? 'Sending...' : 'Resend Code'}
-            </button>
+            
+            <div className="resend-options-wrapper" style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '15px' }}>
+              <select 
+                value={resendMethod}
+                onChange={(e) => setResendMethod(e.target.value)}
+                className="signup-form-select"
+                style={{ width: 'auto', padding: '8px', fontSize: '14px' }}
+                disabled={resendLoading || loading}
+              >
+                <option value="email">Send via Email</option>
+                <option value="sms">Send via SMS (Phone)</option>
+              </select>
+
+              <button 
+                type="button"
+                onClick={handleResend}
+                className="resend-button"
+                disabled={resendLoading || loading}
+                style={{ margin: 0 }}
+              >
+                {resendLoading ? 'Sending...' : 'Resend Code'}
+              </button>
+            </div>
+
             <p className="verify-footer-conditions">
               By continuing, you agree to our{" "}
               <span className="verify-footer-termsandprivacy">Terms of Service</span> and{" "}

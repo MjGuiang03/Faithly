@@ -9,7 +9,7 @@ import { users, otps, pendingRegistrations } from '../config/db.js';
 import { validate } from '../middleware/validate.js';
 import { loginLimiter, registerLimiter, otpLimiter, resendOtpLimiter } from '../middleware/rateLimiter.js';
 import { authenticateUser } from '../middleware/auth.js';
-import { generateOTP, sendOTP } from '../utils/email.js';
+import { generateOTP, sendOTP, sendSmsOTP } from '../utils/email.js';
 
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
@@ -140,24 +140,43 @@ router.post('/verify-otp',
 /* ================== RESEND OTP ================== */
 router.post('/resend-otp',
   resendOtpLimiter,
-  validate([body('email').trim().isEmail().withMessage('Invalid email')]),
+  validate([
+    body('email').trim().isEmail().withMessage('Invalid email'),
+    body('method').optional().isIn(['email', 'sms']).withMessage('Invalid delivery method')
+  ]),
   async (req, res) => {
     try {
-      const { email } = req.body;
+      const { email, method = 'email' } = req.body;
       
       const user = await users.findOne({ email });
       if (user && user.isVerified) return res.status(400).json({ message: 'Email already verified' });
 
       const pending = await pendingRegistrations.findOne({ email });
-      if (!pending) return res.status(400).json({ message: 'Invalid request or registration expired' });
+      if (!pending && !user) return res.status(400).json({ message: 'Invalid request or registration expired' });
+
+      const targetData = user || pending;
+      const phoneNumber = targetData.phone;
 
       const otp = generateOTP();
       await otps.deleteMany({ email, type: 'verify' });
       await otps.insertOne({ email, otp, type: 'verify', expiresAt: new Date(Date.now() + 15 * 60 * 1000) });
 
-      // Send asynchronously
+      // Send asynchronously based on chosen method
+      if (method === 'sms') {
+        if (!phoneNumber) return res.status(400).json({ message: 'No phone number associated with this account' });
+        
+        sendSmsOTP(phoneNumber, otp).then(() => {
+          console.log('✅ SMS OTP resent successfully.');
+        }).catch(err => {
+          console.error('❌ BACKGROUND SMS ERROR:', err.message);
+        });
+        
+        return res.json({ message: 'OTP resent successfully. Check your messages.' });
+      }
+
+      // Default Email
       sendOTP(email, otp).then(() => {
-        console.log('✅ OTP resent successfully.');
+        console.log('✅ Email OTP resent successfully.');
       }).catch(err => {
         console.error('❌ BACKGROUND EMAIL ERROR:', err.message);
       });

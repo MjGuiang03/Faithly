@@ -105,12 +105,12 @@ export const AuthProvider = ({ children }) => {
   };
 
   /* ---------- RESEND OTP ---------- */
-  const resendOTP = async (email) => {
+  const resendOTP = async (email, method = 'email') => {
     try {
       const res = await fetch(`${API}/api/resend-otp`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ email })
+        body:    JSON.stringify({ email, method })
       });
 
       const data = await safeJSON(res);

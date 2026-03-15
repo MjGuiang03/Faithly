@@ -1,41 +1,53 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import dotenv from 'dotenv';
 dotenv.config();
 
-export const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false, // true for 465, false for other ports
-  requireTLS: true,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  },
-  tls: {
-    rejectUnauthorized: false
-  },
-  // Advanced settings to combat cloud firewalls & IPv6 issues
-  logger: true,
-  debug: true,
-  connectionTimeout: 15000, // 15 seconds
-  socketTimeout: 15000
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const generateOTP = () =>
   Math.floor(100000 + Math.random() * 900000).toString();
 
 export const sendOTP = async (email, otp) => {
-  // EMERGENCY FALLBACK: Since Render's free tier frequently blocks SMTP,
-  // we log the OTP directly to the console so the admin can read it
-  // and share it with the user if the email fails to send.
-  console.log(`\n\n🚨 ================================== 🚨`);
-  console.log(`📩 FALLBACK OTP FOR ${email}: [ ${otp} ]`);
-  console.log(`🚨 ================================== 🚨\n\n`);
+  try {
+    const data = await resend.emails.send({
+      from: 'Faithly <onboarding@resend.dev>', // Use this test email until you buy a custom domain
+      to: email,
+      subject: 'Your Email Verification Code',
+      html: `<h2>Your OTP Code</h2><h1>${otp}</h1><p>Expires in 15 minutes</p>`
+    });
+    console.log('✅ Resend Email sent successfully:', data);
+  } catch (error) {
+    console.error('❌ Resend Error:', error);
+  }
+};
 
-  await transporter.sendMail({
-    from: `"Faithly" <${process.env.EMAIL_USER}>`,
-    to: email,
-    subject: 'Your Email Verification Code',
-    html: `<h2>Your OTP Code</h2><h1>${otp}</h1><p>Expires in 15 minutes</p>`
-  });
+export const sendSmsOTP = async (phoneNumber, otp) => {
+  // EMERGENCY FALLBACK: Log the SMS OTP to the console
+  // So the admin can share it if the SMS API fails or runs out of credits.
+  console.log(`\n\n📱 ================================== 📱`);
+  console.log(`💬 FALLBACK SMS OTP FOR ${phoneNumber}: [ ${otp} ]`);
+  console.log(`📱 ================================== 📱\n\n`);
+
+  try {
+    // If there is no API key, we skip the fetch and rely strictly on the console log above.
+    if (!process.env.SEMAPHORE_API_KEY) {
+      console.warn('⚠️ No SEMAPHORE_API_KEY found. SMS OTP was only logged to the console.');
+      return;
+    }
+
+    const response = await fetch('https://api.semaphore.co/api/v4/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        apikey: process.env.SEMAPHORE_API_KEY,
+        number: phoneNumber,
+        message: `Your Faithly verification code is: ${otp}. Do not share this with anyone.`
+      })
+    });
+
+    const data = await response.json();
+    console.log('✅ SMS Sent request finished. Semaphore response:', data);
+  } catch (error) {
+    console.error('❌ Semaphore SMS Error:', error.message);
+  }
 };
