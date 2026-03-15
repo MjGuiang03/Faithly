@@ -145,7 +145,6 @@ function AddServiceModal({ branch, onClose, onSave }) {
 }
 
 export default function AdminAttendance() {
-  const navigate = useNavigate();
 
   const [stats, setStats] = useState({
     totalToday: 0,
@@ -153,7 +152,7 @@ export default function AdminAttendance() {
     avgPerService: 0
   });
 
-  const [branches, setBranches] = useState([]);
+  const [branches] = useState([]);
   const [recentServices, setRecentServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);

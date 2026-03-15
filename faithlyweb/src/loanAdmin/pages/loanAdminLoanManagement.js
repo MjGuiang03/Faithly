@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import LoanAdminSidebar from './loanAdminSidebar';
@@ -32,7 +32,6 @@ export default function LoanAdminLoanManagement() {
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(null);
     const [page, setPage] = useState(1);
-    const [totalCount, setTotalCount] = useState(0);
     const LIMIT = 10;
 
     /* ── Fetch loans from API ── */
@@ -60,7 +59,6 @@ export default function LoanAdminLoanManagement() {
             }
 
             setLoans(data.loans || []);
-            setTotalCount(data.totalCount || 0);
             setStats({
                 pending:  data.stats?.pending  || 0,
                 active:   (data.stats?.active || 0) + (data.stats?.completed || 0),
