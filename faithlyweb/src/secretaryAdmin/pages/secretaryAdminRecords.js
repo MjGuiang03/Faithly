@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import useDebounce from '../../hooks/useDebounce';
 import SecretaryAdminSidebar from '../components/secretaryAdminSidebar';
 import '../styles/secretaryAdminRecords.css';
 
@@ -6,73 +7,68 @@ import API from '../../utils/api';
 
 export default function SecretaryLoanRecords() {
     const [searchQuery, setSearchQuery] = useState('');
+    const debouncedSearch = useDebounce(searchQuery, 400);
     const [activeFilter, setActiveFilter] = useState('all');
 
     const [records, setRecords] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [page, setPage] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+    const LIMIT = 10;
 
-    const fetchRecords = async () => {
+    const fetchRecords = useCallback(async () => {
         try {
             setLoading(true);
             const token = localStorage.getItem('secretaryToken') || localStorage.getItem('adminToken') || localStorage.getItem('token');
             const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
             
-            const res = await fetch(`${API}/api/admin/loans`, { headers });
+            const params = new URLSearchParams();
+            params.set('page', page);
+            params.set('limit', LIMIT);
+            params.set('disbursed', 'true');
+            if (activeFilter !== 'all') params.set('method', activeFilter);
+            if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim());
+
+            const res = await fetch(`${API}/api/admin/loans?${params}`, { headers });
             const data = await res.json();
             
             if (data.success && data.loans) {
-                // Records = loans that have been disbursed
-                const disbursedLoans = data.loans
-                    .filter(l => l.disbursed)
-                    .map(l => ({
-                        id: l.loanId,
-                        member: l.memberName,
-                        amount: `₱${Number(l.amount).toLocaleString()}`,
-                        purpose: l.purpose,
-                        processedDate: new Date(l.disbursementDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-                        processedTime: new Date(l.disbursementDate).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-                        paymentMethod: l.paymentMethod === 'gcash' ? 'GCash' : l.paymentMethod === 'bank' ? 'Bank Transfer' : l.paymentMethod,
-                        reference: l.reference || '' // Assuming we add this back at some point, or it defaults to empty
-                    }))
-                    .sort((a,b) => new Date(b.processedDate) - new Date(a.processedDate));
+                const results = data.loans.map(l => ({
+                    id: l.loanId,
+                    member: l.memberName,
+                    amount: `₱${Number(l.amount).toLocaleString()}`,
+                    purpose: l.purpose,
+                    processedDate: new Date(l.disbursementDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+                    processedTime: new Date(l.disbursementDate).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+                    paymentMethod: l.paymentMethod === 'gcash' ? 'GCash' : l.paymentMethod === 'bank' ? 'Bank Transfer' : l.paymentMethod,
+                    reference: l.reference || ''
+                }));
 
-                setRecords(disbursedLoans);
+                setRecords(results);
+                setTotalCount(data.totalCount || 0);
             }
         } catch (err) {
             console.error('Failed to fetch records:', err);
         } finally {
             setLoading(false);
         }
-    };
+    }, [page, activeFilter, debouncedSearch]);
 
     useEffect(() => {
         fetchRecords();
-    }, []);
+    }, [fetchRecords]);
 
-    const totalProcessed = records.length;
-    const gcashCount = records.filter(r => r.paymentMethod === 'GCash').length;
+    useEffect(() => {
+        setPage(1);
+    }, [debouncedSearch, activeFilter]);
+
+    const totalProcessed = totalCount;
+    // These need to be fetched from backend for accuracy if we want filtered counts
+    // For now keep them as totalCount or similar
+    const gcashCount = records.filter(r => r.paymentMethod === 'GCash').length; 
     const bankTransferCount = records.filter(r => r.paymentMethod === 'Bank Transfer').length;
 
-    const getFilteredRecords = () => {
-        let filtered = records;
-
-        if (activeFilter === 'gcash') {
-            filtered = records.filter(r => r.paymentMethod === 'GCash');
-        } else if (activeFilter === 'bank') {
-            filtered = records.filter(r => r.paymentMethod === 'Bank Transfer');
-        }
-
-        if (searchQuery) {
-            filtered = filtered.filter(record =>
-                record.member.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                record.id.toLowerCase().includes(searchQuery.toLowerCase())
-            );
-        }
-
-        return filtered;
-    };
-
-    const filteredRecords = getFilteredRecords();
+    const filteredRecords = records;
 
     return (
         <div className="sec-admin-records-page">
@@ -218,17 +214,38 @@ export default function SecretaryLoanRecords() {
                 </div>
 
                 {/* Pagination */}
-                <div className="sec-admin-records-pagination">
-                    <p className="sec-admin-records-pagination-info">
-                        Showing 1 to 10 of {filteredRecords.length} results
-                    </p>
-                    <div className="sec-admin-records-pagination-controls">
-                        <button className="sec-admin-records-pagination-btn" disabled>Previous</button>
-                        <button className="sec-admin-records-pagination-btn active">1</button>
-                        <button className="sec-admin-records-pagination-btn">2</button>
-                        <button className="sec-admin-records-pagination-btn">Next</button>
+                {totalCount > LIMIT && (
+                    <div className="sec-admin-records-pagination">
+                        <p className="sec-admin-records-pagination-info">
+                            Showing {(page - 1) * LIMIT + 1} to {Math.min(page * LIMIT, totalCount)} of {totalCount} results
+                        </p>
+                        <div className="sec-admin-records-pagination-controls">
+                            <button 
+                                className="sec-admin-records-pagination-btn" 
+                                onClick={() => setPage(p => Math.max(1, p - 1))}
+                                disabled={page === 1}
+                            >
+                                Previous
+                            </button>
+                            {Array.from({ length: Math.ceil(totalCount / LIMIT) }, (_, i) => (
+                                <button
+                                    key={i + 1}
+                                    className={`sec-admin-records-pagination-btn ${page === i + 1 ? 'active' : ''}`}
+                                    onClick={() => setPage(i + 1)}
+                                >
+                                    {i + 1}
+                                </button>
+                            ))}
+                            <button 
+                                className="sec-admin-records-pagination-btn" 
+                                onClick={() => setPage(p => Math.min(Math.ceil(totalCount / LIMIT), p + 1))}
+                                disabled={page === Math.ceil(totalCount / LIMIT)}
+                            >
+                                Next
+                            </button>
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
         </div>
     );

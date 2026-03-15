@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Search, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
+import useDebounce from '../../hooks/useDebounce';
 import '../styles/AdminOfficerVerification.css';
 import svgPaths from "../../imports/svg-icons";
 
@@ -276,10 +277,12 @@ function ApproveModal({ request, onClose, onConfirm }) {
 ═══════════════════════════════════════════════════════════════════════════ */
 export default function AdminOfficerVerification() {
   const navigate = useNavigate();
-  const [requests,         setRequests]         = useState([]);
-  const [stats,            setStats]            = useState({ pending: 0, approved: 0, rejected: 0 });
-  const [searchQuery,      setSearchQuery]      = useState('');
-  const [currentPage,      setCurrentPage]      = useState(1);
+  const [requests,          setRequests]         = useState([]);
+  const [stats,             setStats]            = useState({ pending: 0, approved: 0, rejected: 0 });
+  const [searchQuery,       setSearchQuery]      = useState('');
+  const debouncedSearch = useDebounce(searchQuery, 400);
+  const [currentPage,       setCurrentPage]      = useState(1);
+  const [totalCount,        setTotalCount]      = useState(0);
   const [selectedRequest,  setSelectedRequest]  = useState(null);
   const [loading,          setLoading]          = useState(true);
 
@@ -288,23 +291,26 @@ export default function AdminOfficerVerification() {
   const fetchVerifications = useCallback(async () => {
     setLoading(true);
     try {
-      const res  = await fetch(`${API}/api/admin/verifications`, {
+      const p = new URLSearchParams();
+      p.set('page', currentPage);
+      p.set('limit', PER_PAGE);
+      if (debouncedSearch.trim()) p.set('search', debouncedSearch.trim());
+
+      const res  = await fetch(`${API}/api/admin/verifications?${p}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
       if (data.success) {
-        setRequests(data.verifications);
-        setStats(data.stats);
-      } else {
-        // toast.error('Failed to load verifications');
+        setRequests(data.verifications || []);
+        setStats(data.stats || { pending: 0, approved: 0, rejected: 0 });
+        setTotalCount(data.totalCount || 0);
       }
     } catch (err) {
       console.error(err);
-      // toast.error('Failed to load verifications');
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, [token, currentPage, debouncedSearch]);
 
   useEffect(() => {
     const adminEmail = localStorage.getItem('adminEmail');
@@ -322,19 +328,12 @@ export default function AdminOfficerVerification() {
     setSelectedRequest(null);
   };
 
-  // Filter
-  const filtered = requests.filter(r => {
-    const q = searchQuery.toLowerCase();
-    return (
-      r._id?.toString().toLowerCase().includes(q) ||
-      (r.memberName || '').toLowerCase().includes(q) ||
-      (r.email      || '').toLowerCase().includes(q) ||
-      (r.position   || '').toLowerCase().includes(q)
-    );
-  });
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch]);
 
-  const totalPages      = Math.ceil(filtered.length / PER_PAGE);
-  const paginated       = filtered.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
+  const totalPages      = Math.ceil(totalCount / PER_PAGE);
+  const paginated       = requests;
 
   const getStatusBadgeClass = (s) => `admin-offver-status-${s}`;
 
@@ -412,7 +411,7 @@ export default function AdminOfficerVerification() {
             type="text"
             placeholder="Search by name, email, or position..."
             value={searchQuery}
-            onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+            onChange={e => setSearchQuery(e.target.value)}
             className="admin-offver-search-input"
           />
         </div>

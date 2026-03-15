@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import LoanAdminSidebar from './loanAdminSidebar';
 import svgPaths from "../../imports/svg-icons";
+import useDebounce from '../../hooks/useDebounce';
 import '../styles/loanAdminLoanManagement.css';
 
 import API from '../../utils/api';
@@ -20,6 +21,7 @@ const fmtDate = (d) => {
 export default function LoanAdminLoanManagement() {
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
+    const debouncedSearch = useDebounce(searchQuery, 400);
     const [showApproveModal, setShowApproveModal] = useState(false);
     const [showRejectModal, setShowRejectModal] = useState(false);
     const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -29,6 +31,9 @@ export default function LoanAdminLoanManagement() {
     const [stats, setStats] = useState({ pending: 0, active: 0, rejected: 0 });
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(null);
+    const [page, setPage] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+    const LIMIT = 10;
 
     /* ── Fetch loans from API ── */
     const fetchLoans = useCallback(async () => {
@@ -36,7 +41,9 @@ export default function LoanAdminLoanManagement() {
         try {
             const token = localStorage.getItem('adminToken');
             const params = new URLSearchParams();
-            if (searchQuery.trim()) params.set('search', searchQuery.trim());
+            params.set('page', page);
+            params.set('limit', LIMIT);
+            if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim());
 
             const res = await fetch(`${API}/api/admin/loans?${params}`, {
                 headers: { Authorization: `Bearer ${token}` },
@@ -53,6 +60,7 @@ export default function LoanAdminLoanManagement() {
             }
 
             setLoans(data.loans || []);
+            setTotalCount(data.totalCount || 0);
             setStats({
                 pending:  data.stats?.pending  || 0,
                 active:   (data.stats?.active || 0) + (data.stats?.completed || 0),
@@ -63,15 +71,14 @@ export default function LoanAdminLoanManagement() {
         } finally {
             setLoading(false);
         }
-    }, [searchQuery, navigate]);
+    }, [page, debouncedSearch, navigate]);
 
     useEffect(() => { fetchLoans(); }, [fetchLoans]);
 
-    /* debounce search */
+    /* Reset page on search change */
     useEffect(() => {
-        const t = setTimeout(() => fetchLoans(), 400);
-        return () => clearTimeout(t);
-    }, [searchQuery, fetchLoans]);
+        setPage(1);
+    }, [debouncedSearch]);
 
     /* ── Approve ── */
     const handleApprove = (loan) => {

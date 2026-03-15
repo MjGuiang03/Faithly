@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import Sidebar from '../components/Sidebar';
 import '../styles/Donation.css';
+import useDebounce from '../../hooks/useDebounce';
 import gcashLogo from '../../assets/gcashlogo.png';
 import bankLogo from '../../assets/whitebanklogo.png';
 
@@ -54,6 +55,8 @@ export default function Donations() {
   const [loading, setLoading] = useState(true);
   const [historyPage, setHistoryPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 400);
   const [successModal, setSuccessModal] = useState(null);
   const HISTORY_PER_PAGE = 5;
 
@@ -61,7 +64,8 @@ export default function Donations() {
     setLoading(true);
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`${API}/api/donations/my-donations?page=${historyPage}&limit=${HISTORY_PER_PAGE}`, {
+      const searchParam = debouncedSearch ? `&search=${debouncedSearch}` : '';
+      const res = await fetch(`${API}/api/donations/my-donations?page=${historyPage}&limit=${HISTORY_PER_PAGE}${searchParam}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -72,9 +76,13 @@ export default function Donations() {
       }
     } catch { /* silent */ }
     finally { setLoading(false); }
-  }, [historyPage]);
+  }, [historyPage, debouncedSearch]);
 
   useEffect(() => { fetchHistory(); }, [fetchHistory]);
+
+  useEffect(() => {
+    setHistoryPage(1);
+  }, [debouncedSearch]);
 
   const historyTotalPages = Math.max(1, Math.ceil(totalCount / HISTORY_PER_PAGE));
   const paginatedHistory = donationHistory;
@@ -278,8 +286,21 @@ export default function Donations() {
 
           {/* Donation History */}
           <div className="donation-categories-section">
-            <div className="history-header-row">
+            <div className="history-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <h2 className="section-title" style={{ marginBottom: 0 }}>Donation History</h2>
+              <div className="history-search-box">
+                <svg fill="none" viewBox="0 0 16 16" width="14" height="14" className="search-icon-inner">
+                  <circle cx="7" cy="7" r="5" stroke="#9ca3af" strokeWidth="1.5" />
+                  <path d="M10.5 10.5L13.5 13.5" stroke="#9ca3af" strokeLinecap="round" strokeWidth="1.5" />
+                </svg>
+                <input
+                  type="text"
+                  className="history-search-input"
+                  placeholder="Search ID, category..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
               <button className="view-all-btn" onClick={() => setHistoryPage(1)}>View All History</button>
             </div>
 

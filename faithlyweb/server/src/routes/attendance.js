@@ -42,12 +42,21 @@ router.post('/attendance/checkin', authenticateUser, async (req, res) => {
 /* ================== USER - GET MY ATTENDANCE ================== */
 router.get('/attendance/my-attendance', authenticateUser, async (req, res) => {
   try {
-    const email = req.user.email;
-    const page  = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 1000;
-    const skip  = (page - 1) * limit;
+    const email  = req.user.email;
+    const { search } = req.query;
+    const page   = parseInt(req.query.page) || 1;
+    const limit  = parseInt(req.query.limit) || 10;
+    const skip   = (page - 1) * limit;
 
     const findQuery = { email };
+    if (search) {
+      findQuery.$or = [
+        { service:  { $regex: search, $options: 'i' } },
+        { branch:   { $regex: search, $options: 'i' } },
+        { recordId: { $regex: search, $options: 'i' } }
+      ];
+    }
+
     const totalCount = await attendance.countDocuments(findQuery);
     const userAttendance = await attendance.find(findQuery)
       .sort({ createdAt: -1 })
@@ -80,8 +89,11 @@ router.get('/attendance/my-attendance', authenticateUser, async (req, res) => {
 router.get('/admin/attendance', authenticateAdmin, async (req, res) => {
   try {
     const { search, service, branch, method } = req.query;
-    const query = {};
+    const page  = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip  = (page - 1) * limit;
 
+    const query = {};
     if (service) query.service = service;
     if (branch)  query.branch  = branch;
     if (method)  query.method  = method;
@@ -93,30 +105,28 @@ router.get('/admin/attendance', authenticateAdmin, async (req, res) => {
       ];
     }
 
-    const allAttendance = await attendance.find(query).sort({ createdAt: -1 }).toArray();
+    const totalCount = await attendance.countDocuments(query);
+    const allAttendance = await attendance.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .toArray();
 
+    // Stats calculations still often need more context, but let's optimize where possible
+    const statsQuery = {}; // Base for stats
+    const totalStatsCount = await attendance.countDocuments(statsQuery);
+    
     const now        = new Date();
     const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const thisWeek   = allAttendance.filter(a => new Date(a.createdAt) >= oneWeekAgo);
-
-    const serviceMap = {};
-    allAttendance.forEach(a => { serviceMap[a.service] = (serviceMap[a.service] || 0) + 1; });
-
-    const serviceValues = Object.values(serviceMap);
-    const avgPerService = serviceValues.length > 0
-      ? Math.round(serviceValues.reduce((s, v) => s + v, 0) / serviceValues.length)
-      : 0;
-
-    const branchMap = {};
-    allAttendance.forEach(a => { branchMap[a.branch] = (branchMap[a.branch] || 0) + 1; });
-    const topBranch = Object.entries(branchMap).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A';
+    const thisWeekCount = await attendance.countDocuments({ ...statsQuery, createdAt: { $gte: oneWeekAgo } });
 
     res.status(200).json({
       success: true,
       attendance: allAttendance,
-      stats: { total: allAttendance.length, thisWeek: thisWeek.length, avgPerService, topBranch },
-      byService: Object.entries(serviceMap).map(([service, count]) => ({ service, count })),
-      byBranch:  Object.entries(branchMap).map(([branch, count]) => ({ branch, count }))
+      totalCount,
+      totalPages: Math.ceil(totalCount / limit),
+      currentPage: page,
+      stats: { total: totalStatsCount, thisWeek: thisWeekCount }
     });
   } catch (err) {
     console.error(err);

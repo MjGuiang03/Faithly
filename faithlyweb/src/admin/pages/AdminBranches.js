@@ -1,8 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
+import { Search } from 'lucide-react';
+import useDebounce from '../../hooks/useDebounce';
 import '../styles/AdminBranches.css';
 import svgPaths from "../../imports/svg-icons";
+import API from '../../utils/api';
 
 export default function AdminBranches() {
   const navigate = useNavigate();
@@ -14,59 +17,37 @@ export default function AdminBranches() {
     growthRate: '+12%'
   });
 
-  const [branches] = useState([
-    {
-      id: 1,
-      name: 'Bulacan Main Branch',
-      address: '123 Main St, Bulacan',
-      status: 'Active',
-      pastor: 'Rev. Juan Santos',
-      members: 1234,
-      services: 45
-    },
-    {
-      id: 2,
-      name: 'Valenzuela Branch',
-      address: '456 Church Ave, Valenzuela',
-      status: 'Active',
-      pastor: 'Rev. Maria Garcia',
-      members: 892,
-      services: 38
-    },
-    {
-      id: 3,
-      name: 'Pangasinan Branch',
-      address: '789 Faith Road, Pangasinan',
-      status: 'Active',
-      pastor: 'Rev. Pedro Reyes',
-      members: 1567,
-      services: 52
-    },
-    {
-      id: 4,
-      name: 'Rizal Branch',
-      address: '321 Grace St, Rizal',
-      status: 'Active',
-      pastor: 'Rev. Ana Cruz',
-      members: 654,
-      services: 29
-    }
-  ]);
+  const [branches, setBranches] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 400);
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const LIMIT = 6;
 
   const fetchBranches = useCallback(async () => {
+    setLoading(true);
     try {
-      // In production, fetch from API:
-      // const token = localStorage.getItem('adminToken');
-      // const res = await fetch(`${API}/api/admin/branches`, {
-      //   headers: { Authorization: `Bearer ${token}` }
-      // });
-      // const data = await res.json();
-      // setBranches(data.branches);
-      // setStats(data.stats);
+      const token = localStorage.getItem('adminToken');
+      const params = new URLSearchParams();
+      params.set('page', page);
+      params.set('limit', LIMIT);
+      if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim());
+
+      const res = await fetch(`${API}/api/admin/branches?${params}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setBranches(data.branches || []);
+        setTotalCount(data.totalCount || 0);
+      }
     } catch (err) {
       toast.error('Failed to fetch branches');
+    } finally {
+      setLoading(false);
     }
-  }, []);
+  }, [page, debouncedSearch]);
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
@@ -77,12 +58,28 @@ export default function AdminBranches() {
     fetchBranches();
   }, [navigate, fetchBranches]);
 
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
+
   return (
     <div className="admin-branch-main">
       {/* Header */}
       <div className="admin-branch-header">
-        <h1 className="admin-branch-title">Branches</h1>
-        <p className="admin-branch-subtitle">Manage church branches and their information</p>
+        <div>
+          <h1 className="admin-branch-title">Branches</h1>
+          <p className="admin-branch-subtitle">Manage church branches and their information</p>
+        </div>
+        <div className="admin-members-search-wrapper" style={{ width: '300px' }}>
+          <Search size={18} className="admin-members-search-icon" />
+          <input
+            type="text"
+            placeholder="Search branches..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="admin-members-search-input"
+          />
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -138,39 +135,83 @@ export default function AdminBranches() {
 
       {/* Branches Grid */}
       <div className="admin-branch-grid">
-        {branches.map((branch) => (
-          <div key={branch.id} className="admin-branch-card">
-            <div className="admin-branch-card-header">
-              <div className="admin-branch-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                  <path d={svgPaths.p27c543b0} stroke="#155DFC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d={svgPaths.p2d59bff0} stroke="#155DFC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </div>
-              <div className="admin-branch-card-info">
-                <h3 className="admin-branch-card-name">{branch.name}</h3>
-                <p className="admin-branch-card-address">{branch.address}</p>
-                <span className="admin-branch-status-badge">{branch.status}</span>
-              </div>
+        {loading ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="admin-branch-card skeleton-card">
+              <div className="admin-branch-skeleton-header" />
+              <div className="admin-branch-skeleton-body" />
             </div>
+          ))
+        ) : branches.length === 0 ? (
+          <div className="admin-branch-empty">No branches found.</div>
+        ) : (
+          branches.map((branch) => (
+            <div key={branch._id || branch.id} className="admin-branch-card">
+              <div className="admin-branch-card-header">
+                <div className="admin-branch-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d={svgPaths.p27c543b0} stroke="#155DFC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d={svgPaths.p2d59bff0} stroke="#155DFC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+                <div className="admin-branch-card-info">
+                  <h3 className="admin-branch-card-name">{branch.name}</h3>
+                  <p className="admin-branch-card-address">{branch.address}</p>
+                  <span className="admin-branch-status-badge">{branch.status}</span>
+                </div>
+              </div>
 
-            <div className="admin-branch-card-details">
-              <div className="admin-branch-detail-item">
-                <p className="admin-branch-detail-label">Pastor</p>
-                <p className="admin-branch-detail-value">{branch.pastor}</p>
-              </div>
-              <div className="admin-branch-detail-item">
-                <p className="admin-branch-detail-label">Members</p>
-                <p className="admin-branch-detail-value admin-branch-detail-members">{branch.members}</p>
-              </div>
-              <div className="admin-branch-detail-item">
-                <p className="admin-branch-detail-label">Services</p>
-                <p className="admin-branch-detail-value admin-branch-detail-services">{branch.services}</p>
+              <div className="admin-branch-card-details">
+                <div className="admin-branch-detail-item">
+                  <p className="admin-branch-detail-label">Pastor</p>
+                  <p className="admin-branch-detail-value">{branch.pastor}</p>
+                </div>
+                <div className="admin-branch-detail-item">
+                  <p className="admin-branch-detail-label">Members</p>
+                  <p className="admin-branch-detail-value admin-branch-detail-members">{branch.members}</p>
+                </div>
+                <div className="admin-branch-detail-item">
+                  <p className="admin-branch-detail-label">Services</p>
+                  <p className="admin-branch-detail-value admin-branch-detail-services">{branch.services}</p>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
+
+      {totalCount > LIMIT && (
+        <div className="admin-members-pagination" style={{ marginTop: '24px' }}>
+          <p className="admin-members-pagination-info">
+            Showing {(page - 1) * LIMIT + 1} to {Math.min(page * LIMIT, totalCount)} of {totalCount} branches
+          </p>
+          <div className="admin-members-pagination-controls">
+            <button
+              className="admin-members-pagination-btn"
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1}
+            >
+              Previous
+            </button>
+            {Array.from({ length: Math.ceil(totalCount / LIMIT) }, (_, i) => (
+              <button
+                key={i + 1}
+                className={`admin-members-pagination-btn ${page === i + 1 ? 'active' : ''}`}
+                onClick={() => setPage(i + 1)}
+              >
+                {i + 1}
+              </button>
+            ))}
+            <button
+              className="admin-members-pagination-btn"
+              onClick={() => setPage(p => Math.min(Math.ceil(totalCount / LIMIT), p + 1))}
+              disabled={page === Math.ceil(totalCount / LIMIT)}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

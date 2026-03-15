@@ -40,11 +40,21 @@ export const announcements      = db.collection('announcements');
 
 /* ================== DATABASE INDEXES ================== */
 await users.createIndex({ email: 1 }, { unique: true });
+await users.createIndex({ fullName: 1 });
+await users.createIndex({ memberId: 1 });
 await otps.createIndex({ email: 1 });
 await loans.createIndex({ email: 1 });
 await loans.createIndex({ loanId: 1 });
+await loans.createIndex({ memberName: 1 });
 await attendance.createIndex({ email: 1 });
+await attendance.createIndex({ member: 1 });
+await attendance.createIndex({ recordId: 1 });
+await attendance.createIndex({ service: 1 });
 await verifications.createIndex({ email: 1 });
+await donations.createIndex({ email: 1 });
+await donations.createIndex({ member: 1 });
+await donations.createIndex({ donationId: 1 });
+await donations.createIndex({ category: 1 });
 await otps.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 // TTL index for pending registrations (auto-delete if not verified within 24 hours)

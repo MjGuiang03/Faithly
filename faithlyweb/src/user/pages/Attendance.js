@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import svgPaths from '../../imports/svg-icons';
 import '../styles/Attendance.css';
 import Sidebar from '../components/Sidebar';
+import useDebounce from '../../hooks/useDebounce';
 import API from '../../utils/api';
 const PAGE_SIZE = 5;
 
@@ -13,6 +14,7 @@ export default function Attendance() {
   const [stats,          setStats]          = useState({ total: 0, thisMonth: 0 });
   const [loading,        setLoading]        = useState(true);
   const [search,         setSearch]         = useState('');
+  const debouncedSearch = useDebounce(search, 400);
   const [page,           setPage]           = useState(1);
   const [totalCount,     setTotalCount]     = useState(0);
 
@@ -23,8 +25,9 @@ export default function Attendance() {
     setLoading(true);
     try {
       const headers = { Authorization: `Bearer ${token}` };
+      const searchParam = debouncedSearch ? `&search=${debouncedSearch}` : '';
       const [attRes, upRes] = await Promise.all([
-        fetch(`${API}/api/attendance/my-attendance?page=${page}&limit=${PAGE_SIZE}`, { headers }),
+        fetch(`${API}/api/attendance/my-attendance?page=${page}&limit=${PAGE_SIZE}${searchParam}`, { headers }),
         fetch(`${API}/api/upcoming`, { headers }) // Fixed: fetch from the new upcoming route
       ]);
       
@@ -44,12 +47,16 @@ export default function Attendance() {
     } finally {
       setLoading(false);
     }
-  }, [token, page]);
+  }, [token, page, debouncedSearch]);
 
 
   useEffect(() => {
     fetchAttendance();
   }, [fetchAttendance]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
 
   // Attendance rate = thisMonth / weeks in current month * 100 (capped at 100)
   const attendanceRate = useMemo(() => {
@@ -59,25 +66,11 @@ export default function Attendance() {
     return `${rate}%`;
   }, [stats]);
 
-  // Filter by search
-  const filtered = useMemo(() => {
-    if (!search.trim()) return attendanceData;
-    const q = search.toLowerCase();
-    return attendanceData.filter(r =>
-      r.service?.toLowerCase().includes(q) ||
-      r.branch?.toLowerCase().includes(q)  ||
-      r.method?.toLowerCase().includes(q)  ||
-      r.date?.toLowerCase().includes(q)
-    );
-  }, [attendanceData, search]);
-
   // Pagination
   const totalPages  = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
-  const paginated   = attendanceData;
 
   const handleSearch = (e) => {
     setSearch(e.target.value);
-    setPage(1);
   };
 
   return (
@@ -215,9 +208,8 @@ export default function Attendance() {
 
         {/* Attendance History */}
         <div className="attendance-history-section">
-          <div className="history-header">
+          <div className="history-header-row">
             <h2 className="section-title">Attendance History</h2>
-            <button className="view-all-btn" onClick={() => setPage(1)}>View All</button>
             <div className="history-search-box">
               <svg fill="none" viewBox="0 0 16 16" width="14" height="14" className="search-icon-inner">
                 <circle cx="7" cy="7" r="5" stroke="#9ca3af" strokeWidth="1.5" />
@@ -231,12 +223,13 @@ export default function Attendance() {
                 onChange={handleSearch}
               />
             </div>
+            <button className="view-all-btn" onClick={() => setPage(1)}>View All History</button>
           </div>
 
           <div className="attendance-table-wrapper">
             {loading ? (
               <p className="empty-text" style={{ padding: '16px' }}>Loading...</p>
-            ) : filtered.length === 0 ? (
+            ) : history.length === 0 ? (
               <p className="empty-text" style={{ padding: '16px' }}>
                 {search ? 'No records match your search.' : 'No attendance records yet.'}
               </p>
@@ -253,7 +246,7 @@ export default function Attendance() {
                     </tr>
                   </thead>
                   <tbody>
-                    {paginated.map((record, index) => (
+                    {history.map((record, index) => (
                       <tr key={index}>
                         <td>{record.service}</td>
                         <td>{record.date}</td>

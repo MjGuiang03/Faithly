@@ -1,8 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
+import useDebounce from '../../hooks/useDebounce';
 import '../styles/AdminAttendance.css';
 import svgPaths from "../../imports/svg-icons";
+
+import API from '../../utils/api';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    ADD SERVICE MODAL
@@ -45,7 +48,7 @@ function AddServiceModal({ branch, onClose, onSave }) {
 
     setSaving(true);
     try {
-      
+
       // In production, call API:
       // const res = await fetch(`${API}/api/admin/attendance/add-service`, {
       //   method: 'POST',
@@ -121,15 +124,15 @@ function AddServiceModal({ branch, onClose, onSave }) {
         </div>
 
         <div className="admin-att-modal-footer">
-          <button 
-            className="admin-att-btn admin-att-btn-cancel" 
+          <button
+            className="admin-att-btn admin-att-btn-cancel"
             onClick={onClose}
             disabled={saving}
           >
             Cancel
           </button>
-          <button 
-            className="admin-att-btn admin-att-btn-primary" 
+          <button
+            className="admin-att-btn admin-att-btn-primary"
             onClick={handleSubmit}
             disabled={saving}
           >
@@ -144,58 +147,65 @@ function AddServiceModal({ branch, onClose, onSave }) {
 export default function AdminAttendance() {
   const navigate = useNavigate();
 
-  const [stats] = useState({
-    totalToday: 2915,
-    servicesThisWeek: 24,
-    avgPerService: 1087
+  const [stats, setStats] = useState({
+    totalToday: 0,
+    servicesThisWeek: 0,
+    avgPerService: 0
   });
 
-  const [branches] = useState([
-    { name: 'Bulacan', services: 45, avg: 1234 },
-    { name: 'Valenzuela', services: 38, avg: 892 },
-    { name: 'Pangasinan', services: 52, avg: 1567 },
-    { name: 'Rizal', services: 29, avg: 654 }
-  ]);
-
-  const [recentServices] = useState([
-    { id: 'S-001', branch: 'Bulacan', serviceType: 'Sunday Service', attendance: 1250, date: '3/7/2026' },
-    { id: 'S-002', branch: 'Valenzuela', serviceType: 'Bible Study', attendance: 85, date: '3/7/2026' },
-    { id: 'S-003', branch: 'Pangasinan', serviceType: 'Sunday Service', attendance: 1580, date: '3/7/2026' }
-  ]);
-
-  const [loading, setLoading] = useState(false);
+  const [branches, setBranches] = useState([]);
+  const [recentServices, setRecentServices] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState(null);
+
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 400);
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const LIMIT = 10;
 
   const fetchAttendance = useCallback(async () => {
     setLoading(true);
     try {
-      
-      // In production, fetch from API:
-      // const res = await fetch(`${API}/api/admin/attendance`, {
-      //   headers: { Authorization: `Bearer ${token}` }
-      // });
-      // const data = await res.json();
-      
-      // For now, using mock data
-      // setStats(data.stats);
-      // setBranches(data.branches);
-      // setRecentServices(data.recentServices);
+      const token = localStorage.getItem('adminToken');
+      const params = new URLSearchParams();
+      params.set('page', page);
+      params.set('limit', LIMIT);
+      if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim());
+
+      const res = await fetch(`${API}/api/admin/attendance?${params}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setRecentServices(data.attendance || []);
+        setTotalCount(data.totalCount || 0);
+        // Using provided stats or calculate from data
+        setStats({
+          totalToday: data.stats?.total || 0,
+          servicesThisWeek: data.stats?.thisWeek || 0,
+          avgPerService: data.totalCount > 0 ? Math.round(data.stats?.total / (data.totalCount || 1)) : 0
+        });
+
+        // Extract unique branches for display if needed
+        // For now keep branches as a separate concept if it exists in API
+      }
     } catch (err) {
       toast.error('Failed to fetch attendance data');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [page, debouncedSearch]);
 
   useEffect(() => {
-    const token = localStorage.getItem('adminToken');
-    if (!token) {
-      navigate('/admin/login');
-      return;
-    }
     fetchAttendance();
-  }, [navigate, fetchAttendance]);
+  }, [fetchAttendance]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
 
   const handleAddService = (branchName) => {
     setSelectedBranch(branchName);
@@ -274,7 +284,7 @@ export default function AdminAttendance() {
       {/* Branches Section */}
       <div className="admin-att-section">
         <h2 className="admin-att-section-title">Branches</h2>
-        
+
         <div className="admin-att-branches-grid">
           {branches.map((branch, index) => (
             <div key={index} className="admin-att-branch-card">
@@ -290,7 +300,7 @@ export default function AdminAttendance() {
                   Services: {branch.services} | Avg: {branch.avg}
                 </p>
               </div>
-              <button 
+              <button
                 className="admin-att-add-service-btn"
                 onClick={() => handleAddService(branch.name)}
               >
@@ -306,63 +316,108 @@ export default function AdminAttendance() {
       </div>
 
       {/* Recent Services Table */}
-      <div className="admin-att-table-section">
-        <div className="admin-att-table-header">
-          <h2 className="admin-att-section-title">Recent Services</h2>
+      <div className="admin-att-table-header">
+        <h2 className="admin-att-section-title">Recent Services</h2>
+        <div className="history-search-box">
+          <svg fill="none" viewBox="0 0 16 16" width="14" height="14" className="search-icon-inner">
+            <circle cx="7" cy="7" r="5" stroke="#9ca3af" strokeWidth="1.5" />
+            <path d="M10.5 10.5L13.5 13.5" stroke="#9ca3af" strokeLinecap="round" strokeWidth="1.5" />
+          </svg>
+          <input
+            type="text"
+            className="history-search-input"
+            placeholder="Search member, record ID..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
-
-        <div className="admin-att-table-container">
-          <table className="admin-att-table">
-            <thead className="admin-att-thead">
-              <tr>
-                <th className="admin-att-th">Service ID</th>
-                <th className="admin-att-th">Branch</th>
-                <th className="admin-att-th">Service Type</th>
-                <th className="admin-att-th">Attendance</th>
-                <th className="admin-att-th">Date</th>
-              </tr>
-            </thead>
-            <tbody className="admin-att-tbody">
-              {loading ? (
-                <tr>
-                  <td colSpan={5} className="admin-att-td admin-att-empty">
-                    <div className="admin-att-loading">
-                      <div className="admin-att-spinner" />
-                      Loading services…
-                    </div>
-                  </td>
-                </tr>
-              ) : recentServices.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="admin-att-td admin-att-empty">
-                    No services found
-                  </td>
-                </tr>
-              ) : (
-                recentServices.map((service) => (
-                  <tr key={service.id} className="admin-att-tr">
-                    <td className="admin-att-td">
-                      <span className="admin-att-service-id">{service.id}</span>
-                    </td>
-                    <td className="admin-att-td">
-                      <span className="admin-att-branch-name-cell">{service.branch}</span>
-                    </td>
-                    <td className="admin-att-td">
-                      <span className="admin-att-service-type">{service.serviceType}</span>
-                    </td>
-                    <td className="admin-att-td">
-                      <span className="admin-att-attendance">{service.attendance}</span>
-                    </td>
-                    <td className="admin-att-td">
-                      <span className="admin-att-date">{service.date}</span>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+        <button className="view-all-btn" onClick={() => setPage(1)}>View All History</button>
       </div>
+
+      <div className="admin-att-table-container">
+        <table className="admin-att-table">
+          <thead className="admin-att-thead">
+            <tr>
+              <th className="admin-att-th">Service ID</th>
+              <th className="admin-att-th">Branch</th>
+              <th className="admin-att-th">Service Type</th>
+              <th className="admin-att-th">Attendance</th>
+              <th className="admin-att-th">Date</th>
+            </tr>
+          </thead>
+          <tbody className="admin-att-tbody">
+            {loading ? (
+              <tr>
+                <td colSpan={5} className="admin-att-td admin-att-empty">
+                  <div className="admin-att-loading">
+                    <div className="admin-att-spinner" />
+                    Loading services…
+                  </div>
+                </td>
+              </tr>
+            ) : recentServices.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="admin-att-td admin-att-empty">
+                  No services found
+                </td>
+              </tr>
+            ) : (
+              recentServices.map((service) => (
+                <tr key={service.id} className="admin-att-tr">
+                  <td className="admin-att-td">
+                    <span className="admin-att-service-id">{service.id}</span>
+                  </td>
+                  <td className="admin-att-td">
+                    <span className="admin-att-branch-name-cell">{service.branch}</span>
+                  </td>
+                  <td className="admin-att-td">
+                    <span className="admin-att-service-type">{service.serviceType}</span>
+                  </td>
+                  <td className="admin-att-td">
+                    <span className="admin-att-attendance">{service.attendance}</span>
+                  </td>
+                  <td className="admin-att-td">
+                    <span className="admin-att-date">{service.date}</span>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {totalCount > LIMIT && (
+        <div className="pagination">
+          <p className="pagination-info">
+            Showing {((page - 1) * LIMIT) + 1} to {Math.min(page * LIMIT, totalCount)} of {totalCount} records
+          </p>
+          <div className="pagination-controls">
+            <button
+              className="page-btn"
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1}
+            >
+              Previous
+            </button>
+            {Array.from({ length: Math.ceil(totalCount / LIMIT) }, (_, i) => (
+              <button
+                key={i + 1}
+                className={`page-btn ${page === i + 1 ? 'page-btn-active' : ''}`}
+                onClick={() => setPage(i + 1)}
+              >
+                {i + 1}
+              </button>
+            ))}
+            <button
+              className="page-btn"
+              onClick={() => setPage(p => Math.min(Math.ceil(totalCount / LIMIT), p + 1))}
+              disabled={page === Math.ceil(totalCount / LIMIT)}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

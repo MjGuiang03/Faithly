@@ -42,11 +42,20 @@ router.post('/loans/apply', authenticateUser, async (req, res) => {
 router.get('/loans/my-loans', authenticateUser, async (req, res) => {
   try {
     const email = req.user.email;
+    const { search } = req.query;
     const page  = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 1000; // Default to "all" if limit not provided
+    const limit = parseInt(req.query.limit) || 10;
     const skip  = (page - 1) * limit;
 
     const findQuery = { email };
+    if (search) {
+      findQuery.$or = [
+        { loanId:  { $regex: search, $options: 'i' } },
+        { purpose: { $regex: search, $options: 'i' } },
+        { status:  { $regex: search, $options: 'i' } }
+      ];
+    }
+
     const totalCount = await loans.countDocuments(findQuery);
     const userLoans = await loans.find(findQuery)
       .sort({ appliedDate: -1 })
@@ -79,9 +88,12 @@ router.get('/loans/my-loans', authenticateUser, async (req, res) => {
 /* ================== ADMIN - GET ALL LOANS ================== */
 router.get('/admin/loans', authenticateAdmin, async (req, res) => {
   try {
-    const { search, status } = req.query;
-    const query = {};
+    const { search, status, page: qPage, limit: qLimit } = req.query;
+    const page  = parseInt(qPage)  || 1;
+    const limit = parseInt(qLimit) || 10;
+    const skip  = (page - 1) * limit;
 
+    const query = {};
     if (status && status !== 'all') query.status = status;
     if (search) {
       query.$or = [
@@ -91,28 +103,33 @@ router.get('/admin/loans', authenticateAdmin, async (req, res) => {
       ];
     }
 
-    const allLoans = await loans.find(query).sort({ appliedDate: -1 }).toArray();
-
-    const totalDisbursedResult = await loans.aggregate([
-      { $match: { status: { $in: ['active', 'completed'] } } },
-      { $group: { _id: null, total: { $sum: '$amount' } } }
-    ]).toArray();
+    const totalCount = await loans.countDocuments(query);
+    const allLoans = await loans.find(query)
+      .sort({ appliedDate: -1 })
+      .skip(skip)
+      .limit(limit)
+      .toArray();
 
     // Count loans applied this month
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const totalThisMonth = await loans.countDocuments({ appliedDate: { $gte: monthStart } });
-
+    
     const stats = {
       pending:        await loans.countDocuments({ status: 'pending' }),
       active:         await loans.countDocuments({ status: 'active' }),
       completed:      await loans.countDocuments({ status: 'completed' }),
       rejected:       await loans.countDocuments({ status: 'rejected' }),
-      totalThisMonth,
-      totalDisbursed: totalDisbursedResult[0]?.total || 0
+      totalThisMonth: await loans.countDocuments({ appliedDate: { $gte: monthStart } })
     };
 
-    res.status(200).json({ success: true, loans: allLoans, stats });
+    res.status(200).json({ 
+      success: true, 
+      loans: allLoans, 
+      totalCount,
+      totalPages: Math.ceil(totalCount / limit),
+      currentPage: page,
+      stats 
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Failed to fetch loans' });

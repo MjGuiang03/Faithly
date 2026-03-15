@@ -79,9 +79,12 @@ router.get('/donations/my-donations', authenticateUser, async (req, res) => {
 /* ================== ADMIN - GET ALL DONATIONS ================== */
 router.get('/admin/donations', authenticateAdmin, async (req, res) => {
   try {
-    const { search, status } = req.query;
-    const query = {};
+    const { search, status, page: qPage, limit: qLimit } = req.query;
+    const page  = parseInt(qPage)  || 1;
+    const limit = parseInt(qLimit) || 10;
+    const skip  = (page - 1) * limit;
 
+    const query = {};
     if (status && status !== 'all') {
       query.type = status === 'recurring' ? 'Recurring' : 'One-time';
     }
@@ -94,34 +97,25 @@ router.get('/admin/donations', authenticateAdmin, async (req, res) => {
       ];
     }
 
-    const allDonations = await donations.find(query).sort({ createdAt: -1 }).toArray();
-
-    const now = new Date();
-    const thisMonthDonations = allDonations.filter(d => {
-      const date = new Date(d.createdAt);
-      return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
-    });
-    const recurringDonations = allDonations.filter(d => d.type === 'Recurring');
+    const totalCount = await donations.countDocuments(query);
+    const allDonations = await donations.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .toArray();
 
     const stats = {
-      total:      allDonations.reduce((sum, d) => sum + d.amount, 0),
-      thisMonth:  thisMonthDonations.reduce((sum, d) => sum + d.amount, 0),
-      recurring:  recurringDonations.reduce((sum, d) => sum + d.amount, 0),
-      totalCount: allDonations.length
+      totalCount,
+      // Aggregation for totals if needed, but for now simple count
     };
-
-    const categoryMap = {};
-    allDonations.forEach(d => {
-      if (!categoryMap[d.category]) categoryMap[d.category] = { name: d.category, amount: 0, count: 0 };
-      categoryMap[d.category].amount += d.amount;
-      categoryMap[d.category].count  += 1;
-    });
 
     res.status(200).json({
       success: true,
       donations: allDonations,
-      stats,
-      categories: Object.values(categoryMap)
+      totalCount,
+      totalPages: Math.ceil(totalCount / limit),
+      currentPage: page,
+      stats
     });
   } catch (err) {
     console.error(err);

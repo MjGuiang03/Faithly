@@ -1,21 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Search, UserPlus, Users as UsersIcon, ShieldCheck, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, UserPlus, Users as UsersIcon, ShieldCheck, ChevronLeft, ChevronRight } from 'lucide-react';
+import useDebounce from '../../hooks/useDebounce';
 import '../styles/AdminMembers.css';
 import svgPaths from "../../imports/svg-icons";
 
 import API from '../../utils/api';
-
-/* ─── debounce hook ─────────────────────────────────────────────────────── */
-function useDebounce(value, delay = 400) {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const t = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(t);
-  }, [value, delay]);
-  return debounced;
-}
 
 /* ─── query-string builder ──────────────────────────────────────────────── */
 function buildQuery(params) {
@@ -98,7 +89,7 @@ function EditModal({ member, onClose, onSave }) {
           <div className="admin-members-modal-header-icon admin-members-modal-icon-edit"><IconEdit /></div>
           <div className="admin-members-modal-header-text">
             <p className="admin-members-modal-title">Edit Member</p>
-            <p className="admin-members-modal-subtitle">{member.email}</p>
+            <p className="admin-members-modal-subtitle">Update information for {member.fullName || member.name}</p>
           </div>
           <button className="admin-members-modal-close" onClick={onClose}>
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -109,25 +100,32 @@ function EditModal({ member, onClose, onSave }) {
 
         <div className="admin-members-modal-body">
           <div className="admin-members-form-row">
-            <label className="admin-members-form-label">Full Name</label>
-            <input className="admin-members-form-input" name="fullName" value={form.fullName} onChange={handleChange} placeholder="Enter full name"/>
+            <div className="admin-members-form-group">
+              <label className="admin-members-form-label">Full Name</label>
+              <input className="admin-members-form-input" name="fullName" value={form.fullName} onChange={handleChange} />
+            </div>
+            <div className="admin-members-form-group">
+              <label className="admin-members-form-label">Phone Number</label>
+              <input className="admin-members-form-input" name="phone" value={form.phone} onChange={handleChange} />
+            </div>
           </div>
           <div className="admin-members-form-row">
-            <label className="admin-members-form-label">Phone</label>
-            <input className="admin-members-form-input" name="phone" value={form.phone} onChange={handleChange} placeholder="+63XXXXXXXXXX"/>
+            <div className="admin-members-form-group">
+              <label className="admin-members-form-label">Branch</label>
+              <input className="admin-members-form-input" name="branch" value={form.branch} onChange={handleChange} />
+            </div>
+            <div className="admin-members-form-group">
+              <label className="admin-members-form-label">Church Position</label>
+              <select className="admin-members-form-input" name="position" value={form.position} onChange={handleChange}>
+                <option value="Member">Member</option>
+                <option value="Pastor">Pastor</option>
+                <option value="Secretary">Secretary</option>
+                <option value="Deacon">Deacon</option>
+                <option value="Admin">Admin</option>
+              </select>
+            </div>
           </div>
-          <div className="admin-members-form-row">
-            <label className="admin-members-form-label">Branch</label>
-            <input className="admin-members-form-input" name="branch" value={form.branch} onChange={handleChange} placeholder="Branch name"/>
-          </div>
-          <div className="admin-members-form-row">
-            <label className="admin-members-form-label">Position</label>
-            <input className="admin-members-form-input" name="position" value={form.position} onChange={handleChange} placeholder="Position / role"/>
-          </div>
-
-          <div className="admin-members-password-divider">
-            <span>Confirm your identity to save</span>
-          </div>
+          <p className="admin-members-admin-confirm-title">Confirm Changes</p>
           <div className="admin-members-form-row" style={{ marginBottom: 0 }}>
             <label className="admin-members-form-label">Admin Password</label>
             <div className="admin-members-password-wrapper">
@@ -137,9 +135,8 @@ function EditModal({ member, onClose, onSave }) {
                 value={adminPassword}
                 onChange={e => { setAdminPassword(e.target.value); setPasswordError(''); }}
                 placeholder="Enter your admin password"
-                onKeyDown={e => e.key === 'Enter' && handleSubmit()}
               />
-              <button className="admin-members-password-toggle" type="button" onClick={() => setShowPassword(v => !v)}>
+              <button className="admin-members-password-toggle" onClick={() => setShowPassword(!showPassword)}>
                 {showPassword ? (
                   <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
                     <path d="M2.5 2.5L17.5 17.5" stroke="#99A1AF" strokeWidth="1.5" strokeLinecap="round"/>
@@ -248,9 +245,8 @@ function DeleteModal({ member, onClose, onConfirm }) {
                 value={adminPassword}
                 onChange={e => { setAdminPassword(e.target.value); setPasswordError(''); }}
                 placeholder="Enter your admin password"
-                onKeyDown={e => e.key === 'Enter' && handleDelete()}
               />
-              <button className="admin-members-password-toggle" type="button" onClick={() => setShowPassword(v => !v)}>
+              <button className="admin-members-password-toggle" onClick={() => setShowPassword(!showPassword)}>
                 {showPassword ? (
                   <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
                     <path d="M2.5 2.5L17.5 17.5" stroke="#99A1AF" strokeWidth="1.5" strokeLinecap="round"/>
@@ -296,15 +292,14 @@ export default function AdminMembers() {
   const [searchOfficers, setSearchOfficers] = useState('');
   const [searchMembers,  setSearchMembers]  = useState('');
   const [currentPage,    setCurrentPage]    = useState(1);
-  const [loading,        setLoading]        = useState(true);
+  const [currentOfficerPage, setCurrentOfficerPage] = useState(1);
+  const [loadingMembers, setLoadingMembers] = useState(true);
   const [loadingOfficers, setLoadingOfficers] = useState(true);
   const [editMember,     setEditMember]     = useState(null);
   const [deleteMember,   setDeleteMember]   = useState(null);
 
   const debouncedSearchMembers  = useDebounce(searchMembers,  400);
   const debouncedSearchOfficers = useDebounce(searchOfficers, 400);
-
-  useEffect(() => { setCurrentPage(1); }, [debouncedSearchMembers]);
 
   const getToken = () =>
     localStorage.getItem('adminToken') ||
@@ -316,9 +311,9 @@ export default function AdminMembers() {
   /* ── Fetch regular (non-officer) members ── */
   const fetchMembers = useCallback(async () => {
     try {
-      setLoading(true);
-      const qs  = buildQuery({ search: debouncedSearchMembers, page: currentPage, limit: ITEMS_PER_PAGE, isOfficer: false });
-      const res = await fetch(`${API}/api/admin/members${qs ? `?${qs}` : ''}`, {
+      setLoadingMembers(true);
+      const q  = buildQuery({ search: debouncedSearchMembers.trim(), page: currentPage, limit: ITEMS_PER_PAGE, role: 'member' });
+      const res = await fetch(`${API}/api/admin/members?${q}`, {
         headers: { Authorization: `Bearer ${getToken()}` }
       });
       if (res.status === 401 || res.status === 403) { navigate('/admin/login'); return; }
@@ -330,7 +325,7 @@ export default function AdminMembers() {
     } catch (err) {
       toast.error(err.message || 'Failed to fetch members');
     } finally {
-      setLoading(false);
+      setLoadingMembers(false);
     }
   }, [debouncedSearchMembers, currentPage, navigate]);
 
@@ -338,39 +333,39 @@ export default function AdminMembers() {
   const fetchOfficers = useCallback(async () => {
     try {
       setLoadingOfficers(true);
-      const qs  = buildQuery({ search: debouncedSearchOfficers, isOfficer: true, limit: 100 });
-      const res = await fetch(`${API}/api/admin/members${qs ? `?${qs}` : ''}`, {
+      const q  = buildQuery({ search: debouncedSearchOfficers.trim(), role: 'officer', page: currentOfficerPage, limit: ITEMS_PER_PAGE });
+      const res = await fetch(`${API}/api/admin/members?${q}`, {
         headers: { Authorization: `Bearer ${getToken()}` }
       });
       const data = await res.json();
       if (data.success) {
         setOfficers(data.members || []);
-        setOfficerPagination(data.pagination || { totalMembers: 0 });
+        setOfficerPagination(data.pagination || { totalMembers: 0, totalPages: 1 });
       }
     } catch (err) {
       console.error('Failed to fetch officers:', err);
     } finally {
       setLoadingOfficers(false);
     }
-  }, [debouncedSearchOfficers]);
+  }, [debouncedSearchOfficers, currentOfficerPage]);
 
-  useEffect(() => { fetchMembers();  }, [fetchMembers]);
+  useEffect(() => { fetchMembers(); }, [fetchMembers]);
   useEffect(() => { fetchOfficers(); }, [fetchOfficers]);
+
+  useEffect(() => { setCurrentPage(1); }, [debouncedSearchMembers]);
+  useEffect(() => { setCurrentOfficerPage(1); }, [debouncedSearchOfficers]);
 
   const formatDate = d =>
     d ? new Date(d).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' }) : 'N/A';
 
-  /* ── Pagination range text ── */
-  const paginationStart = pagination.totalMembers === 0 ? 0 : (currentPage - 1) * ITEMS_PER_PAGE + 1;
-  const paginationEnd   = Math.min(currentPage * ITEMS_PER_PAGE, pagination.totalMembers);
-
-  const buildPageNumbers = () => {
-    const { totalPages } = pagination;
+  const buildPageNumbers = (p) => {
+    const { totalPages } = p;
     if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
+    const curr = p.page;
     const pages = [];
-    if (currentPage <= 4)                    pages.push(1, 2, 3, 4, 5, '…', totalPages);
-    else if (currentPage >= totalPages - 3)  pages.push(1, '…', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
-    else                                     pages.push(1, '…', currentPage - 1, currentPage, currentPage + 1, '…', totalPages);
+    if (curr <= 4)                    pages.push(1, 2, 3, 4, 5, '…', totalPages);
+    else if (curr >= totalPages - 3)  pages.push(1, '…', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+    else                                     pages.push(1, '…', curr - 1, curr, curr + 1, '…', totalPages);
     return pages;
   };
 
@@ -456,47 +451,25 @@ export default function AdminMembers() {
                 </tr>
               ))
             ) : officers.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="admin-members-table-cell admin-members-empty">
-                  {searchOfficers ? 'No officers match your search.' : 'No verified officers yet.'}
-                </td>
-              </tr>
+              <tr className="admin-members-no-results"><td colSpan={7}>No officers found</td></tr>
             ) : (
-              officers.map((officer, idx) => (
-                <tr key={officer._id || idx} className="admin-members-table-row">
-                  <td className="admin-members-table-cell">{officer.memberId}</td>
+              officers.map(m => (
+                <tr key={m._id} className="admin-members-table-row">
+                  <td className="admin-members-table-cell"><span className="admin-members-id">{m.memberId || '—'}</span></td>
                   <td className="admin-members-table-cell">
-                    <div className="admin-members-name-cell">
-                      <div className="admin-members-avatar-circle">
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                          <path d={svgPaths.p25397b80} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d={svgPaths.p2c4f400}  stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      </div>
-                      <span>{officer.fullName || officer.name}</span>
+                    <div className="admin-members-avatar-name">
+                      <div className="admin-members-avatar-text">{(m.fullName || m.name || 'M').charAt(0)}</div>
+                      <span className="admin-members-name-text">{m.fullName || m.name}</span>
                     </div>
                   </td>
-                  <td className="admin-members-table-cell">
-                    <div className="admin-members-contact-cell">
-                      <span className="admin-members-contact-email">{officer.email}</span>
-                      <span className="admin-members-contact-phone">{officer.phone || '—'}</span>
-                    </div>
-                  </td>
-                  <td className="admin-members-table-cell">{officer.branch || '—'}</td>
-                  <td className="admin-members-table-cell">{formatDate(officer.createdAt)}</td>
-                  <td className="admin-members-table-cell">
-                    <span className={`admin-members-status-badge admin-members-status-${officer.status || 'active'}`}>
-                      {officer.status ? officer.status.charAt(0).toUpperCase() + officer.status.slice(1) : 'Active'}
-                    </span>
-                  </td>
+                  <td className="admin-members-table-cell"><span className="admin-members-email">{m.email}</span></td>
+                  <td className="admin-members-table-cell"><span className="admin-members-branch">{m.branch || 'Main Branch'}</span></td>
+                  <td className="admin-members-table-cell"><span className="admin-members-date">{formatDate(m.createdAt)}</span></td>
+                  <td className="admin-members-table-cell"><span className={`admin-members-status-badge ${m.status?.toLowerCase() === 'active' ? 'status-active' : 'status-inactive'}`}>{m.status || 'Active'}</span></td>
                   <td className="admin-members-table-cell">
                     <div className="admin-members-actions">
-                      <button className="admin-members-action-btn admin-members-action-edit" onClick={() => setEditMember(officer)}>
-                        <IconEdit />
-                      </button>
-                      <button className="admin-members-action-btn admin-members-action-delete" onClick={() => setDeleteMember(officer)}>
-                        <IconTrash />
-                      </button>
+                      <button className="admin-members-action-icon edit" onClick={() => setEditMember(m)}><IconEdit /></button>
+                      <button className="admin-members-action-icon delete" onClick={() => setDeleteMember(m)}><IconTrash /></button>
                     </div>
                   </td>
                 </tr>
@@ -504,14 +477,27 @@ export default function AdminMembers() {
             )}
           </tbody>
         </table>
+        
+        {officerPagination.totalPages > 1 && (
+          <div className="admin-members-pagination">
+            <button className="admin-members-pagination-nav" onClick={() => setCurrentOfficerPage(p => Math.max(1, p-1))} disabled={currentOfficerPage === 1}><ChevronLeft size={16} /></button>
+            <div className="admin-members-pagination-numbers">
+              {buildPageNumbers(officerPagination).map((num, i) => (
+                num === '…' ? <span key={`dots-${i}`} className="admin-members-pagination-dots">…</span> :
+                <button key={num} onClick={() => setCurrentOfficerPage(num)} className={`admin-members-pagination-num ${currentOfficerPage === num ? 'active' : ''}`}>{num}</button>
+              ))}
+            </div>
+            <button className="admin-members-pagination-nav" onClick={() => setCurrentOfficerPage(p => Math.min(officerPagination.totalPages, p+1))} disabled={currentOfficerPage === officerPagination.totalPages}><ChevronRight size={16} /></button>
+          </div>
+        )}
       </div>
 
-      {/* Members Section */}
+      {/* Regular Members Section */}
       <div className="admin-members-section">
         <div className="admin-members-section-header">
           <div className="admin-members-section-title-wrapper">
             <UsersIcon size={24} color="#155DFC" strokeWidth={2} />
-            <h2 className="admin-members-section-title">Member List</h2>
+            <h2 className="admin-members-section-title">All Members</h2>
             <span className="admin-members-count-badge">{pagination.totalMembers ?? 0}</span>
           </div>
           <div className="admin-members-search-toolbar">
@@ -519,16 +505,12 @@ export default function AdminMembers() {
               <Search size={18} className="admin-members-search-icon" />
               <input
                 type="text"
-                placeholder="Search by name, ID or email..."
+                placeholder="Search members..."
                 value={searchMembers}
                 onChange={e => setSearchMembers(e.target.value)}
                 className="admin-members-search-input"
               />
             </div>
-            <button className="admin-members-filter-btn">
-              <Filter size={18} />
-              <span>Filter</span>
-            </button>
           </div>
         </div>
 
@@ -536,17 +518,17 @@ export default function AdminMembers() {
           <thead>
             <tr className="admin-members-table-header">
               <th className="admin-members-table-header-cell">Member ID</th>
-              <th className="admin-members-table-header-cell">Member Name</th>
+              <th className="admin-members-table-header-cell">Name</th>
               <th className="admin-members-table-header-cell">Contact</th>
               <th className="admin-members-table-header-cell">Branch</th>
-              <th className="admin-members-table-header-cell">Member Since</th>
+              <th className="admin-members-table-header-cell">Position</th>
               <th className="admin-members-table-header-cell">Status</th>
               <th className="admin-members-table-header-cell">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {loading ? (
-              Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
+            {loadingMembers ? (
+              Array.from({ length: 5 }).map((_, i) => (
                 <tr key={i} className="admin-members-table-row">
                   {Array.from({ length: 7 }).map((__, j) => (
                     <td key={j} className="admin-members-table-cell"><div className="admin-members-skeleton" /></td>
@@ -554,47 +536,30 @@ export default function AdminMembers() {
                 </tr>
               ))
             ) : members.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="admin-members-table-cell admin-members-empty">
-                  {searchMembers ? 'No members match your search.' : 'No members found.'}
-                </td>
-              </tr>
+              <tr className="admin-members-no-results"><td colSpan={7}>No members found</td></tr>
             ) : (
-              members.map(member => (
-                <tr key={member._id} className="admin-members-table-row">
-                  <td className="admin-members-table-cell">{member.memberId}</td>
+              members.map(m => (
+                <tr key={m._id} className="admin-members-table-row">
+                  <td className="admin-members-table-cell"><span className="admin-members-id">{m.memberId || '—'}</span></td>
                   <td className="admin-members-table-cell">
-                    <div className="admin-members-name-cell">
-                      <div className="admin-members-avatar-circle">
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                          <path d={svgPaths.p25397b80} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d={svgPaths.p2c4f400}  stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      </div>
-                      <span>{member.fullName || member.name}</span>
+                    <div className="admin-members-avatar-name">
+                      <div className="admin-members-avatar-text">{(m.fullName || m.name || 'M').charAt(0)}</div>
+                      <span className="admin-members-name-text">{m.fullName || m.name}</span>
                     </div>
                   </td>
                   <td className="admin-members-table-cell">
-                    <div className="admin-members-contact-cell">
-                      <span className="admin-members-contact-email">{member.email}</span>
-                      <span className="admin-members-contact-phone">{member.phone || '—'}</span>
+                    <div className="admin-members-contact-info">
+                      <span className="admin-members-email">{m.email}</span>
+                      <span className="admin-members-phone">{m.phone}</span>
                     </div>
                   </td>
-                  <td className="admin-members-table-cell">{member.branch || '—'}</td>
-                  <td className="admin-members-table-cell">{formatDate(member.createdAt)}</td>
-                  <td className="admin-members-table-cell">
-                    <span className={`admin-members-status-badge admin-members-status-${member.status || 'active'}`}>
-                      {member.status ? member.status.charAt(0).toUpperCase() + member.status.slice(1) : 'Active'}
-                    </span>
-                  </td>
+                  <td className="admin-members-table-cell"><span className="admin-members-branch">{m.branch || 'Bulacan Main'}</span></td>
+                  <td className="admin-members-table-cell"><span className="admin-members-position">{m.position || 'Member'}</span></td>
+                  <td className="admin-members-table-cell"><span className={`admin-members-status-badge ${m.status?.toLowerCase() === 'active' ? 'status-active' : 'status-inactive'}`}>{m.status || 'Active'}</span></td>
                   <td className="admin-members-table-cell">
                     <div className="admin-members-actions">
-                      <button className="admin-members-action-btn admin-members-action-edit" onClick={() => setEditMember(member)}>
-                        <IconEdit />
-                      </button>
-                      <button className="admin-members-action-btn admin-members-action-delete" onClick={() => setDeleteMember(member)}>
-                        <IconTrash />
-                      </button>
+                      <button className="admin-members-action-icon edit" onClick={() => setEditMember(m)}><IconEdit /></button>
+                      <button className="admin-members-action-icon delete" onClick={() => setDeleteMember(m)}><IconTrash /></button>
                     </div>
                   </td>
                 </tr>
@@ -603,43 +568,16 @@ export default function AdminMembers() {
           </tbody>
         </table>
 
-        {!loading && pagination.totalPages > 1 && (
-          <div className="admin-members-pagination-wrapper">
-            <p className="admin-members-pagination-info">
-              Showing {paginationStart}–{paginationEnd} of {pagination.totalMembers} results
-            </p>
-            <div className="admin-members-pagination">
-              <button
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                disabled={!pagination.hasPrev}
-                className="admin-members-pagination-btn"
-              >
-                <ChevronLeft size={16} />
-                <span>Previous</span>
-              </button>
-              <div className="admin-members-pagination-numbers">
-                {buildPageNumbers().map((p, i) =>
-                  p === '…'
-                    ? <span key={`el-${i}`} className="admin-members-pagination-dots">…</span>
-                    : <button
-                        key={p}
-                        onClick={() => setCurrentPage(p)}
-                        className={`admin-members-pagination-number ${currentPage === p ? 'active' : ''}`}
-                      >
-                        {p}
-                      </button>
-                )}
-              </div>
-              <button
-                onClick={() => setCurrentPage(p => Math.min(pagination.totalPages, p + 1))}
-                disabled={!pagination.hasNext}
-                className="admin-members-pagination-btn"
-              >
-                <span>Next</span>
-                <ChevronRight size={16} />
-              </button>
+        {pagination.totalPages > 1 && (
+          <div className="admin-members-pagination">
+            <button className="admin-members-pagination-nav" onClick={() => setCurrentPage(p => Math.max(1, p-1))} disabled={currentPage === 1}><ChevronLeft size={16} /></button>
+            <div className="admin-members-pagination-numbers">
+              {buildPageNumbers(pagination).map((num, i) => (
+                num === '…' ? <span key={`dots-${i}`} className="admin-members-pagination-dots">…</span> :
+                <button key={num} onClick={() => setCurrentPage(num)} className={`admin-members-pagination-num ${currentPage === num ? 'active' : ''}`}>{num}</button>
+              ))}
             </div>
-
+            <button className="admin-members-pagination-nav" onClick={() => setCurrentPage(p => Math.min(pagination.totalPages, p+1))} disabled={currentPage === pagination.totalPages}><ChevronRight size={16} /></button>
           </div>
         )}
       </div>

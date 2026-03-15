@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
+import useDebounce from '../../hooks/useDebounce';
 import '../styles/AdminLoanManagement.css';
 
 import API from '../../utils/api';
@@ -23,9 +24,13 @@ export default function AdminLoanManagement() {
   const [loans,        setLoans]        = useState([]);
   const [stats,        setStats]        = useState({ pending: 0, active: 0, completed: 0, totalDisbursed: 0 });
   const [searchTerm,   setSearchTerm]   = useState('');
+  const debouncedSearch = useDebounce(searchTerm, 400);
   const [statusFilter, setStatusFilter] = useState('all');
   const [loading,      setLoading]      = useState(true);
   const [actionLoading, setActionLoading] = useState(null); // stores _id of loan being acted on
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const LIMIT = 10;
 
   /* ── Auth guard ── */
   useEffect(() => {
@@ -39,8 +44,10 @@ export default function AdminLoanManagement() {
     try {
       const token  = localStorage.getItem('adminToken');
       const params = new URLSearchParams();
+      params.set('page', page);
+      params.set('limit', LIMIT);
       if (statusFilter !== 'all') params.set('status', statusFilter);
-      if (searchTerm.trim())      params.set('search', searchTerm.trim());
+      if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim());
 
       const res  = await fetch(`${API}/api/admin/loans?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -57,22 +64,22 @@ export default function AdminLoanManagement() {
       }
 
       setLoans(data.loans  || []);
+      setTotalCount(data.totalCount || 0);
       setStats(data.stats  || { pending: 0, active: 0, completed: 0, totalDisbursed: 0 });
     } catch (err) {
       toast.error('Network error. Could not load loans.');
     } finally {
       setLoading(false);
     }
-  }, [statusFilter, searchTerm, navigate]);
+  }, [statusFilter, debouncedSearch, page, navigate]);
 
   /* initial load */
   useEffect(() => { fetchLoans(); }, [fetchLoans]);
 
-  /* debounce search */
+  /* Reset page on search change */
   useEffect(() => {
-    const t = setTimeout(() => fetchLoans(), 400);
-    return () => clearTimeout(t);
-  }, [searchTerm]);
+    setPage(1);
+  }, [debouncedSearch, statusFilter]);
 
   /* ── Approve ── */
   const handleApprove = async (loan) => {

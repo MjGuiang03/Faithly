@@ -1,11 +1,11 @@
 import { useNavigate } from 'react-router';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import Sidebar from '../components/Sidebar';
 import LoanApplicationModal from '../components/LoanApplicationModal';
 import VerificationModal from '../components/OfficerVerification';
+import useDebounce from '../../hooks/useDebounce';
 import '../styles/Loans.css';
-
 import API from '../../utils/api';
 
 const fmt = (n) =>
@@ -38,6 +38,8 @@ export default function Loans() {
   const [error,               setError]               = useState('');
   const [page,                setPage]                = useState(1);
   const [totalCount,          setTotalCount]          = useState(0);
+  const [search,              setSearch]              = useState('');
+  const debouncedSearch = useDebounce(search, 400);
   const LIMIT = 5;
 
   /* ────────────────────────────────────────────────────────
@@ -57,10 +59,11 @@ export default function Loans() {
     }
 
     const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
+    const searchParam = debouncedSearch ? `&search=${debouncedSearch}` : '';
 
     try {
       const [loansRes, verifyRes] = await Promise.all([
-        fetch(`${API}/api/loans/my-loans?page=${page}&limit=${LIMIT}`, { headers }),
+        fetch(`${API}/api/loans/my-loans?page=${page}&limit=${LIMIT}${searchParam}`, { headers }),
         fetch(`${API}/api/verification/status`,  { headers }),
       ]);
 
@@ -97,9 +100,14 @@ export default function Loans() {
     } finally {
       setDataLoading(false);
     }
-  }, [navigate, page]);
+  }, [navigate, page, debouncedSearch]);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
+  
 
   /* ────────────────────────────────────────────────────────
      Gate: what happens when "+ Apply for Loan" is clicked
@@ -264,6 +272,19 @@ export default function Loans() {
               <div className="all-loans-section">
                 <div className="history-header-row">
                   <h2 className="section-title">All Loans</h2>
+                  <div className="history-search-box">
+                    <svg fill="none" viewBox="0 0 16 16" width="14" height="14" className="search-icon-inner">
+                      <circle cx="7" cy="7" r="5" stroke="#9ca3af" strokeWidth="1.5" />
+                      <path d="M10.5 10.5L13.5 13.5" stroke="#9ca3af" strokeLinecap="round" strokeWidth="1.5" />
+                    </svg>
+                    <input
+                      type="text"
+                      className="history-search-input"
+                      placeholder="Search ID, purpose..."
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                    />
+                  </div>
                   <button className="view-all-btn" onClick={() => setPage(1)}>View All History</button>
                 </div>
 
@@ -275,8 +296,11 @@ export default function Loans() {
                   </div>
                 ) : (
                   <div className="loans-list">
-                    {loans.map((loan) => (
-                      <div key={loan._id} className="loan-item">
+                    {loans.length === 0 ? (
+                      <p className="loans-empty-text" style={{ padding: '20px' }}>No loans match "{search}"</p>
+                    ) : (
+                      loans.map((loan) => (
+                        <div key={loan._id} className="loan-item">
                         {/* Loan Header */}
                         <div className="loan-item-header">
                           <div className="loan-item-main">
@@ -325,7 +349,8 @@ export default function Loans() {
                           </div>
                         </div>
                       </div>
-                    ))}
+                    ))
+                    )}
                   </div>
                 )}
 

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
+import useDebounce from '../../hooks/useDebounce';
 import '../styles/AdminDonations.css';
 import svgPaths from "../../imports/svg-icons";
 
@@ -30,6 +31,10 @@ export default function AdminDonationsNew() {
   });
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 400);
+  const ITEMS_PER_PAGE = 10;
 
   /* ── Auth guard ── */
   useEffect(() => {
@@ -42,8 +47,12 @@ export default function AdminDonationsNew() {
     setLoading(true);
     try {
       const token = localStorage.getItem('adminToken');
+      const params = new URLSearchParams();
+      params.set('page', currentPage);
+      params.set('limit', ITEMS_PER_PAGE);
+      if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim());
 
-      const res = await fetch(`${API}/api/admin/donations`, {
+      const res = await fetch(`${API}/api/admin/donations?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -58,47 +67,32 @@ export default function AdminDonationsNew() {
       }
 
       setDonations(data.donations || []);
+      setTotalCount(data.totalCount || 0);
       
-      const thisMonthTotal = data.stats?.thisMonth || 0;
-      const totalDonations = data.donations?.length || 0;
-      const avgDonation = totalDonations > 0 
-        ? data.donations.reduce((sum, d) => sum + (d.amount || 0), 0) / totalDonations
-        : 0;
-      
-      const oneWeekAgo = new Date();
-      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-      const thisWeekTotal = data.donations
-        ?.filter(d => new Date(d.createdAt || d.date) >= oneWeekAgo)
-        ?.reduce((sum, d) => sum + (d.amount || 0), 0) || 0;
-      
-      // FIX: use d.member (the actual DB field), fallback to d.email
-      const uniqueDonors = new Set(data.donations?.map(d => d.member || d.email)).size;
-
       setStats({
-        totalThisMonth: thisMonthTotal,
-        totalDonors: uniqueDonors,
-        avgDonation: avgDonation,
-        thisWeek: thisWeekTotal
+        totalThisMonth: data.stats?.thisMonth || 0,
+        totalDonors: data.stats?.totalDonors || 0, // Backend should return this
+        avgDonation: data.stats?.avgDonation || 0,
+        thisWeek: data.stats?.thisWeek || 0
       });
-
-      setCurrentPage(1);
     } catch {
       toast.error('Network error. Could not load donations.');
     } finally {
       setLoading(false);
     }
-  }, [navigate]);
+  }, [currentPage, debouncedSearch, navigate]);
 
   useEffect(() => {
     fetchDonations();
   }, [fetchDonations]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch]);
+
   /* ── Pagination math ── */
-  const totalPages = Math.max(1, Math.ceil(donations.length / ITEMS_PER_PAGE));
-  const paginatedRows = donations.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
+  const totalPages = Math.max(1, Math.ceil(totalCount / ITEMS_PER_PAGE));
+  const paginatedRows = donations;
 
   const goTo = (p) => setCurrentPage(Math.max(1, Math.min(p, totalPages)));
   const goPrev = () => goTo(currentPage - 1);
@@ -166,7 +160,22 @@ export default function AdminDonationsNew() {
 
       {/* Recent Donations Section */}
       <div className="admin-don-new-section">
-        <h2 className="admin-don-new-section-title">Recent Donations</h2>
+        <div className="admin-don-new-table-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <h2 className="admin-don-new-section-title">Recent Donations</h2>
+          <div className="history-search-box">
+            <svg fill="none" viewBox="0 0 16 16" width="14" height="14" className="search-icon-inner">
+              <circle cx="7" cy="7" r="5" stroke="#9ca3af" strokeWidth="1.5" />
+              <path d="M10.5 10.5L13.5 13.5" stroke="#9ca3af" strokeLinecap="round" strokeWidth="1.5" />
+            </svg>
+            <input
+              type="text"
+              className="history-search-input"
+              placeholder="Search member, ID..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+        </div>
 
         <div className="admin-don-new-table-container">
           <table className="admin-don-new-table">
@@ -230,12 +239,12 @@ export default function AdminDonationsNew() {
         </div>
 
         {/* Pagination */}
-        {!loading && donations.length > 0 && (
+        {!loading && totalCount > 0 && (
           <div className="admin-don-new-pagination">
             <div className="admin-don-new-pagination-info">
               Showing <strong>{(currentPage - 1) * ITEMS_PER_PAGE + 1}</strong> to{' '}
-              <strong>{Math.min(currentPage * ITEMS_PER_PAGE, donations.length)}</strong> of{' '}
-              <strong>{donations.length}</strong> results
+              <strong>{Math.min(currentPage * ITEMS_PER_PAGE, totalCount)}</strong> of{' '}
+              <strong>{totalCount}</strong> results
             </div>
             <div className="admin-don-new-pagination-controls">
               <button
