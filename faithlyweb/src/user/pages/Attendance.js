@@ -229,7 +229,7 @@ export default function Attendance() {
           <div className="attendance-table-wrapper">
             {loading ? (
               <p className="empty-text" style={{ padding: '16px' }}>Loading...</p>
-            ) : history.length === 0 ? (
+            ) : attendanceData.length === 0 ? (
               <p className="empty-text" style={{ padding: '16px' }}>
                 {search ? 'No records match your search.' : 'No attendance records yet.'}
               </p>
@@ -246,7 +246,7 @@ export default function Attendance() {
                     </tr>
                   </thead>
                   <tbody>
-                    {history.map((record, index) => (
+                    {attendanceData.map((record, index) => (
                       <tr key={index}>
                         <td>{record.service}</td>
                         <td>{record.date}</td>
