@@ -1,8 +1,8 @@
 .sidebar {
   width: 256px;
-  background: white;
-  border-right: 1px solid #E5E7EB;
-  color: #344054;
+  background: linear-gradient(180deg, #0f172b 0%, #162456 100%);
+  border-right: 1px solid #1c398e;
+  color: white;
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -13,6 +13,14 @@
   overflow-x: visible;
   z-index: 50;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Hide scrollbar */
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.sidebar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
 }
 
 .sidebar.sidebar-collapsed {
@@ -24,30 +32,32 @@
 .sidebar-toggle-btn {
   position: fixed;
   top: 20px;
-  width: 28px;
-  height: 28px;
-  background: white;
-  border: 1px solid #E5E7EB;
+  width: 26px;
+  height: 26px;
+  background: #1c398e;
+  border: 1px solid #2a4db5;
   border-radius: 50%;
-  color: #155DFC;
+  color: #bedbff;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   z-index: 100;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.2s, color 0.2s, transform 0.2s;
+  flex-shrink: 0;
+  padding: 0;
 }
 
 .sidebar-toggle-btn:hover {
-  background: #F9FAFB;
+  background: #155dfc;
+  color: white;
   transform: scale(1.1);
 }
 
 /* ========== LOGO ========== */
 .sidebar-logo {
-  padding: 32px 16px;
-  border-bottom: 1px solid #F2F4F7;
+  padding: 24px 16px;
+  border-bottom: 0.8px solid #1c398e;
   flex-shrink: 0;
 }
 
@@ -59,9 +69,8 @@
 
 .sidebar-logo-content {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  text-align: center;
+  justify-content: center;
   gap: 12px;
 }
 
@@ -89,18 +98,22 @@
 }
 
 .sidebar-logo-text h1 {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: bold;
   margin: 0;
-  color: #155DFC;
-  line-height: 1.2;
+  color: white;
+  font-family: 'Arial', sans-serif;
+  line-height: 24px;
+  white-space: nowrap;
 }
 
 .sidebar-logo-text p {
-  font-size: 13px;
-  color: #667085;
-  margin: 4px 0 0 0;
-  font-weight: 500;
+  font-size: 14px;
+  color: #8ec5ff;
+  margin: 0;
+  font-family: 'Arial', sans-serif;
+  line-height: 20px;
+  white-space: nowrap;
 }
 
 /* ========== NAV ========== */
@@ -125,14 +138,15 @@
   height: 48px;
   background: transparent;
   border: none;
-  color: #667085;
-  font-size: 15px;
-  font-weight: 500;
+  color: #bedbff;
+  font-size: 16px;
+  font-family: 'Arial', sans-serif;
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s;
   width: 100%;
   text-align: left;
+  line-height: 24px;
   position: relative;
 }
 
@@ -145,14 +159,12 @@
 }
 
 .sidebar-nav-button:hover {
-  background: #F2F4F7;
-  color: #101828;
+  background: rgba(21, 93, 252, 0.2);
 }
 
 .sidebar-nav-button.active {
-  background: #F9F5FF;
-  color: #155DFC;
-  font-weight: 600;
+  background: #155dfc;
+  color: white;
 }
 
 .sidebar-nav-icon {
@@ -172,8 +184,8 @@
 
 /* ========== PROFILE ========== */
 .sidebar-profile {
-  padding: 24px 16px;
-  border-top: 1px solid #F2F4F7;
+  padding: 16px;
+  border-top: 0.8px solid #1c398e;
   flex-shrink: 0;
 }
 
@@ -202,7 +214,7 @@
 }
 
 .sidebar-profile-info:hover {
-  background: #F2F4F7;
+  background: rgba(21, 93, 252, 0.2);
 }
 
 .sidebar-profile-info:focus-visible {
@@ -237,16 +249,23 @@
 .sidebar-profile-name {
   font-size: 14px;
   font-weight: 600;
-  color: #101828;
+  color: white;
   margin: 0;
+  font-family: 'Arial', sans-serif;
   line-height: 20px;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sidebar-profile-email {
   font-size: 12px;
-  color: #667085;
+  color: #8ec5ff;
   margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: 'Arial', sans-serif;
   line-height: 16px;
 }
 
@@ -257,11 +276,11 @@
   justify-content: center;
   gap: 8px;
   padding: 12px;
-  background: white;
-  border: 1px solid #E5E7EB;
-  color: #667085;
+  background: transparent;
+  border: 1px solid #1c398e;
+  color: #bedbff;
   font-size: 14px;
-  font-weight: 500;
+  font-family: 'Arial', sans-serif;
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s;
@@ -395,8 +414,8 @@
 }
 
 .sidebar-nav-button.active .sidebar-notif-badge {
-  background: #155DFC;
-  color: white;
+  background: rgba(255, 255, 255, 0.9);
+  color: #155dfc;
 }
 
 @keyframes badge-pop {
@@ -434,13 +453,11 @@
 
   /* Don't collapse the internal contents on mobile, since the sidebar is just sliding out of view completely */
   .sidebar.sidebar-collapsed .sidebar-logo {
-     padding: 32px 16px;
-     justify-content: center;
+     padding: 24px 16px;
+     justify-content: flex-start;
   }
   .sidebar.sidebar-collapsed .sidebar-logo-content {
-     justify-content: center;
-     flex-direction: column;
-     align-items: center;
+     justify-content: flex-start;
      gap: 12px;
   }
   .sidebar.sidebar-collapsed .sidebar-nav {
