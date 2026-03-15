@@ -285,7 +285,6 @@ export default function Loans() {
                       onChange={(e) => setSearch(e.target.value)}
                     />
                   </div>
-                  <button className="view-all-btn" onClick={() => setPage(1)}>View All History</button>
                 </div>
 
                 {loans.length === 0 ? (
