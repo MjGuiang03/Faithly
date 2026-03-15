@@ -310,9 +310,9 @@ export default function Loans() {
                                 <span className={`loan-status-badge ${STATUS_CLASS[loan.status] || ''}`}>
                                   {loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}
                                 </span>
+                                <span className="loan-purpose-inline">— {loan.purpose}</span>
                               </div>
-                              <p className="loan-purpose">{loan.purpose}</p>
-                              <p className="loan-applied">Applied: {fmtDate(loan.appliedDate)}</p>
+                              <p className="loan-applied">{fmtDate(loan.appliedDate)}</p>
                             </div>
                           </div>
 
