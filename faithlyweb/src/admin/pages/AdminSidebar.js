@@ -2,7 +2,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import {
-  LayoutGrid, Bell, UserCheck, Users, Heart,
+  LayoutGrid, Bell, Users, Heart,
   Calendar, Building2, BarChart3, Settings, LogOut,
   ChevronDown, ChevronUp
 } from 'lucide-react';

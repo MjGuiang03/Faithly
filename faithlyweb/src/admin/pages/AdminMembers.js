@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Search, UserPlus, Users as UsersIcon, ShieldCheck, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import '../styles/AdminMembers.css';
