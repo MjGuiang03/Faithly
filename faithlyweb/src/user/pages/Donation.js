@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import Sidebar from '../components/Sidebar';
 import { ChevronDown, Receipt, X, Download, Share2 } from 'lucide-react';
 import '../styles/Donation.css';
@@ -43,7 +44,8 @@ const BankIcon = () => (
   />
 );
 
-export default function Donations() {
+export default function Donation() {
+  const { user } = useAuth();
   const [donationAmount, setDonationAmount] = useState('');
   const [donationCategory, setDonationCategory] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('GCash');

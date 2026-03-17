@@ -153,12 +153,6 @@ export default function Home() {
       gradient:    'linear-gradient(137.368deg, rgb(21, 93, 252) 0%, rgb(20, 71, 230) 100%)',
       action:      () => navigate('/branches'),
     },
-    {
-      title:       'Search for Nearest Community',
-      description: 'Locate nearest church',
-      gradient:    'linear-gradient(137.368deg, #f54900 0%, #d43f00 100%)',
-      action:      () => navigate('/branches'),
-    },
   ];
 
   return (

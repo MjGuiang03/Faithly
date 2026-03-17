@@ -56,7 +56,6 @@ export default function Settings() {
   /* ── Other settings ──────────────────────────────────────────────────── */
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [smsNotifications,   setSmsNotifications]   = useState(false);
-  const [twoFactorAuth,      setTwoFactorAuth]       = useState(false);
 
   /* ── Fetch verification status on mount ──────────────────────────────── */
   useEffect(() => {
