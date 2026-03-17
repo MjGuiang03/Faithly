@@ -780,13 +780,11 @@
   flex: 1;
   padding: 32px;
   overflow-y: auto;
-  background: #f9fafb;
 }
 
 .home-layout {
   display: flex;
   height: 100vh;
-  background: #f9fafb;
 }
 
 /* ── Responsive ────────────────────────────────────────── */

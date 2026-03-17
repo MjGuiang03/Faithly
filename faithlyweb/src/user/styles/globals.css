@@ -126,6 +126,7 @@
 
   body {
     @apply bg-background text-foreground;
+    background-color: #7a7979 !important;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -136,6 +137,12 @@
   margin-left: 256px;
   flex: 1;
   transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.home-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #7a7979 !important;
 }
 
 .sidebar-collapsed ~ .main-content {
