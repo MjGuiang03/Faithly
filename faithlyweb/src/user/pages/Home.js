@@ -8,7 +8,7 @@ import '../styles/Home.css';
 
 export default function Home() {
   const navigate = useNavigate();
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
 
   const [loanStats, setLoanStats] = useState({ activeCount: 0, remainingBalance: 0 });
   const [donationStats, setDonationStats] = useState({ totalDonated: 0 });
