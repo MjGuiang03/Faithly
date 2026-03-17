@@ -159,8 +159,10 @@
 @media (max-width: 768px) {
   .main-content,
   .sidebar-collapsed ~ .main-content {
-    margin-left: 0;
-    padding-top: 64px; /* Space for mobile hamburger menu */
+    margin-left: 0 !important;
+    padding: 16px !important;
+    padding-top: 64px !important; /* Space for mobile hamburger menu */
+    width: 100% !important;
   }
 }
 

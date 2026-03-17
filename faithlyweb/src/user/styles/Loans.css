@@ -1,6 +1,6 @@
 /* Loans Header */
 .loans-header {
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .loans-header-content {
@@ -38,18 +38,18 @@
 .loans-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
 .loan-stat-card {
   background: white;
   border: 0.8px solid #e5e7eb;
   border-radius: 14px;
-  padding: 20px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
@@ -144,11 +144,11 @@
 }
 
 .loan-item {
-  padding: 12px 16px;
+  padding: 10px 14px;
   border-bottom: 0.8px solid #e5e7eb;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .loan-item:last-child {
