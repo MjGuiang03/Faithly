@@ -2,7 +2,7 @@
 .home-layout {
   display: flex;
   min-height: 100vh;
-  background: #818181;
+  background: #7a7979;
 }
 
 /* Main Content */
@@ -85,7 +85,6 @@
   margin: 0;
   line-height: 40px;
   font-family: Arial, sans-serif;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .page-subtitle {
@@ -112,7 +111,6 @@
   flex-direction: row;
   align-items: center;
   gap: 16px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   transition: transform 0.2s;
 }
 
@@ -206,7 +204,6 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 .card-title {
@@ -250,12 +247,11 @@
   padding: 18px;
   border: none;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s;
 }
 
 .action-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
 }
 
 .action-content {
@@ -371,18 +367,16 @@
   background: #155dfc;
   border-radius: 50%;
   border: none;
-  box-shadow: 0px 10px 15px rgba(0, 0, 0, 0.1), 0px 4px 6px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s;
   z-index: 40;
 }
 
 .chat-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0px 15px 25px rgba(0, 0, 0, 0.15);
 }
 
 .chat-button svg {
