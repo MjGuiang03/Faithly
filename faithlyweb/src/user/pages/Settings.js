@@ -155,7 +155,7 @@ export default function Settings() {
 
   const handleSaveSettings = () => alert('Settings saved successfully!');
   const handleReset = () => {
-    setEmailNotifications(true); setSmsNotifications(false); setTwoFactorAuth(false);
+    setEmailNotifications(true); setSmsNotifications(false);
   };
 
   /* Re-fetch verification after modal closes */
