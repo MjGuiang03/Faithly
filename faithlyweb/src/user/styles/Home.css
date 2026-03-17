@@ -10,7 +10,7 @@
   padding: 24px 32px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 32px;
   width: 100%;
   margin-left: 256px;
   transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -188,11 +188,9 @@
 /* Content Grid — FIX: use minmax to prevent overflow */
 .dashboard-grid {
   display: grid;
-  grid-template-columns: 0.3fr 0.7fr;
-  gap: 20px;
-  align-items: stretch;
-  /* FIX: clamp columns so they never exceed available width */
-  grid-template-columns: minmax(0, 0.3fr) minmax(0, 0.7fr);
+  grid-template-columns: 320px 1fr;
+  gap: 24px;
+  align-items: flex-start;
 }
 
 .full-width-section {
@@ -244,16 +242,21 @@
 }
 
 .action-button {
-  border-radius: 12px;
-  padding: 16px 20px;
+  border-radius: 14px;
+  padding: 14px 18px;
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
   width: 100%;
+}
+
+.action-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 .action-content {
@@ -318,32 +321,32 @@
 .activity-item-horizontal {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 18px;
+  gap: 16px;
+  padding: 14px 20px;
   background: white;
-  border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.04);
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
   margin-bottom: 12px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
-  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .activity-item-horizontal:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-  border-color: rgba(0, 0, 0, 0.08);
+  transform: translateX(4px);
+  background: #f8fafc;
+  border-color: #155dfc;
 }
 
 .activity-icon-compact {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  background: #f8fafc;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #f1f5f9;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  border: 1px solid rgba(0, 0, 0, 0.03);
+  color: #155dfc;
 }
 
 .activity-details-horizontal {
@@ -508,6 +511,7 @@
 
   .dashboard-grid {
     grid-template-columns: 1fr;
+    align-items: stretch;
   }
 }
 
