@@ -2,7 +2,7 @@
 .home-layout {
   display: flex;
   min-height: 100vh;
-  background: #a4a4a4;
+  background: #818181;
 }
 
 /* Main Content */
@@ -12,11 +12,12 @@
   flex-direction: column;
   gap: 32px;
   width: 100%;
-  margin-left: 256px; /* Offset for fixed sidebar */
+  margin-left: 256px;
+  /* Offset for fixed sidebar */
   transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.sidebar-collapsed ~ .main-content {
+.sidebar-collapsed~.main-content {
   margin-left: 72px;
 }
 
