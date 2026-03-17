@@ -10,12 +10,12 @@ export default function Home() {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
 
-  const [loanStats,       setLoanStats]       = useState({ activeCount: 0, remainingBalance: 0 });
-  const [donationStats,   setDonationStats]   = useState({ totalDonated: 0 });
+  const [loanStats, setLoanStats] = useState({ activeCount: 0, remainingBalance: 0 });
+  const [donationStats, setDonationStats] = useState({ totalDonated: 0 });
   const [attendanceStats, setAttendanceStats] = useState({ total: 0 });
-  const [activeLoans,     setActiveLoans]     = useState([]);
-  const [recentActivity,  setRecentActivity]  = useState([]);
-  const [loading,         setLoading]         = useState(true);
+  const [activeLoans, setActiveLoans] = useState([]);
+  const [recentActivity, setRecentActivity] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const token = localStorage.getItem('token');
   const memberSince = user?.created_at ? new Date(user.created_at).getFullYear() : new Date().getFullYear();
@@ -26,9 +26,9 @@ export default function Home() {
       const headers = { Authorization: `Bearer ${token}` };
 
       const [loansRes, donationsRes, attendanceRes] = await Promise.all([
-        fetch(`${API}/api/loans/my-loans`,             { headers }),
-        fetch(`${API}/api/donations/my-donations`,     { headers }),
-        fetch(`${API}/api/attendance/my-attendance`,   { headers }),
+        fetch(`${API}/api/loans/my-loans`, { headers }),
+        fetch(`${API}/api/donations/my-donations`, { headers }),
+        fetch(`${API}/api/attendance/my-attendance`, { headers }),
       ]);
 
       const [loansData, donationsData, attendanceData] = await Promise.all([
@@ -48,17 +48,16 @@ export default function Home() {
         setAttendanceStats(attendanceData.stats || { total: 0 });
       }
 
-      // Build recent activity from all three sources
       const activities = [];
 
       if (loansData.success && loansData.loans?.length) {
         loansData.loans.slice(0, 3).forEach(loan => {
           activities.push({
-            type:        'loan',
-            title:       `Loan ${loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}`,
+            type: 'loan',
+            title: `Loan ${loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}`,
             description: `${loan.loanId} — ₱${loan.amount.toLocaleString()}`,
-            date:        new Date(loan.appliedDate),
-            iconColor:   '#155DFC',
+            date: new Date(loan.appliedDate),
+            iconColor: '#155DFC',
           });
         });
       }
@@ -66,11 +65,11 @@ export default function Home() {
       if (donationsData.success && donationsData.donations?.length) {
         donationsData.donations.slice(0, 3).forEach(donation => {
           activities.push({
-            type:        'donation',
-            title:       'Donation Made',
+            type: 'donation',
+            title: 'Donation Made',
             description: `${donation.category} — ₱${donation.amount.toLocaleString()}`,
-            date:        new Date(donation.createdAt),
-            iconColor:   '#00A63E',
+            date: new Date(donation.createdAt),
+            iconColor: '#00A63E',
           });
         });
       }
@@ -78,16 +77,15 @@ export default function Home() {
       if (attendanceData.success && attendanceData.attendance?.length) {
         attendanceData.attendance.slice(0, 3).forEach(record => {
           activities.push({
-            type:        'attendance',
-            title:       'Service Attended',
+            type: 'attendance',
+            title: 'Service Attended',
             description: `${record.service} — ${record.branch}`,
-            date:        new Date(record.createdAt),
-            iconColor:   '#0F2854',
+            date: new Date(record.createdAt),
+            iconColor: '#0F2854',
           });
         });
       }
 
-      // Sort by most recent first, take top 5
       activities.sort((a, b) => b.date - a.date);
       setRecentActivity(activities.slice(0, 5));
     } catch (err) {
@@ -103,13 +101,13 @@ export default function Home() {
   }, [token, fetchAllData]);
 
   const formatTimeAgo = (date) => {
-    const diff  = Date.now() - date.getTime();
-    const mins  = Math.floor(diff / 60000);
+    const diff = Date.now() - date.getTime();
+    const mins = Math.floor(diff / 60000);
     const hours = Math.floor(diff / 3600000);
-    const days  = Math.floor(diff / 86400000);
-    if (mins < 60)  return `${mins}m ago`;
+    const days = Math.floor(diff / 86400000);
+    if (mins < 60) return `${mins}m ago`;
     if (hours < 24) return `${hours}h ago`;
-    if (days < 7)   return `${days}d ago`;
+    if (days < 7) return `${days}d ago`;
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
@@ -136,22 +134,22 @@ export default function Home() {
 
   const quickActions = [
     {
-      title:       'Make Donation',
+      title: 'Make Donation',
       description: 'Support the church',
-      gradient:    'linear-gradient(137.368deg, rgb(0, 166, 62) 0%, rgb(0, 130, 54) 100%)',
-      action:      () => navigate('/donation'),
+      gradient: 'linear-gradient(137.368deg, rgb(0, 166, 62) 0%, rgb(0, 130, 54) 100%)',
+      action: () => navigate('/donation'),
     },
     {
-      title:       'Check Attendance',
+      title: 'Check Attendance',
       description: 'View your attendance',
-      bg:          '#0f2854',
-      action:      () => navigate('/attendance'),
+      bg: '#0f2854',
+      action: () => navigate('/attendance'),
     },
     {
-      title:       'View Nearby Community',
+      title: 'View Nearby Community',
       description: 'Find local branches',
-      gradient:    'linear-gradient(137.368deg, rgb(21, 93, 252) 0%, rgb(20, 71, 230) 100%)',
-      action:      () => navigate('/branches'),
+      gradient: 'linear-gradient(137.368deg, rgb(21, 93, 252) 0%, rgb(20, 71, 230) 100%)',
+      action: () => navigate('/branches'),
     },
   ];
 
@@ -160,23 +158,10 @@ export default function Home() {
       <Sidebar />
 
       <div className="main-content">
-        {/* Header */}
+        {/* Header — avatar removed */}
         <div className="home-header">
-          <div className="header-greeting">
-            <div className="header-text">
-              <h1 className="page-title">Welcome Back{user?.fullName ? `, ${user.fullName.split(' ')[0]}` : ''}!</h1>
-              <p className="page-subtitle">Here's an overview of your church activities</p>
-            </div>
-            <div className="header-avatar-container" onClick={() => navigate('/settings')} style={{ cursor: 'pointer' }}>
-              {profile?.photoUrl ? (
-                <img src={profile.photoUrl} alt="Profile" className="header-avatar" />
-              ) : (
-                <div className="header-avatar-placeholder">
-                  {profile?.fullName?.charAt(0)?.toUpperCase() || 'M'}
-                </div>
-              )}
-            </div>
-          </div>
+          <h1 className="page-title">Welcome Back{user?.fullName ? `, ${user.fullName.split(' ')[0]}` : ''}!</h1>
+          <p className="page-subtitle">Here's an overview of your church activities</p>
         </div>
 
         {/* Stats Grid */}
@@ -184,11 +169,11 @@ export default function Home() {
           <div className="stat-card stat-blue">
             <div className="stat-icon-box">
               <svg className="stat-icon" fill="none" viewBox="0 0 24 24">
-                <path d={svgPaths.pb47f400}   stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                <path d={svgPaths.p17a13100}  stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                <path d="M10 9H8"             stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                <path d="M16 13H8"            stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                <path d="M16 17H8"            stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                <path d={svgPaths.pb47f400} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                <path d={svgPaths.p17a13100} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                <path d="M10 9H8" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                <path d="M16 13H8" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                <path d="M16 17H8" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
               </svg>
             </div>
             <div className="stat-content">
@@ -212,10 +197,10 @@ export default function Home() {
           <div className="stat-card stat-navy">
             <div className="stat-icon-box">
               <svg className="stat-icon" fill="none" viewBox="0 0 24 24">
-                <path d="M8 2V6"              stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                <path d="M16 2V6"             stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                <path d={svgPaths.p32f12c00}  stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                <path d="M3 10H21"            stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                <path d="M8 2V6" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                <path d="M16 2V6" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                <path d={svgPaths.p32f12c00} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                <path d="M3 10H21" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
               </svg>
             </div>
             <div className="stat-content">
@@ -227,8 +212,8 @@ export default function Home() {
           <div className="stat-card stat-orange">
             <div className="stat-icon-box">
               <svg className="stat-icon" fill="none" viewBox="0 0 24 24">
-                <path d="M16 7H22V13"        stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                <path d={svgPaths.p13253c0}  stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                <path d="M16 7H22V13" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                <path d={svgPaths.p13253c0} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
               </svg>
             </div>
             <div className="stat-content">
@@ -240,7 +225,7 @@ export default function Home() {
 
         {/* Dashboard Grid */}
         <div className="dashboard-grid">
-          {/* Quick Actions (30%) */}
+          {/* Quick Actions */}
           <div className="card quick-actions-card">
             <h2 className="card-title">Quick Actions</h2>
             <div className="quick-actions-list">
@@ -264,7 +249,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Recent Activity (70%) */}
+          {/* Recent Activity */}
           <div className="card recent-activity-card">
             <h2 className="card-title">Recent Activity</h2>
             <div className="activity-list">
@@ -302,7 +287,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Upcoming Loan Payments (100%) */}
+        {/* Upcoming Loan Payments */}
         <div className="full-width-section">
           <div className="card payments-card">
             <div className="card-header">

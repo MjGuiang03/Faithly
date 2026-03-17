@@ -468,6 +468,9 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
               {touched.birthday && errors.birthday && (
                 <span className="signup-error-text">{errors.birthday}</span>
               )}
+              {touched.birthday && !errors.birthday && calculatedAge !== null && (
+                <span className="signup-success-icon">✓ Age: {calculatedAge}</span>
+              )}
             </div>
 
             {/* COMMUNITY */}
@@ -487,22 +490,6 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
                 <span className="signup-error-text">{errors.community}</span>
               )}
             </div>
-          </div>
-
-          {/* New ROW: Age (read-only) */}
-          <div className="signup-form-row">
-            <div className="signup-form-group">
-              <label htmlFor="age" className="signup-form-label">Age:</label>
-              <input
-                id="age"
-                type="text"
-                readOnly
-                value={calculatedAge !== null ? calculatedAge : ''}
-                className="signup-form-input read-only-input"
-                placeholder="Age"
-              />
-            </div>
-            <div className="signup-form-group" /> {/* Spacer */}
           </div>
 
           {/* Password Requirements Box */}

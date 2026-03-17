@@ -13,9 +13,11 @@
   gap: 20px;
   width: 100%;
   margin-left: 256px;
-  /* Offset for fixed sidebar */
   transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   background: #f2f2f2 !important;
+  /* FIX: prevent content from overflowing horizontally */
+  min-width: 0;
+  overflow-x: hidden;
 }
 
 .sidebar-collapsed~.main-content {
@@ -72,53 +74,9 @@
   color: white;
 }
 
-/* Welcome Header */
+/* Welcome Header — simplified, no avatar */
 .home-header {
   margin-bottom: 8px;
-}
-
-.header-greeting {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
-
-.header-text {
-  display: flex;
-  flex-direction: column;
-  gap: 0px;
-}
-
-.header-avatar-container {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 2px solid white;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  background: #f1f5f9;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: transform 0.2s;
-}
-
-.header-avatar-container:hover {
-  transform: scale(1.05);
-}
-
-.header-avatar {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.header-avatar-placeholder {
-  font-size: 20px;
-  font-weight: 700;
-  color: #155dfc;
 }
 
 .page-title {
@@ -227,12 +185,14 @@
   font-family: Arial, sans-serif;
 }
 
-/* Content Grid */
+/* Content Grid — FIX: use minmax to prevent overflow */
 .dashboard-grid {
   display: grid;
   grid-template-columns: 0.3fr 0.7fr;
   gap: 20px;
-  align-items: stretch; /* Match heights */
+  align-items: stretch;
+  /* FIX: clamp columns so they never exceed available width */
+  grid-template-columns: minmax(0, 0.3fr) minmax(0, 0.7fr);
 }
 
 .full-width-section {
@@ -255,7 +215,10 @@
   flex-direction: column;
   gap: 16px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
-  height: 100%; /* Fill grid cell */
+  height: 100%;
+  /* FIX: prevent card content from pushing past grid cell */
+  min-width: 0;
+  overflow: hidden;
 }
 
 .card-title {
@@ -271,20 +234,6 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-
-.view-all-btn {
-  font-size: 13px;
-  color: #155dfc;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  font-family: Arial, sans-serif;
-}
-
-.view-all-btn:hover {
-  text-decoration: underline;
 }
 
 /* Quick Actions */
@@ -303,7 +252,7 @@
   align-items: center;
   justify-content: space-between;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  overflow: hidden; /* Fix overflow */
+  overflow: hidden;
   width: 100%;
 }
 
@@ -347,6 +296,7 @@
   width: 18px;
   height: 18px;
   margin-top: 2px;
+  flex-shrink: 0;
 }
 
 /* Recent Activity */
@@ -364,7 +314,7 @@
   padding: 8px 0;
 }
 
-/* Recent Activity Horizontal Layout */
+/* Recent Activity — FIX: hover effects removed */
 .activity-item-horizontal {
   display: flex;
   align-items: center;
@@ -374,14 +324,7 @@
   border-radius: 12px;
   border: 1px solid #f3f4f6;
   margin-bottom: 8px;
-  transition: all 0.2s;
-}
-
-.activity-item-horizontal:hover {
-  background: white;
-  border-color: #e5e7eb;
-  transform: translateX(4px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  /* hover styles removed */
 }
 
 .activity-icon-compact {
