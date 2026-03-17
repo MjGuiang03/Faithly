@@ -2,7 +2,7 @@
 .home-layout {
   display: flex;
   min-height: 100vh;
-  background: #7a7979 !important;
+  background: #cccccc !important;
 }
 
 /* Main Content */
@@ -15,7 +15,7 @@
   margin-left: 256px;
   /* Offset for fixed sidebar */
   transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  background: #7a7979 !important;
+  background: #cccccc !important;
 }
 
 .sidebar-collapsed~.main-content {
