@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import Sidebar from '../components/Sidebar';
+import { ChevronDown, Receipt, X, Download, Share2 } from 'lucide-react';
 import '../styles/Donation.css';
 import gcashLogo from '../../assets/gcashlogo.png';
 import bankLogo from '../../assets/whitebanklogo.png';
@@ -54,6 +55,8 @@ export default function Donations() {
   const [loading, setLoading] = useState(true);
   const [historyPage, setHistoryPage] = useState(1);
   const [successModal, setSuccessModal] = useState(null);
+  const [selectedDonation, setSelectedDonation] = useState(null);
+  const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
   
   /* ── History Modal States ── */
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
@@ -143,6 +146,11 @@ export default function Donations() {
     setIsHistoryModalOpen(true);
   };
 
+  const handleOpenReceipt = (donation) => {
+    setSelectedDonation(donation);
+    setIsReceiptModalOpen(true);
+  };
+
   return (
     <>
       <div className="home-layout">
@@ -229,17 +237,20 @@ export default function Donations() {
                 {/* Category */}
                 <div className="form-group">
                   <label className="form-label">Donation Category</label>
-                  <select
-                    className="form-select"
-                    value={donationCategory}
-                    onChange={(e) => { setDonationCategory(e.target.value); setFormError(''); }}
-                    disabled={submitting}
-                  >
-                    <option value=""></option>
-                    {CATEGORIES.map((c) => (
-                      <option key={c.name} value={c.name}>{c.name}</option>
-                    ))}
-                  </select>
+                  <div className="select-wrapper">
+                    <select
+                      className="form-select category-select"
+                      value={donationCategory}
+                      onChange={(e) => { setDonationCategory(e.target.value); setFormError(''); }}
+                      disabled={submitting}
+                    >
+                      <option value="" disabled>Select a category</option>
+                      {CATEGORIES.map((c) => (
+                        <option key={c.name} value={c.name}>{c.name}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="select-icon" size={18} />
+                  </div>
                 </div>
 
                 {/* Payment Method */}
@@ -313,7 +324,7 @@ export default function Donations() {
           {/* Donation History (Preview) */}
           <div className="donation-categories-section">
             <div className="history-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h2 className="section-title" style={{ marginBottom: 0 }}>Recent Donation History</h2>
+              <h2 className="section-title" style={{ marginBottom: 0 }}>Donation History</h2>
               <button className="view-history-btn" onClick={handleOpenHistory}>View History</button>
             </div>
 
@@ -326,7 +337,11 @@ export default function Donations() {
             {!loading && donationHistory.length > 0 && (
               <div className="donation-history-list">
                 {donationHistory.slice(0, 5).map((d) => (
-                  <div key={d._id || d.donationId} className="donation-history-item">
+                  <div 
+                    key={d._id || d.donationId} 
+                    className="donation-history-item clickable"
+                    onClick={() => handleOpenReceipt(d)}
+                  >
                     <div className="donation-history-main">
                       <svg className="donation-history-icon" fill="none" viewBox="0 0 20 20">
                         <path d="M17.3667 3.84167C16.941 3.41583 16.4357 3.07803 15.8794 2.84757C15.3231 2.61712 14.7267 2.49854 14.1245 2.49854C13.5224 2.49854 12.9259 2.61712 12.3696 2.84757C11.8133 3.07803 11.308 3.41583 10.8823 3.84167L10.0001 4.72417L9.11793 3.84167C8.25853 2.98227 7.09337 2.49898 5.87593 2.49898C4.65849 2.49898 3.49334 2.98227 2.63393 3.84167C1.77453 4.70108 1.29124 5.86623 1.29124 7.08367C1.29124 8.30111 1.77453 9.46626 2.63393 10.3257L10.0001 17.6917L17.3662 10.3257C17.792 9.89993 18.1298 9.39461 18.3602 8.83831C18.5907 8.28202 18.7092 7.68556 18.7092 7.08334C18.7092 6.48112 18.5907 5.88465 18.3602 5.32836C18.1298 4.77207 17.792 4.26743 17.3662 3.84167H17.3667Z" stroke="#E60076" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
@@ -425,7 +440,11 @@ export default function Donations() {
               ) : (
                 <div className="modal-history-list">
                   {modalHistory.map((d) => (
-                    <div key={d._id || d.donationId} className="donation-history-item modal-item">
+                    <div 
+                      key={d._id || d.donationId} 
+                      className="donation-history-item modal-item clickable"
+                      onClick={() => handleOpenReceipt(d)}
+                    >
                       <div className="donation-history-main">
                         <div className="donation-history-info">
                           <h3 className="donation-fund">{d.category}</h3>
@@ -455,6 +474,72 @@ export default function Donations() {
                 >Next ›</button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+      {/* ── Receipt Modal ── */}
+      {isReceiptModalOpen && selectedDonation && (
+        <div className="receipt-modal-overlay" onClick={() => setIsReceiptModalOpen(false)}>
+          <div className="receipt-modal-card" onClick={e => e.stopPropagation()}>
+            <div className="receipt-header-gradient">
+              <div className="receipt-header-content">
+                <Receipt className="receipt-main-icon" size={32} />
+                <h2 className="receipt-header-title">Donation Receipt</h2>
+                <p className="receipt-header-subtitle">Faithly Official Record</p>
+              </div>
+              <button 
+                className="receipt-close-btn" 
+                onClick={() => setIsReceiptModalOpen(false)}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="receipt-body">
+              <div className="receipt-amount-section">
+                <p className="receipt-amount-label">Amount Contributed</p>
+                <h1 className="receipt-amount-value">{fmt(selectedDonation.amount)}</h1>
+                <div className="receipt-status-badge">Completed</div>
+              </div>
+
+              <div className="receipt-details-list">
+                <div className="receipt-detail-item">
+                  <span className="receipt-detail-label">Donor Name</span>
+                  <span className="receipt-detail-value">{user?.fullName || 'Valued Member'}</span>
+                </div>
+                <div className="receipt-detail-item">
+                  <span className="receipt-detail-label">Fund Category</span>
+                  <span className="receipt-detail-value">{selectedDonation.category}</span>
+                </div>
+                <div className="receipt-detail-item">
+                  <span className="receipt-detail-label">Transaction ID</span>
+                  <span className="receipt-detail-value">{selectedDonation.donationId}</span>
+                </div>
+                <div className="receipt-detail-item">
+                  <span className="receipt-detail-label">Date & Time</span>
+                  <span className="receipt-detail-value">{fmtDate(selectedDonation.createdAt || selectedDonation.date)}</span>
+                </div>
+                <div className="receipt-detail-item">
+                  <span className="receipt-detail-label">Payment Method</span>
+                  <span className="receipt-detail-value">{selectedDonation.method || selectedDonation.paymentMethod}</span>
+                </div>
+              </div>
+
+              <div className="receipt-footer-note">
+                <p>Thank you for your generous support of God's work. Your contribution makes a difference in our community.</p>
+              </div>
+
+              <div className="receipt-actions">
+                <button className="receipt-action-btn secondary">
+                  <Share2 size={16} />
+                  <span>Share</span>
+                </button>
+                <button className="receipt-action-btn primary">
+                  <Download size={16} />
+                  <span>Download PDF</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

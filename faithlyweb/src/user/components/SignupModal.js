@@ -327,7 +327,7 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
                   id="firstName" name="firstName"
                   value={formData.firstName}
                   onChange={handleChange} onBlur={handleBlur}
-                  className={`signup-form-input${touched.firstName && errors.firstName ? ' input-error' : ''}`}
+                  className={`signup-form-input${touched.firstName && errors.firstName ? ' input-error' : (touched.firstName && !errors.firstName ? ' input-success' : '')}`}
                   placeholder="Enter your first name"
                   autoComplete="given-name"
                 />
@@ -348,7 +348,7 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
                   id="lastName" name="lastName"
                   value={formData.lastName}
                   onChange={handleChange} onBlur={handleBlur}
-                  className={`signup-form-input${touched.lastName && errors.lastName ? ' input-error' : ''}`}
+                  className={`signup-form-input${touched.lastName && errors.lastName ? ' input-error' : (touched.lastName && !errors.lastName ? ' input-success' : '')}`}
                   placeholder="Enter your last name"
                   autoComplete="family-name"
                 />
@@ -372,7 +372,7 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
                   id="email" name="email" type="email"
                   value={formData.email}
                   onChange={handleChange} onBlur={handleBlur}
-                  className={`signup-form-input${touched.email && errors.email ? ' input-error' : ''}`}
+                  className={`signup-form-input${touched.email && errors.email ? ' input-error' : (touched.email && !errors.email ? ' input-success' : '')}`}
                   placeholder="your.email@example.com"
                   autoComplete="email"
                 />
@@ -394,7 +394,7 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
                     id="phone" name="phone" type="tel"
                     value={formData.phone}
                     onChange={handleChange} onBlur={handleBlur}
-                    className={`signup-form-input signup-phone-input${touched.phone && errors.phone ? ' input-error' : ''}`}
+                    className={`signup-form-input signup-phone-input${touched.phone && errors.phone ? ' input-error' : (touched.phone && !errors.phone ? ' input-success' : '')}`}
                     placeholder="917 123 4567"
                     autoComplete="tel"
                   />
@@ -435,6 +435,7 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
                   </label>
                 ))}
               </div>
+              {touched.gender && !errors.gender && <span className="signup-success-icon">✓ Valid</span>}
               {touched.gender && errors.gender && (
                 <span className="signup-error-text">{errors.gender}</span>
               )}
@@ -462,7 +463,7 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
                   onKeyDown={e => e.preventDefault()}
                   min={minBirthDate.toISOString().split('T')[0]}
                   max={maxBirthDate.toISOString().split('T')[0]}
-                  className={`signup-form-input${touched.birthday && errors.birthday ? ' input-error' : ''}`}
+                  className={`signup-form-input${touched.birthday && errors.birthday ? ' input-error' : (touched.birthday && !errors.birthday ? ' input-success' : '')}`}
                   placeholder="MM-DD-YYYY"
                   autoComplete="bday"
                 />
@@ -507,7 +508,7 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
                     name="password"
                     value={formData.password}
                     onChange={handleChange} onBlur={handleBlur}
-                    className={`signup-form-input${touched.password && hasPasswordErrors ? ' input-error' : ''}`}
+                    className={`signup-form-input${touched.password && hasPasswordErrors ? ' input-error' : (touched.password && !hasPasswordErrors && formData.password ? ' input-success' : '')}`}
                     placeholder="Create a password"
                     autoComplete="new-password"
                   />
@@ -518,6 +519,7 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
               </div>
 
               <div className="signup-form-group">
+                <label htmlFor="confirmPassword" className="signup-form-label">Confirm Password:</label>
                 <div className="signup-input-wrapper">
                   <svg className="signup-input-icon" fill="none" viewBox="0 0 20 20">
                     <path d={svgPaths.p2566d000} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
@@ -529,7 +531,7 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
                     name="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleChange} onBlur={handleBlur}
-                    className={`signup-form-input${touched.confirmPassword && errors.confirmPassword ? ' input-error' : ''}`}
+                    className={`signup-form-input${touched.confirmPassword && errors.confirmPassword ? ' input-error' : (touched.confirmPassword && !errors.confirmPassword && formData.confirmPassword ? ' input-success' : '')}`}
                     placeholder="Confirm your password"
                     autoComplete="new-password"
                   />

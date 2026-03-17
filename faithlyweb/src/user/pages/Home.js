@@ -136,12 +136,6 @@ export default function Home() {
 
   const quickActions = [
     {
-      title:       'Apply for Loan',
-      description: 'Quick loan application',
-      gradient:    'linear-gradient(137.368deg, rgb(21, 93, 252) 0%, rgb(20, 71, 230) 100%)',
-      action:      () => navigate('/loans'),
-    },
-    {
       title:       'Make Donation',
       description: 'Support the church',
       gradient:    'linear-gradient(137.368deg, rgb(0, 166, 62) 0%, rgb(0, 130, 54) 100%)',
@@ -152,6 +146,18 @@ export default function Home() {
       description: 'View your attendance',
       bg:          '#0f2854',
       action:      () => navigate('/attendance'),
+    },
+    {
+      title:       'View Nearby Community',
+      description: 'Find local branches',
+      gradient:    'linear-gradient(137.368deg, rgb(21, 93, 252) 0%, rgb(20, 71, 230) 100%)',
+      action:      () => navigate('/branches'),
+    },
+    {
+      title:       'Search for Nearest Community',
+      description: 'Locate nearest church',
+      gradient:    'linear-gradient(137.368deg, #f54900 0%, #d43f00 100%)',
+      action:      () => navigate('/branches'),
     },
   ];
 
@@ -225,44 +231,8 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Content Grid: Payments & Activity Side-by-Side */}
+        {/* Main Content Layout */}
         <div className="content-grid">
-          {/* Upcoming Loan Payments */}
-          <div className="card payments-card" style={{ marginBottom: 0 }}>
-            <div className="card-header">
-              <h2 className="card-title">Upcoming Loan Payment</h2>
-              <button className="view-all-btn" onClick={() => navigate('/loans')}>View All</button>
-            </div>
-            {loading ? (
-              <p className="empty-text">Loading...</p>
-            ) : activeLoans.length === 0 ? (
-              <p className="empty-text">No active loans at the moment.</p>
-            ) : (
-              <div className="payments-list">
-                {activeLoans.slice(0, 1).map((loan, index) => (
-                  <div key={index} className="payment-item">
-                    <div className="payment-info">
-                      <div className="payment-icon">
-                        <svg fill="none" viewBox="0 0 20 20">
-                          <path d="M10 5V10L13.3333 11.6667" stroke="#F54900" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                          <path d={svgPaths.p14d24500} stroke="#F54900" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                        </svg>
-                      </div>
-                      <div className="payment-details">
-                        <h3 className="payment-id">{loan.loanId}</h3>
-                        <p className="payment-due">Term: {loan.termMonths}mo · {loan.purpose}</p>
-                      </div>
-                    </div>
-                    <div className="payment-actions">
-                      <p className="payment-amount">₱{(loan.remainingBalance || loan.amount).toLocaleString()}</p>
-                      <span className="payment-status">Active</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
           {/* Recent Activity */}
           <div className="card recent-activity-card">
             <h2 className="card-title">Recent Activity</h2>
@@ -289,29 +259,66 @@ export default function Home() {
               )}
             </div>
           </div>
-        </div>
 
-        {/* Quick Actions below */}
-        <div className="card quick-actions-card">
-          <h2 className="card-title">Quick Actions</h2>
-          <div className="quick-actions-grid">
-            {quickActions.map((action, index) => (
-              <button
-                key={index}
-                onClick={action.action}
-                className="action-button"
-                style={{ background: action.gradient || action.bg }}
-              >
-                <div className="action-content">
-                  <h3 className="action-title">{action.title}</h3>
-                  <p className="action-description">{action.description}</p>
-                  <svg className="action-arrow" fill="none" viewBox="0 0 20 20">
-                    <path d="M4.16667 10H15.8333" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                    <path d={svgPaths.p1ae0b780}   stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                  </svg>
+          <div className="side-column">
+            {/* Quick Actions */}
+            <div className="card quick-actions-card">
+              <h2 className="card-title">Quick Actions</h2>
+              <div className="quick-actions-list">
+                {quickActions.map((action, index) => (
+                  <button
+                    key={index}
+                    onClick={action.action}
+                    className="action-button"
+                    style={{ background: action.gradient || action.bg }}
+                  >
+                    <div className="action-content">
+                      <h3 className="action-title">{action.title}</h3>
+                      <p className="action-description">{action.description}</p>
+                    </div>
+                    <svg className="action-arrow" fill="none" viewBox="0 0 20 20">
+                      <path d="M4.16667 10H15.8333" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                      <path d={svgPaths.p1ae0b780}   stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                    </svg>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Upcoming Loan Payments */}
+            <div className="card payments-card">
+              <div className="card-header">
+                <h2 className="card-title">Upcoming Loan Payment</h2>
+              </div>
+              {loading ? (
+                <p className="empty-text">Loading...</p>
+              ) : activeLoans.length === 0 ? (
+                <p className="empty-text">No active loans at the moment.</p>
+              ) : (
+                <div className="payments-list">
+                  {activeLoans.slice(0, 1).map((loan, index) => (
+                    <div key={index} className="payment-item">
+                      <div className="payment-info">
+                        <div className="payment-icon">
+                          <svg fill="none" viewBox="0 0 20 20">
+                            <path d="M10 5V10L13.3333 11.6667" stroke="#F54900" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                            <path d={svgPaths.p14d24500} stroke="#F54900" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                          </svg>
+                        </div>
+                        <div className="payment-details">
+                          <h3 className="payment-id">{loan.loanId}</h3>
+                          <p className="payment-due">Term: {loan.termMonths}mo · {loan.purpose}</p>
+                        </div>
+                      </div>
+                      <div className="payment-actions">
+                        <p className="payment-amount">₱{(loan.remainingBalance || loan.amount).toLocaleString()}</p>
+                        <span className="payment-status">Active</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              </button>
-            ))}
+              )}
+            </div>
           </div>
         </div>
 
