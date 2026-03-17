@@ -180,7 +180,7 @@ export default function Home() {
             </div>
             <div className="stat-content">
               <p className="stat-label">Active Loans</p>
-              <p className="stat-value">{loading ? '—' : loanStats.activeCount}</p>
+              {loading ? <div className="skeleton" style={{ height: '24px', width: '40px', marginTop: '4px' }}></div> : <p className="stat-value fade-in">{loanStats.activeCount}</p>}
             </div>
           </div>
 
@@ -192,7 +192,7 @@ export default function Home() {
             </div>
             <div className="stat-content">
               <p className="stat-label">Total Donated</p>
-              <p className="stat-value">{loading ? '—' : `₱${(donationStats.totalDonated || 0).toLocaleString()}`}</p>
+              {loading ? <div className="skeleton" style={{ height: '24px', width: '80px', marginTop: '4px' }}></div> : <p className="stat-value fade-in">{`₱${(donationStats.totalDonated || 0).toLocaleString()}`}</p>}
             </div>
           </div>
 
@@ -207,7 +207,7 @@ export default function Home() {
             </div>
             <div className="stat-content">
               <p className="stat-label">Services Attended</p>
-              <p className="stat-value">{loading ? '—' : attendanceStats.total}</p>
+              {loading ? <div className="skeleton" style={{ height: '24px', width: '40px', marginTop: '4px' }}></div> : <p className="stat-value fade-in">{attendanceStats.total}</p>}
             </div>
           </div>
 
@@ -225,94 +225,118 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Main Content Layout */}
-        <div className="content-grid">
-          {/* Recent Activity */}
+        {/* Dashboard Grid */}
+        <div className="dashboard-grid">
+          {/* Quick Actions (30%) */}
+          <div className="card quick-actions-card">
+            <h2 className="card-title">Quick Actions</h2>
+            <div className="quick-actions-list">
+              {quickActions.map((action, index) => (
+                <button
+                  key={index}
+                  onClick={action.action}
+                  className="action-button"
+                  style={{ background: action.gradient || action.bg }}
+                >
+                  <div className="action-content">
+                    <h3 className="action-title">{action.title}</h3>
+                    <p className="action-description">{action.description}</p>
+                  </div>
+                  <svg className="action-arrow" fill="none" viewBox="0 0 20 20">
+                    <path d="M4.16667 10H15.8333" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                    <path d={svgPaths.p1ae0b780} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                  </svg>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Recent Activity (70%) */}
           <div className="card recent-activity-card">
             <h2 className="card-title">Recent Activity</h2>
             <div className="activity-list">
               {loading ? (
-                <p className="empty-text">Loading...</p>
-              ) : recentActivity.length === 0 ? (
-                <p className="empty-text">No recent activity yet.</p>
-              ) : (
-                recentActivity.map((activity, index) => (
-                  <div key={index} className="activity-item">
-                    <div className="activity-icon" style={{ color: activity.iconColor }}>
-                      <ActivityIcon type={activity.type} />
-                    </div>
-                    <div className="activity-content">
-                      <div className="activity-top">
-                        <h3 className="activity-title">{activity.title}</h3>
-                        <span className="activity-time">{formatTimeAgo(activity.date)}</span>
-                      </div>
-                      <p className="activity-description">{activity.description}</p>
+                [1, 2, 3, 4, 5].map(i => (
+                  <div key={i} className="activity-item" style={{ marginBottom: '12px' }}>
+                    <div className="skeleton skeleton-circle" style={{ width: '32px', height: '32px', flexShrink: 0 }}></div>
+                    <div style={{ flex: 1 }}>
+                      <div className="skeleton" style={{ height: '14px', width: '40%', marginBottom: '6px' }}></div>
+                      <div className="skeleton" style={{ height: '12px', width: '70%' }}></div>
                     </div>
                   </div>
                 ))
-              )}
-            </div>
-          </div>
-
-          <div className="side-column">
-            {/* Quick Actions */}
-            <div className="card quick-actions-card">
-              <h2 className="card-title">Quick Actions</h2>
-              <div className="quick-actions-list">
-                {quickActions.map((action, index) => (
-                  <button
-                    key={index}
-                    onClick={action.action}
-                    className="action-button"
-                    style={{ background: action.gradient || action.bg }}
-                  >
-                    <div className="action-content">
-                      <h3 className="action-title">{action.title}</h3>
-                      <p className="action-description">{action.description}</p>
-                    </div>
-                    <svg className="action-arrow" fill="none" viewBox="0 0 20 20">
-                      <path d="M4.16667 10H15.8333" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                      <path d={svgPaths.p1ae0b780}   stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                    </svg>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Upcoming Loan Payments */}
-            <div className="card payments-card">
-              <div className="card-header">
-                <h2 className="card-title">Upcoming Loan Payment</h2>
-              </div>
-              {loading ? (
-                <p className="empty-text">Loading...</p>
-              ) : activeLoans.length === 0 ? (
-                <p className="empty-text">No active loans at the moment.</p>
+              ) : recentActivity.length === 0 ? (
+                <p className="empty-text">No recent activity yet.</p>
               ) : (
-                <div className="payments-list">
-                  {activeLoans.slice(0, 1).map((loan, index) => (
-                    <div key={index} className="payment-item">
-                      <div className="payment-info">
-                        <div className="payment-icon">
-                          <svg fill="none" viewBox="0 0 20 20">
-                            <path d="M10 5V10L13.3333 11.6667" stroke="#F54900" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                            <path d={svgPaths.p14d24500} stroke="#F54900" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                          </svg>
-                        </div>
-                        <div className="payment-details">
-                          <h3 className="payment-id">{loan.loanId}</h3>
-                          <p className="payment-due">Term: {loan.termMonths}mo · {loan.purpose}</p>
-                        </div>
+                <div className="fade-in">
+                  {recentActivity.map((activity, index) => (
+                    <div key={index} className="activity-item">
+                      <div className="activity-icon" style={{ color: activity.iconColor }}>
+                        <ActivityIcon type={activity.type} />
                       </div>
-                      <div className="payment-actions">
-                        <p className="payment-amount">₱{(loan.remainingBalance || loan.amount).toLocaleString()}</p>
-                        <span className="payment-status">Active</span>
+                      <div className="activity-content">
+                        <div className="activity-top">
+                          <h3 className="activity-title">{activity.title}</h3>
+                          <span className="activity-time">{formatTimeAgo(activity.date)}</span>
+                        </div>
+                        <p className="activity-description">{activity.description}</p>
                       </div>
                     </div>
                   ))}
                 </div>
               )}
             </div>
+          </div>
+        </div>
+
+        {/* Upcoming Loan Payments (100%) */}
+        <div className="full-width-section">
+          <div className="card payments-card">
+            <div className="card-header">
+              <h2 className="card-title">Upcoming Loan Payment</h2>
+            </div>
+            {loading ? (
+              <div className="payments-list">
+                <div className="payment-item">
+                  <div className="payment-info" style={{ width: '100%' }}>
+                    <div className="skeleton skeleton-circle" style={{ width: '38px', height: '38px', flexShrink: 0 }}></div>
+                    <div style={{ flex: 1 }}>
+                      <div className="skeleton" style={{ height: '15px', width: '30%', marginBottom: '6px' }}></div>
+                      <div className="skeleton" style={{ height: '13px', width: '50%' }}></div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div className="skeleton" style={{ height: '15px', width: '60px', marginBottom: '6px' }}></div>
+                      <div className="skeleton" style={{ height: '18px', width: '40px', borderRadius: '20px' }}></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : activeLoans.length === 0 ? (
+              <p className="empty-text">No active loans at the moment.</p>
+            ) : (
+              <div className="payments-list fade-in">
+                {activeLoans.slice(0, 1).map((loan, index) => (
+                  <div key={index} className="payment-item">
+                    <div className="payment-info">
+                      <div className="payment-icon">
+                        <svg fill="none" viewBox="0 0 20 20">
+                          <path d="M10 5V10L13.3333 11.6667" stroke="#F54900" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                          <path d={svgPaths.p14d24500} stroke="#F54900" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                        </svg>
+                      </div>
+                      <div className="payment-details">
+                        <h3 className="payment-id">{loan.loanId}</h3>
+                        <p className="payment-due">Term: {loan.termMonths}mo · {loan.purpose}</p>
+                      </div>
+                    </div>
+                    <div className="payment-actions">
+                      <p className="payment-amount">₱{(loan.remainingBalance || loan.amount).toLocaleString()}</p>
+                      <span className="payment-status">Active</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

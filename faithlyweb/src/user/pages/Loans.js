@@ -222,13 +222,6 @@ export default function Loans() {
           </div>
         </div>
 
-        {/* Loading */}
-        {dataLoading && (
-          <div className="loans-loading">
-            <div className="loans-spinner" />
-            <p>Loading your loans…</p>
-          </div>
-        )}
 
         {/* Error */}
         {!dataLoading && error && (
@@ -247,15 +240,15 @@ export default function Loans() {
             <div className="loans-stats">
               <div className="loan-stat-card">
                 <p className="loan-stat-label">Total Borrowed</p>
-                <p className="loan-stat-value">{fmt(stats.totalBorrowed)}</p>
+                {dataLoading ? <div className="skeleton" style={{ height: '24px', width: '100px', margin: '4px 0' }}></div> : <p className="loan-stat-value fade-in">{fmt(stats.totalBorrowed)}</p>}
               </div>
               <div className="loan-stat-card">
                 <p className="loan-stat-label">Remaining Balance</p>
-                <p className="loan-stat-value">{fmt(stats.remainingBalance)}</p>
+                {dataLoading ? <div className="skeleton" style={{ height: '24px', width: '100px', margin: '4px 0' }}></div> : <p className="loan-stat-value fade-in">{fmt(stats.remainingBalance)}</p>}
               </div>
               <div className="loan-stat-card loan-stat-card-active">
                 <p className="loan-stat-label">Active Loans</p>
-                <p className="loan-stat-value">{stats.activeCount}</p>
+                {dataLoading ? <div className="skeleton" style={{ height: '24px', width: '40px', margin: '4px 0' }}></div> : <p className="loan-stat-value fade-in">{stats.activeCount}</p>}
               </div>
             </div>
 
@@ -266,14 +259,36 @@ export default function Loans() {
                   <h2 className="section-title">All Loans</h2>
                 </div>
 
-                {loans.length === 0 ? (
+                {dataLoading ? (
+                  <div className="loans-list">
+                    {[1, 2, 3].map(i => (
+                      <div key={i} className="loan-item" style={{ padding: '24px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
+                          <div style={{ flex: 1 }}>
+                            <div className="skeleton" style={{ height: '18px', width: '30%', marginBottom: '8px' }}></div>
+                            <div className="skeleton" style={{ height: '14px', width: '20%' }}></div>
+                          </div>
+                          <div style={{ textAlign: 'right' }}>
+                            <div className="skeleton" style={{ height: '20px', width: '80px', marginBottom: '8px' }}></div>
+                            <div className="skeleton" style={{ height: '32px', width: '100px', borderRadius: '6px' }}></div>
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '24px' }}>
+                          <div className="skeleton" style={{ height: '40px', flex: 1, borderRadius: '8px' }}></div>
+                          <div className="skeleton" style={{ height: '40px', flex: 1, borderRadius: '8px' }}></div>
+                          <div className="skeleton" style={{ height: '40px', flex: 1, borderRadius: '8px' }}></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : loans.length === 0 ? (
                   <div className="loans-empty">
                     <p className="loans-empty-icon">📋</p>
                     <p className="loans-empty-title">No loans yet</p>
                     <p className="loans-empty-text">Click "+ Apply for Loan" to get started.</p>
                   </div>
                 ) : (
-                  <div className="loans-list">
+                  <div className="loans-list fade-in">
                     {loans.map((loan) => (
                         <div key={loan._id} className="loan-item">
                         {/* Loan Header */}

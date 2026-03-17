@@ -114,9 +114,9 @@ export default function Attendance() {
                 <path d={svgPaths.p1da67b80} stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 <path d="M2.5 8.33333H17.5" stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
               </svg>
+              </div>
+              {loading ? <div className="skeleton" style={{ height: '32px', width: '60px', margin: '8px 0' }}></div> : <p className="attendance-stat-value fade-in">{stats.total}</p>}
             </div>
-            <p className="attendance-stat-value">{loading ? '—' : stats.total}</p>
-          </div>
 
           <div className="attendance-stat-card">
             <div className="attendance-stat-header">
@@ -125,9 +125,9 @@ export default function Attendance() {
                 <path d="M16.6667 10L10 3.33333L3.33333 10" stroke="#00A63E" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 <path d="M16.6667 10L10 16.6667L3.33333 10" stroke="#00A63E" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
               </svg>
+              </div>
+              {loading ? <div className="skeleton" style={{ height: '32px', width: '60px', margin: '8px 0' }}></div> : <p className="attendance-stat-value fade-in">{stats.thisMonth}</p>}
             </div>
-            <p className="attendance-stat-value">{loading ? '—' : stats.thisMonth}</p>
-          </div>
 
           <div className="attendance-stat-card">
             <div className="attendance-stat-header">
@@ -138,9 +138,9 @@ export default function Attendance() {
                 <path d={svgPaths.p1da67b80} stroke="#9810FA" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 <path d="M2.5 8.33333H17.5" stroke="#9810FA" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
               </svg>
+              </div>
+              {loading ? <div className="skeleton" style={{ height: '32px', width: '60px', margin: '8px 0' }}></div> : <p className="attendance-stat-value fade-in">{attendanceRate}</p>}
             </div>
-            <p className="attendance-stat-value">{loading ? '—' : attendanceRate}</p>
-          </div>
         </div>
 
         {/* Check In + Upcoming Services */}
@@ -180,7 +180,21 @@ export default function Attendance() {
             <h2 className="section-title">Upcoming Services</h2>
             <div className="upcoming-services-list">
               {loading ? (
-                <p className="upcoming-loading">Loading schedules...</p>
+                <div className="upcoming-active-list">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="upcoming-service-item" style={{ marginBottom: '16px' }}>
+                      <div className="skeleton skeleton-circle" style={{ width: '12px', height: '12px', marginTop: '6px' }}></div>
+                      <div style={{ flex: 1, marginLeft: '12px' }}>
+                        <div className="skeleton" style={{ height: '16px', width: '40%', marginBottom: '8px' }}></div>
+                        <div className="skeleton" style={{ height: '12px', width: '80%', marginBottom: '8px' }}></div>
+                        <div style={{ display: 'flex', gap: '12px' }}>
+                          <div className="skeleton" style={{ height: '10px', width: '60px' }}></div>
+                          <div className="skeleton" style={{ height: '10px', width: '80px' }}></div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               ) : upcomingData.length === 0 ? (
                 <div className="upcoming-empty">
                   <svg fill="none" viewBox="0 0 40 40" width="36" height="36">
@@ -193,7 +207,7 @@ export default function Attendance() {
                   <p className="upcoming-empty-sub">Check back when your admin posts new schedules.</p>
                 </div>
               ) : (
-                <div className="upcoming-active-list">
+                <div className="upcoming-active-list fade-in">
                   {upcomingData.map((item, idx) => (
                     <div key={idx} className="upcoming-service-item">
                       <div className="upcoming-service-dot" />
@@ -234,28 +248,38 @@ export default function Attendance() {
 
           <div className="attendance-table-wrapper preview-table">
             {loading ? (
-              <p className="empty-text" style={{ padding: '16px' }}>Loading...</p>
+              <div style={{ padding: '16px' }}>
+                {[1, 2, 3, 4, 5].map(i => (
+                  <div key={i} style={{ display: 'flex', gap: '20px', marginBottom: '16px' }}>
+                    <div className="skeleton" style={{ height: '14px', flex: 1 }}></div>
+                    <div className="skeleton" style={{ height: '14px', flex: 1 }}></div>
+                    <div className="skeleton" style={{ height: '14px', flex: 1 }}></div>
+                  </div>
+                ))}
+              </div>
             ) : attendanceData.length === 0 ? (
               <p className="empty-text" style={{ padding: '16px' }}>No attendance records yet.</p>
             ) : (
-              <table className="attendance-table">
-                <thead>
-                  <tr>
-                    <th>Service</th>
-                    <th>Date</th>
-                    <th>Branch</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {attendanceData.slice(0, 5).map((record, index) => (
-                    <tr key={index}>
-                      <td>{record.service}</td>
-                      <td>{record.date}</td>
-                      <td>{record.branch}</td>
+              <div className="fade-in">
+                <table className="attendance-table">
+                  <thead>
+                    <tr>
+                      <th>Service</th>
+                      <th>Date</th>
+                      <th>Branch</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {attendanceData.slice(0, 5).map((record, index) => (
+                      <tr key={index}>
+                        <td>{record.service}</td>
+                        <td>{record.date}</td>
+                        <td>{record.branch}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </div>

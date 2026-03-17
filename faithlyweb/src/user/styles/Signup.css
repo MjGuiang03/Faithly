@@ -20,10 +20,10 @@
 .signup-modal-card {
   background: white;
   border-radius: 16px;
-  padding: 28px 32px 28px;
+  padding: 24px 28px;
   width: 100%;
-  max-width: 560px;
-  max-height: 92vh;
+  max-width: 540px;
+  max-height: 90vh;
   overflow-y: auto;
   position: relative;
   box-shadow: 0px 25px 50px 0px rgba(0, 0, 0, 0.25);
@@ -99,13 +99,13 @@
 .signup-form {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .signup-form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  gap: 12px;
 }
 
 /* Gender + Birthday + Community */
@@ -118,7 +118,7 @@
 .signup-form-group {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
 }
 
 .signup-form-label {
@@ -306,7 +306,7 @@ input[type="date"].signup-form-input {
 }
 
 .gender-radio-card:hover {
-  border-color: #155dfc;
+  border-color: rgba(192, 190, 190, 0.7);
 }
 
 .gender-radio-card--selected {
@@ -404,7 +404,7 @@ input[type="date"].signup-form-input {
 .password-section {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  gap: 12px;
   align-items: start;
 }
 
@@ -421,8 +421,8 @@ input[type="date"].signup-form-input {
   background: white;
   border: 1px solid rgba(10, 10, 10, 0.1);
   border-radius: 12px;
-  padding: 16px;
-  margin-top: 24px;
+  padding: 12px 14px;
+  margin-top: 21px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
@@ -492,7 +492,7 @@ input[type="date"].signup-form-input {
   align-items: center;
   gap: 10px;
   justify-content: center;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .signup-checkbox {

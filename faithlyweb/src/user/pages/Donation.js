@@ -174,7 +174,7 @@ export default function Donation() {
                   <path d="M17.3667 3.84167C16.941 3.41583 16.4357 3.07803 15.8794 2.84757C15.3231 2.61712 14.7267 2.49854 14.1245 2.49854C13.5224 2.49854 12.9259 2.61712 12.3696 2.84757C11.8133 3.07803 11.308 3.41583 10.8823 3.84167L10.0001 4.72417L9.11793 3.84167C8.25853 2.98227 7.09337 2.49898 5.87593 2.49898C4.65849 2.49898 3.49334 2.98227 2.63393 3.84167C1.77453 4.70108 1.29124 5.86623 1.29124 7.08367C1.29124 8.30111 1.77453 9.46626 2.63393 10.3257L10.0001 17.6917L17.3662 10.3257C17.792 9.89993 18.1298 9.39461 18.3602 8.83831C18.5907 8.28202 18.7092 7.68556 18.7092 7.08334C18.7092 6.48112 18.5907 5.88465 18.3602 5.32836C18.1298 4.77207 17.792 4.26743 17.3662 3.84167H17.3667Z" stroke="#E60076" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 </svg>
               </div>
-              <p className="donation-stat-value">{fmt(stats.totalDonated)}</p>
+              {loading ? <div className="skeleton" style={{ height: '32px', width: '100px', margin: '8px 0' }}></div> : <p className="donation-stat-value fade-in">{fmt(stats.totalDonated)}</p>}
             </div>
             <div className="donation-stat-card">
               <div className="donation-stat-header">
@@ -184,7 +184,7 @@ export default function Donation() {
                   <path d="M6.66667 13.3333L10 10L13.3333 13.3333" stroke="#00A63E" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 </svg>
               </div>
-              <p className="donation-stat-value">{fmt(stats.thisYearTotal)}</p>
+              {loading ? <div className="skeleton" style={{ height: '32px', width: '100px', margin: '8px 0' }}></div> : <p className="donation-stat-value fade-in">{fmt(stats.thisYearTotal)}</p>}
             </div>
             <div className="donation-stat-card">
               <div className="donation-stat-header">
@@ -196,7 +196,7 @@ export default function Donation() {
                   <path d="M15.8333 3.33333H4.16667C3.24619 3.33333 2.5 4.07952 2.5 5V16.6667C2.5 17.5871 3.24619 18.3333 4.16667 18.3333H15.8333C16.7538 18.3333 17.5 17.5871 17.5 16.6667V5C17.5 4.07952 16.7538 3.33333 15.8333 3.33333Z" stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 </svg>
               </div>
-              <p className="donation-stat-value">{stats.totalCount}</p>
+              {loading ? <div className="skeleton" style={{ height: '32px', width: '60px', margin: '8px 0' }}></div> : <p className="donation-stat-value fade-in">{stats.totalCount}</p>}
             </div>
           </div>
 
@@ -330,14 +330,29 @@ export default function Donation() {
               <button className="view-history-btn" onClick={handleOpenHistory}>View History</button>
             </div>
 
-            {loading && <p className="donations-loading-text">Loading…</p>}
-
+            {loading && (
+              <div className="donation-history-list">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="donation-history-item" style={{ padding: '16px' }}>
+                    <div className="donation-history-main" style={{ width: '100%' }}>
+                      <div className="skeleton skeleton-circle" style={{ width: '32px', height: '32px', flexShrink: 0 }}></div>
+                      <div style={{ flex: 1, marginLeft: '12px' }}>
+                        <div className="skeleton" style={{ height: '14px', width: '30%', marginBottom: '6px' }}></div>
+                        <div className="skeleton" style={{ height: '12px', width: '50%' }}></div>
+                      </div>
+                      <div className="skeleton" style={{ height: '16px', width: '60px' }}></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            
             {!loading && donationHistory.length === 0 && (
               <p className="donations-empty-text">No donations yet.</p>
             )}
 
             {!loading && donationHistory.length > 0 && (
-              <div className="donation-history-list">
+              <div className="donation-history-list fade-in">
                 {donationHistory.slice(0, 5).map((d) => (
                   <div 
                     key={d._id || d.donationId} 
