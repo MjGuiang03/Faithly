@@ -8,7 +8,7 @@ import '../styles/Home.css';
 
 export default function Home() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
 
   const [loanStats,       setLoanStats]       = useState({ activeCount: 0, remainingBalance: 0 });
   const [donationStats,   setDonationStats]   = useState({ totalDonated: 0 });
@@ -162,8 +162,21 @@ export default function Home() {
       <div className="main-content">
         {/* Header */}
         <div className="home-header">
-          <h1 className="page-title">Welcome Back{user?.fullName ? `, ${user.fullName.split(' ')[0]}` : ''}!</h1>
-          <p className="page-subtitle">Here's an overview of your church activities</p>
+          <div className="header-greeting">
+            <div className="header-text">
+              <h1 className="page-title">Welcome Back{user?.fullName ? `, ${user.fullName.split(' ')[0]}` : ''}!</h1>
+              <p className="page-subtitle">Here's an overview of your church activities</p>
+            </div>
+            <div className="header-avatar-container" onClick={() => navigate('/settings')} style={{ cursor: 'pointer' }}>
+              {profile?.photoUrl ? (
+                <img src={profile.photoUrl} alt="Profile" className="header-avatar" />
+              ) : (
+                <div className="header-avatar-placeholder">
+                  {profile?.fullName?.charAt(0)?.toUpperCase() || 'M'}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Stats Grid */}
@@ -270,16 +283,16 @@ export default function Home() {
               ) : (
                 <div className="fade-in">
                   {recentActivity.map((activity, index) => (
-                    <div key={index} className="activity-item">
-                      <div className="activity-icon" style={{ color: activity.iconColor }}>
+                    <div key={index} className="activity-item-horizontal">
+                      <div className="activity-icon-compact" style={{ color: activity.iconColor }}>
                         <ActivityIcon type={activity.type} />
                       </div>
-                      <div className="activity-content">
-                        <div className="activity-top">
-                          <h3 className="activity-title">{activity.title}</h3>
-                          <span className="activity-time">{formatTimeAgo(activity.date)}</span>
-                        </div>
-                        <p className="activity-description">{activity.description}</p>
+                      <div className="activity-details-horizontal">
+                        <span className="activity-title-compact">{activity.title}</span>
+                        <span className="activity-separator">–</span>
+                        <span className="activity-desc-compact">{activity.description}</span>
+                        <span className="activity-separator">–</span>
+                        <span className="activity-time-compact">{formatTimeAgo(activity.date)}</span>
                       </div>
                     </div>
                   ))}

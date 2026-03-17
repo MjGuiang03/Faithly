@@ -411,7 +411,7 @@ input[type="date"].signup-form-input {
 .password-fields {
   display: flex;
   flex-direction: column;
-  gap: 14px; /* Matched consistent form gap */
+  gap: 12px;
 }
 
 /* ================================
@@ -419,11 +419,11 @@ input[type="date"].signup-form-input {
    ================================ */
 .password-requirements-box {
   background: white;
-  border: 1px solid rgba(10, 10, 10, 0.1);
-  border-radius: 12px;
+  border: 0.8px solid rgba(192, 190, 190, 0.7);
+  border-radius: 8px;
   padding: 12px 14px;
-  margin-top: 21px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  margin-bottom: 4px;
 }
 
 .password-requirements-title {
@@ -434,7 +434,7 @@ input[type="date"].signup-form-input {
   margin: 0 0 10px;
 }
 
-.password-requirements-list {
+.password-requirements-list-v2 {
   list-style: none;
   padding: 0;
   margin: 0;
@@ -443,26 +443,37 @@ input[type="date"].signup-form-input {
   gap: 6px;
 }
 
-.password-requirements-list li {
+.password-requirements-list-v2 li {
   font-family: 'Arial', sans-serif;
   font-size: 12px;
-  color: #4b5563;
-  line-height: 1.6;
-}
-
-.password-error-message {
+  line-height: 1.4;
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.2s;
 }
 
-.error-item {
-  font-family: 'Arial', sans-serif;
-  font-size: 11px;
-  color: #dc2626;
-  line-height: 15px;
-  margin: 0;
+.password-requirements-list-v2 li::before {
+  content: '•';
+}
+
+.req-met {
+  color: #00bc2c !important;
   font-weight: 600;
+}
+
+.req-unmet {
+  color: #dc2626 !important;
+  font-weight: 600;
+}
+
+.req-default {
+  color: rgba(10, 10, 10, 0.45) !important;
+}
+
+.read-only-input {
+  background-color: #f9fafb !important;
+  cursor: default;
 }
 
 /* ================================

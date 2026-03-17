@@ -445,9 +445,6 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
             <div className="signup-form-group">
               <label htmlFor="birthday" className="signup-form-label">
                 Birthday:
-                {calculatedAge !== null && (
-                  <span className="signup-age-badge">(Age: {calculatedAge})</span>
-                )}
               </label>
               <div className="signup-input-wrapper">
                 <svg className="signup-input-icon" fill="none" viewBox="0 0 20 20">
@@ -492,79 +489,92 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
             </div>
           </div>
 
-          {/* ROW 4: Password (left) + Requirements box (right) */}
-          <div className="password-section">
-            <div className="password-fields">
-              <div className="signup-form-group">
-                <label htmlFor="password" className="signup-form-label">Password:</label>
-                <div className="signup-input-wrapper">
-                  <svg className="signup-input-icon" fill="none" viewBox="0 0 20 20">
-                    <path d={svgPaths.p2566d000} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                    <path d={svgPaths.p1bf79e00} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                  </svg>
-                  <input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange} onBlur={handleBlur}
-                    className={`signup-form-input${touched.password && hasPasswordErrors ? ' input-error' : (touched.password && !hasPasswordErrors && formData.password ? ' input-success' : '')}`}
-                    placeholder="Create a password"
-                    autoComplete="new-password"
-                  />
-                  <button type="button" onClick={() => setShowPassword(p => !p)} className="signup-password-toggle">
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-              </div>
+          {/* New ROW: Age (read-only) */}
+          <div className="signup-form-row">
+            <div className="signup-form-group">
+              <label htmlFor="age" className="signup-form-label">Age:</label>
+              <input
+                id="age"
+                type="text"
+                readOnly
+                value={calculatedAge !== null ? calculatedAge : ''}
+                className="signup-form-input read-only-input"
+                placeholder="Age"
+              />
+            </div>
+            <div className="signup-form-group" /> {/* Spacer */}
+          </div>
 
-              <div className="signup-form-group">
-                <label htmlFor="confirmPassword" className="signup-form-label">Confirm Password:</label>
-                <div className="signup-input-wrapper">
-                  <svg className="signup-input-icon" fill="none" viewBox="0 0 20 20">
-                    <path d={svgPaths.p2566d000} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                    <path d={svgPaths.p1bf79e00} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                  </svg>
-                  <input
-                    id="confirmPassword"
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleChange} onBlur={handleBlur}
-                    className={`signup-form-input${touched.confirmPassword && errors.confirmPassword ? ' input-error' : (touched.confirmPassword && !errors.confirmPassword && formData.confirmPassword ? ' input-success' : '')}`}
-                    placeholder="Confirm your password"
-                    autoComplete="new-password"
-                  />
-                  <button type="button" onClick={() => setShowConfirmPassword(p => !p)} className="signup-password-toggle">
-                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-                {touched.confirmPassword && errors.confirmPassword && (
-                  <span className="signup-error-text">{errors.confirmPassword}</span>
-                )}
+          {/* Password Requirements Box */}
+          <div className="password-requirements-box">
+            <p className="password-requirements-title">Password must include:</p>
+            <ul className="password-requirements-list-v2">
+              <li className={!formData.password ? 'req-default' : (formData.password.length >= 8 ? 'req-met' : 'req-unmet')}>
+                Minimum 8 characters
+              </li>
+              <li className={!formData.password ? 'req-default' : (passwordUppercase.test(formData.password) ? 'req-met' : 'req-unmet')}>
+                At least 1 uppercase letter (A–Z)
+              </li>
+              <li className={!formData.password ? 'req-default' : (passwordLowercase.test(formData.password) ? 'req-met' : 'req-unmet')}>
+                At least 1 lowercase letter (a–z)
+              </li>
+              <li className={!formData.password ? 'req-default' : (passwordNumber.test(formData.password) ? 'req-met' : 'req-unmet')}>
+                At least 1 number
+              </li>
+              <li className={!formData.password ? 'req-default' : (passwordSymbol.test(formData.password) ? 'req-met' : 'req-unmet')}>
+                At least 1 symbol (@ # $ % * _)
+              </li>
+            </ul>
+          </div>
+
+          {/* ROW 4: Password + Confirm Password side-by-side */}
+          <div className="signup-form-row">
+            <div className="signup-form-group">
+              <label htmlFor="password" className="signup-form-label">Password:</label>
+              <div className="signup-input-wrapper">
+                <svg className="signup-input-icon" fill="none" viewBox="0 0 20 20">
+                  <path d={svgPaths.p2566d000} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                  <path d={svgPaths.p1bf79e00} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                </svg>
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange} onBlur={handleBlur}
+                  className={`signup-form-input${touched.password && hasPasswordErrors ? ' input-error' : (touched.password && !hasPasswordErrors && formData.password ? ' input-success' : '')}`}
+                  placeholder="Create a password"
+                  autoComplete="new-password"
+                />
+                <button type="button" onClick={() => setShowPassword(p => !p)} className="signup-password-toggle">
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
             </div>
 
-            {/* Requirements box */}
-            <div className="password-requirements-box">
-              <p className="password-requirements-title">Password must contain:</p>
-              {(touched.password && hasPasswordErrors) || (touched.confirmPassword && errors.confirmPassword) ? (
-                <div className="password-error-message">
-                  {touched.password && hasPasswordErrors && errors.password.map((err, i) => (
-                    <p key={i} className="error-item">• {err}</p>
-                  ))}
-                  {touched.confirmPassword && errors.confirmPassword && (
-                    <p className="error-item">• {errors.confirmPassword}</p>
-                  )}
-                </div>
-              ) : (
-                <ul className="password-requirements-list">
-                  <li>• At least 8 characters</li>
-                  <li>• One uppercase letter (A-Z)</li>
-                  <li>• One lowercase letter (a-z)</li>
-                  <li>• At least 1 number or more</li>
-                  <li>• At least 1 symbol (@#$%*_)</li>
-                </ul>
+            <div className="signup-form-group">
+              <label htmlFor="confirmPassword" className="signup-form-label">Confirm Password:</label>
+              <div className="signup-input-wrapper">
+                <svg className="signup-input-icon" fill="none" viewBox="0 0 20 20">
+                  <path d={svgPaths.p2566d000} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                  <path d={svgPaths.p1bf79e00} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                </svg>
+                <input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange} onBlur={handleBlur}
+                  className={`signup-form-input${touched.confirmPassword && errors.confirmPassword ? ' input-error' : (touched.confirmPassword && !errors.confirmPassword && formData.confirmPassword ? ' input-success' : '')}`}
+                  placeholder="Confirm your password"
+                  autoComplete="new-password"
+                />
+                <button type="button" onClick={() => setShowConfirmPassword(p => !p)} className="signup-password-toggle">
+                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+              {touched.confirmPassword && errors.confirmPassword && (
+                <span className="signup-error-text">{errors.confirmPassword}</span>
               )}
             </div>
           </div>
