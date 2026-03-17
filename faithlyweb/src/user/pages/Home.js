@@ -51,7 +51,7 @@ export default function Home() {
       const activities = [];
 
       if (loansData.success && loansData.loans?.length) {
-        loansData.loans.slice(0, 3).forEach(loan => {
+        loansData.loans.slice(0, 5).forEach(loan => {
           activities.push({
             type: 'loan',
             title: `Loan ${loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}`,
@@ -63,7 +63,7 @@ export default function Home() {
       }
 
       if (donationsData.success && donationsData.donations?.length) {
-        donationsData.donations.slice(0, 3).forEach(donation => {
+        donationsData.donations.slice(0, 5).forEach(donation => {
           activities.push({
             type: 'donation',
             title: 'Donation Made',
@@ -75,7 +75,7 @@ export default function Home() {
       }
 
       if (attendanceData.success && attendanceData.attendance?.length) {
-        attendanceData.attendance.slice(0, 3).forEach(record => {
+        attendanceData.attendance.slice(0, 5).forEach(record => {
           activities.push({
             type: 'attendance',
             title: 'Service Attended',
@@ -249,9 +249,9 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Recent Activity */}
+          {/* Recent Activities */}
           <div className="card recent-activity-card">
-            <h2 className="card-title">Recent Activity</h2>
+            <h2 className="card-title">Recent Activities</h2>
             <div className="activity-list">
               {loading ? (
                 [1, 2, 3, 4, 5].map(i => (
