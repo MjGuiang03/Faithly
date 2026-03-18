@@ -26,7 +26,7 @@
 }
 
 
-/* ── Header ── */
+/* Header Section */
 .user-notif-header {
   display: flex;
   align-items: flex-start;
@@ -98,7 +98,7 @@
   border-color: #9ca3af;
 }
 
-/* ── Filter Tabs ── */
+/* Filter Tabs */
 .user-notif-filters {
   display: flex;
   gap: 4px;
@@ -152,14 +152,14 @@
   background: rgba(255,255,255,0.28);        
 }
 
-/* ── Notification List ── */        
+/* Notification List */        
 .user-notif-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-/* ── Notification Card ── */        
+/* Notification Card */        
 .user-notif-card {
   display: flex;
   align-items: flex-start;
@@ -179,7 +179,7 @@
 .user-notif-card-attendance { background: #f0f6ff; border-color: #bfdbfe; }
 .user-notif-card-read       { background: white;   border-color: #f3f4f6; }
 
-/* ── Icon bubble ── */
+/* Icon bubbles */
 .user-notif-icon {
   width: 40px;
   height: 40px;
@@ -195,7 +195,7 @@
 .user-notif-icon-donation   { background: #fce7f3; }
 .user-notif-icon-attendance { background: #dbeafe; }
 
-/* ── Card body ── */
+/* Card body */
 .user-notif-body {
   flex: 1;
   min-width: 0;
@@ -286,7 +286,7 @@
   text-decoration: underline;
 }
 
-/* ── States ── */
+/* States */
 .user-notif-loading {
   font-family: Arial, sans-serif;
   font-size: 13px;
@@ -311,7 +311,7 @@
   margin: 0;
 }
 
-/* ── Responsive ── */
+/* Responsive */
 @media (max-width: 1024px) {
   .user-notif-main {
     margin-left: 72px;
@@ -327,10 +327,10 @@
     flex-wrap: nowrap;
     overflow-x: auto;
     width: 100%;
-    padding-bottom: 4px; /* Space for potential scrollbar */
+    padding-bottom: 4px;
     -webkit-overflow-scrolling: touch;       
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */    
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
   .user-notif-filters::-webkit-scrollbar {   
     display: none;
