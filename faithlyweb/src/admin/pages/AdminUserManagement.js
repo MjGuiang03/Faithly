@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
-import { ShieldCheck, UserPlus, Info, Loader2 } from 'lucide-react';
+import { UserPlus, Info, Loader2 } from 'lucide-react';
 import API from '../../utils/api';
 import '../styles/AdminUserManagement.css';
 

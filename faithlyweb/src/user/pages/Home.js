@@ -13,45 +13,36 @@ export default function Home() {
   const [loanStats, setLoanStats] = useState({ activeCount: 0, remainingBalance: 0 });
   const [donationStats, setDonationStats] = useState({ totalDonated: 0 });
   const [attendanceStats, setAttendanceStats] = useState({ total: 0 });
-  const [activeLoans, setActiveLoans] = useState([]);
   const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [verificationStatus, setVerificationStatus] = useState(null);
 
   const token = localStorage.getItem('token');
-  const memberSince = user?.created_at ? new Date(user.created_at).getFullYear() : new Date().getFullYear();
 
   const fetchAllData = useCallback(async () => {
     setLoading(true);
     try {
       const headers = { Authorization: `Bearer ${token}` };
 
-      const [loansRes, donationsRes, attendanceRes, verificationRes] = await Promise.all([
+      const [loansRes, donationsRes, attendanceRes] = await Promise.all([
         fetch(`${API}/api/loans/my-loans`, { headers }),
         fetch(`${API}/api/donations/my-donations`, { headers }),
         fetch(`${API}/api/attendance/my-attendance`, { headers }),
-        fetch(`${API}/api/verification/status`, { headers }),
       ]);
 
-      const [loansData, donationsData, attendanceData, verificationData] = await Promise.all([
+      const [loansData, donationsData, attendanceData] = await Promise.all([
         loansRes.json(),
         donationsRes.json(),
         attendanceRes.json(),
-        verificationRes.json(),
       ]);
 
       if (loansRes.ok && loansData.success) {
         setLoanStats(loansData.stats || { activeCount: 0, remainingBalance: 0 });
-        setActiveLoans(loansData.loans?.filter(l => l.status === 'active') || []);
       }
       if (donationsRes.ok && donationsData.success) {
         setDonationStats(donationsData.stats || { totalDonated: 0 });
       }
       if (attendanceRes.ok && attendanceData.success) {
         setAttendanceStats(attendanceData.stats || { total: 0 });
-      }
-      if (verificationRes.ok && verificationData.success) {
-        setVerificationStatus(verificationData.verificationStatus);
       }
 
       const activities = [];
