@@ -249,6 +249,24 @@ export default function Home() {
             </div>
           </div>
 
+          {/* Community Section — New */}
+          <div className="user-home-card user-home-community-card">
+            <div className="user-community-badge">CHURCH HUB</div>
+            <h2 className="user-home-card-title">Your Community</h2>
+            <div className="user-community-content">
+              <div className="user-community-illustration">
+                <svg fill="none" viewBox="0 0 24 24" width="40" height="40">
+                  <path d="M12 21s-8-7.5-8-12a8 8 0 1 1 16 0c0 4.5-8 12-8 12Z" stroke="#155DFC" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                  <circle cx="12" cy="9" r="2.5" stroke="#155DFC" strokeWidth="1.8" />
+                </svg>
+              </div>
+              <p className="user-community-text">Stay updated with your local branch and upcoming events in your area.</p>
+              <button className="user-community-action-btn" onClick={() => navigate('/branches')}>
+                Explore Branches
+              </button>
+            </div>
+          </div>
+
           {/* Recent Activities */}
           <div className="user-home-card user-home-recent-activity-card">
             <h2 className="user-home-card-title">Recent Activities</h2>
@@ -285,55 +303,59 @@ export default function Home() {
               )}
             </div>
           </div>
-        {/* Upcoming Loan Payments */}
-        <div className="user-home-full-width-section">
-          <div className="user-home-card user-home-payments-card">
-            <div className="user-home-card-header">
-              <h2 className="user-home-card-title">Upcoming Loan Payment</h2>
-            </div>
-            {loading ? (
-              <div className="user-payments-list">
-                <div className="user-payment-item">
-                  <div className="user-payment-info" style={{ width: '100%' }}>
-                    <div className="user-skeleton user-skeleton-circle" style={{ width: '38px', height: '38px', flexShrink: 0 }}></div>
-                    <div style={{ flex: 1 }}>
-                      <div className="user-skeleton user-skeleton-text" style={{ height: '15px', width: '30%', marginBottom: '6px' }}></div>
-                      <div className="user-skeleton user-skeleton-text" style={{ height: '13px', width: '50%' }}></div>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div className="user-skeleton user-skeleton-text" style={{ height: '15px', width: '60px', marginBottom: '6px' }}></div>
-                      <div className="user-skeleton user-skeleton-text" style={{ height: '18px', width: '40px', borderRadius: '20px' }}></div>
-                    </div>
-                  </div>
+
+          {/* Upcoming Loan Payments — Conditional */}
+          {user?.role === 'officer' && (
+            <div className="user-home-full-width-section">
+              <div className="user-home-card user-home-payments-card">
+                <div className="user-home-card-header">
+                  <h2 className="user-home-card-title">Upcoming Loan Payment</h2>
                 </div>
-              </div>
-            ) : activeLoans.length === 0 ? (
-              <p className="user-home-empty-text">No active loans at the moment.</p>
-            ) : (
-              <div className="user-payments-list user-fade-in">
-                {activeLoans.slice(0, 1).map((loan, index) => (
-                  <div key={index} className="user-payment-item">
-                    <div className="user-payment-info">
-                      <div className="user-payment-icon">
-                        <svg fill="none" viewBox="0 0 20 20">
-                          <path d="M10 5V10L13.3333 11.6667" stroke="#F54900" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                          <path d={svgPaths.p14d24500} stroke="#F54900" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                        </svg>
+                {loading ? (
+                  <div className="user-payments-list">
+                    <div className="user-payment-item">
+                      <div className="user-payment-info" style={{ width: '100%' }}>
+                        <div className="user-skeleton user-skeleton-circle" style={{ width: '38px', height: '38px', flexShrink: 0 }}></div>
+                        <div style={{ flex: 1 }}>
+                          <div className="user-skeleton user-skeleton-text" style={{ height: '15px', width: '30%', marginBottom: '6px' }}></div>
+                          <div className="user-skeleton user-skeleton-text" style={{ height: '13px', width: '50%' }}></div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <div className="user-skeleton user-skeleton-text" style={{ height: '15px', width: '60px', marginBottom: '6px' }}></div>
+                          <div className="user-skeleton user-skeleton-text" style={{ height: '18px', width: '40px', borderRadius: '20px' }}></div>
+                        </div>
                       </div>
-                      <div className="user-payment-details">
-                        <h3 className="user-payment-id">{loan.loanId}</h3>
-                        <p className="user-payment-due">Term: {loan.termMonths}mo · {loan.purpose}</p>
-                      </div>
-                    </div>
-                    <div className="user-payment-actions">
-                      <p className="user-payment-amount">₱{(loan.remainingBalance || loan.amount).toLocaleString()}</p>
-                      <span className="user-payment-status">Active</span>
                     </div>
                   </div>
-                ))}
+                ) : activeLoans.length === 0 ? (
+                  <p className="user-home-empty-text">No active loans at the moment.</p>
+                ) : (
+                  <div className="user-payments-list user-fade-in">
+                    {activeLoans.slice(0, 1).map((loan, index) => (
+                      <div key={index} className="user-payment-item">
+                        <div className="user-payment-info">
+                          <div className="user-payment-icon">
+                            <svg fill="none" viewBox="0 0 20 20">
+                              <path d="M10 5V10L13.3333 11.6667" stroke="#F54900" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                              <path d={svgPaths.p14d24500} stroke="#F54900" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                            </svg>
+                          </div>
+                          <div className="user-payment-details">
+                            <h3 className="user-payment-id">{loan.loanId}</h3>
+                            <p className="user-payment-due">Term: {loan.termMonths}mo · {loan.purpose}</p>
+                          </div>
+                        </div>
+                        <div className="user-payment-actions">
+                          <p className="user-payment-amount">₱{(loan.remainingBalance || loan.amount).toLocaleString()}</p>
+                          <span className="user-payment-status">Active</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
       </div>
@@ -345,6 +367,5 @@ export default function Home() {
         </svg>
       </button>
     </div>
-  </div>
-);
+  );
 }

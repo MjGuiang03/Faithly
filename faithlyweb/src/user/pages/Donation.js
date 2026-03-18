@@ -160,7 +160,7 @@ export default function Donation() {
         <div className="user-main-content">
 
           {/* Header */}
-          <div className="user-home-header">
+          <div className="user-donation-page-header">
             <h1 className="user-donation-page-title">Donations</h1>
             <p className="user-donation-page-subtitle">Support the church and track your giving</p>
           </div>

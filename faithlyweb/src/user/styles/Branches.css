@@ -1,6 +1,23 @@
 /* ─── Header ─────────────────────────────────────────────── */
-.user-branches-header {
-  margin-bottom: 16px;
+.user-branches-page-header {
+  margin-bottom: 24px;
+}
+
+.user-branches-page-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: #101828;
+  margin: 0;
+  line-height: 34px;
+  font-family: Arial, sans-serif;
+}
+
+.user-branches-page-subtitle {
+  font-size: 14px;
+  color: #000000;
+  margin: 0;
+  line-height: 20px;
+  font-family: Arial, sans-serif;
 }
 
 /* ─── My Community Banner ────────────────────────────────── */

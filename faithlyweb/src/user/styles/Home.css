@@ -70,19 +70,19 @@
 }
 
 .user-home-page-title {
-  font-size: 32px;
-  font-weight: 800;
+  font-size: 26px;
+  font-weight: 700;
   color: #101828;
   margin: 0;
-  line-height: 40px;
+  line-height: 34px;
   font-family: Arial, sans-serif;
 }
 
 .user-home-page-subtitle {
-  font-size: 16px;
+  font-size: 14px;
   color: #000000;
   margin: 0;
-  line-height: 24px;
+  line-height: 20px;
   font-family: Arial, sans-serif;
 }
 
@@ -178,17 +178,86 @@
 /* Content Grid — FIX: ensure proper spacing and alignment */
 .user-dashboard-grid {
   display: grid;
-  grid-template-columns: 340px 1fr;
-  gap: 28px;
-  align-items: flex-start;
+  grid-template-columns: 3fr 3fr 4fr;
+  gap: 24px;
+  align-items: stretch;
   margin-bottom: 28px;
 }
 
 .user-home-full-width-section {
   grid-column: 1 / -1;
   width: 100%;
-  margin-top: 15px;
-  /* Extra breathing room */
+}
+
+/* Community Card — Donation Receipt Style */
+.user-home-community-card {
+  background: #eff6ff !important;
+  border: 1px solid #bedbff !important;
+  box-shadow: 0 4px 12px rgba(21, 93, 252, 0.08) !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.user-community-badge {
+  background: #155dfc;
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 999px;
+  width: fit-content;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+.user-community-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+  padding: 10px 0;
+  flex: 1;
+  justify-content: center;
+}
+
+.user-community-illustration {
+  width: 64px;
+  height: 64px;
+  background: white;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(21, 93, 252, 0.1);
+}
+
+.user-community-text {
+  font-size: 13px;
+  color: #4a5565;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 200px;
+}
+
+.user-community-action-btn {
+  background: white;
+  border: 1.5px solid #155dfc;
+  color: #155dfc;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+  margin-top: auto;
+}
+
+.user-community-action-btn:hover {
+  background: #155dfc;
+  color: white;
+  box-shadow: 0 4px 12px rgba(21, 93, 252, 0.2);
 }
 
 .user-side-column {

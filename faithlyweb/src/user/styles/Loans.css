@@ -1,3 +1,25 @@
+/* ─── Header ─────────────────────────────────────────────── */
+.user-loans-page-header {
+  margin-bottom: 24px;
+}
+
+.user-loans-page-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: #101828;
+  margin: 0;
+  line-height: 34px;
+  font-family: Arial, sans-serif;
+}
+
+.user-loans-page-subtitle {
+  font-size: 14px;
+  color: #000000;
+  margin: 0;
+  line-height: 20px;
+  font-family: Arial, sans-serif;
+}
+
 .user-loans-header-content {
   display: flex;
   align-items: center;

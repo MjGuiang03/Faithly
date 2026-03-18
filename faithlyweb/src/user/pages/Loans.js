@@ -190,7 +190,7 @@ export default function Loans() {
 
       <div className="user-main-content">
         {/* Header */}
-        <div className="user-loans-header">
+        <div className="user-loans-page-header">
           <div className="user-loans-header-content">
             <div>
               <h1 className="user-loans-page-title">My Loans</h1>

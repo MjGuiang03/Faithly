@@ -98,7 +98,7 @@ export default function Attendance() {
 
       <div className="user-main-content">
         {/* Header */}
-        <div className="user-home-header">
+        <div className="user-attendance-page-header">
           <h1 className="user-attendance-page-title">Attendance Tracking</h1>
           <p className="user-attendance-page-subtitle">Check in to services and view your attendance history</p>
         </div>
