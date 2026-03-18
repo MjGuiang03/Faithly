@@ -93,12 +93,19 @@ export default function SecretaryLoanProcess() {
         setShowDetailsModal(true);
     };
 
-    /*
-    const handleOpenProcessModal = (loan) => {
-        setSelectedLoan(loan);
-        setShowProcessModal(true);
+    const handleViewReceipt = (loan) => {
+        const loanWithReceiptInfo = {
+            ...loan,
+            id: loan.loanId,
+            member: loan.memberName,
+            // Fields fetched from backend
+            paymentMethod: loan.paymentMethod,
+            disbursementDate: loan.disbursementDate,
+            referenceNumber: loan.referenceNumber
+        };
+        setSelectedLoan(loanWithReceiptInfo);
+        setShowReceiptModal(true);
     };
-    */
 
     const handleProcessLoan = async (paymentMethod) => {
         if (!selectedLoan || !selectedLoan._id) return;
@@ -230,7 +237,20 @@ export default function SecretaryLoanProcess() {
                                             </td>
                                             <td>
                                                 <div className="sec-loan-process-actions">
-                                                    {!loan.disbursed ? (
+                                                    {loan.disbursed ? (
+                                                        <button
+                                                            className="sec-loan-process-btn-receipt"
+                                                            onClick={() => handleViewReceipt(loan)}
+                                                        >
+                                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                                                                <polyline points="14 2 14 8 20 8" />
+                                                                <path d="M12 18V12" />
+                                                                <path d="M9 15h6" />
+                                                            </svg>
+                                                            View Receipt
+                                                        </button>
+                                                    ) : (
                                                         <button
                                                             className="sec-loan-process-btn-details"
                                                             onClick={() => handleViewDetails(loan)}
@@ -240,13 +260,6 @@ export default function SecretaryLoanProcess() {
                                                             </svg>
                                                             View Data
                                                         </button>
-                                                    ) : (
-                                                        <div className="sec-loan-process-completed">
-                                                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                                                <path d="M13.3333 4L6 11.3333L2.66667 8" stroke="#00A63E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                                            </svg>
-                                                            <span>Completed</span>
-                                                        </div>
                                                     )}
                                                 </div>
                                             </td>

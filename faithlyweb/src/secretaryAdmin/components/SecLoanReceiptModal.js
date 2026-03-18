@@ -1,4 +1,4 @@
-import { CheckCircle, Download, Share2, X, Receipt } from 'lucide-react';
+import { Download, Share2, X, Receipt } from 'lucide-react';
 import '../styles/SecLoanReceiptModal.css';
 
 const fmt = (n) =>
@@ -36,6 +36,11 @@ export default function SecLoanReceiptModal({ loan, onClose }) {
           <div className="sec-receipt-amount-area">
             <p className="sec-receipt-label">Amount Transferred</p>
             <h1 className="sec-receipt-amount">{fmt(loan.amount)}</h1>
+            <div className="sec-receipt-status-pill-wrap">
+              <div className="sec-receipt-status-pill">
+                <span>Completed</span>
+              </div>
+            </div>
             <div className="sec-receipt-divider"></div>
           </div>
 
@@ -53,9 +58,18 @@ export default function SecLoanReceiptModal({ loan, onClose }) {
               <span className="sec-receipt-d-label">Loan ID</span>
               <span className="sec-receipt-d-value">{loan.id || loan.loanId}</span>
             </div>
+            
             <div className="sec-receipt-row">
-              <span className="sec-receipt-d-label">Purpose</span>
-              <span className="sec-receipt-d-value">{loan.purpose}</span>
+              <span className="sec-receipt-d-label">Date & Time</span>
+              <span className="sec-receipt-d-value">
+                {loan.disbursementDate ? new Date(loan.disbursementDate).toLocaleDateString('en-US') : dateStr} • {timeStr}
+              </span>
+            </div>
+            <div className="sec-receipt-row">
+              <span className="sec-receipt-d-label">Payment Method</span>
+              <span className="sec-receipt-d-value">
+                {loan.paymentMethod === 'gcash' ? 'GCash' : 'Bank Transfer'}
+              </span>
             </div>
             
             <div className="sec-receipt-details-separator"></div>
@@ -64,38 +78,11 @@ export default function SecLoanReceiptModal({ loan, onClose }) {
               <span className="sec-receipt-d-label">Reference Number</span>
               <span className="sec-receipt-d-value highlight">{refNum}</span>
             </div>
-            <div className="sec-receipt-row">
-              <span className="sec-receipt-d-label">Date</span>
-              <span className="sec-receipt-d-value">{loan.disbursementDate ? new Date(loan.disbursementDate).toLocaleDateString('en-US') : dateStr}</span>
-            </div>
-            <div className="sec-receipt-row">
-              <span className="sec-receipt-d-label">Time</span>
-              <span className="sec-receipt-d-value">{timeStr}</span>
-            </div>
-            <div className="sec-receipt-row">
-              <span className="sec-receipt-d-label">Payment Method</span>
-              <span className="sec-receipt-d-value">
-                {loan.paymentMethod === 'gcash' ? 'GCash' : 'Bank Transfer'}
-              </span>
-            </div>
-            <div className="sec-receipt-row">
-              <span className="sec-receipt-d-label">Status</span>
-              <div className="sec-receipt-status-pill">
-                <CheckCircle size={14} />
-                <span>Completed</span>
-              </div>
-            </div>
           </div>
 
-          {/* Success Banner */}
-          <div className="sec-receipt-success-banner">
-            <div className="sec-receipt-success-icon">
-              <CheckCircle size={16} />
-            </div>
-            <div className="sec-receipt-success-text">
-              <p className="main">Loan disbursement processed successfully</p>
-              <p className="sub">The member will receive the funds shortly</p>
-            </div>
+          {/* Footer Note */}
+          <div className="sec-receipt-footer-note">
+            <p>The loan disbursement has been processed successfully. Funds will be credited to the recipient's account shortly.</p>
           </div>
 
           {/* Actions */}
