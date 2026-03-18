@@ -26,7 +26,7 @@ export default function Home() {
     try {
       const headers = { Authorization: `Bearer ${token}` };
 
-      const [loansRes, donationsRes, attendanceRes] = await Promise.all([
+      const [loansRes, donationsRes, attendanceRes, verificationRes] = await Promise.all([
         fetch(`${API}/api/loans/my-loans`, { headers }),
         fetch(`${API}/api/donations/my-donations`, { headers }),
         fetch(`${API}/api/attendance/my-attendance`, { headers }),
