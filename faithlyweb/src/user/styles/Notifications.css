@@ -1,4 +1,8 @@
-/* ═══════════════════════════════════════�.user-notif-page {
+/* ============================================================
+   Notifications Page Styles
+   ============================================================ */
+
+.user-notif-page {
   display: flex;
   min-height: 100vh;
   background: #f8fafc;
@@ -17,7 +21,7 @@
 }
 
 /* When the sidebar is collapsed, the main content expands */
-.sidebar-collapsed + .user-notif-main {
+.user-sidebar-collapsed + .user-notif-main {      
   margin-left: 72px;
 }
 
@@ -118,14 +122,14 @@
   align-items: center;
   gap: 7px;
   white-space: nowrap;
-  transition: background 0.15s, color 0.15s;
+  transition: background 0.15s, color 0.15s; 
   line-height: 20px;
 }
 
 .user-notif-filter-btn.active {
   background: #155dfc;
   color: white;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);    
 }
 
 .user-notif-filter-pill {
@@ -145,17 +149,17 @@
 }
 
 .user-notif-filter-btn.active .user-notif-filter-pill {
-  background: rgba(255,255,255,0.28);
+  background: rgba(255,255,255,0.28);        
 }
 
-/* ── Notification List ── */
+/* ── Notification List ── */        
 .user-notif-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-/* ── Notification Card ── */
+/* ── Notification Card ── */        
 .user-notif-card {
   display: flex;
   align-items: flex-start;
@@ -167,7 +171,7 @@
 }
 
 .user-notif-card:hover {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);    
 }
 
 .user-notif-card-loan       { background: #f0f6ff; border-color: #bfdbfe; }
@@ -315,34 +319,25 @@
 }
 
 @media (max-width: 768px) {
-  .user-notif-main       { padding: 16px; padding-top: 64px; gap: 16px; margin-left: 0; }
-  .sidebar-collapsed + .user-notif-main { margin-left: 0; }
+  .user-notif-main       { padding: 16px; padding-top: 64px; gap: 16px; margin-left: 0; } 
+  .user-sidebar-collapsed + .user-notif-main { margin-left: 0; }
   .user-notif-header     { flex-direction: column; }
   .user-notif-mark-all-btn { width: 100%; text-align: center; }
-  .user-notif-filters    { 
-    flex-wrap: nowrap; 
-    overflow-x: auto; 
-    width: 100%; 
+  .user-notif-filters    {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    width: 100%;
     padding-bottom: 4px; /* Space for potential scrollbar */
-    -webkit-overflow-scrolling: touch; 
+    -webkit-overflow-scrolling: touch;       
     -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    scrollbar-width: none;  /* Firefox */    
   }
-  .user-notif-filters::-webkit-scrollbar {
+  .user-notif-filters::-webkit-scrollbar {   
     display: none;
   }
   .user-notif-title      { font-size: 22px; }
   .user-notif-card       { padding: 14px 16px; gap: 10px; }
-  
+
   /* Make sure the text inside long notifications wraps better */
-  .user-notif-body-header { gap: 6px; }
-}
-r {
-    display: none;
-  }
-  .notif-title      { font-size: 22px; }
-  .notif-card       { padding: 14px 16px; gap: 10px; }
-  
-  /* Make sure the text inside long notifications wraps better */
-  .notif-body-header { gap: 6px; }
+  .user-notif-body-header { gap: 6px; }      
 }
