@@ -187,7 +187,8 @@
 .user-full-width-section {
   grid-column: 1 / -1;
   width: 100%;
-  margin-top: 8px; /* Extra breathing room */
+  margin-top: 15px;
+  /* Extra breathing room */
 }
 
 .user-side-column {
@@ -206,7 +207,7 @@
   flex-direction: column;
   gap: 16px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
-  height: 100%;
+  height: auto;
   /* FIX: prevent card content from pushing past grid cell */
   min-width: 0;
   overflow: hidden;
@@ -609,4 +610,4 @@
   .user-action-description {
     font-size: 11px;
   }
-}
+}
