@@ -155,78 +155,78 @@ export default function Donation() {
 
   return (
     <>
-      <div className="home-layout">
+      <div className="user-home-layout">
         <Sidebar />
-        <div className="main-content">
+        <div className="user-main-content">
 
           {/* Header */}
-          <div className="home-header">
-            <h1 className="page-title">Donations</h1>
-            <p className="page-subtitle">Support the church and track your giving</p>
+          <div className="user-home-header">
+            <h1 className="user-page-title">Donations</h1>
+            <p className="user-page-subtitle">Support the church and track your giving</p>
           </div>
 
           {/* Stats */}
-          <div className="donations-stats">
-            <div className="donation-stat-card">
-              <div className="donation-stat-header">
-                <p className="donation-stat-label">Total Donated</p>
-                <svg className="donation-stat-icon" fill="none" viewBox="0 0 20 20">
+          <div className="user-donations-stats">
+            <div className="user-donation-stat-card">
+              <div className="user-donation-stat-header">
+                <p className="user-donation-stat-label">Total Donated</p>
+                <svg className="user-donation-stat-icon" fill="none" viewBox="0 0 20 20">
                   <path d="M17.3667 3.84167C16.941 3.41583 16.4357 3.07803 15.8794 2.84757C15.3231 2.61712 14.7267 2.49854 14.1245 2.49854C13.5224 2.49854 12.9259 2.61712 12.3696 2.84757C11.8133 3.07803 11.308 3.41583 10.8823 3.84167L10.0001 4.72417L9.11793 3.84167C8.25853 2.98227 7.09337 2.49898 5.87593 2.49898C4.65849 2.49898 3.49334 2.98227 2.63393 3.84167C1.77453 4.70108 1.29124 5.86623 1.29124 7.08367C1.29124 8.30111 1.77453 9.46626 2.63393 10.3257L10.0001 17.6917L17.3662 10.3257C17.792 9.89993 18.1298 9.39461 18.3602 8.83831C18.5907 8.28202 18.7092 7.68556 18.7092 7.08334C18.7092 6.48112 18.5907 5.88465 18.3602 5.32836C18.1298 4.77207 17.792 4.26743 17.3662 3.84167H17.3667Z" stroke="#E60076" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 </svg>
               </div>
-              {loading ? <div className="skeleton" style={{ height: '32px', width: '100px', margin: '8px 0' }}></div> : <p className="donation-stat-value fade-in">{fmt(stats.totalDonated)}</p>}
+              {loading ? <div className="user-skeleton" style={{ height: '32px', width: '100px', margin: '8px 0' }}></div> : <p className="user-donation-stat-value user-fade-in">{fmt(stats.totalDonated)}</p>}
             </div>
-            <div className="donation-stat-card">
-              <div className="donation-stat-header">
-                <p className="donation-stat-label">This Year</p>
-                <svg className="donation-stat-icon" fill="none" viewBox="0 0 20 20">
+            <div className="user-donation-stat-card">
+              <div className="user-donation-stat-header">
+                <p className="user-donation-stat-label">This Year</p>
+                <svg className="user-donation-stat-icon" fill="none" viewBox="0 0 20 20">
                   <path d="M10 16.6667V10" stroke="#00A63E" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                   <path d="M6.66667 13.3333L10 10L13.3333 13.3333" stroke="#00A63E" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 </svg>
               </div>
-              {loading ? <div className="skeleton" style={{ height: '32px', width: '100px', margin: '8px 0' }}></div> : <p className="donation-stat-value fade-in">{fmt(stats.thisYearTotal)}</p>}
+              {loading ? <div className="user-skeleton" style={{ height: '32px', width: '100px', margin: '8px 0' }}></div> : <p className="user-donation-stat-value user-fade-in">{fmt(stats.thisYearTotal)}</p>}
             </div>
-            <div className="donation-stat-card">
-              <div className="donation-stat-header">
-                <p className="donation-stat-label">Total Donations</p>
-                <svg className="donation-stat-icon" fill="none" viewBox="0 0 20 20">
+            <div className="user-donation-stat-card">
+              <div className="user-donation-stat-header">
+                <p className="user-donation-stat-label">Total Donations</p>
+                <svg className="user-donation-stat-icon" fill="none" viewBox="0 0 20 20">
                   <path d="M6.66667 1.66667V5" stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                   <path d="M13.3333 1.66667V5" stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                   <path d="M2.5 8.33333H17.5" stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                   <path d="M15.8333 3.33333H4.16667C3.24619 3.33333 2.5 4.07952 2.5 5V16.6667C2.5 17.5871 3.24619 18.3333 4.16667 18.3333H15.8333C16.7538 18.3333 17.5 17.5871 17.5 16.6667V5C17.5 4.07952 16.7538 3.33333 15.8333 3.33333Z" stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 </svg>
               </div>
-              {loading ? <div className="skeleton" style={{ height: '32px', width: '60px', margin: '8px 0' }}></div> : <p className="donation-stat-value fade-in">{stats.totalCount}</p>}
+              {loading ? <div className="user-skeleton" style={{ height: '32px', width: '60px', margin: '8px 0' }}></div> : <p className="user-donation-stat-value user-fade-in">{stats.totalCount}</p>}
             </div>
           </div>
 
           {/* Two-column grid */}
-          <div className="donations-content-grid">
+          <div className="user-donations-content-grid">
 
             {/* Left: Make a Donation */}
-            <div className="donation-form-card">
-              <h2 className="section-title">Make a Donation</h2>
-              <div className="donation-form">
+            <div className="user-donation-form-card">
+              <h2 className="user-section-title">Make a Donation</h2>
+              <div className="user-donation-form">
 
                 {/* Amount */}
-                <div className="form-group">
-                  <label className="form-label">Donation Amount</label>
-                  <div className="amount-input-wrapper">
-                    <span className="currency-symbol">₱</span>
+                <div className="user-form-group">
+                  <label className="user-form-label">Donation Amount</label>
+                  <div className="user-amount-input-wrapper">
+                    <span className="user-currency-symbol">₱</span>
                     <input
                       type="number"
-                      className="amount-input"
+                      className="user-amount-input"
                       placeholder="Enter amount"
                       value={donationAmount}
                       onChange={(e) => { setDonationAmount(e.target.value); setFormError(''); }}
                       disabled={submitting}
                     />
                   </div>
-                  <div className="quick-amounts">
+                  <div className="user-quick-amounts">
                     {QUICK_AMOUNTS.map((q) => (
                       <button
                         key={q}
-                        className={`quick-amount-btn${Number(donationAmount) === q ? ' quick-amount-active' : ''}`}
+                        className={`user-quick-amount-btn${Number(donationAmount) === q ? ' user-quick-amount-active' : ''}`}
                         onClick={() => { setDonationAmount(String(q)); setFormError(''); }}
                         disabled={submitting}
                       >
@@ -237,11 +237,11 @@ export default function Donation() {
                 </div>
 
                 {/* Category */}
-                <div className="form-group">
-                  <label className="form-label">Donation Category</label>
-                  <div className="select-wrapper">
+                <div className="user-form-group">
+                  <label className="user-form-label">Donation Category</label>
+                  <div className="user-select-wrapper">
                     <select
-                      className="form-select category-select"
+                      className="user-form-select user-category-select"
                       value={donationCategory}
                       onChange={(e) => { setDonationCategory(e.target.value); setFormError(''); }}
                       disabled={submitting}
@@ -251,16 +251,16 @@ export default function Donation() {
                         <option key={c.name} value={c.name}>{c.name}</option>
                       ))}
                     </select>
-                    <ChevronDown className="select-icon" size={18} />
+                    <ChevronDown className="user-select-icon" size={18} />
                   </div>
                 </div>
 
                 {/* Payment Method */}
-                <div className="form-group">
-                  <label className="form-label">Payment Method</label>
-                  <div className="payment-methods">
+                <div className="user-form-group">
+                  <label className="user-form-label">Payment Method</label>
+                  <div className="user-payment-methods">
                     <button
-                      className={`payment-method-btn${paymentMethod === 'GCash' ? ' active' : ''}`}
+                      className={`user-payment-method-btn${paymentMethod === 'GCash' ? ' active' : ''}`}
                       onClick={() => setPaymentMethod('GCash')}
                       disabled={submitting}
                     >
@@ -268,7 +268,7 @@ export default function Donation() {
                       <span>GCash</span>
                     </button>
                     <button
-                      className={`payment-method-btn${paymentMethod === 'Bank' ? ' active' : ''}`}
+                      className={`user-payment-method-btn${paymentMethod === 'Bank' ? ' active' : ''}`}
                       onClick={() => setPaymentMethod('Bank')}
                       disabled={submitting}
                     >
@@ -279,27 +279,27 @@ export default function Donation() {
                 </div>
 
                 {/* Recurring */}
-                <div className="recurring-container">
+                <div className="user-recurring-container">
                   <input
                     type="checkbox"
                     id="recurring"
-                    className="recurring-checkbox"
+                    className="user-recurring-checkbox"
                     checked={isRecurring}
                     onChange={(e) => setIsRecurring(e.target.checked)}
                     disabled={submitting}
                   />
-                  <label htmlFor="recurring" className="recurring-label">
-                    <span className="recurring-title">Make this a recurring donation</span>
-                    <span className="recurring-description">Automatically donate this amount monthly</span>
+                  <label htmlFor="recurring" className="user-recurring-label">
+                    <span className="user-recurring-title">Make this a recurring donation</span>
+                    <span className="user-recurring-description">Automatically donate this amount monthly</span>
                   </label>
                 </div>
 
-                {formError && <p className="donation-form-error">{formError}</p>}
+                {formError && <p className="user-donation-form-error">{formError}</p>}
 
-                <button className="donate-btn" onClick={handleDonate} disabled={submitting}>
+                <button className="user-donate-btn" onClick={handleDonate} disabled={submitting}>
                   {submitting ? 'Processing…' : (
                     <>
-                      <svg className="donate-icon" fill="none" viewBox="0 0 20 20">
+                      <svg className="user-donate-icon" fill="none" viewBox="0 0 20 20">
                         <path d="M17.3667 3.84167C16.941 3.41583 16.4357 3.07803 15.8794 2.84757C15.3231 2.61712 14.7267 2.49854 14.1245 2.49854C13.5224 2.49854 12.9259 2.61712 12.3696 2.84757C11.8133 3.07803 11.308 3.41583 10.8823 3.84167L10.0001 4.72417L9.11793 3.84167C8.25853 2.98227 7.09337 2.49898 5.87593 2.49898C4.65849 2.49898 3.49334 2.98227 2.63393 3.84167C1.77453 4.70108 1.29124 5.86623 1.29124 7.08367C1.29124 8.30111 1.77453 9.46626 2.63393 10.3257L10.0001 17.6917L17.3662 10.3257C17.792 9.89993 18.1298 9.39461 18.3602 8.83831C18.5907 8.28202 18.7092 7.68556 18.7092 7.08334C18.7092 6.48112 18.5907 5.88465 18.3602 5.32836C18.1298 4.77207 17.792 4.26743 17.3662 3.84167H17.3667Z" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                       </svg>
                       Donate Now
@@ -310,23 +310,23 @@ export default function Donation() {
             </div>
 
             {/* Right: Donation History (Preview) */}
-            <div className="donation-history-card">
-              <div className="history-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <h2 className="section-title" style={{ marginBottom: 0 }}>Donation History</h2>
-                <button className="view-history-btn" onClick={handleOpenHistory}>View History</button>
+            <div className="user-donation-history-card">
+              <div className="user-history-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h2 className="user-section-title" style={{ marginBottom: 0 }}>Donation History</h2>
+                <button className="user-view-history-btn" onClick={handleOpenHistory}>View History</button>
               </div>
 
               {loading && (
-                <div className="donation-history-list">
+                <div className="user-donation-history-list">
                   {[1, 2, 3].map(i => (
-                    <div key={i} className="donation-history-item" style={{ padding: '16px' }}>
-                      <div className="donation-history-main" style={{ width: '100%' }}>
-                        <div className="skeleton skeleton-circle" style={{ width: '32px', height: '32px', flexShrink: 0 }}></div>
+                    <div key={i} className="user-donation-history-item" style={{ padding: '16px' }}>
+                      <div className="user-donation-history-main" style={{ width: '100%' }}>
+                        <div className="user-skeleton user-skeleton-circle" style={{ width: '32px', height: '32px', flexShrink: 0 }}></div>
                         <div style={{ flex: 1, marginLeft: '12px' }}>
-                          <div className="skeleton" style={{ height: '14px', width: '30%', marginBottom: '6px' }}></div>
-                          <div className="skeleton" style={{ height: '12px', width: '50%' }}></div>
+                          <div className="user-skeleton" style={{ height: '14px', width: '30%', marginBottom: '6px' }}></div>
+                          <div className="user-skeleton" style={{ height: '12px', width: '50%' }}></div>
                         </div>
-                        <div className="skeleton" style={{ height: '16px', width: '60px' }}></div>
+                        <div className="user-skeleton" style={{ height: '16px', width: '60px' }}></div>
                       </div>
                     </div>
                   ))}
@@ -334,33 +334,33 @@ export default function Donation() {
               )}
               
               {!loading && donationHistory.length === 0 && (
-                <p className="donations-empty-text">No donations yet.</p>
+                <p className="user-donations-empty-text">No donations yet.</p>
               )}
 
               {!loading && donationHistory.length > 0 && (
-                <div className="donation-history-list fade-in">
+                <div className="user-donation-history-list user-fade-in">
                   {donationHistory.slice(0, 5).map((d) => (
                     <div 
                       key={d._id || d.donationId} 
-                      className="donation-history-item clickable"
+                      className="user-donation-history-item user-clickable"
                       onClick={() => handleOpenReceipt(d)}
                     >
-                      <div className="donation-history-main">
-                        <svg className="donation-history-icon" fill="none" viewBox="0 0 20 20">
+                      <div className="user-donation-history-main">
+                        <svg className="user-donation-history-icon" fill="none" viewBox="0 0 20 20">
                           <path d="M17.3667 3.84167C16.941 3.41583 16.4357 3.07803 15.8794 2.84757C15.3231 2.61712 14.7267 2.49854 14.1245 2.49854C13.5224 2.49854 12.9259 2.61712 12.3696 2.84757C11.8133 3.07803 11.308 3.41583 10.8823 3.84167L10.0001 4.72417L9.11793 3.84167C8.25853 2.98227 7.09337 2.49898 5.87593 2.49898C4.65849 2.49898 3.49334 2.98227 2.63393 3.84167C1.77453 4.70108 1.29124 5.86623 1.29124 7.08367C1.29124 8.30111 1.77453 9.46626 2.63393 10.3257L10.0001 17.6917L17.3662 10.3257C17.792 9.89993 18.1298 9.39461 18.3602 8.83831C18.5907 8.28202 18.7092 7.68556 18.7092 7.08334C18.7092 6.48112 18.5907 5.88465 18.3602 5.32836C18.1298 4.77207 17.792 4.26743 17.3662 3.84167H17.3667Z" stroke="#E60076" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                         </svg>
-                        <div className="donation-history-info">
-                          <h3 className="donation-fund">{d.category}</h3>
-                          <p className="donation-id">{d.donationId}</p>
-                          <p className="donation-details">
+                        <div className="user-donation-history-info">
+                          <h3 className="user-donation-fund">{d.category}</h3>
+                          <p className="user-donation-id">{d.donationId}</p>
+                          <p className="user-donation-details">
                             {fmtDate(d.createdAt || d.date)} · {d.method || d.paymentMethod}
                           </p>
                           {d.type === 'Recurring' && (
-                            <span className="recurring-badge">Recurring</span>
+                            <span className="user-recurring-badge">Recurring</span>
                           )}
                         </div>
                       </div>
-                      <p className="donation-history-amount">{fmt(d.amount)}</p>
+                      <p className="user-donation-history-amount">{fmt(d.amount)}</p>
                     </div>
                   ))}
                 </div>
@@ -372,24 +372,24 @@ export default function Donation() {
 
       {/* ── Thank You Modal ── */}
       {successModal && (
-        <div className="donation-success-overlay" onClick={() => setSuccessModal(null)}>
-          <div className="donation-success-modal" onClick={e => e.stopPropagation()}>
+        <div className="user-donation-success-overlay" onClick={() => setSuccessModal(null)}>
+          <div className="user-donation-success-modal" onClick={e => e.stopPropagation()}>
             {/* Checkmark icon */}
-            <div className="donation-success-icon-wrap">
+            <div className="user-donation-success-icon-wrap">
               <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
                 <circle cx="22" cy="22" r="22" fill="#dcfce7" />
                 <path d="M13 22.5L19.5 29L31 16" stroke="#16a34a" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
 
-            <h2 className="donation-success-title">Thank You!</h2>
-            <p className="donation-success-subtitle">Your generous donation has been received</p>
+            <h2 className="user-donation-success-title">Thank You!</h2>
+            <p className="user-donation-success-subtitle">Your generous donation has been received</p>
 
             {/* Amount + Category box */}
-            <div className="donation-success-details">
-              <p className="donation-success-detail-label">Donation Amount</p>
-              <p className="donation-success-amount">{fmt(successModal.amount)}</p>
-              <div className="donation-success-category">
+            <div className="user-donation-success-details">
+              <p className="user-donation-success-detail-label">Donation Amount</p>
+              <p className="user-donation-success-amount">{fmt(successModal.amount)}</p>
+              <div className="user-donation-success-category">
                 <svg width="15" height="15" viewBox="0 0 20 20" fill="none">
                   <path d="M17.3667 3.84167C16.941 3.41583 16.4357 3.07803 15.8794 2.84757C15.3231 2.61712 14.7267 2.49854 14.1245 2.49854C13.5224 2.49854 12.9259 2.61712 12.3696 2.84757C11.8133 3.07803 11.308 3.41583 10.8823 3.84167L10.0001 4.72417L9.11793 3.84167C8.25853 2.98227 7.09337 2.49898 5.87593 2.49898C4.65849 2.49898 3.49334 2.98227 2.63393 3.84167C1.77453 4.70108 1.29124 5.86623 1.29124 7.08367C1.29124 8.30111 1.77453 9.46626 2.63393 10.3257L10.0001 17.6917L17.3662 10.3257C17.792 9.89993 18.1298 9.39461 18.3602 8.83831C18.5907 8.28202 18.7092 7.68556 18.7092 7.08334C18.7092 6.48112 18.5907 5.88465 18.3602 5.32836C18.1298 4.77207 17.792 4.26743 17.3662 3.84167H17.3667Z" stroke="#E60076" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 </svg>
@@ -397,11 +397,11 @@ export default function Donation() {
               </div>
             </div>
 
-            <p className="donation-success-note">
+            <p className="user-donation-success-note">
               Your contribution helps us continue our mission and ministry work
             </p>
 
-            <button className="donation-success-close" onClick={() => setSuccessModal(null)}>
+            <button className="user-donation-success-close" onClick={() => setSuccessModal(null)}>
               Close
             </button>
           </div>
@@ -409,18 +409,18 @@ export default function Donation() {
       )}
       {/* ── Donation History Modal ── */}
       {isHistoryModalOpen && (
-        <div className="donation-modal-overlay" onClick={() => setIsHistoryModalOpen(false)}>
-          <div className="donation-modal-content" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2 className="modal-title">Donation History</h2>
-              <button className="modal-close-btn" onClick={() => setIsHistoryModalOpen(false)}>×</button>
+        <div className="user-donation-modal-overlay" onClick={() => setIsHistoryModalOpen(false)}>
+          <div className="user-donation-modal-content" onClick={e => e.stopPropagation()}>
+            <div className="user-modal-header">
+              <h2 className="user-modal-title">Donation History</h2>
+              <button className="user-modal-close-btn" onClick={() => setIsHistoryModalOpen(false)}>×</button>
             </div>
 
-            <div className="modal-filters">
-              <div className="filter-group">
-                <label className="filter-label" style={{ marginRight: '8px' }}>Filter by Category:</label>
+            <div className="user-modal-filters">
+              <div className="user-filter-group">
+                <label className="user-filter-label" style={{ marginRight: '8px' }}>Filter by Category:</label>
                 <select
-                  className="filter-select"
+                  className="user-filter-select"
                   value={modalCategory}
                   onChange={(e) => {
                     setModalCategory(e.target.value);
@@ -435,27 +435,27 @@ export default function Donation() {
               </div>
             </div>
 
-            <div className="modal-body history-modal-body">
+            <div className="user-modal-body user-history-modal-body">
               {modalLoading ? (
-                <p className="modal-loading">Loading history...</p>
+                <p className="user-modal-loading">Loading history...</p>
               ) : modalHistory.length === 0 ? (
-                <p className="modal-empty">No donations found for this filter.</p>
+                <p className="user-modal-empty">No donations found for this filter.</p>
               ) : (
-                <div className="modal-history-list">
+                <div className="user-modal-history-list">
                   {modalHistory.map((d) => (
                     <div 
                       key={d._id || d.donationId} 
-                      className="donation-history-item modal-item clickable"
+                      className="user-donation-history-item user-modal-item user-clickable"
                       onClick={() => handleOpenReceipt(d)}
                     >
-                      <div className="donation-history-main">
-                        <div className="donation-history-info">
-                          <h3 className="donation-fund">{d.category}</h3>
-                          <p className="donation-id">{d.donationId} · {fmtDate(d.createdAt || d.date)}</p>
-                          <p className="donation-details">{d.method || d.paymentMethod}</p>
+                      <div className="user-donation-history-main">
+                        <div className="user-donation-history-info">
+                          <h3 className="user-donation-fund">{d.category}</h3>
+                          <p className="user-donation-id">{d.donationId} · {fmtDate(d.createdAt || d.date)}</p>
+                          <p className="user-donation-details">{d.method || d.paymentMethod}</p>
                         </div>
                       </div>
-                      <p className="donation-history-amount">{fmt(d.amount)}</p>
+                      <p className="user-donation-history-amount">{fmt(d.amount)}</p>
                     </div>
                   ))}
                 </div>
@@ -463,15 +463,15 @@ export default function Donation() {
             </div>
 
             {modalTotalPages > 1 && (
-              <div className="modal-pagination">
+              <div className="user-modal-pagination">
                 <button
-                  className="modal-page-btn"
+                  className="user-modal-page-btn"
                   onClick={() => setModalPage(p => Math.max(1, p - 1))}
                   disabled={modalPage === 1 || modalLoading}
                 >‹ Prev</button>
-                <span className="modal-page-info">Page {modalPage} of {modalTotalPages}</span>
+                <span className="user-modal-page-info">Page {modalPage} of {modalTotalPages}</span>
                 <button
-                  className="modal-page-btn"
+                  className="user-modal-page-btn"
                   onClick={() => setModalPage(p => Math.min(modalTotalPages, p + 1))}
                   disabled={modalPage === modalTotalPages || modalLoading}
                 >Next ›</button>
@@ -482,62 +482,62 @@ export default function Donation() {
       )}
       {/* ── Receipt Modal ── */}
       {isReceiptModalOpen && selectedDonation && (
-        <div className="receipt-modal-overlay" onClick={() => setIsReceiptModalOpen(false)}>
-          <div className="receipt-modal-card" onClick={e => e.stopPropagation()}>
-            <div className="receipt-header-gradient">
-              <div className="receipt-header-content">
-                <Receipt className="receipt-main-icon" size={32} />
-                <h2 className="receipt-header-title">Donation Receipt</h2>
-                <p className="receipt-header-subtitle">Faithly Official Record</p>
+        <div className="user-receipt-modal-overlay" onClick={() => setIsReceiptModalOpen(false)}>
+          <div className="user-receipt-modal-card" onClick={e => e.stopPropagation()}>
+            <div className="user-receipt-header-gradient">
+              <div className="user-receipt-header-content">
+                <Receipt className="user-receipt-main-icon" size={32} />
+                <h2 className="user-receipt-header-title">Donation Receipt</h2>
+                <p className="user-receipt-header-subtitle">Faithly Official Record</p>
               </div>
               <button 
-                className="receipt-close-btn" 
+                className="user-receipt-close-btn" 
                 onClick={() => setIsReceiptModalOpen(false)}
               >
                 <X size={20} />
               </button>
             </div>
 
-            <div className="receipt-body">
-              <div className="receipt-amount-section">
-                <p className="receipt-amount-label">Amount Contributed</p>
-                <h1 className="receipt-amount-value">{fmt(selectedDonation.amount)}</h1>
-                <div className="receipt-status-badge">Completed</div>
+            <div className="user-receipt-body">
+              <div className="user-receipt-amount-section">
+                <p className="user-receipt-amount-label">Amount Contributed</p>
+                <h1 className="user-receipt-amount-value">{fmt(selectedDonation.amount)}</h1>
+                <div className="user-receipt-status-badge">Completed</div>
               </div>
 
-              <div className="receipt-details-list">
-                <div className="receipt-detail-item">
-                  <span className="receipt-detail-label">Donor Name</span>
-                  <span className="receipt-detail-value">{user?.fullName || 'Valued Member'}</span>
+              <div className="user-receipt-details-list">
+                <div className="user-receipt-detail-item">
+                  <span className="user-receipt-detail-label">Donor Name</span>
+                  <span className="user-receipt-detail-value">{user?.fullName || 'Valued Member'}</span>
                 </div>
-                <div className="receipt-detail-item">
-                  <span className="receipt-detail-label">Fund Category</span>
-                  <span className="receipt-detail-value">{selectedDonation.category}</span>
+                <div className="user-receipt-detail-item">
+                  <span className="user-receipt-detail-label">Fund Category</span>
+                  <span className="user-receipt-detail-value">{selectedDonation.category}</span>
                 </div>
-                <div className="receipt-detail-item">
-                  <span className="receipt-detail-label">Transaction ID</span>
-                  <span className="receipt-detail-value">{selectedDonation.donationId}</span>
+                <div className="user-receipt-detail-item">
+                  <span className="user-receipt-detail-label">Transaction ID</span>
+                  <span className="user-receipt-detail-value">{selectedDonation.donationId}</span>
                 </div>
-                <div className="receipt-detail-item">
-                  <span className="receipt-detail-label">Date & Time</span>
-                  <span className="receipt-detail-value">{fmtDate(selectedDonation.createdAt || selectedDonation.date)}</span>
+                <div className="user-receipt-detail-item">
+                  <span className="user-receipt-detail-label">Date & Time</span>
+                  <span className="user-receipt-detail-value">{fmtDate(selectedDonation.createdAt || selectedDonation.date)}</span>
                 </div>
-                <div className="receipt-detail-item">
-                  <span className="receipt-detail-label">Payment Method</span>
-                  <span className="receipt-detail-value">{selectedDonation.method || selectedDonation.paymentMethod}</span>
+                <div className="user-receipt-detail-item">
+                  <span className="user-receipt-detail-label">Payment Method</span>
+                  <span className="user-receipt-detail-value">{selectedDonation.method || selectedDonation.paymentMethod}</span>
                 </div>
               </div>
 
-              <div className="receipt-footer-note">
+              <div className="user-receipt-footer-note">
                 <p>Thank you for your generous support of God's work. Your contribution makes a difference in our community.</p>
               </div>
 
-              <div className="receipt-actions">
-                <button className="receipt-action-btn secondary">
+              <div className="user-receipt-actions">
+                <button className="user-receipt-action-btn secondary">
                   <Share2 size={16} />
                   <span>Share</span>
                 </button>
-                <button className="receipt-action-btn primary">
+                <button className="user-receipt-action-btn primary">
                   <Download size={16} />
                   <span>Download PDF</span>
                 </button>

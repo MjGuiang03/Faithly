@@ -31,11 +31,11 @@ export default function UpdatePassword() {
   };
 
   return (
-    <div className="verify-container">
+    <div className="user-verify-container">
       <form onSubmit={handleUpdate}>
         <h2>Reset Password</h2>
 
-        <div className="form-group">
+        <div className="user-verify-form-group">
           <label>Email Address</label>
           <input
             type="email"
@@ -46,7 +46,7 @@ export default function UpdatePassword() {
           />
         </div>
 
-        <div className="form-group">
+        <div className="user-verify-form-group">
           <label>OTP</label>
           <input
             type="text"
@@ -58,7 +58,7 @@ export default function UpdatePassword() {
           />
         </div>
 
-        <div className="form-group">
+        <div className="user-verify-form-group">
           <label>New Password</label>
           <input
             type="password"

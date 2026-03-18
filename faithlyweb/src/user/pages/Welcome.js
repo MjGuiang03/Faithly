@@ -36,66 +36,66 @@ export default function Welcome() {
   };
 
   return (
-    <div className="welcome-container-new">
+    <div className="user-welcome-container-new">
       {/* Header */}
-      <header className="welcome-header-new">
-        <div className="header-content-new">
-          <div className="logo-section-new">
-            <img src={puacLogo} alt="PUAC Logo" className="logo-image-new" />
+      <header className="user-welcome-header-new">
+        <div className="user-header-content-new">
+          <div className="user-logo-section-new">
+            <img src={puacLogo} alt="PUAC Logo" className="user-logo-image-new" />
             <div>
-              <h1 className="logo-title-new">FaithLy</h1>
-              <p className="logo-subtitle-new">Loan Management Portal</p>
+              <h1 className="user-logo-title-new">FaithLy</h1>
+              <p className="user-logo-subtitle-new">Loan Management Portal</p>
             </div>
           </div>
         </div>
       </header>
 
       {/* Hero Section */}
-      <div className="hero-section-new">
-        <div className="hero-grid-new">
+      <div className="user-hero-section-new">
+        <div className="user-hero-grid-new">
           {/* Left Content */}
-          <div className="hero-left-new">
-            <div className="trust-badge-new">
-              <span className="pulse-dot-new"></span>
-              <span className="trust-text-new">Trusted by 2,340+ members</span>
+          <div className="user-hero-left-new">
+            <div className="user-trust-badge-new">
+              <span className="user-pulse-dot-new"></span>
+              <span className="user-trust-text-new">Trusted by 2,340+ members</span>
             </div>
 
-            <h1 className="hero-title-new">
+            <h1 className="user-hero-title-new">
               Philippine United Apostolic Church
-              <span className="hero-title-gradient-new">
+              <span className="user-hero-title-gradient-new">
                 Church Portal
               </span>
             </h1>
 
-            <p className="hero-description-new">
+            <p className="user-hero-description-new">
               Access loans, make donations, track attendance, and stay connected with your church community—all in one secure platform.
             </p>
 
-            <div className="hero-buttons-new">
-              <button onClick={handleOpenSignup} className="btn-primary-new">
+            <div className="user-hero-buttons-new">
+              <button onClick={handleOpenSignup} className="user-btn-primary-new">
                 Get Started 
               </button>
             </div>
 
             {/* Stats */}
-            <div className="stats-grid-new">
-              <div className="stat-item-new">
-                <p className="stat-number-new">2,340+</p>
-                <p className="stat-label-new">Active Members</p>
+            <div className="user-stats-grid-new">
+              <div className="user-stat-item-new">
+                <p className="user-stat-number-new">2,340+</p>
+                <p className="user-stat-label-new">Active Members</p>
               </div>
-              <div className="stat-item-new">
-                <p className="stat-number-new">₱2.5M+</p>
-                <p className="stat-label-new">Loans Processed</p>
+              <div className="user-stat-item-new">
+                <p className="user-stat-number-new">₱2.5M+</p>
+                <p className="user-stat-label-new">Loans Processed</p>
               </div>
-              <div className="stat-item-new">
-                <p className="stat-number-new">25</p>
-                <p className="stat-label-new">Branch Locations</p>
+              <div className="user-stat-item-new">
+                <p className="user-stat-number-new">25</p>
+                <p className="user-stat-label-new">Branch Locations</p>
               </div>
             </div>
           </div>
 
           {/* Right Content - Embedded Login/Reset Form */}
-          <div className="login-card-container">
+          <div className="user-login-card-container">
             {authView === 'login' ? (
               <LoginModal 
                 embedded={true} 
@@ -113,20 +113,20 @@ export default function Welcome() {
       </div>
 
       {/* Benefits Section */}
-      <div className="benefits-section-new">
-        <div className="benefits-content-new">
-          <div className="benefits-header-new">
-            <h2 className="benefits-title-new">Everything You Need in One Place</h2>
-            <p className="benefits-description-new">
+      <div className="user-benefits-section-new">
+        <div className="user-benefits-content-new">
+          <div className="user-benefits-header-new">
+            <h2 className="user-benefits-title-new">Everything You Need in One Place</h2>
+            <p className="user-benefits-description-new">
               Our comprehensive platform provides all the tools you need to manage your church finances and stay connected.
             </p>
           </div>
 
-          <div className="benefits-grid-new">
+          <div className="user-benefits-grid-new">
             {benefits.map((benefit, index) => (
-              <div key={index} className="benefit-item-new">
-                <CheckCircle className="benefit-icon-new" />
-                <p className="benefit-text-new">{benefit}</p>
+              <div key={index} className="user-benefit-item-new">
+                <CheckCircle className="user-benefit-icon-new" />
+                <p className="user-benefit-text-new">{benefit}</p>
               </div>
             ))}
           </div>
@@ -134,22 +134,22 @@ export default function Welcome() {
       </div>
 
       {/* CTA Section */}
-      <div className="cta-section-new">
-        <div className="cta-card-new">
-          <h2 className="cta-title-new">Ready to Get Started?</h2>
-          <p className="cta-description-new">
+      <div className="user-cta-section-new">
+        <div className="user-cta-card-new">
+          <h2 className="user-cta-title-new">Ready to Get Started?</h2>
+          <p className="user-cta-description-new">
             Join thousands of members already using our platform to manage their church finances and stay connected.
           </p>
-          <button onClick={handleOpenSignup} className="cta-button-new">
+          <button onClick={handleOpenSignup} className="user-cta-button-new">
             Create Your Account
           </button>
         </div>
       </div>
 
       {/* Footer */}
-      <footer className="welcome-footer-new">
-        <div className="footer-content-new">
-          <p className="footer-text-new">
+      <footer className="user-welcome-footer-new">
+        <div className="user-footer-content-new">
+          <p className="user-footer-text-new">
             © 2026 FaithLy. All rights reserved. | Secure & Trusted Church Management Platform
           </p>
         </div>

@@ -125,7 +125,7 @@ const validators = {
 
 /* ─── Communities ───────────────────────────────────────────── */
 const CommunitySelect = ({ value, onChange }) => (
-  <select name="community" value={value} onChange={onChange} className="signup-form-select">
+  <select name="community" value={value} onChange={onChange} className="user-signup-form-select">
     <option value="">Select your Community</option>
     <optgroup label="Kalinga">
       <option>Tabuk</option><option>Zapote</option><option>Bliss</option>
@@ -294,11 +294,11 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
     isAllAgreed;
 
   return (
-    <div className="signup-modal-overlay">
-      <div className="signup-modal-card" onClick={e => e.stopPropagation()}>
+    <div className="user-signup-modal-overlay">
+      <div className="user-signup-modal-card" onClick={e => e.stopPropagation()}>
 
         {/* BACK BUTTON */}
-        <button onClick={onClose} className="signup-back-btn" type="button">
+        <button onClick={onClose} className="user-signup-back-btn" type="button">
           <svg width="16" height="16" fill="none" viewBox="0 0 16 16">
             <path d={svgPaths.p203476e0} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
             <path d="M12.6667 8H3.33333" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
@@ -306,20 +306,20 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
         </button>
 
         {/* HEADER */}
-        <div className="signup-header">
-          <img src={imgPuacLogo} alt="Logo" className="signup-logo" />
-          <h1 className="signup-title">Create Your Account</h1>
-          <p className="signup-subtitle">Join our church community today</p>
+        <div className="user-signup-header">
+          <img src={imgPuacLogo} alt="Logo" className="user-signup-logo" />
+          <h1 className="user-signup-title">Create Your Account</h1>
+          <p className="user-signup-subtitle">Join our church community today</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="signup-form" noValidate>
+        <form onSubmit={handleSubmit} className="user-signup-form" noValidate>
 
           {/* ROW 1: First Name + Last Name */}
-          <div className="signup-form-row">
-            <div className="signup-form-group">
-              <label htmlFor="firstName" className="signup-form-label">First Name:</label>
-              <div className="signup-input-wrapper">
-                <svg className="signup-input-icon" fill="none" viewBox="0 0 20 20">
+          <div className="user-signup-form-row">
+            <div className="user-signup-form-group">
+              <label htmlFor="firstName" className="user-signup-form-label">First Name:</label>
+              <div className="user-signup-input-wrapper">
+                <svg className="user-signup-input-icon" fill="none" viewBox="0 0 20 20">
                   <path d={svgPaths.p1beb9580} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                   <path d={svgPaths.p32ab0300} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 </svg>
@@ -327,20 +327,20 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
                   id="firstName" name="firstName"
                   value={formData.firstName}
                   onChange={handleChange} onBlur={handleBlur}
-                  className={`signup-form-input${touched.firstName && errors.firstName ? ' input-error' : (touched.firstName && !errors.firstName ? ' input-success' : '')}`}
+                  className={`user-signup-form-input${touched.firstName && errors.firstName ? ' user-input-error' : (touched.firstName && !errors.firstName ? ' user-input-success' : '')}`}
                   placeholder="Enter your first name"
                   autoComplete="given-name"
                 />
               </div>
               {touched.firstName && errors.firstName && (
-                <span className="signup-error-text">{errors.firstName}</span>
+                <span className="user-signup-error-text">{errors.firstName}</span>
               )}
             </div>
 
-            <div className="signup-form-group">
-              <label htmlFor="lastName" className="signup-form-label">Last Name:</label>
-              <div className="signup-input-wrapper">
-                <svg className="signup-input-icon" fill="none" viewBox="0 0 20 20">
+            <div className="user-signup-form-group">
+              <label htmlFor="lastName" className="user-signup-form-label">Last Name:</label>
+              <div className="user-signup-input-wrapper">
+                <svg className="user-signup-input-icon" fill="none" viewBox="0 0 20 20">
                   <path d={svgPaths.p1beb9580} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                   <path d={svgPaths.p32ab0300} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 </svg>
@@ -348,23 +348,23 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
                   id="lastName" name="lastName"
                   value={formData.lastName}
                   onChange={handleChange} onBlur={handleBlur}
-                  className={`signup-form-input${touched.lastName && errors.lastName ? ' input-error' : (touched.lastName && !errors.lastName ? ' input-success' : '')}`}
+                  className={`user-signup-form-input${touched.lastName && errors.lastName ? ' user-input-error' : (touched.lastName && !errors.lastName ? ' user-input-success' : '')}`}
                   placeholder="Enter your last name"
                   autoComplete="family-name"
                 />
               </div>
               {touched.lastName && errors.lastName && (
-                <span className="signup-error-text">{errors.lastName}</span>
+                <span className="user-signup-error-text">{errors.lastName}</span>
               )}
             </div>
           </div>
 
           {/* ROW 2: Email + Phone */}
-          <div className="signup-form-row">
-            <div className="signup-form-group">
-              <label htmlFor="email" className="signup-form-label">Email:</label>
-              <div className="signup-input-wrapper">
-                <svg className="signup-input-icon" fill="none" viewBox="0 0 20 20">
+          <div className="user-signup-form-row">
+            <div className="user-signup-form-group">
+              <label htmlFor="email" className="user-signup-form-label">Email:</label>
+              <div className="user-signup-input-wrapper">
+                <svg className="user-signup-input-icon" fill="none" viewBox="0 0 20 20">
                   <path d={svgPaths.p24d83580} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                   <path d={svgPaths.pd919a80} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 </svg>
@@ -372,54 +372,54 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
                   id="email" name="email" type="email"
                   value={formData.email}
                   onChange={handleChange} onBlur={handleBlur}
-                  className={`signup-form-input${touched.email && errors.email ? ' input-error' : (touched.email && !errors.email ? ' input-success' : '')}`}
+                  className={`user-signup-form-input${touched.email && errors.email ? ' user-input-error' : (touched.email && !errors.email ? ' user-input-success' : '')}`}
                   placeholder="your.email@example.com"
                   autoComplete="email"
                 />
               </div>
               {touched.email && errors.email && (
-                <span className="signup-error-text">{errors.email}</span>
+                <span className="user-signup-error-text">{errors.email}</span>
               )}
             </div>
 
-            <div className="signup-form-group">
-              <label htmlFor="phone" className="signup-form-label">Phone Number:</label>
-              <div className="signup-input-wrapper">
-                <svg className="signup-input-icon" fill="none" viewBox="0 0 20 20">
+            <div className="user-signup-form-group">
+              <label htmlFor="phone" className="user-signup-form-label">Phone Number:</label>
+              <div className="user-signup-input-wrapper">
+                <svg className="user-signup-input-icon" fill="none" viewBox="0 0 20 20">
                   <path d={svgPaths.p24c7c480} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 </svg>
-                <div className="signup-phone-input-container">
-                  <span className="signup-phone-prefix">+63</span>
+                <div className="user-signup-phone-input-container">
+                  <span className="user-signup-phone-prefix">+63</span>
                   <input
                     id="phone" name="phone" type="tel"
                     value={formData.phone}
                     onChange={handleChange} onBlur={handleBlur}
-                    className={`signup-form-input signup-phone-input${touched.phone && errors.phone ? ' input-error' : (touched.phone && !errors.phone ? ' input-success' : '')}`}
+                    className={`user-signup-form-input user-signup-phone-input${touched.phone && errors.phone ? ' user-input-error' : (touched.phone && !errors.phone ? ' user-input-success' : '')}`}
                     placeholder="917 123 4567"
                     autoComplete="tel"
                   />
                 </div>
               </div>
               {touched.phone && errors.phone && (
-                <span className="signup-error-text">{errors.phone}</span>
+                <span className="user-signup-error-text">{errors.phone}</span>
               )}
             </div>
           </div>
 
           {/* ROW 3: Gender + Birthday + Community */}
-          <div className="signup-form-row-3">
+          <div className="user-signup-form-row-3">
 
             {/* GENDER — radio buttons */}
-            <div className="signup-form-group">
-              <label className="signup-form-label">Gender:</label>
-              <div className="gender-radio-group">
+            <div className="user-signup-form-group">
+              <label className="user-signup-form-label">Gender:</label>
+              <div className="user-gender-radio-group">
                 {[
                   { value: 'male', label: 'Male' },
                   { value: 'female', label: 'Female' },
                 ].map(({ value, label }) => (
                   <label
                     key={value}
-                    className={`gender-radio-card${formData.gender === value ? ' gender-radio-card--selected' : ''}${touched.gender && errors.gender ? ' input-error' : ''}`}
+                    className={`user-gender-radio-card${formData.gender === value ? ' user-gender-radio-card--selected' : ''}${touched.gender && errors.gender ? ' user-input-error' : ''}`}
                   >
                     <input
                       type="radio"
@@ -428,26 +428,26 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
                       checked={formData.gender === value}
                       onChange={handleChange}
                       onBlur={handleBlur}
-                      className="gender-radio-input"
+                      className="user-gender-radio-input"
                     />
-                    <span className="gender-radio-dot" />
-                    <span className="gender-radio-text">{label}</span>
+                    <span className="user-gender-radio-dot" />
+                    <span className="user-gender-radio-text">{label}</span>
                   </label>
                 ))}
               </div>
-              {touched.gender && !errors.gender && <span className="signup-success-icon">✓ Valid</span>}
+              {touched.gender && !errors.gender && <span className="user-signup-success-icon">✓ Valid</span>}
               {touched.gender && errors.gender && (
-                <span className="signup-error-text">{errors.gender}</span>
+                <span className="user-signup-error-text">{errors.gender}</span>
               )}
             </div>
 
             {/* BIRTHDAY */}
-            <div className="signup-form-group">
-              <label htmlFor="birthday" className="signup-form-label">
+            <div className="user-signup-form-group">
+              <label htmlFor="birthday" className="user-signup-form-label">
                 Birthday:
               </label>
-              <div className="signup-input-wrapper">
-                <svg className="signup-input-icon" fill="none" viewBox="0 0 20 20">
+              <div className="user-signup-input-wrapper">
+                <svg className="user-signup-input-icon" fill="none" viewBox="0 0 20 20">
                   <path d="M6.66667 1.66667V5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                   <path d="M13.3333 1.66667V5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                   <path d={svgPaths.p1da67b80} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
@@ -460,66 +460,66 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
                   onKeyDown={e => e.preventDefault()}
                   min={minBirthDate.toISOString().split('T')[0]}
                   max={maxBirthDate.toISOString().split('T')[0]}
-                  className={`signup-form-input${touched.birthday && errors.birthday ? ' input-error' : (touched.birthday && !errors.birthday ? ' input-success' : '')}`}
+                  className={`user-signup-form-input${touched.birthday && errors.birthday ? ' user-input-error' : (touched.birthday && !errors.birthday ? ' user-input-success' : '')}`}
                   placeholder="MM-DD-YYYY"
                   autoComplete="bday"
                 />
               </div>
               {touched.birthday && errors.birthday && (
-                <span className="signup-error-text">{errors.birthday}</span>
+                <span className="user-signup-error-text">{errors.birthday}</span>
               )}
               {touched.birthday && !errors.birthday && calculatedAge !== null && (
-                <span className="signup-success-icon">✓ Age: {calculatedAge}</span>
+                <span className="user-signup-success-icon">✓ Age: {calculatedAge}</span>
               )}
             </div>
 
             {/* COMMUNITY */}
-            <div className="signup-form-group">
-              <label className="signup-form-label">Community:</label>
-              <div className="signup-select-wrapper">
-                <svg className="signup-select-icon" fill="none" viewBox="0 0 20 20">
+            <div className="user-signup-form-group">
+              <label className="user-signup-form-label">Community:</label>
+              <div className="user-signup-select-wrapper">
+                <svg className="user-signup-select-icon" fill="none" viewBox="0 0 20 20">
                   <path d={svgPaths.p1beb9580} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                   <path d={svgPaths.p32ab0300} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 </svg>
                 <CommunitySelect value={formData.community} onChange={handleChange} />
-                <svg className="signup-select-dropdown" fill="none" viewBox="0 0 20 20">
+                <svg className="user-signup-select-dropdown" fill="none" viewBox="0 0 20 20">
                   <path d={svgPaths.p1ae0b780} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 </svg>
               </div>
               {touched.community && errors.community && (
-                <span className="signup-error-text">{errors.community}</span>
+                <span className="user-signup-error-text">{errors.community}</span>
               )}
             </div>
           </div>
 
           {/* Password Requirements Box */}
-          <div className="password-requirements-box">
-            <p className="password-requirements-title">Password must include:</p>
-            <ul className="password-requirements-list-v2">
-              <li className={!formData.password ? 'req-default' : (formData.password.length >= 8 ? 'req-met' : 'req-unmet')}>
+          <div className="user-password-requirements-box">
+            <p className="user-password-requirements-title">Password must include:</p>
+            <ul className="user-password-requirements-list-v2">
+              <li className={!formData.password ? 'user-req-default' : (formData.password.length >= 8 ? 'user-req-met' : 'user-req-unmet')}>
                 Minimum 8 characters
               </li>
-              <li className={!formData.password ? 'req-default' : (passwordUppercase.test(formData.password) ? 'req-met' : 'req-unmet')}>
+              <li className={!formData.password ? 'user-req-default' : (passwordUppercase.test(formData.password) ? 'user-req-met' : 'user-req-unmet')}>
                 At least 1 uppercase letter (A–Z)
               </li>
-              <li className={!formData.password ? 'req-default' : (passwordLowercase.test(formData.password) ? 'req-met' : 'req-unmet')}>
+              <li className={!formData.password ? 'user-req-default' : (passwordLowercase.test(formData.password) ? 'user-req-met' : 'user-req-unmet')}>
                 At least 1 lowercase letter (a–z)
               </li>
-              <li className={!formData.password ? 'req-default' : (passwordNumber.test(formData.password) ? 'req-met' : 'req-unmet')}>
+              <li className={!formData.password ? 'user-req-default' : (passwordNumber.test(formData.password) ? 'user-req-met' : 'user-req-unmet')}>
                 At least 1 number
               </li>
-              <li className={!formData.password ? 'req-default' : (passwordSymbol.test(formData.password) ? 'req-met' : 'req-unmet')}>
+              <li className={!formData.password ? 'user-req-default' : (passwordSymbol.test(formData.password) ? 'user-req-met' : 'user-req-unmet')}>
                 At least 1 symbol (@ # $ % * _)
               </li>
             </ul>
           </div>
 
           {/* ROW 4: Password + Confirm Password side-by-side */}
-          <div className="signup-form-row">
-            <div className="signup-form-group">
-              <label htmlFor="password" className="signup-form-label">Password:</label>
-              <div className="signup-input-wrapper">
-                <svg className="signup-input-icon" fill="none" viewBox="0 0 20 20">
+          <div className="user-signup-form-row">
+            <div className="user-signup-form-group">
+              <label htmlFor="password" className="user-signup-form-label">Password:</label>
+              <div className="user-signup-input-wrapper">
+                <svg className="user-signup-input-icon" fill="none" viewBox="0 0 20 20">
                   <path d={svgPaths.p2566d000} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                   <path d={svgPaths.p1bf79e00} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 </svg>
@@ -529,20 +529,20 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
                   name="password"
                   value={formData.password}
                   onChange={handleChange} onBlur={handleBlur}
-                  className={`signup-form-input${touched.password && hasPasswordErrors ? ' input-error' : (touched.password && !hasPasswordErrors && formData.password ? ' input-success' : '')}`}
+                  className={`user-signup-form-input${touched.password && hasPasswordErrors ? ' user-input-error' : (touched.password && !hasPasswordErrors && formData.password ? ' user-input-success' : '')}`}
                   placeholder="Create a password"
                   autoComplete="new-password"
                 />
-                <button type="button" onClick={() => setShowPassword(p => !p)} className="signup-password-toggle">
+                <button type="button" onClick={() => setShowPassword(p => !p)} className="user-signup-password-toggle">
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
 
-            <div className="signup-form-group">
-              <label htmlFor="confirmPassword" className="signup-form-label">Confirm Password:</label>
-              <div className="signup-input-wrapper">
-                <svg className="signup-input-icon" fill="none" viewBox="0 0 20 20">
+            <div className="user-signup-form-group">
+              <label htmlFor="confirmPassword" className="user-signup-form-label">Confirm Password:</label>
+              <div className="user-signup-input-wrapper">
+                <svg className="user-signup-input-icon" fill="none" viewBox="0 0 20 20">
                   <path d={svgPaths.p2566d000} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                   <path d={svgPaths.p1bf79e00} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 </svg>
@@ -552,22 +552,22 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange} onBlur={handleBlur}
-                  className={`signup-form-input${touched.confirmPassword && errors.confirmPassword ? ' input-error' : (touched.confirmPassword && !errors.confirmPassword && formData.confirmPassword ? ' input-success' : '')}`}
+                  className={`user-signup-form-input${touched.confirmPassword && errors.confirmPassword ? ' user-input-error' : (touched.confirmPassword && !errors.confirmPassword && formData.confirmPassword ? ' user-input-success' : '')}`}
                   placeholder="Confirm your password"
                   autoComplete="new-password"
                 />
-                <button type="button" onClick={() => setShowConfirmPassword(p => !p)} className="signup-password-toggle">
+                <button type="button" onClick={() => setShowConfirmPassword(p => !p)} className="user-signup-password-toggle">
                   {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
               {touched.confirmPassword && errors.confirmPassword && (
-                <span className="signup-error-text">{errors.confirmPassword}</span>
+                <span className="user-signup-error-text">{errors.confirmPassword}</span>
               )}
             </div>
           </div>
 
           {/* TERMS */}
-          <div className="signup-checkbox-wrapper">
+          <div className="user-signup-checkbox-wrapper">
             <input
               type="checkbox"
               checked={isAllAgreed}
@@ -578,33 +578,33 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
                   toast.info('Please read and agree to the Terms and Privacy Policy below to proceed.');
                 }
               }}
-              className="signup-checkbox"
+              className="user-signup-checkbox"
               style={{ cursor: 'pointer', pointerEvents: 'auto' }}
             />
-            <label className="signup-checkbox-label">
+            <label className="user-signup-checkbox-label">
               I agree to the{' '}
-              <button type="button" onClick={() => setShowTerms(true)} className="signup-link">Terms and Conditions</button>
+              <button type="button" onClick={() => setShowTerms(true)} className="user-signup-link">Terms and Conditions</button>
               {' and '}
-              <button type="button" onClick={() => setShowPrivacy(true)} className="signup-link">Privacy Policy</button>
+              <button type="button" onClick={() => setShowPrivacy(true)} className="user-signup-link">Privacy Policy</button>
             </label>
           </div>
 
           {/* SUBMIT */}
-          <button type="submit" className="signup-submit-button" disabled={!isFormValid || loading}>
+          <button type="submit" className="user-signup-submit-button" disabled={!isFormValid || loading}>
             {loading ? 'Creating...' : 'Create Account'}
           </button>
         </form>
 
         {/* TERMS MODAL */}
         {showTerms && (
-          <div className="policy-modal-overlay" onClick={() => setShowTerms(false)}>
-            <div className="policy-modal-content" onClick={e => e.stopPropagation()}>
-              <div className="policy-modal-header">
+          <div className="user-policy-modal-overlay" onClick={() => setShowTerms(false)}>
+            <div className="user-policy-modal-content" onClick={e => e.stopPropagation()}>
+              <div className="user-policy-modal-header">
                 <h3>Terms & Conditions</h3>
-                <button className="policy-close-x" onClick={() => setShowTerms(false)}>&times;</button>
+                <button className="user-policy-close-x" onClick={() => setShowTerms(false)}>&times;</button>
               </div>
-              <div className="policy-modal-body">
-                <ol className="policy-list">
+              <div className="user-policy-modal-body">
+                <ol className="user-policy-list">
                   <li><strong>Acceptance of Terms</strong><br />By accessing and using FaithLy, a loan management system developed for the Philippine United Apostolic Church, you agree to comply with and be bound by these Terms and Conditions. If you do not agree, you must discontinue use of the system.</li>
                   <li><strong>Purpose of the System</strong><br />FaithLy is designed to facilitate transparent and accountable management of church-related loan applications, approvals, payments, and member records in support of responsible financial stewardship.</li>
                   <li><strong>Authorized Users</strong><br />Only registered and approved church members, officers, and administrators are permitted to access FaithLy. Access rights are assigned based on user roles defined by church authorities.</li>
@@ -619,21 +619,21 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
                   <li><strong>Governing Principles</strong><br />FaithLy operates under the principles of faith, integrity, transparency, accountability, and responsible stewardship in alignment with church values.</li>
                 </ol>
               </div>
-              <button onClick={() => { setAgreeTerms(true); setShowTerms(false); }} className="policy-modal-button">Agree</button>
+              <button onClick={() => { setAgreeTerms(true); setShowTerms(false); }} className="user-policy-modal-button">Agree</button>
             </div>
           </div>
         )}
 
         {/* PRIVACY MODAL */}
         {showPrivacy && (
-          <div className="policy-modal-overlay" onClick={() => setShowPrivacy(false)}>
-            <div className="policy-modal-content" onClick={e => e.stopPropagation()}>
-              <div className="policy-modal-header">
+          <div className="user-policy-modal-overlay" onClick={() => setShowPrivacy(false)}>
+            <div className="user-policy-modal-content" onClick={e => e.stopPropagation()}>
+              <div className="user-policy-modal-header">
                 <h3>Privacy Policy</h3>
-                <button className="policy-close-x" onClick={() => setShowPrivacy(false)}>&times;</button>
+                <button className="user-policy-close-x" onClick={() => setShowPrivacy(false)}>&times;</button>
               </div>
-              <div className="policy-modal-body">
-                <ol className="policy-list">
+              <div className="user-policy-modal-body">
+                <ol className="user-policy-list">
                   <li><strong>Data Collection</strong><br />FaithLy collects personal information such as names, contact details, loan records, payment history, and system usage data necessary for loan management and administrative purposes.</li>
                   <li><strong>Use of Information</strong><br />Collected information is used solely to process loan applications, monitor payments, maintain records, provide system support, and improve FaithLy services.</li>
                   <li><strong>Data Protection and Security</strong><br />FaithLy implements reasonable administrative, technical, and organizational measures to protect personal data against unauthorized access, alteration, disclosure, or loss.</li>
@@ -645,7 +645,7 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
                   <li><strong>Contact Information</strong><br />For questions or concerns regarding these Terms and Conditions or the Privacy Policy, users may contact the church administration through official communication channels.</li>
                 </ol>
               </div>
-              <button onClick={() => { setAgreePrivacy(true); setShowPrivacy(false); }} className="policy-modal-button">Agree</button>
+              <button onClick={() => { setAgreePrivacy(true); setShowPrivacy(false); }} className="user-policy-modal-button">Agree</button>
             </div>
           </div>
         )}

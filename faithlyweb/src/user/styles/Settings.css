@@ -1,5 +1,5 @@
 /* Settings Container */
-.settings-container {
+.user-settings-container {
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -7,7 +7,7 @@
 }
 
 /* Settings Section */
-.settings-section {
+.user-settings-section {
   background: white;
   border: 0.8px solid #e5e7eb;
   border-radius: 14px;
@@ -18,13 +18,13 @@
 }
 
 /* Section Header */
-.section-header {
+.user-section-header {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.section-icon-box {
+.user-section-icon-box {
   width: 40px;
   height: 40px;
   border-radius: 10px;
@@ -34,23 +34,23 @@
   flex-shrink: 0;
 }
 
-.section-icon-box.notifications-icon { background: #dbeafe; }
-.section-icon-box.security-icon      { background: #dcfce7; }
-.section-icon-box.preferences-icon   { background: #f3e8ff; }
-.section-icon-box.payment-icon       { background: #fef3c7; }
+.user-section-icon-box.user-notifications-icon { background: #dbeafe; }
+.user-section-icon-box.user-security-icon      { background: #dcfce7; }
+.user-section-icon-box.user-preferences-icon   { background: #f3e8ff; }
+.user-section-icon-box.user-payment-icon       { background: #fef3c7; }
 
-.section-icon {
+.user-section-icon {
   width: 20px;
   height: 20px;
 }
 
-.section-header-text {
+.user-section-header-text {
   display: flex;
   flex-direction: column;
   gap: 0;
 }
 
-.section-title {
+.user-section-title {
   font-size: 20px;
   font-weight: 700;
   color: #101828;
@@ -59,7 +59,7 @@
   font-family: Arial, sans-serif;
 }
 
-.section-subtitle {
+.user-section-subtitle {
   font-size: 14px;
   color: #4a5565;
   margin: 0;
@@ -68,14 +68,14 @@
 }
 
 /* Settings Group */
-.settings-group {
+.user-settings-group {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
 /* Toggle Setting */
-.toggle-setting {
+.user-toggle-setting {
   background: #f9fafb;
   border-radius: 10px;
   padding: 16px;
@@ -85,13 +85,13 @@
   gap: 16px;
 }
 
-.toggle-setting-info {
+.user-toggle-setting-info {
   display: flex;
   flex-direction: column;
   gap: 0;
 }
 
-.toggle-title {
+.user-toggle-title {
   font-size: 16px;
   font-weight: normal;
   color: #101828;
@@ -100,7 +100,7 @@
   font-family: Arial, sans-serif;
 }
 
-.toggle-description {
+.user-toggle-description {
   font-size: 14px;
   color: #4a5565;
   margin: 0;
@@ -109,7 +109,7 @@
 }
 
 /* Toggle Switch */
-.toggle-switch {
+.user-toggle-switch {
   position: relative;
   width: 48px;
   height: 24px;
@@ -117,9 +117,9 @@
   cursor: pointer;
 }
 
-.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.user-toggle-switch input { opacity: 0; width: 0; height: 0; }
 
-.toggle-slider {
+.user-toggle-slider {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
   background-color: #d1d5dc;
@@ -127,7 +127,7 @@
   transition: 0.3s;
 }
 
-.toggle-slider:before {
+.user-toggle-slider:before {
   position: absolute;
   content: "";
   height: 20px;
@@ -139,18 +139,18 @@
   transition: 0.3s;
 }
 
-.toggle-switch input:checked + .toggle-slider { background-color: #155dfc; }
-.toggle-switch input:checked + .toggle-slider:before { transform: translateX(24px); }
+.user-toggle-switch input:checked + .user-toggle-slider { background-color: #155dfc; }
+.user-toggle-switch input:checked + .user-toggle-slider:before { transform: translateX(24px); }
 
 /* Notification Preferences */
-.notification-preferences {
+.user-notification-preferences {
   display: flex;
   flex-direction: column;
   gap: 12px;
   margin-top: 8px;
 }
 
-.preferences-title {
+.user-preferences-title {
   font-size: 16px;
   font-weight: normal;
   color: #101828;
@@ -159,14 +159,14 @@
   font-family: Arial, sans-serif;
 }
 
-.checkbox-list {
+.user-checkbox-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
   padding-left: 8px;
 }
 
-.checkbox-item {
+.user-checkbox-item {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -177,14 +177,14 @@
   cursor: pointer;
 }
 
-.checkbox-item input[type="checkbox"] {
+.user-checkbox-item input[type="checkbox"] {
   width: 16px;
   height: 16px;
   cursor: pointer;
 }
 
 /* Setting Item */
-.setting-item {
+.user-setting-item {
   background: #f9fafb;
   border-radius: 10px;
   padding: 16px;
@@ -193,17 +193,17 @@
   gap: 12px;
 }
 
-.setting-item-icon { width: 20px; height: 20px; flex-shrink: 0; }
-.setting-item-icon svg { width: 100%; height: 100%; }
+.user-setting-item-icon { width: 20px; height: 20px; flex-shrink: 0; }
+.user-setting-item-icon svg { width: 100%; height: 100%; }
 
-.setting-item-content {
+.user-setting-item-content {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 0;
 }
 
-.setting-item-title {
+.user-setting-item-title {
   font-size: 16px;
   font-weight: normal;
   color: #101828;
@@ -212,7 +212,7 @@
   font-family: Arial, sans-serif;
 }
 
-.setting-item-description {
+.user-setting-item-description {
   font-size: 14px;
   color: #4a5565;
   margin: 0;
@@ -220,7 +220,7 @@
   font-family: Arial, sans-serif;
 }
 
-.link-button {
+.user-link-button {
   background: transparent;
   border: none;
   color: #155dfc;
@@ -231,13 +231,13 @@
   transition: opacity 0.2s;
 }
 
-.link-button:hover { opacity: 0.8; }
-.link-button.danger { color: #ef4444; }
+.user-link-button:hover { opacity: 0.8; }
+.user-link-button.danger { color: #ef4444; }
 
 /* Form Group */
-.form-group { display: flex; flex-direction: column; gap: 8px; }
+.user-form-group { display: flex; flex-direction: column; gap: 8px; }
 
-.form-label {
+.user-form-label {
   font-size: 14px;
   color: #101828;
   margin: 0;
@@ -245,7 +245,7 @@
   font-family: Arial, sans-serif;
 }
 
-.form-select {
+.user-form-select {
   height: 40px;
   padding: 8px 16px;
   border-radius: 10px;
@@ -259,10 +259,10 @@
   cursor: pointer;
 }
 
-.form-select:focus { border-color: #155dfc; }
+.user-form-select:focus { border-color: #155dfc; }
 
 /* Payment Card Item */
-.payment-card-item {
+.user-payment-card-item {
   background: #f9fafb;
   border-radius: 10px;
   padding: 16px;
@@ -271,17 +271,17 @@
   gap: 12px;
 }
 
-.payment-card-icon { width: 32px; height: 24px; flex-shrink: 0; }
-.payment-card-icon svg { width: 100%; height: 100%; }
+.user-payment-card-icon { width: 32px; height: 24px; flex-shrink: 0; }
+.user-payment-card-icon svg { width: 100%; height: 100%; }
 
-.payment-card-content {
+.user-payment-card-content {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 0;
 }
 
-.payment-card-number {
+.user-payment-card-number {
   font-size: 16px;
   font-weight: normal;
   color: #101828;
@@ -290,7 +290,7 @@
   font-family: Arial, sans-serif;
 }
 
-.payment-card-expiry {
+.user-payment-card-expiry {
   font-size: 14px;
   color: #4a5565;
   margin: 0;
@@ -298,7 +298,7 @@
   font-family: Arial, sans-serif;
 }
 
-.add-payment-btn {
+.user-add-payment-btn {
   width: 100%;
   height: 40px;
   background: white;
@@ -311,19 +311,19 @@
   transition: all 0.2s;
 }
 
-.add-payment-btn:hover {
+.user-add-payment-btn:hover {
   border-color: #155dfc;
   color: #155dfc;
 }
 
 /* Settings Actions */
-.settings-actions {
+.user-settings-actions {
   display: flex;
   gap: 12px;
   margin-top: 8px;
 }
 
-.save-settings-btn {
+.user-save-settings-btn {
   flex: 1;
   height: 48px;
   background: #155dfc;
@@ -336,9 +336,9 @@
   transition: background 0.2s;
 }
 
-.save-settings-btn:hover { background: #1246d1; }
+.user-save-settings-btn:hover { background: #1246d1; }
 
-.reset-btn {
+.user-reset-btn {
   height: 48px;
   padding: 0 32px;
   background: white;
@@ -351,7 +351,7 @@
   transition: all 0.2s;
 }
 
-.reset-btn:hover {
+.user-reset-btn:hover {
   border-color: #d1d5dc;
   background: #f9fafb;
 }
@@ -361,18 +361,18 @@
    ============================================================ */
 
 /* Override gap for the PI section — card sits closer to header */
-.pi-section {
+.user-pi-section {
   gap: 16px;
 }
 
 /* Section header — no divider, icon in light blue box */
-.pi-section-header {
+.user-pi-section-header {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.pi-icon-box {
+.user-pi-icon-box {
   width: 40px;
   height: 40px;
   border-radius: 10px;
@@ -384,7 +384,7 @@
 }
 
 /* ── Blue Profile Card with Upload ─────────────────────────────────── */
-.pi-card {
+.user-pi-card {
   display: flex;
   align-items: center;
   gap: 16px;
@@ -394,13 +394,13 @@
 }
 
 /* Avatar wrapper with upload functionality */
-.pi-card-avatar-wrapper {
+.user-pi-card-avatar-wrapper {
   position: relative;
   flex-shrink: 0;
 }
 
 /* Avatar circle */
-.pi-card-avatar {
+.user-pi-card-avatar {
   width: 52px;
   height: 52px;
   border-radius: 50%;
@@ -413,12 +413,12 @@
   transition: all 0.2s ease;
 }
 
-.pi-card-avatar-wrapper:hover .pi-card-avatar {
+.user-pi-card-avatar-wrapper:hover .user-pi-card-avatar {
   transform: scale(1.05);
 }
 
 /* Camera badge - only visible when editing */
-.pi-card-avatar-badge {
+.user-pi-card-avatar-badge {
   position: absolute;
   bottom: -2px;
   right: -2px;
@@ -435,13 +435,13 @@
   transition: all 0.2s ease;
 }
 
-.pi-card-avatar-wrapper:hover .pi-card-avatar-badge {
+.user-pi-card-avatar-wrapper:hover .user-pi-card-avatar-badge {
   transform: scale(1.1);
   background: #059669;
 }
 
 /* Name / email / badges column */
-.pi-card-info {
+.user-pi-card-info {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -449,7 +449,7 @@
   min-width: 0;
 }
 
-.pi-card-name {
+.user-pi-card-name {
   font-size: 16px;
   font-weight: 700;
   color: #ffffff;
@@ -460,7 +460,7 @@
   text-overflow: ellipsis;
 }
 
-.pi-card-email {
+.user-pi-card-email {
   font-size: 13px;
   color: rgba(255, 255, 255, 0.78);
   font-family: Arial, sans-serif;
@@ -469,14 +469,14 @@
   text-overflow: ellipsis;
 }
 
-.pi-card-badges {
+.user-pi-card-badges {
   display: flex;
   gap: 6px;
   margin-top: 6px;
   flex-wrap: wrap;
 }
 
-.pi-badge {
+.user-pi-badge {
   display: inline-flex;
   align-items: center;
   padding: 2px 10px;
@@ -486,18 +486,18 @@
   font-family: Arial, sans-serif;
 }
 
-.pi-badge-level {
+.user-pi-badge-level {
   background: rgba(0, 0, 0, 0.28);
   color: #ffffff;
 }
 
-.pi-badge-member {
+.user-pi-badge-member {
   background: rgba(0, 0, 0, 0.22);
   color: #ffffff;
 }
 
 /* Action buttons (right side of card) */
-.pi-card-actions {
+.user-pi-card-actions {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -505,7 +505,7 @@
 }
 
 /* Edit Profile button — white pill */
-.pi-btn-edit {
+.user-pi-btn-edit {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -522,13 +522,13 @@
   white-space: nowrap;
 }
 
-.pi-btn-edit:hover {
+.user-pi-btn-edit:hover {
   background: #f0f7ff;
   transform: translateY(-1px);
 }
 
 /* Cancel button */
-.pi-btn-cancel {
+.user-pi-btn-cancel {
   padding: 7px 14px;
   background: rgba(255, 255, 255, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.4);
@@ -542,14 +542,14 @@
   white-space: nowrap;
 }
 
-.pi-btn-cancel:hover:not(:disabled) {
+.user-pi-btn-cancel:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.25);
 }
 
-.pi-btn-cancel:disabled { opacity: 0.6; cursor: not-allowed; }
+.user-pi-btn-cancel:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* Save Changes button */
-.pi-btn-save {
+.user-pi-btn-save {
   padding: 7px 16px;
   background: #ffffff;
   border: none;
@@ -563,28 +563,28 @@
   white-space: nowrap;
 }
 
-.pi-btn-save:hover:not(:disabled) {
+.user-pi-btn-save:hover:not(:disabled) {
   background: #eff6ff;
   transform: translateY(-1px);
 }
 
-.pi-btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
+.user-pi-btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* ── Edit Form ─────────────────────────────────────────── */
-.pi-edit-form {
+.user-pi-edit-form {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  animation: pi-form-in 0.2s ease;
+  animation: user-pi-form-in 0.2s ease;
 }
 
-@keyframes pi-form-in {
+@keyframes user-pi-form-in {
   from { opacity: 0; transform: translateY(-6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
 /* "Editing your profile" notice */
-.pi-edit-notice {
+.user-pi-edit-notice {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -596,25 +596,25 @@
 }
 
 /* 2-column grid */
-.pi-form-grid {
+.user-pi-form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px 24px;
 }
 
-.pi-form-field {
+.user-pi-form-field {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
 /* Full-width field */
-.pi-form-field-full {
+.user-pi-form-field-full {
   grid-column: 1 / -1;
 }
 
 /* Uppercase small label (like in the image) */
-.pi-form-label {
+.user-pi-form-label {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -624,7 +624,7 @@
 }
 
 /* Standard input */
-.pi-form-input {
+.user-pi-form-input {
   width: 100%;
   padding: 9px 12px;
   background: white;
@@ -638,13 +638,13 @@
   box-sizing: border-box;
 }
 
-.pi-form-input:focus {
+.user-pi-form-input:focus {
   border-color: #155dfc;
   box-shadow: 0 0 0 3px rgba(21, 93, 252, 0.08);
 }
 
 /* Select variant of the input */
-.pi-form-select {
+.user-pi-form-select {
   appearance: none;
   cursor: pointer;
   background-image: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 6L8 10L12 6' stroke='%236b7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
@@ -654,7 +654,7 @@
 }
 
 /* Read-only text display (no border, looks like plain text) - REVISED */
-.pi-readonly-text {
+.user-pi-readonly-text {
   padding: 8px 0;
   color: #374151;
   font-size: 14px;
@@ -666,16 +666,16 @@
   min-height: 36px;
 }
 
-.pi-readonly-text svg {
+.user-pi-readonly-text svg {
   flex-shrink: 0;
 }
 
-.pi-readonly-text span {
+.user-pi-readonly-text span {
   line-height: 1.5;
 }
 
 /* Readonly note - now appears once below both fields - REVISED */
-.pi-readonly-note {
+.user-pi-readonly-note {
   font-size: 11px;
   color: #9ca3af;
   font-family: Arial, sans-serif;
@@ -685,14 +685,14 @@
 }
 
 /* Profile photo field */
-.pi-photo-field {
+.user-pi-photo-field {
   display: flex;
   align-items: center;
   gap: 0;
 }
 
 /* Blue "select" button attached to left of input */
-.pi-photo-select-btn {
+.user-pi-photo-select-btn {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -709,25 +709,25 @@
   transition: background 0.2s;
 }
 
-.pi-photo-select-btn:hover { background: #1246d1; }
+.user-pi-photo-select-btn:hover { background: #1246d1; }
 
-.pi-photo-input-hidden {
+.user-pi-photo-input-hidden {
   display: none;
 }
 
 /* Filename input — attached right */
-.pi-photo-filename {
+.user-pi-photo-filename {
   border-radius: 0 8px 8px 0;
   border-left: none;
   flex: 1;
 }
 
-.pi-photo-filename:focus {
+.user-pi-photo-filename:focus {
   border-left: none;
 }
 
 /* Floating Chat Button */
-.chat-button {
+.user-chat-button {
   position: fixed;
   bottom: 24px;
   right: 24px;
@@ -745,22 +745,22 @@
   z-index: 1000;
 }
 
-.chat-button:hover {
+.user-chat-button:hover {
   transform: scale(1.1);
   box-shadow: 0 6px 20px rgba(21, 93, 252, 0.4);
 }
 
-.chat-button svg {
+.user-chat-button svg {
   width: 24px;
   height: 24px;
 }
 
 /* Settings Header */
-.settings-header {
+.user-settings-header {
   margin-bottom: 24px;
 }
 
-.page-title {
+.user-page-title {
   font-size: 28px;
   font-weight: 700;
   color: #101828;
@@ -768,7 +768,7 @@
   font-family: Arial, sans-serif;
 }
 
-.page-subtitle {
+.user-page-subtitle {
   font-size: 16px;
   color: #6b7280;
   margin: 0;
@@ -776,80 +776,80 @@
 }
 
 /* Main Content Layout */
-.main-content {
+.user-main-content {
   flex: 1;
   padding: 32px;
   overflow-y: auto;
 }
 
-.home-layout {
+.user-home-layout {
   display: flex;
   height: 100vh;
 }
 
 /* ── Responsive ────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .settings-container { max-width: 100%; }
+  .user-settings-container { max-width: 100%; }
 
-  .toggle-setting,
-  .setting-item { flex-direction: column; align-items: flex-start; }
+  .user-toggle-setting,
+  .user-setting-item { flex-direction: column; align-items: flex-start; }
 
-  .toggle-switch { align-self: flex-start; }
+  .user-toggle-switch { align-self: flex-start; }
 
-  .settings-actions { flex-direction: column; }
-  .reset-btn { width: 100%; }
+  .user-settings-actions { flex-direction: column; }
+  .user-reset-btn { width: 100%; }
 
-  .pi-form-grid { grid-template-columns: 1fr; }
+  .user-pi-form-grid { grid-template-columns: 1fr; }
 
-  .pi-card {
+  .user-pi-card {
     flex-wrap: wrap;
     gap: 12px;
   }
 
-  .pi-card-actions {
+  .user-pi-card-actions {
     width: 100%;
     justify-content: flex-end;
   }
   
-  .main-content {
+  .user-main-content {
     padding: 20px;
   }
 }
 
 @media (max-width: 480px) {
-  .pi-card { padding: 14px 16px; }
-  .pi-btn-edit,
-  .pi-btn-cancel,
-  .pi-btn-save { font-size: 12px; padding: 6px 12px; }
+  .user-pi-card { padding: 14px 16px; }
+  .user-pi-btn-edit,
+  .user-pi-btn-cancel,
+  .user-pi-btn-save { font-size: 12px; padding: 6px 12px; }
   
-  .pi-card-avatar {
+  .user-pi-card-avatar {
     width: 48px;
     height: 48px;
   }
   
-  .pi-card-avatar img {
+  .user-pi-card-avatar img {
     width: 48px !important;
     height: 48px !important;
   }
   
-  .pi-card-avatar-badge {
+  .user-pi-card-avatar-badge {
     width: 22px;
     height: 22px;
   }
   
-  .chat-button {
+  .user-chat-button {
     width: 50px;
     height: 50px;
     bottom: 20px;
     right: 20px;
   }
   
-  .chat-button svg {
+  .user-chat-button svg {
     width: 20px;
     height: 20px;
   }
   
-  .main-content {
+  .user-main-content {
     padding: 16px;
   }
 }

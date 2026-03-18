@@ -185,7 +185,7 @@ export default function Notifications() {
   /* ── UI helpers ── */
   const getIcon = (type) => {
     if (type === 'loan') return (
-      <div className="notif-icon notif-icon-loan">
+      <div className="user-notif-icon user-notif-icon-loan">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
           <path d={svgPaths.p34ee3000} stroke="#B45309" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"/>
           <path d={svgPaths.p3054b580} stroke="#B45309" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"/>
@@ -195,14 +195,14 @@ export default function Notifications() {
       </div>
     );
     if (type === 'donation') return (
-      <div className="notif-icon notif-icon-donation">
+      <div className="user-notif-icon user-notif-icon-donation">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
           <path d={svgPaths.p31f28900} stroke="#BE185D" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"/>
         </svg>
       </div>
     );
     if (type === 'attendance') return (
-      <div className="notif-icon notif-icon-attendance">
+      <div className="user-notif-icon user-notif-icon-attendance">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
           <path d="M6 1.5V4.5" stroke="#1D4ED8" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"/>
           <path d="M12 1.5V4.5" stroke="#1D4ED8" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"/>
@@ -215,41 +215,41 @@ export default function Notifications() {
   };
 
   const badgeClass = (type) =>
-    type === 'loan' ? 'notif-badge-loan' : type === 'donation' ? 'notif-badge-donation' : 'notif-badge-attendance';
+    type === 'loan' ? 'user-notif-badge-loan' : type === 'donation' ? 'user-notif-badge-donation' : 'user-notif-badge-attendance';
 
   const cardClass = (type, isRead) => {
-    if (isRead) return 'notif-card notif-card-read';
-    return `notif-card notif-card-${type}`;
+    if (isRead) return 'user-notif-card user-notif-card-read';
+    return `user-notif-card user-notif-card-${type}`;
   };
 
   const badgeLabel = (type) =>
     type === 'loan' ? 'Loan' : type === 'donation' ? 'Donation' : 'Attendance';
 
   return (
-    <div className="notif-page">
+    <div className="user-notif-page">
       <Sidebar />
-      <div className="notif-main">
+      <div className="user-notif-main">
 
         {/* Header */}
-        <div className="notif-header">
-          <div className="notif-header-left">
-            <div className="notif-title-row">
-              <h1 className="notif-title">Notifications</h1>
+        <div className="user-notif-header">
+          <div className="user-notif-header-left">
+            <div className="user-notif-title-row">
+              <h1 className="user-notif-title">Notifications</h1>
               {unreadCount('all') > 0 && (
-                <span className="notif-count-pill">{unreadCount('all')}</span>
+                <span className="user-notif-count-pill">{unreadCount('all')}</span>
               )}
             </div>
-            <p className="notif-subtitle">
+            <p className="user-notif-subtitle">
               Stay up to date with your loans, donations, and attendance activity.
             </p>
           </div>
-          <button className="notif-mark-all-btn" onClick={markAllAsRead}>
+          <button className="user-notif-mark-all-btn" onClick={markAllAsRead}>
             Mark all as read
           </button>
         </div>
 
         {/* Filter Tabs */}
-        <div className="notif-filters">
+        <div className="user-notif-filters">
           {[
             { key: 'all',        label: 'All'              },
             { key: 'attendance', label: 'Attendance'       },
@@ -258,12 +258,12 @@ export default function Notifications() {
           ].map(({ key, label }) => (
             <button
               key={key}
-              className={`notif-filter-btn${activeFilter === key ? ' active' : ''}`}
+              className={`user-notif-filter-btn${activeFilter === key ? ' active' : ''}`}
               onClick={() => setActiveFilter(key)}
             >
               {label}
               {unreadCount(key) > 0 && (
-                <span className="notif-filter-pill">{unreadCount(key)}</span>
+                <span className="user-notif-filter-pill">{unreadCount(key)}</span>
               )}
             </button>
           ))}
@@ -271,9 +271,9 @@ export default function Notifications() {
 
         {/* List */}
         {loading ? (
-          <p className="notif-loading">Loading notifications…</p>
+          <p className="user-notif-loading">Loading notifications…</p>
         ) : filtered.length === 0 ? (
-          <div className="notif-empty">
+          <div className="user-notif-empty">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="#d1d5dc" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="#d1d5dc" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -281,21 +281,21 @@ export default function Notifications() {
             <p>No notifications found</p>
           </div>
         ) : (
-          <div className="notif-list">
+          <div className="user-notif-list">
             {filtered.map((n) => (
               <div key={n.id} className={cardClass(n.type, n.isRead)}>
                 {getIcon(n.type)}
-                <div className="notif-body">
-                  <div className="notif-body-header">
-                    <p className={`notif-body-title${n.isRead ? ' read' : ''}`}>{n.title}</p>
-                    <span className={`notif-type-badge ${badgeClass(n.type)}`}>{badgeLabel(n.type)}</span>
-                    {!n.isRead && <span className="notif-dot" />}
+                <div className="user-notif-body">
+                  <div className="user-notif-body-header">
+                    <p className={`user-notif-body-title${n.isRead ? ' read' : ''}`}>{n.title}</p>
+                    <span className={`user-notif-type-badge ${badgeClass(n.type)}`}>{badgeLabel(n.type)}</span>
+                    {!n.isRead && <span className="user-notif-dot" />}
                   </div>
-                  <p className="notif-msg">{n.message}</p>
-                  <div className="notif-footer">
-                    <span className="notif-time">{fmtAgo(n.timestamp)}</span>
+                  <p className="user-notif-msg">{n.message}</p>
+                  <div className="user-notif-footer">
+                    <span className="user-notif-time">{fmtAgo(n.timestamp)}</span>
                     {!n.isRead && (
-                      <button className="notif-mark-btn" onClick={() => markAsRead(n.id)}>
+                      <button className="user-notif-mark-btn" onClick={() => markAsRead(n.id)}>
                         Mark as read
                       </button>
                     )}

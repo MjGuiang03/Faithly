@@ -188,36 +188,36 @@ export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, o
 
   // ── Shared form JSX ────────────────────────────────────────────────────────
   const renderForm = () => (
-    <form onSubmit={handleSubmit} className="lm-form">
+    <form onSubmit={handleSubmit} className="user-login-form">
 
       {/* EMAIL */}
-      <div className="lm-form-group">
-        <label className="lm-label">Email Address</label>
-        <div className="lm-input-wrapper">
-          <Mail className="lm-input-icon" />
+      <div className="user-login-form-group">
+        <label className="user-login-label">Email Address</label>
+        <div className="user-login-input-wrapper">
+          <Mail className="user-login-input-icon" />
           <input
             type="email"
             value={email}
             onChange={handleEmailChange}
-            className={`lm-input ${emailError ? 'lm-input-error' : ''}`}
+            className={`user-login-input ${emailError ? 'user-login-input-error' : ''}`}
             placeholder="Enter your email"
             required
             disabled={inputDisabled}
           />
         </div>
-        {emailError && <span className="lm-field-error">{emailError}</span>}
+        {emailError && <span className="user-login-field-error">{emailError}</span>}
       </div>
 
       {/* PASSWORD */}
-      <div className="lm-form-group">
-        <label className="lm-label">Password</label>
-        <div className="lm-input-wrapper">
-          <Lock className="lm-input-icon" />
+      <div className="user-login-form-group">
+        <label className="user-login-label">Password</label>
+        <div className="user-login-input-wrapper">
+          <Lock className="user-login-input-icon" />
           <input
             type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="lm-input lm-password-input"
+            className="user-login-input user-login-password-input"
             placeholder="Enter your password"
             required
             disabled={inputDisabled}
@@ -225,34 +225,34 @@ export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, o
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="lm-password-toggle"
+            className="user-login-password-toggle"
             disabled={inputDisabled}
           >
             {showPassword
-              ? <EyeOff className="lm-toggle-icon" />
-              : <Eye className="lm-toggle-icon" />}
+              ? <EyeOff className="user-login-toggle-icon" />
+              : <Eye className="user-login-toggle-icon" />}
           </button>
         </div>
       </div>
 
       {/* ── REDESIGNED ALERT BANNER ── */}
       {error && (
-        <div className="lm-alert-banner">
-          <div className="lm-alert-body">
+        <div className="user-login-alert-banner">
+          <div className="user-login-alert-body">
             {/* Icon */}
-            <div className="lm-alert-icon">
+            <div className="user-login-alert-icon">
               <AlertTriangle />
             </div>
 
             {/* Content */}
-            <div className="lm-alert-content">
-              <span className="lm-alert-heading">{getAlertHeading()}</span>
-              <span className="lm-alert-message">{error}</span>
+            <div className="user-login-alert-content">
+              <span className="user-login-alert-heading">{getAlertHeading()}</span>
+              <span className="user-login-alert-message">{error}</span>
 
               {/* Live countdown badge */}
               {isLocked && lockTimeRemaining > 0 && (
-                <div className="lm-alert-timer">
-                  <span className="lm-alert-timer-dot" />
+                <div className="user-login-alert-timer">
+                  <span className="user-login-alert-timer-dot" />
                   Try again in {formatTime(lockTimeRemaining)}
                 </div>
               )}
@@ -261,7 +261,7 @@ export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, o
               {(isPermanentlyLocked || recommendReset) && (
                 <button
                   type="button"
-                  className="lm-alert-reset-btn"
+                  className="user-login-alert-reset-btn"
                   onClick={handleForgotPassword}
                 >
                   Reset your password
@@ -273,10 +273,10 @@ export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, o
       )}
 
       {/* FORGOT PASSWORD */}
-      <div className="lm-form-options">
+      <div className="user-login-form-options">
         <button
           type="button"
-          className="lm-forgot-password"
+          className="user-login-forgot-password"
           onClick={handleForgotPassword}
         >
           Forgot password?
@@ -286,18 +286,18 @@ export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, o
       {/* SUBMIT */}
       <button
         type="submit"
-        className="lm-submit-btn"
+        className="user-login-submit-btn"
         disabled={buttonDisabled}
       >
         {getButtonLabel()}
       </button>
 
-      <p className="lm-switch-text">
+      <p className="user-login-switch-text">
         Don't have an account?{' '}
         <button
           type="button"
           onClick={onSwitchToSignup}
-          className="lm-switch-btn"
+          className="user-login-switch-btn"
         >
           Sign Up
         </button>
@@ -308,11 +308,11 @@ export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, o
   // ── Embedded (card) mode ───────────────────────────────────────────────────
   if (embedded) {
     return (
-      <div className="lm-card-embedded">
-        <div className="lm-header">
-          <img src={puacLogo} alt="PUAC Logo" className="lm-logo" />
-          <h1 className="lm-title">Welcome Back</h1>
-          <p className="lm-subtitle">Sign in to access your account</p>
+      <div className="user-login-card-embedded">
+        <div className="user-login-header">
+          <img src={puacLogo} alt="PUAC Logo" className="user-login-logo" />
+          <h1 className="user-login-title">Welcome Back</h1>
+          <p className="user-login-subtitle">Sign in to access your account</p>
         </div>
         {renderForm()}
       </div>
@@ -323,16 +323,16 @@ export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, o
   if (!isOpen) return null;
 
   return (
-    <div className="lm-overlay" onClick={onClose}>
-      <div className="lm-container" onClick={(e) => e.stopPropagation()}>
-        <button onClick={onClose} className="lm-close-btn">
-          <X className="lm-close-icon" />
+    <div className="user-login-overlay" onClick={onClose}>
+      <div className="user-login-container" onClick={(e) => e.stopPropagation()}>
+        <button onClick={onClose} className="user-login-close-btn">
+          <X className="user-login-close-icon" />
         </button>
 
-        <div className="lm-header">
-          <img src={puacLogo} alt="PUAC Logo" className="lm-logo" />
-          <h1 className="lm-title">Welcome Back</h1>
-          <p className="lm-subtitle">Sign in to access your account</p>
+        <div className="user-login-header">
+          <img src={puacLogo} alt="PUAC Logo" className="user-login-logo" />
+          <h1 className="user-login-title">Welcome Back</h1>
+          <p className="user-login-subtitle">Sign in to access your account</p>
         </div>
 
         {renderForm()}

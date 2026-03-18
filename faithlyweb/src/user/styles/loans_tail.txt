@@ -1,0 +1,20 @@
+﻿  overflow-y: auto;
+  max-height: 90vh;
+  scrollbar-width: none;       /* Firefox */
+  -ms-overflow-style: none;    /* IE/Edge */
+}
+
+.user-vm-container::-webkit-scrollbar {
+  display: none;               /* Chrome/Safari */
+}
+
+/* â”€â”€ Upload box "done" state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.user-vm-upload-box-done {
+  border-color: #22c55e !important;
+  background: #f0fdf4 !important;
+}
+
+.vm-upload-box-done .vm-upload-text {
+  color: #16a34a !important;
+  font-weight: 700;
+}

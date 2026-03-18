@@ -93,66 +93,66 @@ export default function Attendance() {
   };
 
   return (
-    <div className="home-layout">
+    <div className="user-home-layout">
       <Sidebar />
 
-      <div className="main-content">
+      <div className="user-main-content">
         {/* Header */}
-        <div className="home-header">
-          <h1 className="page-title">Attendance Tracking</h1>
-          <p className="page-subtitle">Check in to services and view your attendance history</p>
+        <div className="user-home-header">
+          <h1 className="user-page-title">Attendance Tracking</h1>
+          <p className="user-page-subtitle">Check in to services and view your attendance history</p>
         </div>
 
         {/* Stats */}
-        <div className="attendance-stats">
-          <div className="attendance-stat-card">
-            <div className="attendance-stat-header">
-              <p className="attendance-stat-label">Total Attendance</p>
-              <svg className="attendance-stat-icon" fill="none" viewBox="0 0 20 20">
+        <div className="user-attendance-stats">
+          <div className="user-attendance-stat-card">
+            <div className="user-attendance-stat-header">
+              <p className="user-attendance-stat-label">Total Attendance</p>
+              <svg className="user-attendance-stat-icon" fill="none" viewBox="0 0 20 20">
                 <path d="M6.66667 1.66667V5" stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 <path d="M13.3333 1.66667V5" stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 <path d={svgPaths.p1da67b80} stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 <path d="M2.5 8.33333H17.5" stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
               </svg>
               </div>
-              {loading ? <div className="skeleton" style={{ height: '32px', width: '60px', margin: '8px 0' }}></div> : <p className="attendance-stat-value fade-in">{stats.total}</p>}
+              {loading ? <div className="user-skeleton" style={{ height: '32px', width: '60px', margin: '8px 0' }}></div> : <p className="user-attendance-stat-value user-fade-in">{stats.total}</p>}
             </div>
 
-          <div className="attendance-stat-card">
-            <div className="attendance-stat-header">
-              <p className="attendance-stat-label">This Month</p>
-              <svg className="attendance-stat-icon" fill="none" viewBox="0 0 20 20">
+          <div className="user-attendance-stat-card">
+            <div className="user-attendance-stat-header">
+              <p className="user-attendance-stat-label">This Month</p>
+              <svg className="user-attendance-stat-icon" fill="none" viewBox="0 0 20 20">
                 <path d="M16.6667 10L10 3.33333L3.33333 10" stroke="#00A63E" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 <path d="M16.6667 10L10 16.6667L3.33333 10" stroke="#00A63E" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
               </svg>
               </div>
-              {loading ? <div className="skeleton" style={{ height: '32px', width: '60px', margin: '8px 0' }}></div> : <p className="attendance-stat-value fade-in">{stats.thisMonth}</p>}
+              {loading ? <div className="user-skeleton" style={{ height: '32px', width: '60px', margin: '8px 0' }}></div> : <p className="user-attendance-stat-value user-fade-in">{stats.thisMonth}</p>}
             </div>
 
-          <div className="attendance-stat-card">
-            <div className="attendance-stat-header">
-              <p className="attendance-stat-label">Attendance Rate</p>
-              <svg className="attendance-stat-icon" fill="none" viewBox="0 0 20 20">
+          <div className="user-attendance-stat-card">
+            <div className="user-attendance-stat-header">
+              <p className="user-attendance-stat-label">Attendance Rate</p>
+              <svg className="user-attendance-stat-icon" fill="none" viewBox="0 0 20 20">
                 <path d="M6.66667 1.66667V5" stroke="#9810FA" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 <path d="M13.3333 1.66667V5" stroke="#9810FA" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 <path d={svgPaths.p1da67b80} stroke="#9810FA" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 <path d="M2.5 8.33333H17.5" stroke="#9810FA" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
               </svg>
               </div>
-              {loading ? <div className="skeleton" style={{ height: '32px', width: '60px', margin: '8px 0' }}></div> : <p className="attendance-stat-value fade-in">{attendanceRate}</p>}
+              {loading ? <div className="user-skeleton" style={{ height: '32px', width: '60px', margin: '8px 0' }}></div> : <p className="user-attendance-stat-value user-fade-in">{attendanceRate}</p>}
             </div>
         </div>
 
         {/* Check In + Upcoming Services */}
-        <div className="attendance-content-grid">
+        <div className="user-attendance-content-grid">
           {/* Check In */}
-          <div className="check-in-card">
-            <h2 className="section-title">Check In</h2>
-            <p className="check-in-subtitle">Select a check-in method:</p>
+          <div className="user-check-in-card">
+            <h2 className="user-section-title">Check In</h2>
+            <p className="user-check-in-subtitle">Select a check-in method:</p>
 
-            <div className="check-in-method">
-              <div className="qr-scanner-box">
-                <svg className="qr-icon" fill="none" viewBox="0 0 24 24">
+            <div className="user-check-in-method">
+              <div className="user-qr-scanner-box">
+                <svg className="user-qr-icon" fill="none" viewBox="0 0 24 24">
                   <rect width="9" height="9" x="3" y="3" stroke="#155DFC" strokeWidth="2" />
                   <rect width="9" height="9" x="3" y="12" stroke="#155DFC" strokeWidth="2" />
                   <rect width="9" height="9" x="12" y="3" stroke="#155DFC" strokeWidth="2" />
@@ -163,63 +163,63 @@ export default function Attendance() {
                   <path d="M15 15h3v3h-3z" fill="#155DFC" />
                 </svg>
               </div>
-              <div className="check-in-method-info">
-                <h3 className="check-in-method-title">QR Code Scanner</h3>
-                <p className="check-in-method-description">Scan QR code to check in to service</p>
+              <div className="user-check-in-method-info">
+                <h3 className="user-check-in-method-title">QR Code Scanner</h3>
+                <p className="user-check-in-method-description">Scan QR code to check in to service</p>
               </div>
             </div>
 
-            <div className="check-in-tip">
-              <span className="tip-label">Tip:</span>
-              <span className="tip-text">Check in when you arrive at the service venue. Your attendance will be recorded automatically.</span>
+            <div className="user-check-in-tip">
+              <span className="user-tip-label">Tip:</span>
+              <span className="user-tip-text">Check in when you arrive at the service venue. Your attendance will be recorded automatically.</span>
             </div>
           </div>
 
           {/* Upcoming Services */}
-          <div className="upcoming-services-card">
-            <h2 className="section-title">Upcoming Services</h2>
-            <div className="upcoming-services-list">
+          <div className="user-upcoming-services-card">
+            <h2 className="user-section-title">Upcoming Services</h2>
+            <div className="user-upcoming-services-list">
               {loading ? (
-                <div className="upcoming-active-list">
+                <div className="user-upcoming-active-list">
                   {[1, 2, 3].map(i => (
-                    <div key={i} className="upcoming-service-item" style={{ marginBottom: '16px' }}>
-                      <div className="skeleton skeleton-circle" style={{ width: '12px', height: '12px', marginTop: '6px' }}></div>
+                    <div key={i} className="user-upcoming-service-item" style={{ marginBottom: '16px' }}>
+                      <div className="user-skeleton user-skeleton-circle" style={{ width: '12px', height: '12px', marginTop: '6px' }}></div>
                       <div style={{ flex: 1, marginLeft: '12px' }}>
-                        <div className="skeleton" style={{ height: '16px', width: '40%', marginBottom: '8px' }}></div>
-                        <div className="skeleton" style={{ height: '12px', width: '80%', marginBottom: '8px' }}></div>
+                        <div className="user-skeleton" style={{ height: '16px', width: '40%', marginBottom: '8px' }}></div>
+                        <div className="user-skeleton" style={{ height: '12px', width: '80%', marginBottom: '8px' }}></div>
                         <div style={{ display: 'flex', gap: '12px' }}>
-                          <div className="skeleton" style={{ height: '10px', width: '60px' }}></div>
-                          <div className="skeleton" style={{ height: '10px', width: '80px' }}></div>
+                          <div className="user-skeleton" style={{ height: '10px', width: '60px' }}></div>
+                          <div className="user-skeleton" style={{ height: '10px', width: '80px' }}></div>
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : upcomingData.length === 0 ? (
-                <div className="upcoming-empty">
+                <div className="user-upcoming-empty">
                   <svg fill="none" viewBox="0 0 40 40" width="36" height="36">
                     <path d="M13.3333 3.33333V10" stroke="#d1d5db" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
                     <path d="M26.6667 3.33333V10" stroke="#d1d5db" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
                     <path d="M5 16.6667H35" stroke="#d1d5db" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
                     <rect x="5" y="6.66667" width="30" height="30" rx="2" stroke="#d1d5db" strokeWidth="2" />
                   </svg>
-                  <p className="upcoming-empty-text">No upcoming services announced yet.</p>
-                  <p className="upcoming-empty-sub">Check back when your admin posts new schedules.</p>
+                  <p className="user-upcoming-empty-text">No upcoming services announced yet.</p>
+                  <p className="user-upcoming-empty-sub">Check back when your admin posts new schedules.</p>
                 </div>
               ) : (
-                <div className="upcoming-active-list fade-in">
+                <div className="user-upcoming-active-list user-fade-in">
                   {upcomingData.map((item, idx) => (
-                    <div key={idx} className="upcoming-service-item">
-                      <div className="upcoming-service-dot" />
-                      <div className="upcoming-service-info">
-                        <div className="upcoming-service-header">
-                          <h4 className="upcoming-service-title">{item.title}</h4>
-                          <span className={`upcoming-type-badge ${item.type === 'service' ? 'type-svc' : 'type-notif'}`}>
+                    <div key={idx} className="user-upcoming-service-item">
+                      <div className="user-upcoming-service-dot" />
+                      <div className="user-upcoming-service-info">
+                        <div className="user-upcoming-service-header">
+                          <h4 className="user-upcoming-service-title">{item.title}</h4>
+                          <span className={`user-upcoming-type-badge ${item.type === 'service' ? 'user-type-svc' : 'user-type-notif'}`}>
                             {item.type === 'service' ? 'Service' : 'Update'}
                           </span>
                         </div>
-                        <p className="upcoming-service-message">{item.message}</p>
-                        <div className="upcoming-service-meta">
+                        <p className="user-upcoming-service-message">{item.message}</p>
+                        <div className="user-upcoming-service-meta">
                            <span className="upcoming-meta-item">
                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
                              {item.branch}
@@ -240,28 +240,28 @@ export default function Attendance() {
         </div>
 
         {/* Attendance History (Preview) */}
-        <div className="attendance-history-section">
-          <div className="history-header-row">
-            <h2 className="section-title">Recent Attendance History</h2>
-            <button className="view-history-btn" onClick={handleOpenHistory}>View History</button>
+        <div className="user-attendance-history-section">
+          <div className="user-history-header-row">
+            <h2 className="user-section-title">Recent Attendance History</h2>
+            <button className="user-view-history-btn" onClick={handleOpenHistory}>View History</button>
           </div>
 
-          <div className="attendance-table-wrapper preview-table">
+          <div className="user-attendance-table-wrapper user-preview-table">
             {loading ? (
               <div style={{ padding: '16px' }}>
                 {[1, 2, 3, 4, 5].map(i => (
                   <div key={i} style={{ display: 'flex', gap: '20px', marginBottom: '16px' }}>
-                    <div className="skeleton" style={{ height: '14px', flex: 1 }}></div>
-                    <div className="skeleton" style={{ height: '14px', flex: 1 }}></div>
-                    <div className="skeleton" style={{ height: '14px', flex: 1 }}></div>
+                    <div className="user-skeleton" style={{ height: '14px', flex: 1 }}></div>
+                    <div className="user-skeleton" style={{ height: '14px', flex: 1 }}></div>
+                    <div className="user-skeleton" style={{ height: '14px', flex: 1 }}></div>
                   </div>
                 ))}
               </div>
             ) : attendanceData.length === 0 ? (
-              <p className="empty-text" style={{ padding: '16px' }}>No attendance records yet.</p>
+              <p className="user-empty-text" style={{ padding: '16px' }}>No attendance records yet.</p>
             ) : (
-              <div className="fade-in">
-                <table className="attendance-table">
+              <div className="user-fade-in">
+                <table className="user-attendance-table">
                   <thead>
                     <tr>
                       <th>Service</th>
@@ -287,7 +287,7 @@ export default function Attendance() {
       </div>
 
       {/* Floating Chat Button */}
-      <button className="chat-button">
+      <button className="user-chat-button">
         <svg fill="none" viewBox="0 0 24 24">
           <path d={svgPaths.p261dfb00} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
         </svg>
@@ -295,21 +295,21 @@ export default function Attendance() {
 
       {/* ── Attendance History Modal ── */}
       {isHistoryModalOpen && (
-        <div className="attendance-modal-overlay" onClick={() => setIsHistoryModalOpen(false)}>
-          <div className="attendance-modal-content" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2 className="modal-title">Attendance History</h2>
-              <button className="modal-close-btn" onClick={() => setIsHistoryModalOpen(false)}>×</button>
+        <div className="user-attendance-modal-overlay" onClick={() => setIsHistoryModalOpen(false)}>
+          <div className="user-attendance-modal-content" onClick={e => e.stopPropagation()}>
+            <div className="user-modal-header">
+              <h2 className="user-modal-title">Attendance History</h2>
+              <button className="user-modal-close-btn" onClick={() => setIsHistoryModalOpen(false)}>×</button>
             </div>
 
-            <div className="modal-body history-modal-body">
+            <div className="user-modal-body user-history-modal-body">
               {modalLoading ? (
-                <p className="modal-loading">Loading history...</p>
+                <p className="user-modal-loading">Loading history...</p>
               ) : modalHistory.length === 0 ? (
-                <p className="modal-empty">No attendance records found.</p>
+                <p className="user-modal-empty">No attendance records found.</p>
               ) : (
-                <div className="attendance-table-wrapper">
-                  <table className="attendance-table modal-table">
+                <div className="user-attendance-table-wrapper">
+                  <table className="user-attendance-table user-modal-table">
                     <thead>
                       <tr>
                         <th>Service</th>
@@ -327,7 +327,7 @@ export default function Attendance() {
                           <td>{record.time}</td>
                           <td>{record.branch}</td>
                           <td>
-                            <span className={`method-badge method-${record.method?.toLowerCase()}`}>
+                            <span className={`user-method-badge user-method-${record.method?.toLowerCase()}`}>
                               {record.method}
                             </span>
                           </td>
@@ -340,15 +340,15 @@ export default function Attendance() {
             </div>
 
             {modalTotalPages > 1 && (
-              <div className="modal-pagination">
+              <div className="user-modal-pagination">
                 <button
-                  className="modal-page-btn"
+                  className="user-modal-page-btn"
                   onClick={() => setModalPage(p => Math.max(1, p - 1))}
                   disabled={modalPage === 1 || modalLoading}
                 >‹ Prev</button>
-                <span className="modal-page-info">Page {modalPage} of {modalTotalPages}</span>
+                <span className="user-modal-page-info">Page {modalPage} of {modalTotalPages}</span>
                 <button
-                  className="modal-page-btn"
+                  className="user-modal-page-btn"
                   onClick={() => setModalPage(p => Math.min(modalTotalPages, p + 1))}
                   disabled={modalPage === modalTotalPages || modalLoading}
                 >Next ›</button>

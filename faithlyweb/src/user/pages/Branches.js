@@ -201,40 +201,40 @@ export default function Branches() {
   const totalServices = branchData.reduce((s, b) => s + b.serviceTimes.length, 0);
 
   return (
-    <div className="home-layout">
+    <div className="user-home-layout">
       <Sidebar />
 
-      <div className="main-content">
-        <div className="branches-header">
-          <h1 className="page-title">Our Branches</h1>
-          <p className="page-subtitle">Find a church location near you</p>
+      <div className="user-main-content">
+        <div className="user-branches-header">
+          <h1 className="user-page-title">Our Branches</h1>
+          <p className="user-page-subtitle">Find a church location near you</p>
         </div>
 
         {/* ── My Community Banner ─────────────────────────────── */}
         {userBranch && (
-          <div className="my-community-banner" onClick={() => openDrawer(userBranch)}>
-            <div className="mcb-left">
-              <div className="mcb-icon">
+          <div className="user-my-community-banner" onClick={() => openDrawer(userBranch)}>
+            <div className="user-mcb-left">
+              <div className="user-mcb-icon">
                 <svg width="18" height="18" fill="none" viewBox="0 0 24 24">
                   <path d="M12 21s-8-7.5-8-12a8 8 0 1 1 16 0c0 4.5-8 12-8 12Z" stroke="#155dfc" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                   <circle cx="12" cy="9" r="2.5" stroke="#155dfc" strokeWidth="1.8" />
                 </svg>
               </div>
-              <div className="mcb-text">
-                <span className="mcb-eyebrow">Your Community</span>
-                <span className="mcb-name">{userBranch.name}</span>
-                <span className="mcb-province">{userBranch.province} · {userBranch.region}</span>
+              <div className="user-mcb-text">
+                <span className="user-mcb-eyebrow">Your Community</span>
+                <span className="user-mcb-name">{userBranch.name}</span>
+                <span className="user-mcb-province">{userBranch.province} · {userBranch.region}</span>
               </div>
             </div>
-            <div className="mcb-right">
-              <div className="mcb-services">
+            <div className="user-mcb-right">
+              <div className="user-mcb-services">
                 {userBranch.serviceTimes.map((s, i) => (
-                  <span key={i} className="mcb-day-tag" style={DAY_COLORS[s.day] || {}}>
+                  <span key={i} className="user-mcb-day-tag" style={DAY_COLORS[s.day] || {}}>
                     {s.day.slice(0, 3)} {s.time}
                   </span>
                 ))}
               </div>
-              <svg className="mcb-chevron" fill="none" viewBox="0 0 16 16">
+              <svg className="user-mcb-chevron" fill="none" viewBox="0 0 16 16">
                 <path d="m6 4 4 4-4 4" stroke="#155dfc" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
@@ -242,79 +242,79 @@ export default function Branches() {
         )}
 
         {/* ── Stats ──────────────────────────────────────────── */}
-        <div className="branches-stats">
+        <div className="user-branches-stats">
           {[
             { label: 'Total Branches', value: totalBranches },
             { label: 'Regions', value: totalRegions },
             { label: 'Provinces', value: totalProvinces },
             { label: 'Weekly Services', value: totalServices },
           ].map(s => (
-            <div key={s.label} className="branch-stat-card">
-              <p className="branch-stat-label">{s.label}</p>
-              <p className="branch-stat-value">{s.value}</p>
+            <div key={s.label} className="user-branch-stat-card">
+              <p className="user-branch-stat-label">{s.label}</p>
+              <p className="user-branch-stat-value">{s.value}</p>
             </div>
           ))}
         </div>
 
         {/* ── Filter Bar ─────────────────────────────────────── */}
-        <div className="filter-bar">
-          <div className="search-wrap">
-            <svg className="search-icon" fill="none" viewBox="0 0 20 20">
+        <div className="user-filter-bar">
+          <div className="user-search-wrap">
+            <svg className="user-search-icon" fill="none" viewBox="0 0 20 20">
               <path d="M17.5 17.5 13.875 13.875M15.833 9.167a6.667 6.667 0 1 1-13.333 0 6.667 6.667 0 0 1 13.333 0Z" stroke="#99A1AF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.67" />
             </svg>
-            <input className="branch-search" placeholder="Search branches…" value={search} onChange={e => setSearch(e.target.value)} />
+            <input className="user-branch-search" placeholder="Search branches…" value={search} onChange={e => setSearch(e.target.value)} />
           </div>
-          <div className="filter-group">
-            <label className="filter-label">Region</label>
-            <select className="filter-select" value={selectedRegion} onChange={e => { setSelectedRegion(e.target.value); setSelectedProvince('All'); }}>
+          <div className="user-filter-group">
+            <label className="user-filter-label">Region</label>
+            <select className="user-filter-select" value={selectedRegion} onChange={e => { setSelectedRegion(e.target.value); setSelectedProvince('All'); }}>
               {regions.map(r => <option key={r}>{r}</option>)}
             </select>
           </div>
-          <div className="filter-group">
-            <label className="filter-label">Province</label>
-            <select className="filter-select" value={selectedProvince} onChange={e => setSelectedProvince(e.target.value)}>
+          <div className="user-filter-group">
+            <label className="user-filter-label">Province</label>
+            <select className="user-filter-select" value={selectedProvince} onChange={e => setSelectedProvince(e.target.value)}>
               {provinces.map(p => <option key={p}>{p}</option>)}
             </select>
           </div>
-          <span className="filter-count">{filtered.length} branch{filtered.length !== 1 ? 'es' : ''}</span>
+          <span className="user-filter-count">{filtered.length} branch{filtered.length !== 1 ? 'es' : ''}</span>
         </div>
 
         {/* ── Branch Groups ──────────────────────────────────── */}
         {grouped.length === 0
-          ? <div className="no-results">No branches match your filters.</div>
+          ? <div className="user-no-results">No branches match your filters.</div>
           : grouped.map(({ region, province, branches }) => (
-            <div key={`${region}-${province}`} className="branch-group">
-              <div className="branch-group-header">
-                <span className="group-region-badge">{region}</span>
-                <span className="group-province">{province}</span>
-                <span className="group-count">{branches.length}</span>
+            <div key={`${region}-${province}`} className="user-branch-group">
+              <div className="user-branch-group-header">
+                <span className="user-group-region-badge">{region}</span>
+                <span className="user-group-province">{province}</span>
+                <span className="user-group-count">{branches.length}</span>
               </div>
 
-              <div className="branch-card-grid">
+              <div className="user-branch-card-grid">
                 {branches.map((branch, idx) => {
                   const isMyBranch = userBranchName && branch.name === userBranchName;
                   return (
                     <button
                       key={idx}
-                      className={`branch-card-item${isMyBranch ? ' my-branch' : ''}`}
+                      className={`user-branch-card-item${isMyBranch ? ' user-my-branch' : ''}`}
                       onClick={() => openDrawer(branch)}
                     >
-                      {isMyBranch && <span className="my-branch-badge">My Community</span>}
-                      <div className="bci-top">
-                        <div className={`bci-icon${isMyBranch ? ' my-branch-icon' : ''}`}>
+                      {isMyBranch && <span className="user-my-branch-badge">My Community</span>}
+                      <div className="user-bci-top">
+                        <div className={`user-bci-icon${isMyBranch ? ' user-my-branch-icon' : ''}`}>
                           <svg width="15" height="15" fill="none" viewBox="0 0 24 24">
                             <path d="M12 21s-8-7.5-8-12a8 8 0 1 1 16 0c0 4.5-8 12-8 12Z" stroke={isMyBranch ? '#fff' : '#155dfc'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                             <circle cx="12" cy="9" r="2.5" stroke={isMyBranch ? '#fff' : '#155dfc'} strokeWidth="1.8" />
                           </svg>
                         </div>
-                        <span className="bci-name">{branch.name}</span>
-                        <svg className="bci-arrow" fill="none" viewBox="0 0 16 16">
+                        <span className="user-bci-name">{branch.name}</span>
+                        <svg className="user-bci-arrow" fill="none" viewBox="0 0 16 16">
                           <path d="m6 4 4 4-4 4" stroke={isMyBranch ? '#155dfc' : '#d1d5db'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </div>
-                      <div className="bci-days">
+                      <div className="user-bci-days">
                         {branch.serviceTimes.map((s, i) => (
-                          <span key={i} className="bci-day-tag" style={DAY_COLORS[s.day] || {}}>
+                          <span key={i} className="user-bci-day-tag" style={DAY_COLORS[s.day] || {}}>
                             {s.day.slice(0, 3)}
                           </span>
                         ))}
@@ -324,73 +324,72 @@ export default function Branches() {
                 })}
               </div>
             </div>
-          ))
-        }
+          ))}
       </div>
 
       {/* ── Drawer ─────────────────────────────────────────────── */}
       {drawerMounted && (
         <>
-          <div className={`drawer-overlay${drawerVisible ? ' visible' : ''}`} onClick={closeDrawer} />
-          <div className={`branch-drawer${drawerVisible ? ' visible' : ''}`}>
-            <div className="drawer-header">
-              <div className={`drawer-header-icon${userBranchName && drawerBranch?.name === userBranchName ? ' my-branch-icon' : ''}`}>
+          <div className={`user-drawer-overlay${drawerVisible ? ' user-visible' : ''}`} onClick={closeDrawer} />
+          <div className={`user-branch-drawer${drawerVisible ? ' user-visible' : ''}`}>
+            <div className="user-drawer-header">
+              <div className={`user-drawer-header-icon${userBranchName && drawerBranch?.name === userBranchName ? ' user-my-branch-icon' : ''}`}>
                 <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
                   <path d="M12 21s-8-7.5-8-12a8 8 0 1 1 16 0c0 4.5-8 12-8 12Z" stroke={userBranchName && drawerBranch?.name === userBranchName ? '#fff' : '#155dfc'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                   <circle cx="12" cy="9" r="2.5" stroke={userBranchName && drawerBranch?.name === userBranchName ? '#fff' : '#155dfc'} strokeWidth="1.8" />
                 </svg>
               </div>
-              <div className="drawer-header-text">
+              <div className="user-drawer-header-text">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <h2 className="drawer-branch-name">{drawerBranch?.name}</h2>
+                  <h2 className="user-drawer-branch-name">{drawerBranch?.name}</h2>
                   {userBranchName && drawerBranch?.name === userBranchName && (
-                    <span className="drawer-my-badge">My Community</span>
+                    <span className="user-drawer-my-badge">My Community</span>
                   )}
                 </div>
-                <div className="drawer-branch-meta">
-                  <span className="detail-region-badge">{drawerBranch?.region}</span>
-                  <span className="drawer-province">{drawerBranch?.province}</span>
+                <div className="user-drawer-branch-meta">
+                  <span className="user-detail-region-badge">{drawerBranch?.region}</span>
+                  <span className="user-drawer-province">{drawerBranch?.province}</span>
                 </div>
               </div>
-              <button className="drawer-close" onClick={closeDrawer}>
+              <button className="user-drawer-close" onClick={closeDrawer}>
                 <svg fill="none" viewBox="0 0 20 20" width="16" height="16">
                   <path d="M15 5 5 15M5 5l10 10" stroke="#6b7280" strokeWidth="1.8" strokeLinecap="round" />
                 </svg>
               </button>
             </div>
 
-            <div className="drawer-body">
-              <div className="drawer-section">
-                <p className="drawer-section-label">Contact Information</p>
-                <div className="drawer-contact-list">
+            <div className="user-drawer-body">
+              <div className="user-drawer-section">
+                <p className="user-drawer-section-label">Contact Information</p>
+                <div className="user-drawer-contact-list">
                   {[
                     { icon: '📍', val: `${drawerBranch?.name}, ${drawerBranch?.province}` },
                     { icon: '📞', val: '+63 90 000 0000' },
                     { icon: '✉️', val: 'puac@gmail.com' },
                   ].map(({ icon, val }) => (
-                    <div key={val} className="drawer-contact-row">
-                      <span className="drawer-contact-emoji">{icon}</span>
-                      <span className="drawer-contact-val">{val}</span>
+                    <div key={val} className="user-drawer-contact-row">
+                      <span className="user-drawer-contact-emoji">{icon}</span>
+                      <span className="user-drawer-contact-val">{val}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="drawer-section">
-                <p className="drawer-section-label">Service Times</p>
-                <div className="drawer-service-list">
+              <div className="user-drawer-section">
+                <p className="user-drawer-section-label">Service Times</p>
+                <div className="user-drawer-service-list">
                   {drawerBranch?.serviceTimes.map((s, i) => (
-                    <div key={i} className="drawer-service-row">
-                      <span className="drawer-day-pill" style={DAY_COLORS[s.day] || {}}>{s.day}</span>
-                      <span className="drawer-time">{s.time}</span>
+                    <div key={i} className="user-drawer-service-row">
+                      <span className="user-drawer-day-pill" style={DAY_COLORS[s.day] || {}}>{s.day}</span>
+                      <span className="user-drawer-time">{s.time}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="drawer-section">
-                <p className="drawer-section-label">Location</p>
-                <div className="drawer-map-placeholder">
+              <div className="user-drawer-section">
+                <p className="user-drawer-section-label">Location</p>
+                <div className="user-drawer-map-placeholder">
                   <svg width="28" height="28" fill="none" viewBox="0 0 48 48">
                     <path d="M24 42S10 29 10 18a14 14 0 1 1 28 0c0 11-14 24-14 24Z" stroke="#d1d5db" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                     <circle cx="24" cy="18" r="5" stroke="#d1d5db" strokeWidth="2.5" />
@@ -400,15 +399,15 @@ export default function Branches() {
               </div>
             </div>
 
-            <div className="drawer-footer">
-              <button className="get-directions-btn">Get Directions</button>
-              <button className="contact-btn">Contact Branch</button>
+            <div className="user-drawer-footer">
+              <button className="user-get-directions-btn">Get Directions</button>
+              <button className="user-contact-btn">Contact Branch</button>
             </div>
           </div>
         </>
       )}
 
-      <button className="chat-button">
+      <button className="user-chat-button">
         <svg fill="none" viewBox="0 0 24 24">
           <path d={svgPaths.p261dfb00} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
         </svg>

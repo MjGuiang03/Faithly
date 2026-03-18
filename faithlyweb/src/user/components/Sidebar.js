@@ -164,12 +164,12 @@ export default function Sidebar() {
   return (
     <>
       {isMobile && !collapsed && (
-        <div className="sidebar-mobile-overlay" onClick={() => setCollapsed(true)} />
+        <div className="user-sidebar-mobile-overlay" onClick={() => setCollapsed(true)} />
       )}
       
       {/* Toggle button is OUTSIDE the sidebar div so overflow:hidden never clips it */}
       <button
-        className="sidebar-toggle-btn"
+        className="user-sidebar-toggle-btn"
         onClick={toggleCollapsed}
         title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         style={{ 
@@ -185,16 +185,16 @@ export default function Sidebar() {
         )}
       </button>
 
-      <div className={`sidebar ${collapsed ? 'sidebar-collapsed' : ''}`}>
+      <div className={`user-sidebar ${collapsed ? 'user-sidebar-collapsed' : ''}`}>
 
         {/* Logo */}
-        <div className="sidebar-logo">
-          <div className="sidebar-logo-content">
-            <div className="sidebar-logo-image">
+        <div className="user-sidebar-logo">
+          <div className="user-sidebar-logo-content">
+            <div className="user-sidebar-logo-image">
               <img alt="PUAC Logo" src={puacLogo} />
             </div>
             {!collapsed && (
-              <div className="sidebar-logo-text">
+              <div className="user-sidebar-logo-text">
                 <h1>FaithLy</h1>
                 <p>Member Portal</p>
               </div>
@@ -203,18 +203,18 @@ export default function Sidebar() {
         </div>
 
         {/* Navigation — clicking these ONLY navigates, never touches collapsed */}
-        <div className="sidebar-nav">
+        <div className="user-sidebar-nav">
           {navItems.map(({ path, icon, label, badge }) => (
             <button
               key={path}
               onClick={() => handleNavClick(path)}
-              className={`sidebar-nav-button ${isActive(path) ? 'active' : ''}`}
+              className={`user-sidebar-nav-button ${isActive(path) ? 'active' : ''}`}
               title={collapsed ? label : undefined}
             >
-              <span className="sidebar-nav-icon">{icon}</span>
+              <span className="user-sidebar-nav-icon">{icon}</span>
               {!collapsed && <span>{label}</span>}
               {badge > 0 && (
-                <span className="sidebar-notif-badge">
+                <span className="user-sidebar-notif-badge">
                   {badge > 99 ? '99+' : badge}
                 </span>
               )}
@@ -223,16 +223,16 @@ export default function Sidebar() {
         </div>
 
         {/* User Profile */}
-        <div className="sidebar-profile">
+        <div className="user-sidebar-profile">
           <div
-            className={`sidebar-profile-info ${isActive('/settings') ? 'active' : ''} ${collapsed ? 'collapsed' : ''}`}
+            className={`user-sidebar-profile-info ${isActive('/settings') ? 'active' : ''} ${collapsed ? 'collapsed' : ''}`}
             onClick={() => navigate('/settings')}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => e.key === 'Enter' && navigate('/settings')}
             title={collapsed ? profile?.fullName || 'Settings' : undefined}
           >
-            <div className="sidebar-profile-avatar">
+            <div className="user-sidebar-profile-avatar">
               {profile?.photoUrl ? (
                 <img src={profile.photoUrl} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
               ) : (
@@ -240,16 +240,16 @@ export default function Sidebar() {
               )}
             </div>
             {!collapsed && (
-              <div className="sidebar-profile-details">
-                <p className="sidebar-profile-name">{profile?.fullName || 'Member'}</p>
-                <p className="sidebar-profile-email">{user?.email || 'member@puac.org'}</p>
+              <div className="user-sidebar-profile-details">
+                <p className="user-sidebar-profile-name">{profile?.fullName || 'Member'}</p>
+                <p className="user-sidebar-profile-email">{user?.email || 'member@puac.org'}</p>
               </div>
             )}
           </div>
 
           <button
             onClick={() => setShowLogoutModal(true)}
-            className={`sidebar-profile-signout ${collapsed ? 'collapsed' : ''}`}
+            className={`user-sidebar-profile-signout ${collapsed ? 'collapsed' : ''}`}
             title={collapsed ? 'Sign Out' : undefined}
           >
             <LogOut size={20} />
@@ -259,13 +259,13 @@ export default function Sidebar() {
 
         {/* Logout Modal */}
         {showLogoutModal && (
-          <div className="logout-modal-overlay">
-            <div className="logout-modal-content">
-              <h2 className="logout-modal-title">Confirm Logout</h2>
-              <p className="logout-modal-message">Are you sure you want to log out?</p>
-              <div className="logout-modal-actions">
-                <button className="logout-modal-cancel" onClick={() => setShowLogoutModal(false)}>Cancel</button>
-                <button className="logout-modal-confirm" onClick={handleSignOut}>Sign Out</button>
+          <div className="user-logout-modal-overlay">
+            <div className="user-logout-modal-content">
+              <h2 className="user-logout-modal-title">Confirm Logout</h2>
+              <p className="user-logout-modal-message">Are you sure you want to log out?</p>
+              <div className="user-logout-modal-actions">
+                <button className="user-logout-modal-cancel" onClick={() => setShowLogoutModal(false)}>Cancel</button>
+                <button className="user-logout-modal-confirm" onClick={handleSignOut}>Sign Out</button>
               </div>
             </div>
           </div>

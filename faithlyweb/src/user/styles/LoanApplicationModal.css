@@ -1,15 +1,15 @@
-@keyframes loan-application-fadeIn {
+@keyframes user-loan-application-fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
-@keyframes loan-application-slideUp {
+@keyframes user-loan-application-slideUp {
   from { transform: translateY(20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
 
 /* Overlay */
-.loan-application-overlay {
+.user-loan-application-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
@@ -17,11 +17,11 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  animation: loan-application-fadeIn 0.2s ease-in-out;
+  animation: user-loan-application-fadeIn 0.2s ease-in-out;
 }
 
 /* Modal Content */
-.loan-application-content {
+.user-loan-application-content {
   background: white;
   border-radius: 14px;
   width: 659px;
@@ -29,17 +29,17 @@
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0px 4px 10px 0px rgba(10, 10, 10, 0.25);
-  animation: loan-application-slideUp 0.3s ease-out;
+  animation: user-loan-application-slideUp 0.3s ease-out;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
 
-.loan-application-content::-webkit-scrollbar {
+.user-loan-application-content::-webkit-scrollbar {
   display: none;
 }
 
 /* Header */
-.loan-application-header {
+.user-loan-application-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -50,7 +50,7 @@
   box-sizing: border-box;
 }
 
-.loan-application-title {
+.user-loan-application-title {
   font-family: Arial, sans-serif;
   font-size: 24px;
   font-weight: 700;
@@ -59,7 +59,7 @@
   margin: 0;
 }
 
-.loan-application-close-btn {
+.user-loan-application-close-btn {
   background: transparent;
   border: none;
   cursor: pointer;
@@ -71,12 +71,12 @@
   transition: background 0.2s;
 }
 
-.loan-application-close-btn:hover {
+.user-loan-application-close-btn:hover {
   background: #f3f4f6;
 }
 
 /* Form */
-.loan-application-form {
+.user-loan-application-form {
   padding: 20px 24px 24px;
   display: flex;
   flex-direction: column;
@@ -85,13 +85,13 @@
 }
 
 /* Form Groups */
-.loan-application-form-group {
+.user-loan-application-form-group {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.loan-application-group-half {
+.user-loan-application-group-half {
   flex: 1;
   min-width: 0;
   display: flex;
@@ -99,12 +99,12 @@
   gap: 6px;
 }
 
-.loan-application-row {
+.user-loan-application-row {
   display: flex;
   gap: 16px;
 }
 
-.loan-application-label {
+.user-loan-application-label {
   font-family: Arial, sans-serif;
   font-size: 13px;
   color: #364153;
@@ -112,14 +112,14 @@
 }
 
 /* Input Wrapper */
-.loan-application-input-wrapper {
+.user-loan-application-input-wrapper {
   position: relative;
   width: 100%;
 }
 
 /* Inputs & Selects */
-.loan-application-input,
-.loan-application-select {
+.user-loan-application-input,
+.user-loan-application-select {
   width: 100%;
   padding: 8px 16px 8px 40px;
   border: 0.8px solid #d1d5dc;
@@ -133,12 +133,12 @@
   box-sizing: border-box;
 }
 
-.loan-application-input::placeholder {
+.user-loan-application-input::placeholder {
   color: rgba(10, 10, 10, 0.5);
 }
 
-.loan-application-input:focus,
-.loan-application-select:focus {
+.user-loan-application-input:focus,
+.user-loan-application-select:focus {
   border-color: #155dfc;
   background: white;
   color: #0a0a0a;
@@ -146,7 +146,7 @@
 }
 
 /* Remove browser dark styling on number inputs */
-.loan-application-content input[type="number"] {
+.user-loan-application-content input[type="number"] {
   -webkit-appearance: textfield;
   appearance: textfield;
   background-color: white !important;
@@ -155,7 +155,7 @@
   color-scheme: light;
 }
 
-.loan-application-select {
+.user-loan-application-select {
   appearance: none;
   cursor: pointer;
   background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%2399A1AF' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
@@ -165,7 +165,7 @@
 }
 
 /* Icons */
-.loan-application-input-icon {
+.user-loan-application-input-icon {
   position: absolute;
   left: 12px;
   top: 50%;
@@ -177,7 +177,7 @@
   font-family: Arial, sans-serif;
 }
 
-.loan-application-input-icon-svg {
+.user-loan-application-input-icon-svg {
   position: absolute;
   left: 12px;
   top: 50%;
@@ -186,14 +186,14 @@
 }
 
 /* Guarantor Section */
-.loan-application-guarantor-section {
+.user-loan-application-guarantor-section {
   padding-top: 12px;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.loan-application-guarantor-title {
+.user-loan-application-guarantor-title {
   font-family: Arial, sans-serif;
   font-size: 16px;
   font-weight: 700;
@@ -203,7 +203,7 @@
 }
 
 /* Upload Section */
-.loan-application-upload-section {
+.user-loan-application-upload-section {
   padding-top: 12px;
   display: flex;
   flex-direction: column;
@@ -211,7 +211,7 @@
 }
 
 /* Upload Box */
-.loan-upload-box {
+.user-loan-upload-box {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -227,22 +227,22 @@
   text-align: center;
 }
 
-.loan-upload-box:hover {
+.user-loan-upload-box:hover {
   border-color: #155dfc;
   background: #eff6ff;
 }
 
-.loan-upload-box-done {
+.user-loan-upload-box-done {
   border-color: #16a34a;
   background: #f0fdf4;
   border-style: solid;
 }
 
-.loan-upload-icon {
+.user-loan-upload-icon {
   flex-shrink: 0;
 }
 
-.loan-upload-text {
+.user-loan-upload-text {
   font-family: Arial, sans-serif;
   font-size: 13px;
   font-weight: 500;
@@ -251,11 +251,11 @@
   line-height: 1.4;
 }
 
-.loan-upload-text-done {
+.user-loan-upload-text-done {
   color: #16a34a;
 }
 
-.loan-upload-subtext {
+.user-loan-upload-subtext {
   font-family: Arial, sans-serif;
   font-size: 11px;
   color: #9ca3af;
@@ -268,14 +268,14 @@
 }
 
 /* Note Box */
-.loan-application-note-box {
+.user-loan-application-note-box {
   background: #eff6ff;
   border: 0.8px solid #bedbff;
   border-radius: 10px;
   padding: 14px 16px;
 }
 
-.loan-application-note-text {
+.user-loan-application-note-text {
   font-family: Arial, sans-serif;
   font-size: 14px;
   color: #193cb8;
@@ -283,18 +283,18 @@
   margin: 0;
 }
 
-.loan-application-note-text strong {
+.user-loan-application-note-text strong {
   font-weight: 700;
 }
 
 /* Form Actions */
-.loan-application-actions {
+.user-loan-application-actions {
   display: flex;
   gap: 12px;
   padding-top: 4px;
 }
 
-.loan-application-submit-btn {
+.user-loan-application-submit-btn {
   flex: 1;
   height: 49px;
   background: #155dfc;
@@ -307,11 +307,11 @@
   transition: background 0.2s;
 }
 
-.loan-application-submit-btn:hover {
+.user-loan-application-submit-btn:hover {
   background: #1246d1;
 }
 
-.loan-application-cancel-btn {
+.user-loan-application-cancel-btn {
   width: 96px;
   height: 49px;
   background: white;
@@ -324,30 +324,30 @@
   transition: background 0.2s;
 }
 
-.loan-application-cancel-btn:hover {
+.user-loan-application-cancel-btn:hover {
   background: #f3f4f6;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .loan-application-content {
+  .user-loan-application-content {
     width: 95vw;
     max-height: 95vh;
   }
 
-  .loan-application-row {
+  .user-loan-application-row {
     flex-direction: column;
   }
 
-  .loan-application-group-half {
+  .user-loan-application-group-half {
     width: 100%;
   }
 
-  .loan-application-form {
+  .user-loan-application-form {
     padding: 16px;
   }
 
-  .loan-application-header {
+  .user-loan-application-header {
     padding: 16px;
   }
 }

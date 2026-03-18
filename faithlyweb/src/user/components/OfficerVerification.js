@@ -73,36 +73,36 @@ export default function VerificationModal({ isOpen, onClose }) {
 
   /* ── Confirmation screen ── */
   const renderConfirmation = () => (
-    <div className="vm-confirmation">
-      <button className="vm-close-btn vm-close-top" onClick={handleClose} type="button">
+    <div className="user-verification-confirmation">
+      <button className="user-verification-close-btn user-verification-close-top" onClick={handleClose} type="button">
         <X size={20} />
       </button>
 
-      <div className="vm-check-circle">
+      <div className="user-verification-check-circle">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
           <path d="M20 6L9 17l-5-5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       </div>
 
-      <h2 className="vm-confirm-title">Verification Submitted!</h2>
+      <h2 className="user-verification-confirm-title">Verification Submitted!</h2>
 
-      <p className="vm-confirm-text">
+      <p className="user-verification-confirm-text">
         Your officer verification request has been successfully submitted. You will receive
         the results within <strong>3–5 business days</strong>.
       </p>
 
-      <div className="vm-timeline-box">
-        <Clock size={18} className="vm-timeline-icon" />
+      <div className="user-verification-timeline-box">
+        <Clock size={18} className="user-verification-timeline-icon" />
         <div>
-          <p className="vm-timeline-title">Processing Timeline</p>
-          <p className="vm-timeline-text">
+          <p className="user-verification-timeline-title">Processing Timeline</p>
+          <p className="user-verification-timeline-text">
             Our administrators will review your information and notify you once your access
             has been approved.
           </p>
         </div>
       </div>
 
-      <button className="vm-submit-btn vm-gotit-btn" onClick={handleClose}>
+      <button className="user-verification-submit-btn user-verification-gotit-btn" onClick={handleClose}>
         Got it, Thanks!
       </button>
     </div>
@@ -111,28 +111,28 @@ export default function VerificationModal({ isOpen, onClose }) {
   /* ── Verification form ── */
   const renderForm = () => (
     <>
-      <div className="vm-header">
-        <h1 className="vm-title">Officer Verification</h1>
-        <p className="vm-subtitle">
+      <div className="user-verification-header">
+        <h1 className="user-verification-title">Officer Verification</h1>
+        <p className="user-verification-subtitle">
           To access the Loan module, members must verify their officer status. Please submit
           the required information below for approval.
         </p>
       </div>
 
       {apiError && (
-        <div className="vm-error-banner">
-          <AlertTriangle size={16} className="vm-error-icon" />
+        <div className="user-verification-error-banner">
+          <AlertTriangle size={16} className="user-verification-error-icon" />
           <span>{apiError}</span>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="vm-form">
+      <form onSubmit={handleSubmit} className="user-verification-form">
         {/* Church ID */}
-        <div className="vm-form-group">
-          <label className="vm-label">Church ID Number</label>
+        <div className="user-verification-form-group">
+          <label className="user-verification-label">Church ID Number</label>
           <input
             type="text"
-            className="vm-input"
+            className="user-verification-input"
             value={churchId}
             onChange={(e) => setChurchId(e.target.value)}
             placeholder="Enter your Church ID"
@@ -142,10 +142,10 @@ export default function VerificationModal({ isOpen, onClose }) {
         </div>
 
         {/* Position */}
-        <div className="vm-form-group">
-          <label className="vm-label">Church Position</label>
+        <div className="user-verification-form-group">
+          <label className="user-verification-label">Church Position</label>
           <select
-            className="vm-input"
+            className="user-verification-input"
             value={position}
             onChange={(e) => setPosition(e.target.value)}
             required
@@ -168,10 +168,10 @@ export default function VerificationModal({ isOpen, onClose }) {
         </div>
 
         {/* Occupation */}
-        <div className="vm-form-group">
-          <label className="vm-label">Occupation / Job</label>
+        <div className="user-verification-form-group">
+          <label className="user-verification-label">Occupation / Job</label>
           <select
-            className="vm-input"
+            className="user-verification-input"
             value={occupation.startsWith("Others: ") ? "Others" : occupation}
             onChange={(e) => {
               if (e.target.value === "Others") {
@@ -267,7 +267,7 @@ export default function VerificationModal({ isOpen, onClose }) {
           {occupation.startsWith("Others") && (
             <input
               type="text"
-              className="vm-input"
+              className="user-verification-input"
               value={occupation.replace("Others: ", "")}
               onChange={(e) => setOccupation(`Others: ${e.target.value}`)}
               placeholder="Please specify your occupation"
@@ -279,12 +279,12 @@ export default function VerificationModal({ isOpen, onClose }) {
         </div>
 
         {/* Salary */}
-        <div className="vm-form-group">
-          <label className="vm-label">Monthly Income / Salary (₱)</label>
+        <div className="user-verification-form-group">
+          <label className="user-verification-label">Monthly Income / Salary (₱)</label>
           <input
             type="number"
             min="1"
-            className="vm-input"
+            className="user-verification-input"
             value={salary}
             onChange={(e) => setSalary(e.target.value)}
             placeholder="e.g. 25000"
@@ -293,17 +293,17 @@ export default function VerificationModal({ isOpen, onClose }) {
           />
         </div>
 
-        <button type="submit" className="vm-submit-btn" disabled={loading}>
+        <button type="submit" className="user-verification-submit-btn" disabled={loading}>
           {loading ? "Submitting…" : "Submit Verification"}
         </button>
 
-        <button type="button" className="vm-cancel-btn" onClick={handleClose} disabled={loading}>
+        <button type="button" className="user-verification-cancel-btn" onClick={handleClose} disabled={loading}>
           Cancel
         </button>
 
         {/* Info box */}
-        <div className="vm-info-box">
-          <Info size={20} className="vm-info-icon" />
+        <div className="user-verification-info-box">
+          <Info size={20} className="user-verification-info-icon" />
           <p>
             Your verification request will be reviewed by church administrators. You'll receive
             a notification once your Officer Access has been approved.
@@ -315,16 +315,16 @@ export default function VerificationModal({ isOpen, onClose }) {
 
   /* ── Card container ── */
   const card = (
-    <div className="vm-container" onClick={(e) => e.stopPropagation()}>
+    <div className="user-verification-container" onClick={(e) => e.stopPropagation()}>
       {isModal && !showConfirmation && (
-        <button className="vm-close-btn vm-close-top" onClick={handleClose} type="button">
+        <button className="user-verification-close-btn user-verification-close-top" onClick={handleClose} type="button">
           <X size={20} />
         </button>
       )}
 
       {showConfirmation
         ? renderConfirmation()
-        : <div className="vm-main">{renderForm()}</div>
+        : <div className="user-verification-main">{renderForm()}</div>
       }
     </div>
   );
@@ -332,11 +332,11 @@ export default function VerificationModal({ isOpen, onClose }) {
   if (isModal) {
     if (!isOpen) return null;
     return (
-      <div className="vm-overlay" onClick={handleClose}>
+      <div className="user-verification-overlay" onClick={handleClose}>
         {card}
       </div>
     );
   }
 
-  return <div className="vm-page">{card}</div>;
+  return <div className="user-verification-page">{card}</div>;
 }

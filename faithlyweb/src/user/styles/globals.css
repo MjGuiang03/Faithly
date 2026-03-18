@@ -133,32 +133,32 @@
 }
 
 /* Global Layout Rules for Sidebar Layout */
-.main-content {
+.user-main-content {
   margin-left: 256px;
   flex: 1;
   transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.home-layout {
+.user-home-layout {
   display: flex;
   min-height: 100vh;
   background: #f2f2f2 !important;
 }
 
-.sidebar-collapsed ~ .main-content {
+.user-sidebar-collapsed ~ .user-main-content {
   margin-left: 72px;
 }
 
 @media (max-width: 1024px) {
-  .main-content,
-  .sidebar-collapsed ~ .main-content {
+  .user-main-content,
+  .user-sidebar-collapsed ~ .user-main-content {
     margin-left: 72px; 
   }
 }
 
 @media (max-width: 768px) {
-  .main-content,
-  .sidebar-collapsed ~ .main-content {
+  .user-main-content,
+  .user-sidebar-collapsed ~ .user-main-content {
     margin-left: 0 !important;
     padding: 16px !important;
     padding-top: 64px !important; /* Space for mobile hamburger menu */
@@ -219,37 +219,47 @@ html {
   font-size: var(--font-size);
 }
 /* Shimmer Skeleton Loader */
-@keyframes shimmer {
-  0% { background-position: -468px 0; }
-  100% { background-position: 468px 0; }
+/* Shimmer Skeleton Loader - Refined Premium Design */
+@keyframes user-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
-.skeleton {
-  background: #f6f7f8;
-  background-image: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
-  background-repeat: no-repeat;
-  background-size: 800px 104px;
-  display: inline-block;
+.user-skeleton {
+  background: #e5e7eb;
   position: relative;
-  animation-duration: 1.25s;
-  animation-fill-mode: forwards;
-  animation-iteration-count: infinite;
-  animation-name: shimmer;
-  animation-timing-function: linear;
-  border-radius: 4px;
+  overflow: hidden;
+  border-radius: 6px;
+  display: inline-block;
 }
 
-.skeleton-text { height: 12px; width: 100%; margin-bottom: 8px; }
-.skeleton-title { height: 20px; width: 60%; margin-bottom: 12px; }
-.skeleton-circle { border-radius: 50%; }
-.skeleton-card { height: 160px; width: 100%; border-radius: 16px; }
-.skeleton-button { height: 48px; width: 100%; border-radius: 12px; }
-
-.fade-in {
-  animation: fadeIn 0.5s ease-in-out;
+.user-skeleton::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 100%
+  );
+  animation: user-shimmer 1.5s infinite;
 }
 
-@keyframes fadeIn {
+.user-skeleton-text { height: 12px; width: 100%; margin-bottom: 8px; border-radius: 4px; }
+.user-skeleton-title { height: 20px; width: 60%; margin-bottom: 12px; border-radius: 6px; }
+.user-skeleton-circle { border-radius: 50%; }
+.user-skeleton-card { height: 160px; width: 100%; border-radius: 16px; }
+.user-skeleton-button { height: 48px; width: 100%; border-radius: 12px; }
+
+.user-fade-in {
+  animation: user-fadeIn 0.5s ease-in-out;
+}
+
+@keyframes user-fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }

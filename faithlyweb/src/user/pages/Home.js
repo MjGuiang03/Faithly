@@ -154,21 +154,21 @@ export default function Home() {
   ];
 
   return (
-    <div className="home-layout">
+    <div className="user-home-layout">
       <Sidebar />
 
-      <div className="main-content">
+      <div className="user-main-content">
         {/* Header — avatar removed */}
-        <div className="home-header">
-          <h1 className="page-title">Welcome Back{user?.fullName ? `, ${user.fullName.split(' ')[0]}` : ''}!</h1>
-          <p className="page-subtitle">Here's an overview of your church activities</p>
+        <div className="user-home-header">
+          <h1 className="user-page-title">Welcome Back{user?.fullName ? `, ${user.fullName.split(' ')[0]}` : ''}!</h1>
+          <p className="user-page-subtitle">Here's an overview of your church activities</p>
         </div>
 
         {/* Stats Grid */}
-        <div className="stats-grid">
-          <div className="stat-card stat-blue">
-            <div className="stat-icon-box">
-              <svg className="stat-icon" fill="none" viewBox="0 0 24 24">
+        <div className="user-stats-grid">
+          <div className="user-stat-card user-stat-blue">
+            <div className="user-stat-icon-box">
+              <svg className="user-stat-icon" fill="none" viewBox="0 0 24 24">
                 <path d={svgPaths.pb47f400} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
                 <path d={svgPaths.p17a13100} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
                 <path d="M10 9H8" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
@@ -176,71 +176,71 @@ export default function Home() {
                 <path d="M16 17H8" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
               </svg>
             </div>
-            <div className="stat-content">
-              <p className="stat-label">Active Loans</p>
-              {loading ? <div className="skeleton" style={{ height: '24px', width: '40px', marginTop: '4px' }}></div> : <p className="stat-value fade-in">{loanStats.activeCount}</p>}
+            <div className="user-stat-content">
+              <p className="user-stat-label">Active Loans</p>
+              {loading ? <div className="user-skeleton" style={{ height: '24px', width: '40px', marginTop: '4px' }}></div> : <p className="user-stat-value user-fade-in">{loanStats.activeCount}</p>}
             </div>
           </div>
 
-          <div className="stat-card stat-green">
-            <div className="stat-icon-box">
-              <svg className="stat-icon" fill="none" viewBox="0 0 24 24">
+          <div className="user-stat-card user-stat-green">
+            <div className="user-stat-icon-box">
+              <svg className="user-stat-icon" fill="none" viewBox="0 0 24 24">
                 <path d={svgPaths.p3f86cd40} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
               </svg>
             </div>
-            <div className="stat-content">
-              <p className="stat-label">Total Donated</p>
-              {loading ? <div className="skeleton" style={{ height: '24px', width: '80px', marginTop: '4px' }}></div> : <p className="stat-value fade-in">{`₱${(donationStats.totalDonated || 0).toLocaleString()}`}</p>}
+            <div className="user-stat-content">
+              <p className="user-stat-label">Total Donated</p>
+              {loading ? <div className="user-skeleton" style={{ height: '24px', width: '80px', marginTop: '4px' }}></div> : <p className="user-stat-value user-fade-in">{`₱${(donationStats.totalDonated || 0).toLocaleString()}`}</p>}
             </div>
           </div>
 
-          <div className="stat-card stat-navy">
-            <div className="stat-icon-box">
-              <svg className="stat-icon" fill="none" viewBox="0 0 24 24">
+          <div className="user-stat-card user-stat-navy">
+            <div className="user-stat-icon-box">
+              <svg className="user-stat-icon" fill="none" viewBox="0 0 24 24">
                 <path d="M8 2V6" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
                 <path d="M16 2V6" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
                 <path d={svgPaths.p32f12c00} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
                 <path d="M3 10H21" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
               </svg>
             </div>
-            <div className="stat-content">
-              <p className="stat-label">Services Attended</p>
-              {loading ? <div className="skeleton" style={{ height: '24px', width: '40px', marginTop: '4px' }}></div> : <p className="stat-value fade-in">{attendanceStats.total}</p>}
+            <div className="user-stat-content">
+              <p className="user-stat-label">Services Attended</p>
+              {loading ? <div className="user-skeleton" style={{ height: '24px', width: '40px', marginTop: '4px' }}></div> : <p className="user-stat-value user-fade-in">{attendanceStats.total}</p>}
             </div>
           </div>
 
-          <div className="stat-card stat-orange">
-            <div className="stat-icon-box">
-              <svg className="stat-icon" fill="none" viewBox="0 0 24 24">
+          <div className="user-stat-card user-stat-orange">
+            <div className="user-stat-icon-box">
+              <svg className="user-stat-icon" fill="none" viewBox="0 0 24 24">
                 <path d="M16 7H22V13" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
                 <path d={svgPaths.p13253c0} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
               </svg>
             </div>
-            <div className="stat-content">
-              <p className="stat-label">Member Since</p>
-              <p className="stat-value">{memberSince}</p>
+            <div className="user-stat-content">
+              <p className="user-stat-label">Member Since</p>
+              <p className="user-stat-value">{memberSince}</p>
             </div>
           </div>
         </div>
 
         {/* Dashboard Grid */}
-        <div className="dashboard-grid">
+        <div className="user-dashboard-grid">
           {/* Quick Actions */}
-          <div className="card quick-actions-card">
-            <h2 className="card-title">Quick Actions</h2>
-            <div className="quick-actions-list">
+          <div className="user-card user-quick-actions-card">
+            <h2 className="user-card-title">Quick Actions</h2>
+            <div className="user-quick-actions-list">
               {quickActions.map((action, index) => (
                 <button
                   key={index}
                   onClick={action.action}
-                  className="action-button"
+                  className="user-action-button"
                   style={{ background: action.gradient || action.bg }}
                 >
-                  <div className="action-content">
-                    <h3 className="action-title">{action.title}</h3>
-                    <p className="action-description">{action.description}</p>
+                  <div className="user-action-content">
+                    <h3 className="user-action-title">{action.title}</h3>
+                    <p className="user-action-description">{action.description}</p>
                   </div>
-                  <svg className="action-arrow" fill="none" viewBox="0 0 20 20">
+                  <svg className="user-action-arrow" fill="none" viewBox="0 0 20 20">
                     <path d="M4.16667 10H15.8333" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                     <path d={svgPaths.p1ae0b780} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                   </svg>
@@ -250,34 +250,34 @@ export default function Home() {
           </div>
 
           {/* Recent Activities */}
-          <div className="card recent-activity-card">
-            <h2 className="card-title">Recent Activities</h2>
-            <div className="activity-list">
+          <div className="user-card user-recent-activity-card">
+            <h2 className="user-card-title">Recent Activities</h2>
+            <div className="user-activity-list">
               {loading ? (
                 [1, 2, 3, 4, 5].map(i => (
-                  <div key={i} className="activity-item" style={{ marginBottom: '12px' }}>
-                    <div className="skeleton skeleton-circle" style={{ width: '32px', height: '32px', flexShrink: 0 }}></div>
+                  <div key={i} className="user-activity-item" style={{ marginBottom: '12px' }}>
+                    <div className="user-skeleton user-skeleton-circle" style={{ width: '40px', height: '40px', flexShrink: 0 }}></div>
                     <div style={{ flex: 1 }}>
-                      <div className="skeleton" style={{ height: '14px', width: '40%', marginBottom: '6px' }}></div>
-                      <div className="skeleton" style={{ height: '12px', width: '70%' }}></div>
+                      <div className="user-skeleton user-skeleton-text" style={{ height: '14px', width: '40%', marginBottom: '6px' }}></div>
+                      <div className="user-skeleton user-skeleton-text" style={{ height: '12px', width: '70%' }}></div>
                     </div>
                   </div>
                 ))
               ) : recentActivity.length === 0 ? (
-                <p className="empty-text">No recent activity yet.</p>
+                <p className="user-empty-text">No recent activity yet.</p>
               ) : (
-                <div className="fade-in">
+                <div className="user-fade-in">
                   {recentActivity.map((activity, index) => (
-                    <div key={index} className="activity-item-horizontal">
-                      <div className="activity-icon-compact" style={{ color: activity.iconColor }}>
+                    <div key={index} className="user-activity-item-horizontal">
+                      <div className="user-activity-icon-compact" style={{ color: activity.iconColor }}>
                         <ActivityIcon type={activity.type} />
                       </div>
-                      <div className="activity-details-horizontal">
-                        <span className="activity-title-compact">{activity.title}</span>
-                        <span className="activity-separator">–</span>
-                        <span className="activity-desc-compact">{activity.description}</span>
-                        <span className="activity-separator">–</span>
-                        <span className="activity-time-compact">{formatTimeAgo(activity.date)}</span>
+                      <div className="user-activity-details-horizontal">
+                        <span className="user-activity-title-compact">{activity.title}</span>
+                        <span className="user-activity-separator">–</span>
+                        <span className="user-activity-desc-compact">{activity.description}</span>
+                        <span className="user-activity-separator">–</span>
+                        <span className="user-activity-time-compact">{formatTimeAgo(activity.date)}</span>
                       </div>
                     </div>
                   ))}
@@ -285,51 +285,49 @@ export default function Home() {
               )}
             </div>
           </div>
-        </div>
-
         {/* Upcoming Loan Payments */}
-        <div className="full-width-section">
-          <div className="card payments-card">
-            <div className="card-header">
-              <h2 className="card-title">Upcoming Loan Payment</h2>
+        <div className="user-full-width-section">
+          <div className="user-card user-payments-card">
+            <div className="user-card-header">
+              <h2 className="user-card-title">Upcoming Loan Payment</h2>
             </div>
             {loading ? (
-              <div className="payments-list">
-                <div className="payment-item">
-                  <div className="payment-info" style={{ width: '100%' }}>
-                    <div className="skeleton skeleton-circle" style={{ width: '38px', height: '38px', flexShrink: 0 }}></div>
+              <div className="user-payments-list">
+                <div className="user-payment-item">
+                  <div className="user-payment-info" style={{ width: '100%' }}>
+                    <div className="user-skeleton user-skeleton-circle" style={{ width: '38px', height: '38px', flexShrink: 0 }}></div>
                     <div style={{ flex: 1 }}>
-                      <div className="skeleton" style={{ height: '15px', width: '30%', marginBottom: '6px' }}></div>
-                      <div className="skeleton" style={{ height: '13px', width: '50%' }}></div>
+                      <div className="user-skeleton user-skeleton-text" style={{ height: '15px', width: '30%', marginBottom: '6px' }}></div>
+                      <div className="user-skeleton user-skeleton-text" style={{ height: '13px', width: '50%' }}></div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      <div className="skeleton" style={{ height: '15px', width: '60px', marginBottom: '6px' }}></div>
-                      <div className="skeleton" style={{ height: '18px', width: '40px', borderRadius: '20px' }}></div>
+                      <div className="user-skeleton user-skeleton-text" style={{ height: '15px', width: '60px', marginBottom: '6px' }}></div>
+                      <div className="user-skeleton user-skeleton-text" style={{ height: '18px', width: '40px', borderRadius: '20px' }}></div>
                     </div>
                   </div>
                 </div>
               </div>
             ) : activeLoans.length === 0 ? (
-              <p className="empty-text">No active loans at the moment.</p>
+              <p className="user-empty-text">No active loans at the moment.</p>
             ) : (
-              <div className="payments-list fade-in">
+              <div className="user-payments-list user-fade-in">
                 {activeLoans.slice(0, 1).map((loan, index) => (
-                  <div key={index} className="payment-item">
-                    <div className="payment-info">
-                      <div className="payment-icon">
+                  <div key={index} className="user-payment-item">
+                    <div className="user-payment-info">
+                      <div className="user-payment-icon">
                         <svg fill="none" viewBox="0 0 20 20">
                           <path d="M10 5V10L13.3333 11.6667" stroke="#F54900" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                           <path d={svgPaths.p14d24500} stroke="#F54900" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                         </svg>
                       </div>
-                      <div className="payment-details">
-                        <h3 className="payment-id">{loan.loanId}</h3>
-                        <p className="payment-due">Term: {loan.termMonths}mo · {loan.purpose}</p>
+                      <div className="user-payment-details">
+                        <h3 className="user-payment-id">{loan.loanId}</h3>
+                        <p className="user-payment-due">Term: {loan.termMonths}mo · {loan.purpose}</p>
                       </div>
                     </div>
-                    <div className="payment-actions">
-                      <p className="payment-amount">₱{(loan.remainingBalance || loan.amount).toLocaleString()}</p>
-                      <span className="payment-status">Active</span>
+                    <div className="user-payment-actions">
+                      <p className="user-payment-amount">₱{(loan.remainingBalance || loan.amount).toLocaleString()}</p>
+                      <span className="user-payment-status">Active</span>
                     </div>
                   </div>
                 ))}
@@ -341,11 +339,12 @@ export default function Home() {
       </div>
 
       {/* Floating Chat Button */}
-      <button className="chat-button">
+      <button className="user-chat-button">
         <svg fill="none" viewBox="0 0 24 24">
           <path d={svgPaths.p261dfb00} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
         </svg>
       </button>
     </div>
-  );
+  </div>
+);
 }

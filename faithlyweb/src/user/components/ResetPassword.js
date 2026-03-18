@@ -18,12 +18,12 @@ function allRulesPass(p) { return RULES.every(r => r.test(p)); }
 /* ── Password rules checklist ── */
 function PasswordRules({ password }) {
   return (
-    <ul className="rp-rules-list">
+    <ul className="user-reset-rules-list">
       {RULES.map(rule => {
         const ok = rule.test(password);
         return (
-          <li key={rule.key} className={`rp-rule ${ok ? "rp-rule-pass" : "rp-rule-fail"}`}>
-            <span className="rp-rule-icon">{ok ? "✓" : "✗"}</span>
+          <li key={rule.key} className={`user-reset-rule ${ok ? "user-reset-rule-pass" : "user-reset-rule-fail"}`}>
+            <span className="user-reset-rule-icon">{ok ? "✓" : "✗"}</span>
             {rule.label}
           </li>
         );
@@ -47,15 +47,15 @@ function RateLimitBanner({ seconds, onExpire }) {
   const m = Math.floor(remaining / 60), s = remaining % 60;
 
   return (
-    <div className="rp-alert-banner rp-alert-warning">
-      <div className="rp-alert-banner::before" />
-      <div className="rp-alert-body">
-        <div className="rp-alert-icon rp-alert-icon-warning">
+    <div className="user-reset-alert-banner user-reset-alert-warning">
+      <div className="user-reset-alert-banner::before" />
+      <div className="user-reset-alert-body">
+        <div className="user-reset-alert-icon user-reset-alert-icon-warning">
           <AlertTriangle size={16} />
         </div>
-        <div className="rp-alert-content">
-          <span className="rp-alert-heading rp-alert-heading-warning">Too many attempts</span>
-          <span className="rp-alert-message rp-alert-message-warning">
+        <div className="user-reset-alert-content">
+          <span className="user-reset-alert-heading user-reset-alert-heading-warning">Too many attempts</span>
+          <span className="user-reset-alert-message user-reset-alert-message-warning">
             Please wait <strong>{m > 0 ? `${m}m ${s}s` : `${s}s`}</strong> before trying again.
           </span>
         </div>
@@ -169,22 +169,22 @@ export default function ResetPassword({ isOpen, onClose }) {
     /* ─ Step 1 ─ */
     if (step === 1) return (
       <>
-        <div className="rp-header">
-          <img src={puacLogo} alt="PUAC Logo" className="rp-logo" />
-          <h1 className="rp-title">Reset Password</h1>
-          <p className="rp-subtitle">Enter your email and we'll send you a verification code</p>
+        <div className="user-reset-header">
+          <img src={puacLogo} alt="PUAC Logo" className="user-reset-logo" />
+          <h1 className="user-reset-title">Reset Password</h1>
+          <p className="user-reset-subtitle">Enter your email and we'll send you a verification code</p>
         </div>
 
         {rateLimitSecs > 0 && <RateLimitBanner seconds={rateLimitSecs} onExpire={() => setRateLimitSecs(0)} />}
 
-        <form onSubmit={handleEmailSubmit} className="rp-form">
-          <div className="rp-form-group">
-            <label className="rp-label">Email Address</label>
-            <div className="rp-input-wrapper">
-              <Mail className="rp-input-icon" />
+        <form onSubmit={handleEmailSubmit} className="user-reset-form">
+          <div className="user-reset-form-group">
+            <label className="user-reset-label">Email Address</label>
+            <div className="user-reset-input-wrapper">
+              <Mail className="user-reset-input-icon" />
               <input
                 type="email"
-                className="rp-input"
+                className="user-reset-input"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="Enter your email"
@@ -194,7 +194,7 @@ export default function ResetPassword({ isOpen, onClose }) {
             </div>
           </div>
 
-          <button type="submit" className="rp-submit-btn" disabled={loading || rateLimitSecs > 0}>
+          <button type="submit" className="user-reset-submit-btn" disabled={loading || rateLimitSecs > 0}>
             {loading ? "Sending..." : "Send Verification Code"}
           </button>
         </form>
@@ -204,16 +204,16 @@ export default function ResetPassword({ isOpen, onClose }) {
     /* ─ Step 2 ─ */
     if (step === 2) return (
       <>
-        <div className="rp-header">
-          <img src={puacLogo} alt="PUAC Logo" className="rp-logo" />
-          <h1 className="rp-title">Enter Verification Code</h1>
-          <p className="rp-subtitle">We sent a 6-digit code to <strong>{email}</strong></p>
+        <div className="user-reset-header">
+          <img src={puacLogo} alt="PUAC Logo" className="user-reset-logo" />
+          <h1 className="user-reset-title">Enter Verification Code</h1>
+          <p className="user-reset-subtitle">We sent a 6-digit code to <strong>{email}</strong></p>
         </div>
 
         {rateLimitSecs > 0 && <RateLimitBanner seconds={rateLimitSecs} onExpire={() => setRateLimitSecs(0)} />}
 
-        <form onSubmit={handleOTPSubmit} className="rp-form">
-          <div className="rp-otp-container">
+        <form onSubmit={handleOTPSubmit} className="user-reset-form">
+          <div className="user-reset-otp-container">
             {otp.map((digit, i) => (
               <input
                 key={i}
@@ -225,7 +225,7 @@ export default function ResetPassword({ isOpen, onClose }) {
                 onChange={e => handleOTPChange(i, e.target.value)}
                 onKeyDown={e => handleOTPKeyDown(i, e)}
                 onPaste={handleOTPPaste}
-                className="rp-otp-input"
+                className="user-reset-otp-input"
                 disabled={loading || rateLimitSecs > 0}
               />
             ))}
@@ -234,7 +234,7 @@ export default function ResetPassword({ isOpen, onClose }) {
           <button
             type="button"
             onClick={handleEmailSubmit}
-            className="rp-resend-btn"
+            className="user-reset-resend-btn"
             disabled={loading || rateLimitSecs > 0}
           >
             Didn't receive a code? <span>Resend</span>
@@ -242,7 +242,7 @@ export default function ResetPassword({ isOpen, onClose }) {
 
           <button
             type="submit"
-            className="rp-submit-btn"
+            className="user-reset-submit-btn"
             disabled={loading || rateLimitSecs > 0 || otp.join("").length < 6}
           >
             {loading ? "Verifying..." : "Verify Code"}
@@ -254,63 +254,63 @@ export default function ResetPassword({ isOpen, onClose }) {
     /* ─ Step 3 ─ */
     return (
       <>
-        <div className="rp-header">
-          <img src={puacLogo} alt="PUAC Logo" className="rp-logo" />
-          <h1 className="rp-title">Create New Password</h1>
-          <p className="rp-subtitle">Make it strong and memorable</p>
+        <div className="user-reset-header">
+          <img src={puacLogo} alt="PUAC Logo" className="user-reset-logo" />
+          <h1 className="user-reset-title">Create New Password</h1>
+          <p className="user-reset-subtitle">Make it strong and memorable</p>
         </div>
 
         {successMsg && (
-          <div className="rp-success-banner">
+          <div className="user-reset-success-banner">
             <CheckCircle size={16} />
             <span>{successMsg}</span>
           </div>
         )}
 
-        <form onSubmit={handlePasswordSubmit} className="rp-form">
-          <div className="rp-form-group">
-            <label className="rp-label">New Password</label>
-            <div className="rp-input-wrapper">
-              <Lock className="rp-input-icon" />
+        <form onSubmit={handlePasswordSubmit} className="user-reset-form">
+          <div className="user-reset-form-group">
+            <label className="user-reset-label">New Password</label>
+            <div className="user-reset-input-wrapper">
+              <Lock className="user-reset-input-icon" />
               <input
                 type={showNew ? "text" : "password"}
-                className="rp-input rp-password-input"
+                className="user-reset-input user-reset-password-input"
                 value={newPassword}
                 onChange={e => setNewPassword(e.target.value)}
                 placeholder="Enter new password"
                 disabled={loading}
               />
-              <button type="button" className="rp-password-toggle" onClick={() => setShowNew(v => !v)} disabled={loading}>
+              <button type="button" className="user-reset-password-toggle" onClick={() => setShowNew(v => !v)} disabled={loading}>
                 {showNew ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
             {newPassword && <PasswordRules password={newPassword} />}
           </div>
 
-          <div className="rp-form-group">
-            <label className="rp-label">Confirm Password</label>
-            <div className="rp-input-wrapper">
-              <Lock className="rp-input-icon" />
+          <div className="user-reset-form-group">
+            <label className="user-reset-label">Confirm Password</label>
+            <div className="user-reset-input-wrapper">
+              <Lock className="user-reset-input-icon" />
               <input
                 type={showConfirm ? "text" : "password"}
-                className={`rp-input rp-password-input ${confirmPassword && confirmPassword !== newPassword ? "rp-input-mismatch" : ""}`}
+                className={`user-reset-input user-reset-password-input ${confirmPassword && confirmPassword !== newPassword ? "user-reset-input-mismatch" : ""}`}
                 value={confirmPassword}
                 onChange={e => setConfirmPassword(e.target.value)}
                 placeholder="Confirm new password"
                 disabled={loading}
               />
-              <button type="button" className="rp-password-toggle" onClick={() => setShowConfirm(v => !v)} disabled={loading}>
+              <button type="button" className="user-reset-password-toggle" onClick={() => setShowConfirm(v => !v)} disabled={loading}>
                 {showConfirm ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
             {confirmPassword && confirmPassword !== newPassword && (
-              <p className="rp-mismatch-msg">Passwords do not match</p>
+              <p className="user-reset-mismatch-msg">Passwords do not match</p>
             )}
           </div>
 
           <button
             type="submit"
-            className="rp-submit-btn"
+            className="user-reset-submit-btn"
             disabled={loading || !allRulesPass(newPassword) || newPassword !== confirmPassword}
           >
             {loading ? "Updating..." : "Update Password"}
@@ -322,28 +322,28 @@ export default function ResetPassword({ isOpen, onClose }) {
 
   /* ── Modal wrapper ── */
   const card = (
-    <div className="rp-container" onClick={e => e.stopPropagation()}>
+    <div className="user-reset-container" onClick={e => e.stopPropagation()}>
       {/* Top nav: back arrow + close */}
-      <div className="rp-nav">
-        <button className="rp-nav-btn" onClick={handleBack} type="button">
+      <div className="user-reset-nav">
+        <button className="user-reset-nav-btn" onClick={handleBack} type="button">
           <ArrowLeft size={18} />
         </button>
 
         {/* Step indicator */}
-        <div className="rp-stepper">
+        <div className="user-reset-stepper">
           {steps.map((label, i) => (
-            <div key={label} className="rp-step-item">
-              <div className={`rp-step-dot ${i + 1 < step ? "rp-step-done" : i + 1 === step ? "rp-step-active" : "rp-step-inactive"}`}>
+            <div key={label} className="user-reset-step-item">
+              <div className={`user-reset-step-dot ${i + 1 < step ? "user-reset-step-done" : i + 1 === step ? "user-reset-step-active" : "user-reset-step-inactive"}`}>
                 {i + 1 < step ? "✓" : i + 1}
               </div>
-              <span className={`rp-step-label ${i + 1 === step ? "rp-step-label-active" : ""}`}>{label}</span>
-              {i < steps.length - 1 && <div className={`rp-step-line ${i + 1 < step ? "rp-step-line-done" : ""}`} />}
+              <span className={`user-reset-step-label ${i + 1 === step ? "user-reset-step-label-active" : ""}`}>{label}</span>
+              {i < steps.length - 1 && <div className={`user-reset-step-line ${i + 1 < step ? "user-reset-step-line-done" : ""}`} />}
             </div>
           ))}
         </div>
 
         {isModal && (
-          <button className="rp-nav-btn" onClick={handleClose} type="button">
+          <button className="user-reset-nav-btn" onClick={handleClose} type="button">
             <X size={18} />
           </button>
         )}
@@ -357,12 +357,12 @@ export default function ResetPassword({ isOpen, onClose }) {
   if (isModal) {
     if (!isOpen) return null;
     return (
-      <div className="rp-overlay" onClick={handleClose}>
+      <div className="user-reset-overlay" onClick={handleClose}>
         {card}
       </div>
     );
   }
 
   /* Standalone page mode */
-  return <div className="rp-page">{card}</div>;
+  return <div className="user-reset-page">{card}</div>;
 }

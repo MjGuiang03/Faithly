@@ -150,13 +150,13 @@ export default function VerifyEmailModal({ isOpen, onClose, email, onVerify, onR
 
   if (success) {
     return (
-      <div className="verify-container">
-        <div className="verify-wrapper">
-          <div className="verify-card">
-            <CheckCircle className="verify-icon success-icon" size={64} />
-            <h2 className="verify-title">Verification Successful!</h2>
-            <p className="verify-text">Your email has been verified.</p>
-            <p className="verify-subtext">Redirecting to login...</p>
+      <div className="user-verify-container">
+        <div className="user-verify-wrapper">
+          <div className="user-verify-card">
+            <CheckCircle className="user-verify-icon success-icon" size={64} />
+            <h2 className="user-verify-title">Verification Successful!</h2>
+            <p className="user-verify-text">Your email has been verified.</p>
+            <p className="user-verify-subtext">Redirecting to login...</p>
           </div>
         </div>
       </div>
@@ -164,23 +164,23 @@ export default function VerifyEmailModal({ isOpen, onClose, email, onVerify, onR
   }
 
   return (
-    <div className="verify-container">
-      <div className="verify-wrapper">
-        <div className="verify-card">
+    <div className="user-verify-container">
+      <div className="user-verify-wrapper">
+        <div className="user-verify-card">
           
-          <div className="verify-header">
-            <div className="verify-icon-wrapper">
-              <img src={puacLogo} alt="PUAC Logo" className="verify-mail-icon" size={48} />
+          <div className="user-verify-header">
+            <div className="user-verify-icon-wrapper">
+              <img src={puacLogo} alt="PUAC Logo" className="user-verify-mail-icon" size={48} />
             </div>
-            <h1 className="verify-title">Enter Verification Code</h1>
-            <p className="verify-text">
+            <h1 className="user-verify-title">Enter Verification Code</h1>
+            <p className="user-verify-text">
               We sent a 6-digit code to your email (and phone if requested).
             </p>
-            <p className="verify-email">{email}</p>
+            <p className="user-verify-email">{email}</p>
           </div>
 
-          <form onSubmit={handleVerify} className="verify-form">
-            <div className="otp-inputs">
+          <form onSubmit={handleVerify} className="user-verify-form">
+            <div className="user-verify-otp-inputs">
               {otp.map((digit, index) => (
                 <input
                   key={index}
@@ -191,7 +191,7 @@ export default function VerifyEmailModal({ isOpen, onClose, email, onVerify, onR
                   value={digit}
                   onChange={(e) => handleChange(index, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(index, e)}
-                  className={`otp-input ${error ? 'error' : ''} ${digit ? 'filled' : ''}`}
+                  className={`user-verify-otp-input ${error ? 'error' : ''} ${digit ? 'filled' : ''}`}
                   disabled={loading || success}
                   autoComplete="off"
                 />
@@ -207,7 +207,7 @@ export default function VerifyEmailModal({ isOpen, onClose, email, onVerify, onR
 
             <button 
               type="submit" 
-              className="verify-button primary"
+              className="user-verify-button primary"
               disabled={loading || otp.join('').length !== 6}
             >
               {loading ? (
@@ -221,8 +221,8 @@ export default function VerifyEmailModal({ isOpen, onClose, email, onVerify, onR
             </button>
           </form>
 
-          <div className="verify-footer">
-            <p className="verify-footer-text">Didn't receive the code?</p>
+          <div className="user-verify-footer">
+            <p className="user-verify-footer-text">Didn't receive the code?</p>
             
             <div className="resend-methods-pill">
               <button 
@@ -264,10 +264,10 @@ export default function VerifyEmailModal({ isOpen, onClose, email, onVerify, onR
             </button>
 
 
-            <p className="verify-footer-conditions">
+            <p className="user-verify-footer-conditions">
               By continuing, you agree to our{" "}
-              <span className="verify-footer-termsandprivacy">Terms of Service</span> and{" "}
-              <span className="verify-footer-termsandprivacy">Privacy Policy</span>
+              <span className="user-verify-footer-termsandprivacy">Terms of Service</span> and{" "}
+              <span className="user-verify-footer-termsandprivacy">Privacy Policy</span>
             </p>
           </div>
         </div>
