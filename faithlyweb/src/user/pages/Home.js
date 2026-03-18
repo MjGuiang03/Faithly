@@ -37,7 +37,7 @@ export default function Home() {
         loansRes.json(),
         donationsRes.json(),
         attendanceRes.json(),
-        arguments[3].json(), // verificationRes
+        verificationRes.json(),
       ]);
 
       if (loansRes.ok && loansData.success) {
@@ -50,7 +50,7 @@ export default function Home() {
       if (attendanceRes.ok && attendanceData.success) {
         setAttendanceStats(attendanceData.stats || { total: 0 });
       }
-      if (arguments[3].ok && verificationData.success) {
+      if (verificationRes.ok && verificationData.success) {
         setVerificationStatus(verificationData.verificationStatus);
       }
 

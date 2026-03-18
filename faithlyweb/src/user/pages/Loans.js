@@ -328,7 +328,9 @@ export default function Loans() {
                           <div className="user-loan-detail">
                             <p className="user-loan-detail-label">Remaining Balance</p>
                             <p className="user-loan-detail-value">
-                              {loan.remainingBalance != null ? fmt(loan.remainingBalance) : fmt(loan.amount)}
+                              {loan.status === 'active' && loan.remainingBalance != null 
+                                ? fmt(loan.remainingBalance) 
+                                : '—'}
                             </p>
                           </div>
                           <div className="user-loan-detail">

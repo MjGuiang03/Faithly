@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import SecretaryAdminSidebar from '../components/secretaryAdminSidebar';
 import SecApprovedLoanDetailsModal from '../components/secApprovedLoanDetailsModal';
 import SecProcessLoanModal from '../components/secProcessLoanModal';
+import SecLoanReceiptModal from '../components/SecLoanReceiptModal';
 import '../styles/secretaryAdminLoanProcess.css';
 
 import API from '../../utils/api';
@@ -11,6 +12,7 @@ export default function SecretaryLoanProcess() {
     const [searchQuery, setSearchQuery] = useState('');
     const [showDetailsModal, setShowDetailsModal] = useState(false);
     const [showProcessModal, setShowProcessModal] = useState(false);
+    const [showReceiptModal, setShowReceiptModal] = useState(false);
     const [selectedLoan, setSelectedLoan] = useState(null);
     const [loading, setLoading] = useState(false);
 
@@ -46,8 +48,29 @@ export default function SecretaryLoanProcess() {
     const awaitingCount = loans.filter(l => !l.disbursed).length;
     const processedCount = loans.filter(l => l.disbursed).length;
 
-    const handleViewDetails = (loan) => {
-        // Synthesize data for the modal if not present in the DB document
+    const handleViewDetails = async (loan) => {
+        // Calculate Loan History from current loans list
+        const memberLoans = loans.filter(l => l.email === loan.email);
+        const loanHistoryCount = memberLoans.length;
+
+        let totalDonations = 0;
+        try {
+            const token = localStorage.getItem('secretaryToken') || localStorage.getItem('adminToken') || localStorage.getItem('token');
+            const headers = { Authorization: `Bearer ${token}` };
+            
+            // Try fetching donations for this specific member
+            const donRes = await fetch(`${API}/api/admin/donations?search=${encodeURIComponent(loan.email)}`, { headers });
+            if (donRes.ok) {
+                const donData = await donRes.json();
+                if (donData.success && donData.donations) {
+                    totalDonations = donData.donations.reduce((sum, d) => sum + Number(d.amount), 0);
+                }
+            }
+        } catch (err) {
+            console.error('Failed to fetch user donations:', err);
+        }
+
+        // Synthesize data for the modal
         const loanWithDetails = {
             id: loan.loanId,
             member: loan.memberName,
@@ -62,8 +85,8 @@ export default function SecretaryLoanProcess() {
             monthlyIncome: loan.monthlyIncome || 0,
             gcashNumber: loan.gcashNumber || 'N/A',
             churchActive: 'Active',
-            loanHistory: loan.loanHistory || 0,
-            totalDonations: loan.totalDonations || 0,
+            loanHistory: loanHistoryCount,
+            totalDonations: totalDonations,
             _id: loan._id
         };
         setSelectedLoan(loanWithDetails);
@@ -94,7 +117,15 @@ export default function SecretaryLoanProcess() {
             if (data.success) {
                 toast.success('Loan disbursed successfully');
                 setShowProcessModal(false);
-                setSelectedLoan(null);
+                // Keep selectedLoan but update it with disbursement info for the receipt
+                const updatedLoan = {
+                    ...selectedLoan,
+                    paymentMethod,
+                    disbursementDate: new Date().toISOString(),
+                    referenceNumber: data.referenceNumber // Assuming backend returns this
+                };
+                setSelectedLoan(updatedLoan);
+                setShowReceiptModal(true);
                 fetchLoans(); // Refresh the list
             } else {
                 toast.error(data.message || 'Failed to process loan');
@@ -245,6 +276,16 @@ export default function SecretaryLoanProcess() {
                     loan={selectedLoan}
                     onClose={() => setShowProcessModal(false)}
                     onProcess={handleProcessLoan}
+                />
+            )}
+
+            {showReceiptModal && selectedLoan && (
+                <SecLoanReceiptModal
+                    loan={selectedLoan}
+                    onClose={() => {
+                        setShowReceiptModal(false);
+                        setSelectedLoan(null);
+                    }}
                 />
             )}
         </div>
