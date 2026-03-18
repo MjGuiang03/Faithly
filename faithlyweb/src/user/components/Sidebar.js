@@ -243,7 +243,6 @@ export default function Sidebar() {
               <div className="user-sidebar-profile-details">
                 <p className="user-sidebar-profile-name">{profile?.fullName || 'Member'}</p>
                 <p className="user-sidebar-profile-email">{user?.email || 'member@puac.org'}</p>
-                <p className="user-sidebar-profile-branch">{profile?.branch || 'PUAC Main'}</p>
               </div>
             )}
           </div>

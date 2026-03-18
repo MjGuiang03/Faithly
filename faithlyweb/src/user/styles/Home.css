@@ -198,18 +198,6 @@
   flex-direction: column;
 }
 
-.user-community-badge {
-  background: #155dfc;
-  color: white;
-  font-size: 10px;
-  font-weight: 800;
-  padding: 4px 10px;
-  border-radius: 999px;
-  width: fit-content;
-  margin-bottom: 8px;
-  letter-spacing: 0.5px;
-}
-
 .user-community-content {
   display: flex;
   flex-direction: column;

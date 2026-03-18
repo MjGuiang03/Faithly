@@ -270,16 +270,6 @@
   margin: 0;
 }
 
-.user-sidebar-profile-branch {
-  font-size: 10px;
-  color: #155DFC;
-  font-weight: 600;
-  margin-top: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .user-sidebar-profile-signout {
   width: 100%;
   display: flex;

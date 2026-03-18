@@ -257,7 +257,6 @@ export default function Home() {
 
           {/* Community Section — Real Map */}
           <div className="user-home-card user-home-community-card">
-            <div className="user-community-badge">CHURCH HUB</div>
             <h2 className="user-home-card-title">Your Community</h2>
             <div className="user-community-info-wrap">
               <p className="user-community-branch-name">{profile?.branch || 'PUAC Main'}</p>

@@ -389,12 +389,16 @@ export default function Branches() {
 
               <div className="user-drawer-section">
                 <p className="user-drawer-section-label">Location</p>
-                <div className="user-drawer-map-placeholder">
-                  <svg width="28" height="28" fill="none" viewBox="0 0 48 48">
-                    <path d="M24 42S10 29 10 18a14 14 0 1 1 28 0c0 11-14 24-14 24Z" stroke="#d1d5db" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                    <circle cx="24" cy="18" r="5" stroke="#d1d5db" strokeWidth="2.5" />
-                  </svg>
-                  <span>Map view coming soon</span>
+                <div className="user-drawer-map-container" style={{ width: '100%', height: '180px', borderRadius: '12px', overflow: 'hidden', background: '#f8fafc' }}>
+                  <iframe
+                    title={`${drawerBranch?.name} Map`}
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    loading="lazy"
+                    allowFullScreen
+                    src={`https://maps.google.com/maps?q=${encodeURIComponent(drawerBranch?.name + ', ' + drawerBranch?.province)},Philippines&t=&z=14&ie=UTF8&iwloc=&output=embed`}
+                  ></iframe>
                 </div>
               </div>
             </div>
