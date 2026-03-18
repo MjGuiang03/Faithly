@@ -1,0 +1,117 @@
+.admin-users-main {
+  padding: 32px;
+  background-color: #f8fafc;
+  min-height: calc(100vh - 80px);
+}
+
+.admin-users-header {
+  margin-bottom: 32px;
+}
+
+.admin-users-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+.admin-users-subtitle {
+  font-size: 16px;
+  color: #64748b;
+}
+
+.admin-users-container {
+  max-width: 600px;
+}
+
+.admin-users-card {
+  background: white;
+  padding: 32px;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
+}
+
+.admin-users-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.admin-users-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-users-form-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #475569;
+}
+
+.admin-users-input,
+.admin-users-select {
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1.5px solid #e2e8f0;
+  font-size: 15px;
+  color: #1e293b;
+  transition: all 0.2s;
+  background-color: #fcfcfd;
+}
+
+.admin-users-input:focus,
+.admin-users-select:focus {
+  outline: none;
+  border-color: #155DFC;
+  background-color: white;
+  box-shadow: 0 0 0 4px rgba(21, 93, 252, 0.1);
+}
+
+.admin-users-submit {
+  margin-top: 12px;
+  padding: 14px;
+  background-color: #155DFC;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.admin-users-submit:hover {
+  background-color: #1049ca;
+}
+
+.admin-users-submit:disabled {
+  background-color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.admin-users-info {
+  margin-top: 24px;
+  padding: 16px;
+  background-color: #f1f5f9;
+  border-radius: 10px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.admin-users-info-text {
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.admin-users-info-icon {
+  color: #155DFC;
+  flex-shrink: 0;
+}

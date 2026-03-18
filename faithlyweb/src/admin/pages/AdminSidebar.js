@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import {
   LayoutGrid, Bell, Users, Heart,
   Calendar, Building2, BarChart3, Settings, LogOut,
-  ChevronDown, ChevronUp
+  ChevronDown, ChevronUp, UserPlus
 } from 'lucide-react';
 import puacLogo from '../../assets/puaclogo.png';
 import '../styles/AdminSidebar.css';
@@ -192,6 +192,16 @@ export default function AdminSidebar() {
           <BarChart3 size={20} />
           <span>Reports</span>
         </button>
+
+        {localStorage.getItem('adminRole') === 'admin' && (
+          <button
+            onClick={() => navigate('/admin/users')}
+            className={`admin-sidebar-nav-button ${isActive('/admin/users') ? 'active' : ''}`}
+          >
+            <UserPlus size={20} />
+            <span>User Management</span>
+          </button>
+        )}
 
         <button
           onClick={() => navigate('/admin/settings')}

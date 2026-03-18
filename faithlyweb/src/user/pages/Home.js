@@ -215,18 +215,6 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="user-stat-card user-stat-orange">
-            <div className="user-stat-icon-box">
-              <svg className="user-stat-icon" fill="none" viewBox="0 0 24 24">
-                <path d="M16 7H22V13" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                <path d={svgPaths.p13253c0} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-              </svg>
-            </div>
-            <div className="user-stat-content">
-              <p className="user-stat-label">Member Since</p>
-              <p className="user-stat-value">{memberSince}</p>
-            </div>
-          </div>
         </div>
 
         {/* Dashboard Grid */}
@@ -318,59 +306,6 @@ export default function Home() {
               )}
             </div>
           </div>
-
-          {/* Upcoming Loan Payments — Conditional: Only if verified officer */}
-          {verificationStatus === 'verified' && (
-            <div className="user-home-full-width-section">
-              <div className="user-home-card user-home-payments-card">
-                <div className="user-home-card-header">
-                  <h2 className="user-home-card-title">Upcoming Loan Payment</h2>
-                </div>
-                {loading ? (
-                  <div className="user-payments-list">
-                    <div className="user-payment-item">
-                      <div className="user-payment-info" style={{ width: '100%' }}>
-                        <div className="user-skeleton user-skeleton-circle" style={{ width: '38px', height: '38px', flexShrink: 0 }}></div>
-                        <div style={{ flex: 1 }}>
-                          <div className="user-skeleton user-skeleton-text" style={{ height: '15px', width: '30%', marginBottom: '6px' }}></div>
-                          <div className="user-skeleton user-skeleton-text" style={{ height: '13px', width: '50%' }}></div>
-                        </div>
-                        <div style={{ textAlign: 'right' }}>
-                          <div className="user-skeleton user-skeleton-text" style={{ height: '15px', width: '60px', marginBottom: '6px' }}></div>
-                          <div className="user-skeleton user-skeleton-text" style={{ height: '18px', width: '40px', borderRadius: '20px' }}></div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ) : activeLoans.length === 0 ? (
-                  <p className="user-home-empty-text">No active loans at the moment.</p>
-                ) : (
-                  <div className="user-payments-list user-fade-in">
-                    {activeLoans.slice(0, 1).map((loan, index) => (
-                      <div key={index} className="user-payment-item">
-                        <div className="user-payment-info">
-                          <div className="user-payment-icon">
-                            <svg fill="none" viewBox="0 0 20 20">
-                              <path d="M10 5V10L13.3333 11.6667" stroke="#F54900" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                              <path d={svgPaths.p14d24500} stroke="#F54900" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                            </svg>
-                          </div>
-                          <div className="user-payment-details">
-                            <h3 className="user-payment-id">{loan.loanId}</h3>
-                            <p className="user-payment-due">Term: {loan.termMonths}mo · {loan.purpose}</p>
-                          </div>
-                        </div>
-                        <div className="user-payment-actions">
-                          <p className="user-payment-amount">₱{(loan.remainingBalance || loan.amount).toLocaleString()}</p>
-                          <span className="user-payment-status">Active</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
         </div>
 
       </div>

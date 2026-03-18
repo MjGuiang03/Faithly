@@ -30,6 +30,7 @@ import AdminSettings from './admin/pages/AdminSettings';
 import AdminNotifications from './admin/pages/AdminNotification';
 import AdminOfficerVerification from './admin/pages/AdminOfficerVerification';
 import AdminReports from './admin/pages/AdminReports';
+import AdminUserManagement from './admin/pages/AdminUserManagement';
 
 // Loan Admin Pages
 import LoanAdminDashboard from './loanAdmin/pages/loanAdminDashboard';
@@ -92,6 +93,7 @@ export default function App() {
             <Route path="/admin/attendance" element={<AdminAttendance />} />
             <Route path="/admin/branches"   element={<AdminBranches />} />
             <Route path="/admin/reports"   element={<AdminReports />} />
+            <Route path="/admin/users"   element={<AdminUserManagement />} />
             <Route path="/admin/settings"   element={<AdminSettings />} />
           </Route>
 

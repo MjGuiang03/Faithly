@@ -6,6 +6,7 @@ import LoanApplicationModal from '../components/LoanApplicationModal';
 import VerificationModal from '../components/OfficerVerification';
 import '../styles/Loans.css';
 import API from '../../utils/api';
+import svgPaths from '../../imports/svg-icons';
 
 const fmt = (n) =>
   n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : '₱0.00';
@@ -32,6 +33,7 @@ export default function Loans() {
   /* ── data ── */
   const [loans,               setLoans]               = useState([]);
   const [stats,               setStats]               = useState({ totalBorrowed: 0, remainingBalance: 0, activeCount: 0 });
+  const [activeLoans,         setActiveLoans]         = useState([]);
   const [verificationStatus,  setVerificationStatus]  = useState(null); // null = loading
   const [dataLoading,         setDataLoading]         = useState(true);
   const [error,               setError]               = useState('');
@@ -77,10 +79,18 @@ export default function Loans() {
         setLoans(loansData.loans  || []);
         setStats(loansData.stats  || { totalBorrowed: 0, remainingBalance: 0, activeCount: 0 });
         setTotalCount(loansData.totalCount || 0);
+
+        // Fetch all active loans once (no limit) to find the upcoming one
+        const allLoansRes = await fetch(`${API}/api/loans/my-loans`, { headers });
+        const allLoansData = await allLoansRes.json();
+        if (allLoansData.success) {
+          setActiveLoans(allLoansData.loans?.filter(l => l.status === 'active') || []);
+        }
       } else {
         // 404 means user was deleted from DB — clear loans silently
         setLoans([]);
         setStats({ totalBorrowed: 0, remainingBalance: 0, activeCount: 0 });
+        setActiveLoans([]);
         if (loansRes.status !== 404) setError(loansData.message || 'Failed to load loans');
       }
 
@@ -376,6 +386,53 @@ export default function Loans() {
                         Next
                       </button>
                     </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Upcoming Loan Payment — Positioned at the bottom of verified content */}
+            {verificationStatus === 'verified' && (
+              <div className="user-all-loans-section" style={{ marginTop: '32px' }}>
+                <div className="user-loans-history-header">
+                  <h2 className="user-loans-section-title">Upcoming Loan Payment</h2>
+                </div>
+                {dataLoading ? (
+                  <div className="user-loans-list">
+                    <div className="user-loan-item" style={{ padding: '24px' }}>
+                      <div className="user-skeleton" style={{ height: '60px', borderRadius: '12px' }}></div>
+                    </div>
+                  </div>
+                ) : activeLoans.length === 0 ? (
+                  <p className="user-loans-empty-text" style={{ textAlign: 'center', padding: '20px', color: '#666' }}>No active loans at the moment.</p>
+                ) : (
+                  <div className="user-loans-list user-fade-in">
+                    {activeLoans.slice(0, 1).map((loan, index) => (
+                      <div key={index} className="user-loan-item" style={{ borderLeft: '4px solid #F54900' }}>
+                        <div className="user-loan-item-header">
+                          <div className="user-loan-item-main">
+                            <div className="user-loan-item-info">
+                              <div className="user-loan-item-title-row">
+                                <div className="user-payment-icon" style={{ display: 'inline-flex', verticalAlign: 'middle', marginRight: '12px' }}>
+                                  <svg fill="none" viewBox="0 0 20 20" width="20" height="20">
+                                    <path d="M10 5V10L13.3333 11.6667" stroke="#F54900" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                                    <path d={svgPaths.p14d24500} stroke="#F54900" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                                  </svg>
+                                </div>
+                                <h3 className="user-loan-id">{loan.loanId}</h3>
+                                <span className="user-loan-purpose-inline">— Term: {loan.termMonths}mo · {loan.purpose}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="user-loan-item-amount" style={{ textAlign: 'right' }}>
+                            <p className="user-loan-amount" style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#F54900' }}>
+                              ₱{(loan.remainingBalance || loan.amount).toLocaleString()}
+                            </p>
+                            <span className="user-loan-status-badge user-loan-status-active">Active</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>

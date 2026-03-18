@@ -202,4 +202,51 @@ router.get('/branches', authenticateAdmin, async (req, res) => {
   }
 });
 
+/* ================== ADMIN - CREATE NEW ADMIN/OFFICER ================== */
+router.post('/create-admin', authenticateAdmin, async (req, res) => {
+  try {
+    // Only the main admin can create other admins/officers
+    if (req.admin.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Only Main Admin can create accounts' });
+    }
+
+    const { email, password, role } = req.body;
+
+    if (!email || !password || !role) {
+      return res.status(400).json({ success: false, message: 'All fields are required' });
+    }
+
+    // Role validation
+    const validRoles = ['admin', 'loanAdmin', 'secretaryAdmin'];
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({ success: false, message: 'Invalid role' });
+    }
+
+    const existingAdmin = await admins.findOne({ email });
+    if (existingAdmin) {
+      return res.status(400).json({ success: false, message: 'Email already registered' });
+    }
+
+    const passwordHash = await bcrypt.hash(password, 12);
+    const newAdmin = {
+      email,
+      passwordHash,
+      role,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    await admins.insertOne(newAdmin);
+
+    res.status(201).json({
+      success: true,
+      message: 'Account created successfully',
+      admin: { email, role }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to create account' });
+  }
+});
+
 export default router;
