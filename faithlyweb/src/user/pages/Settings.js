@@ -235,24 +235,24 @@ export default function Settings() {
 
       {/* Main Content */}
       <div className="user-main-content">
-        <div className="user-settings-header">
-          <h1 className="user-page-title">Settings</h1>
-          <p className="user-page-subtitle">Manage your account preferences</p>
+        <div className="user-settings-page-header">
+          <h1 className="user-settings-page-title">Settings</h1>
+          <p className="user-settings-page-subtitle">Manage your account preferences</p>
         </div>
 
         <div className="user-settings-container">
 
           {/* ── Personal Information ──────────────────────────────────── */}
           <div className="user-settings-section user-pi-section">
-            <div className="user-pi-section-header">
-              <div className="user-section-icon-box user-pi-icon-box">
+            <div className="user-settings-section-header">
+              <div className="user-settings-icon-box user-pi-icon-box">
                 <svg width="20" height="20" fill="none" viewBox="0 0 20 20">
                   <path d="M10 10a3.333 3.333 0 1 0 0-6.667A3.333 3.333 0 0 0 10 10Zm0 1.667c-3.683 0-6.667 1.492-6.667 3.333v.833h13.334V15c0-1.841-2.984-3.333-6.667-3.333Z" fill="#155DFC" />
                 </svg>
               </div>
-              <div className="user-section-header-text">
-                <h2 className="user-section-title">Personal Information</h2>
-                <p className="user-section-subtitle">View and manage your profile details</p>
+              <div className="user-settings-header-text">
+                <h2 className="user-settings-section-title">Personal Information</h2>
+                <p className="user-settings-section-subtitle">View and manage your profile details</p>
               </div>
             </div>
 
@@ -415,16 +415,16 @@ export default function Settings() {
 
           {/* ── Notifications ─────────────────────────────────────────── */}
           <div className="user-settings-section">
-            <div className="user-section-header">
-              <div className="user-section-icon-box user-notifications-icon">
-                <svg className="user-section-icon" fill="none" viewBox="0 0 20 20">
+            <div className="user-settings-section-header">
+              <div className="user-settings-icon-box user-notifications-icon">
+                <svg className="user-settings-section-icon" fill="none" viewBox="0 0 20 20">
                   <path d="M15 6.66667C15 5.34058 14.4732 4.06881 13.5355 3.13113C12.5979 2.19345 11.3261 1.66667 10 1.66667C8.67392 1.66667 7.40215 2.19345 6.46447 3.13113C5.52678 4.06881 5 5.34058 5 6.66667C5 12.5 2.5 14.1667 2.5 14.1667H17.5C17.5 14.1667 15 12.5 15 6.66667Z" stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                   <path d="M11.4417 17.5C11.2952 17.7526 11.0849 17.9622 10.8319 18.1079C10.5789 18.2537 10.292 18.3304 10 18.3304C9.70803 18.3304 9.42117 18.2537 9.16816 18.1079C8.91515 17.9622 8.70486 17.7526 8.55835 17.5" stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
                 </svg>
               </div>
-              <div className="user-section-header-text">
-                <h2 className="user-section-title">Notifications</h2>
-                <p className="user-section-subtitle">Manage how you receive updates</p>
+              <div className="user-settings-header-text">
+                <h2 className="user-settings-section-title">Notifications</h2>
+                <p className="user-settings-section-subtitle">Manage how you receive updates</p>
               </div>
             </div>
             <div className="user-settings-group">

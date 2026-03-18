@@ -99,8 +99,8 @@ export default function Attendance() {
       <div className="user-main-content">
         {/* Header */}
         <div className="user-home-header">
-          <h1 className="user-page-title">Attendance Tracking</h1>
-          <p className="user-page-subtitle">Check in to services and view your attendance history</p>
+          <h1 className="user-attendance-page-title">Attendance Tracking</h1>
+          <p className="user-attendance-page-subtitle">Check in to services and view your attendance history</p>
         </div>
 
         {/* Stats */}
@@ -147,7 +147,7 @@ export default function Attendance() {
         <div className="user-attendance-content-grid">
           {/* Check In */}
           <div className="user-check-in-card">
-            <h2 className="user-section-title">Check In</h2>
+            <h2 className="user-attendance-section-title">Check In</h2>
             <p className="user-check-in-subtitle">Select a check-in method:</p>
 
             <div className="user-check-in-method">
@@ -177,7 +177,7 @@ export default function Attendance() {
 
           {/* Upcoming Services */}
           <div className="user-upcoming-services-card">
-            <h2 className="user-section-title">Upcoming Services</h2>
+            <h2 className="user-attendance-section-title">Upcoming Services</h2>
             <div className="user-upcoming-services-list">
               {loading ? (
                 <div className="user-upcoming-active-list">
@@ -242,7 +242,7 @@ export default function Attendance() {
         {/* Attendance History (Preview) */}
         <div className="user-attendance-history-section">
           <div className="user-history-header-row">
-            <h2 className="user-section-title">Recent Attendance History</h2>
+            <h2 className="user-attendance-section-title">Recent Attendance History</h2>
             <button className="user-view-history-btn" onClick={handleOpenHistory}>View History</button>
           </div>
 
@@ -258,7 +258,7 @@ export default function Attendance() {
                 ))}
               </div>
             ) : attendanceData.length === 0 ? (
-              <p className="user-empty-text" style={{ padding: '16px' }}>No attendance records yet.</p>
+              <p className="user-attendance-empty-text" style={{ padding: '16px' }}>No attendance records yet.</p>
             ) : (
               <div className="user-fade-in">
                 <table className="user-attendance-table">
@@ -304,9 +304,9 @@ export default function Attendance() {
 
             <div className="user-modal-body user-history-modal-body">
               {modalLoading ? (
-                <p className="user-modal-loading">Loading history...</p>
+                <p className="user-attendance-modal-loading">Loading history...</p>
               ) : modalHistory.length === 0 ? (
-                <p className="user-modal-empty">No attendance records found.</p>
+                <p className="user-attendance-modal-empty">No attendance records found.</p>
               ) : (
                 <div className="user-attendance-table-wrapper">
                   <table className="user-attendance-table user-modal-table">

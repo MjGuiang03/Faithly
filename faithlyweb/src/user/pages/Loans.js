@@ -193,8 +193,8 @@ export default function Loans() {
         <div className="user-loans-header">
           <div className="user-loans-header-content">
             <div>
-              <h1 className="user-page-title">My Loans</h1>
-              <p className="user-page-subtitle">Manage your loan applications and payments</p>
+              <h1 className="user-loans-page-title">My Loans</h1>
+              <p className="user-loans-page-subtitle">Manage your loan applications and payments</p>
             </div>
 
             <div className="user-loans-header-right">
@@ -255,8 +255,8 @@ export default function Loans() {
             {/* Loans list — only shown when verified */}
             {verificationStatus === 'verified' && (
               <div className="user-all-loans-section">
-                <div className="user-history-header-row">
-                  <h2 className="user-section-title">All Loans</h2>
+                <div className="user-loans-history-header">
+                  <h2 className="user-loans-section-title">All Loans</h2>
                 </div>
 
                 {dataLoading ? (
@@ -345,13 +345,13 @@ export default function Loans() {
 
                 {/* Pagination Controls */}
                 {totalCount > LIMIT && (
-                  <div className="user-pagination">
-                    <p className="user-pagination-info">
+                  <div className="user-loans-pagination">
+                    <p className="user-loans-pagination-info">
                       Showing {((page - 1) * LIMIT) + 1} to {Math.min(page * LIMIT, totalCount)} of {totalCount} records
                     </p>
-                    <div className="user-pagination-controls">
+                    <div className="user-loans-pagination-controls">
                       <button 
-                        className="user-page-btn" 
+                         className="user-loans-page-btn" 
                         onClick={() => setPage(p => Math.max(1, p - 1))}
                         disabled={page === 1}
                       >
@@ -360,14 +360,14 @@ export default function Loans() {
                       {Array.from({ length: Math.ceil(totalCount / LIMIT) }, (_, i) => (
                         <button
                           key={i + 1}
-                          className={`user-page-btn ${page === i + 1 ? 'user-page-btn-active' : ''}`}
+                          className={`user-loans-page-btn ${page === i + 1 ? 'user-loans-page-btn-active' : ''}`}
                           onClick={() => setPage(i + 1)}
                         >
                           {i + 1}
                         </button>
                       ))}
                       <button 
-                        className="user-page-btn" 
+                         className="user-loans-page-btn" 
                         onClick={() => setPage(p => Math.min(Math.ceil(totalCount / LIMIT), p + 1))}
                         disabled={page === Math.ceil(totalCount / LIMIT)}
                       >

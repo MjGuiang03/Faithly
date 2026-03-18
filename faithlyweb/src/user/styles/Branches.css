@@ -134,7 +134,7 @@
 }
 
 /* ─── Filter Bar ─────────────────────────────────────────── */
-.user-filter-bar {
+.user-branches-filter-bar {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -146,13 +146,13 @@
   flex-wrap: wrap;
 }
 
-.user-search-wrap {
+.user-branches-search-wrap {
   position: relative;
   flex: 1;
   min-width: 130px;
 }
 
-.user-search-icon {
+.user-branches-search-icon {
   position: absolute;
   left: 9px;
   top: 50%;
@@ -162,7 +162,7 @@
   pointer-events: none;
 }
 
-.user-branch-search {
+.user-branches-search-input {
   width: 100%;
   height: 33px;
   padding: 0 10px 0 29px;
@@ -177,25 +177,25 @@
   transition: border-color 0.2s;
 }
 
-.user-branch-search:focus {
+.user-branches-search-input:focus {
   border-color: #155dfc;
   background: white;
 }
 
-.user-filter-group {
+.user-branches-filter-group {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-.user-filter-label {
+.user-branches-filter-label {
   font-size: 12px;
   color: #6b7280;
   font-family: Arial, sans-serif;
   white-space: nowrap;
 }
 
-.user-filter-select {
+.user-branches-filter-select {
   height: 33px;
   padding: 0 24px 0 9px;
   border: 0.8px solid #e5e7eb;
@@ -210,12 +210,12 @@
   transition: border-color 0.2s;
 }
 
-.user-filter-select:focus {
+.user-branches-filter-select:focus {
   border-color: #155dfc;
   background-color: white;
 }
 
-.user-filter-count {
+.user-branches-filter-count {
   margin-left: auto;
   font-size: 12px;
   color: #6b7280;
@@ -724,12 +724,12 @@
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .user-filter-bar {
+  .user-branches-filter-bar {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .user-filter-count {
+  .user-branches-filter-count {
     margin-left: 0;
     text-align: center;
   }

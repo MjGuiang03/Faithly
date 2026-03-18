@@ -67,7 +67,7 @@
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-.user-section-title {
+.user-donation-section-title {
   font-size: 17px;
   font-weight: 700;
   color: #101828;
@@ -82,13 +82,13 @@
   gap: 16px;
 }
 
-.user-form-group {
+.user-donation-form-group {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.user-form-label {
+.user-donation-form-label {
   font-size: 13px;
   color: #364153;
   margin: 0;
@@ -194,7 +194,7 @@
   pointer-events: none;
 }
 
-.user-form-select {
+.user-donation-form-select {
   height: 40px;
   padding: 0 16px;
   border-radius: 10px;
@@ -615,19 +615,19 @@
   border-bottom: 1px solid #e5e7eb;
 }
 
-.user-filter-group {
+.user-donation-filter-group {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.user-filter-label {
+.user-donation-filter-label {
   font-size: 13px;
   font-weight: 500;
   color: #4b5563;
 }
 
-.user-filter-select {
+.user-donation-filter-select {
   padding: 4px 8px;
   border-radius: 6px;
   border: 1px solid #d1d5db;

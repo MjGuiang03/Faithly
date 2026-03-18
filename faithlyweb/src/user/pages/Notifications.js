@@ -231,19 +231,19 @@ export default function Notifications() {
       <div className="user-notif-main">
 
         {/* Header */}
-        <div className="user-notif-header">
-          <div className="user-notif-header-left">
-            <div className="user-notif-title-row">
-              <h1 className="user-notif-title">Notifications</h1>
+        <div className="user-notifications-page-header">
+          <div className="user-notifications-header-left">
+            <div className="user-notifications-title-row">
+              <h1 className="user-notifications-page-title">Notifications</h1>
               {unreadCount('all') > 0 && (
-                <span className="user-notif-count-pill">{unreadCount('all')}</span>
+                <span className="user-notifications-count-pill">{unreadCount('all')}</span>
               )}
             </div>
-            <p className="user-notif-subtitle">
+            <p className="user-notifications-page-subtitle">
               Stay up to date with your loans, donations, and attendance activity.
             </p>
           </div>
-          <button className="user-notif-mark-all-btn" onClick={markAllAsRead}>
+          <button className="user-notifications-mark-all-btn" onClick={markAllAsRead}>
             Mark all as read
           </button>
         </div>

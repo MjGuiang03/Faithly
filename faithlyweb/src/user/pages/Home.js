@@ -160,8 +160,8 @@ export default function Home() {
       <div className="user-main-content">
         {/* Header — avatar removed */}
         <div className="user-home-header">
-          <h1 className="user-page-title">Welcome Back{user?.fullName ? `, ${user.fullName.split(' ')[0]}` : ''}!</h1>
-          <p className="user-page-subtitle">Here's an overview of your church activities</p>
+          <h1 className="user-home-page-title">Welcome Back{user?.fullName ? `, ${user.fullName.split(' ')[0]}` : ''}!</h1>
+          <p className="user-home-page-subtitle">Here's an overview of your church activities</p>
         </div>
 
         {/* Stats Grid */}
@@ -226,8 +226,8 @@ export default function Home() {
         {/* Dashboard Grid */}
         <div className="user-dashboard-grid">
           {/* Quick Actions */}
-          <div className="user-card user-quick-actions-card">
-            <h2 className="user-card-title">Quick Actions</h2>
+          <div className="user-home-card user-home-quick-actions-card">
+            <h2 className="user-home-card-title">Quick Actions</h2>
             <div className="user-quick-actions-list">
               {quickActions.map((action, index) => (
                 <button
@@ -250,8 +250,8 @@ export default function Home() {
           </div>
 
           {/* Recent Activities */}
-          <div className="user-card user-recent-activity-card">
-            <h2 className="user-card-title">Recent Activities</h2>
+          <div className="user-home-card user-home-recent-activity-card">
+            <h2 className="user-home-card-title">Recent Activities</h2>
             <div className="user-activity-list">
               {loading ? (
                 [1, 2, 3, 4, 5].map(i => (
@@ -264,7 +264,7 @@ export default function Home() {
                   </div>
                 ))
               ) : recentActivity.length === 0 ? (
-                <p className="user-empty-text">No recent activity yet.</p>
+                <p className="user-home-empty-text">No recent activity yet.</p>
               ) : (
                 <div className="user-fade-in">
                   {recentActivity.map((activity, index) => (
@@ -286,10 +286,10 @@ export default function Home() {
             </div>
           </div>
         {/* Upcoming Loan Payments */}
-        <div className="user-full-width-section">
-          <div className="user-card user-payments-card">
-            <div className="user-card-header">
-              <h2 className="user-card-title">Upcoming Loan Payment</h2>
+        <div className="user-home-full-width-section">
+          <div className="user-home-card user-home-payments-card">
+            <div className="user-home-card-header">
+              <h2 className="user-home-card-title">Upcoming Loan Payment</h2>
             </div>
             {loading ? (
               <div className="user-payments-list">
@@ -308,7 +308,7 @@ export default function Home() {
                 </div>
               </div>
             ) : activeLoans.length === 0 ? (
-              <p className="user-empty-text">No active loans at the moment.</p>
+              <p className="user-home-empty-text">No active loans at the moment.</p>
             ) : (
               <div className="user-payments-list user-fade-in">
                 {activeLoans.slice(0, 1).map((loan, index) => (

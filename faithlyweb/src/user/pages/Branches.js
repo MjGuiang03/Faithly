@@ -205,9 +205,9 @@ export default function Branches() {
       <Sidebar />
 
       <div className="user-main-content">
-        <div className="user-branches-header">
-          <h1 className="user-page-title">Our Branches</h1>
-          <p className="user-page-subtitle">Find a church location near you</p>
+        <div className="user-branches-page-header">
+          <h1 className="user-branches-page-title">Our Branches</h1>
+          <p className="user-branches-page-subtitle">Find a church location near you</p>
         </div>
 
         {/* ── My Community Banner ─────────────────────────────── */}
@@ -257,26 +257,26 @@ export default function Branches() {
         </div>
 
         {/* ── Filter Bar ─────────────────────────────────────── */}
-        <div className="user-filter-bar">
-          <div className="user-search-wrap">
-            <svg className="user-search-icon" fill="none" viewBox="0 0 20 20">
+        <div className="user-branches-filter-bar">
+          <div className="user-branches-search-wrap">
+            <svg className="user-branches-search-icon" fill="none" viewBox="0 0 20 20">
               <path d="M17.5 17.5 13.875 13.875M15.833 9.167a6.667 6.667 0 1 1-13.333 0 6.667 6.667 0 0 1 13.333 0Z" stroke="#99A1AF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.67" />
             </svg>
-            <input className="user-branch-search" placeholder="Search branches…" value={search} onChange={e => setSearch(e.target.value)} />
+            <input className="user-branches-search-input" placeholder="Search branches…" value={search} onChange={e => setSearch(e.target.value)} />
           </div>
-          <div className="user-filter-group">
-            <label className="user-filter-label">Region</label>
-            <select className="user-filter-select" value={selectedRegion} onChange={e => { setSelectedRegion(e.target.value); setSelectedProvince('All'); }}>
+          <div className="user-branches-filter-group">
+            <label className="user-branches-filter-label">Region</label>
+            <select className="user-branches-filter-select" value={selectedRegion} onChange={e => { setSelectedRegion(e.target.value); setSelectedProvince('All'); }}>
               {regions.map(r => <option key={r}>{r}</option>)}
             </select>
           </div>
-          <div className="user-filter-group">
-            <label className="user-filter-label">Province</label>
-            <select className="user-filter-select" value={selectedProvince} onChange={e => setSelectedProvince(e.target.value)}>
+          <div className="user-branches-filter-group">
+            <label className="user-branches-filter-label">Province</label>
+            <select className="user-branches-filter-select" value={selectedProvince} onChange={e => setSelectedProvince(e.target.value)}>
               {provinces.map(p => <option key={p}>{p}</option>)}
             </select>
           </div>
-          <span className="user-filter-count">{filtered.length} branch{filtered.length !== 1 ? 'es' : ''}</span>
+          <span className="user-branches-filter-count">{filtered.length} branch{filtered.length !== 1 ? 'es' : ''}</span>
         </div>
 
         {/* ── Branch Groups ──────────────────────────────────── */}

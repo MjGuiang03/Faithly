@@ -27,26 +27,26 @@
 
 
 /* Header Section */
-.user-notif-header {
+.user-notifications-page-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
 }
 
-.user-notif-header-left {
+.user-notifications-header-left {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.user-notif-title-row {
+.user-notifications-title-row {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.user-notif-title {
+.user-notifications-page-title {
   font-family: Arial, sans-serif;
   font-size: 26px;
   font-weight: 700;
@@ -55,7 +55,7 @@
   line-height: 34px;
 }
 
-.user-notif-count-pill {
+.user-notifications-count-pill {
   background: #155dfc;
   color: white;
   font-family: Arial, sans-serif;
@@ -71,7 +71,7 @@
   justify-content: center;
 }
 
-.user-notif-subtitle {
+.user-notifications-page-subtitle {
   font-family: Arial, sans-serif;
   font-size: 14px;
   color: #4a5565;
@@ -79,7 +79,7 @@
   line-height: 20px;
 }
 
-.user-notif-mark-all-btn {
+.user-notifications-mark-all-btn {
   background: white;
   border: 0.8px solid #d1d5dc;
   border-radius: 10px;
@@ -93,7 +93,7 @@
   flex-shrink: 0;
 }
 
-.user-notif-mark-all-btn:hover {
+.user-notifications-mark-all-btn:hover {
   background: #f9fafb;
   border-color: #9ca3af;
 }

@@ -39,12 +39,12 @@ export default function Welcome() {
     <div className="user-welcome-container-new">
       {/* Header */}
       <header className="user-welcome-header-new">
-        <div className="user-header-content-new">
-          <div className="user-logo-section-new">
-            <img src={puacLogo} alt="PUAC Logo" className="user-logo-image-new" />
+        <div className="user-welcome-header-content-new">
+          <div className="user-welcome-logo-section-new">
+            <img src={puacLogo} alt="PUAC Logo" className="user-welcome-logo-image-new" />
             <div>
-              <h1 className="user-logo-title-new">FaithLy</h1>
-              <p className="user-logo-subtitle-new">Loan Management Portal</p>
+              <h1 className="user-welcome-logo-title-new">FaithLy</h1>
+              <p className="user-welcome-logo-subtitle-new">Loan Management Portal</p>
             </div>
           </div>
         </div>

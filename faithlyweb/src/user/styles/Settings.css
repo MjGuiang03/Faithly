@@ -18,13 +18,13 @@
 }
 
 /* Section Header */
-.user-section-header {
+.user-settings-section-header {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.user-section-icon-box {
+.user-settings-icon-box {
   width: 40px;
   height: 40px;
   border-radius: 10px;
@@ -34,23 +34,23 @@
   flex-shrink: 0;
 }
 
-.user-section-icon-box.user-notifications-icon { background: #dbeafe; }
-.user-section-icon-box.user-security-icon      { background: #dcfce7; }
-.user-section-icon-box.user-preferences-icon   { background: #f3e8ff; }
-.user-section-icon-box.user-payment-icon       { background: #fef3c7; }
+.user-settings-icon-box.user-notifications-icon { background: #dbeafe; }
+.user-settings-icon-box.user-security-icon      { background: #dcfce7; }
+.user-settings-icon-box.user-preferences-icon   { background: #f3e8ff; }
+.user-settings-icon-box.user-payment-icon       { background: #fef3c7; }
 
-.user-section-icon {
+.user-settings-section-icon {
   width: 20px;
   height: 20px;
 }
 
-.user-section-header-text {
+.user-settings-header-text {
   display: flex;
   flex-direction: column;
   gap: 0;
 }
 
-.user-section-title {
+.user-settings-section-title {
   font-size: 20px;
   font-weight: 700;
   color: #101828;
@@ -59,7 +59,7 @@
   font-family: Arial, sans-serif;
 }
 
-.user-section-subtitle {
+.user-settings-section-subtitle {
   font-size: 14px;
   color: #4a5565;
   margin: 0;
@@ -756,11 +756,11 @@
 }
 
 /* Settings Header */
-.user-settings-header {
+.user-settings-page-header {
   margin-bottom: 24px;
 }
 
-.user-page-title {
+.user-settings-page-title {
   font-size: 28px;
   font-weight: 700;
   color: #101828;
@@ -768,7 +768,7 @@
   font-family: Arial, sans-serif;
 }
 
-.user-page-subtitle {
+.user-settings-page-subtitle {
   font-size: 16px;
   color: #6b7280;
   margin: 0;

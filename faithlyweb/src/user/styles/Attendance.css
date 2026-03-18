@@ -63,7 +63,7 @@
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-.user-section-title {
+.user-attendance-section-title {
   font-size: 17px;
   font-weight: 700;
   color: #101828;
@@ -427,7 +427,7 @@
   margin-top: 4px;
 }
 
-.user-pagination-info {
+.user-attendance-pagination-info {
   font-size: 12px;
   color: #6a7282;
   font-family: Arial, sans-serif;
@@ -477,7 +477,7 @@
   background: #1447e6 !important;
 }
 
-.user-empty-text {
+.user-attendance-empty-text {
   font-size: 13px;
   color: #9ca3af;
   font-family: Arial, sans-serif;

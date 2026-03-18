@@ -161,8 +161,8 @@ export default function Donation() {
 
           {/* Header */}
           <div className="user-home-header">
-            <h1 className="user-page-title">Donations</h1>
-            <p className="user-page-subtitle">Support the church and track your giving</p>
+            <h1 className="user-donation-page-title">Donations</h1>
+            <p className="user-donation-page-subtitle">Support the church and track your giving</p>
           </div>
 
           {/* Stats */}
@@ -205,12 +205,12 @@ export default function Donation() {
 
             {/* Left: Make a Donation */}
             <div className="user-donation-form-card">
-              <h2 className="user-section-title">Make a Donation</h2>
+              <h2 className="user-donation-section-title">Make a Donation</h2>
               <div className="user-donation-form">
 
                 {/* Amount */}
-                <div className="user-form-group">
-                  <label className="user-form-label">Donation Amount</label>
+                <div className="user-donation-form-group">
+                  <label className="user-donation-form-label">Donation Amount</label>
                   <div className="user-amount-input-wrapper">
                     <span className="user-currency-symbol">₱</span>
                     <input
@@ -237,11 +237,11 @@ export default function Donation() {
                 </div>
 
                 {/* Category */}
-                <div className="user-form-group">
-                  <label className="user-form-label">Donation Category</label>
+                <div className="user-donation-form-group">
+                  <label className="user-donation-form-label">Donation Category</label>
                   <div className="user-select-wrapper">
                     <select
-                      className="user-form-select user-category-select"
+                      className="user-donation-form-select user-category-select"
                       value={donationCategory}
                       onChange={(e) => { setDonationCategory(e.target.value); setFormError(''); }}
                       disabled={submitting}
@@ -256,8 +256,8 @@ export default function Donation() {
                 </div>
 
                 {/* Payment Method */}
-                <div className="user-form-group">
-                  <label className="user-form-label">Payment Method</label>
+                <div className="user-donation-form-group">
+                  <label className="user-donation-form-label">Payment Method</label>
                   <div className="user-payment-methods">
                     <button
                       className={`user-payment-method-btn${paymentMethod === 'GCash' ? ' active' : ''}`}
@@ -312,7 +312,7 @@ export default function Donation() {
             {/* Right: Donation History (Preview) */}
             <div className="user-donation-history-card">
               <div className="user-history-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <h2 className="user-section-title" style={{ marginBottom: 0 }}>Donation History</h2>
+                <h2 className="user-donation-section-title" style={{ marginBottom: 0 }}>Donation History</h2>
                 <button className="user-view-history-btn" onClick={handleOpenHistory}>View History</button>
               </div>
 
@@ -417,10 +417,10 @@ export default function Donation() {
             </div>
 
             <div className="user-modal-filters">
-              <div className="user-filter-group">
-                <label className="user-filter-label" style={{ marginRight: '8px' }}>Filter by Category:</label>
+              <div className="user-donation-filter-group">
+                <label className="user-donation-filter-label" style={{ marginRight: '8px' }}>Filter by Category:</label>
                 <select
-                  className="user-filter-select"
+                  className="user-donation-filter-select"
                   value={modalCategory}
                   onChange={(e) => {
                     setModalCategory(e.target.value);
