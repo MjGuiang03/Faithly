@@ -16,6 +16,7 @@ export default function Home() {
   const [activeLoans, setActiveLoans] = useState([]);
   const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [verificationStatus, setVerificationStatus] = useState(null);
 
   const token = localStorage.getItem('token');
   const memberSince = user?.created_at ? new Date(user.created_at).getFullYear() : new Date().getFullYear();
@@ -29,12 +30,14 @@ export default function Home() {
         fetch(`${API}/api/loans/my-loans`, { headers }),
         fetch(`${API}/api/donations/my-donations`, { headers }),
         fetch(`${API}/api/attendance/my-attendance`, { headers }),
+        fetch(`${API}/api/verification/status`, { headers }),
       ]);
 
-      const [loansData, donationsData, attendanceData] = await Promise.all([
+      const [loansData, donationsData, attendanceData, verificationData] = await Promise.all([
         loansRes.json(),
         donationsRes.json(),
         attendanceRes.json(),
+        arguments[3].json(), // verificationRes
       ]);
 
       if (loansRes.ok && loansData.success) {
@@ -46,6 +49,9 @@ export default function Home() {
       }
       if (attendanceRes.ok && attendanceData.success) {
         setAttendanceStats(attendanceData.stats || { total: 0 });
+      }
+      if (arguments[3].ok && verificationData.success) {
+        setVerificationStatus(verificationData.verificationStatus);
       }
 
       const activities = [];
@@ -304,8 +310,8 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Upcoming Loan Payments — Conditional */}
-          {user?.role === 'officer' && (
+          {/* Upcoming Loan Payments — Conditional: Only if verified officer */}
+          {verificationStatus === 'verified' && (
             <div className="user-home-full-width-section">
               <div className="user-home-card user-home-payments-card">
                 <div className="user-home-card-header">

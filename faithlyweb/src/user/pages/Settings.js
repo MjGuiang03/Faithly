@@ -289,8 +289,12 @@ export default function Settings() {
                 <span className="user-pi-card-name">{displayName}</span>
                 <span className="user-pi-card-email">{displayEmail}</span>
                 <div className="user-pi-card-badges">
-                  <span className="user-pi-badge user-pi-badge-member">Member</span>
-                  <span className="user-pi-badge user-pi-badge-level">Level 1</span>
+                  <span className="user-pi-badge user-pi-badge-member">
+                    {verificationStatus === 'verified' ? 'Officer' : 'Member'}
+                  </span>
+                  <span className="user-pi-badge user-pi-badge-level">
+                    {verificationStatus === 'verified' ? 'Level 2' : 'Level 1'}
+                  </span>
                   {/* ── Verification badge lives here ── */}
                   {renderVerificationBadge()}
                 </div>
