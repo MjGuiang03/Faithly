@@ -255,17 +255,27 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Community Section — New */}
+          {/* Community Section — Real Map */}
           <div className="user-home-card user-home-community-card">
             <div className="user-community-badge">CHURCH HUB</div>
             <h2 className="user-home-card-title">Your Community</h2>
+            <div className="user-community-info-wrap">
+              <p className="user-community-branch-name">{profile?.branch || 'PUAC Main'}</p>
+            </div>
+            
+            <div className="user-community-map-container">
+              <iframe
+                title="Community Map"
+                width="100%"
+                height="150"
+                style={{ border: 0, borderRadius: '12px' }}
+                loading="lazy"
+                allowFullScreen
+                src={`https://maps.google.com/maps?q=${encodeURIComponent(profile?.branch || 'Meycauayan City, Bulacan')},Philippines&t=&z=14&ie=UTF8&iwloc=&output=embed`}
+              ></iframe>
+            </div>
+
             <div className="user-community-content">
-              <div className="user-community-illustration">
-                <svg fill="none" viewBox="0 0 24 24" width="40" height="40">
-                  <path d="M12 21s-8-7.5-8-12a8 8 0 1 1 16 0c0 4.5-8 12-8 12Z" stroke="#155DFC" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                  <circle cx="12" cy="9" r="2.5" stroke="#155DFC" strokeWidth="1.8" />
-                </svg>
-              </div>
               <p className="user-community-text">Stay updated with your local branch and upcoming events in your area.</p>
               <button className="user-community-action-btn" onClick={() => navigate('/branches')}>
                 Explore Branches
