@@ -133,14 +133,13 @@ export default function AdminSidebar() {
         </button>
 
         {/* ── People ── */}
-        <p className="admin-sidebar-group-label">People</p>
         <div className={`admin-sidebar-dropdown ${isMembersOpen ? 'open' : ''}`}>
           <button
             onClick={() => setIsMembersOpen(!isMembersOpen)}
             className={`admin-sidebar-nav-button ${isGroupActive('/admin/members', '/admin/officerverification', '/admin/branches') ? 'active' : ''}`}
           >
             <Users size={20} />
-            <span>Members</span>
+            <span>People</span>
             <span className="admin-sidebar-chevron">
               {isMembersOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
             </span>
@@ -173,14 +172,13 @@ export default function AdminSidebar() {
         </div>
 
         {/* ── Finance & Activity ── */}
-        <p className="admin-sidebar-group-label">Finance & Activity</p>
         <div className={`admin-sidebar-dropdown ${isFinanceOpen ? 'open' : ''}`}>
           <button
             onClick={() => setIsFinanceOpen(!isFinanceOpen)}
             className={`admin-sidebar-nav-button ${isGroupActive('/admin/donations', '/admin/attendance') ? 'active' : ''}`}
           >
             <Heart size={20} />
-            <span>Finance</span>
+            <span>Finance & Activity</span>
             <span className="admin-sidebar-chevron">
               {isFinanceOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
             </span>
@@ -204,7 +202,6 @@ export default function AdminSidebar() {
         </div>
 
         {/* ── Communication ── */}
-        <p className="admin-sidebar-group-label">Communication</p>
         <div className={`admin-sidebar-dropdown ${isCommsOpen ? 'open' : ''}`}>
           <button
             onClick={() => setIsCommsOpen(!isCommsOpen)}
@@ -229,7 +226,6 @@ export default function AdminSidebar() {
         </div>
 
         {/* ── Admin ── */}
-        <p className="admin-sidebar-group-label">Admin</p>
         <div className={`admin-sidebar-dropdown ${isAdminOpen ? 'open' : ''}`}>
           <button
             onClick={() => setIsAdminOpen(!isAdminOpen)}
