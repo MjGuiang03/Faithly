@@ -4,7 +4,7 @@
 }
 
 /* ─── My Community Banner ────────────────────────────────── */
-.my-community-banner {
+.user-my-community-banner {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -70,7 +70,7 @@
   font-family: Arial, sans-serif;
 }
 
-.mcb-right {
+.user-mcb-right {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -99,7 +99,7 @@
 }
 
 /* ─── Stats ──────────────────────────────────────────────── */
-.branches-stats {
+.user-branches-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
@@ -134,7 +134,7 @@
 }
 
 /* ─── Filter Bar ─────────────────────────────────────────── */
-.filter-bar {
+.user-filter-bar {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -215,7 +215,7 @@
   background-color: white;
 }
 
-.filter-count {
+.user-filter-count {
   margin-left: auto;
   font-size: 12px;
   color: #6b7280;
@@ -270,7 +270,7 @@
 }
 
 /* ─── Card Grid ──────────────────────────────────────────── */
-.branch-card-grid {
+.user-branch-card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 8px;
@@ -364,7 +364,7 @@
   text-overflow: ellipsis;
 }
 
-.bci-arrow {
+.user-bci-arrow {
   width: 14px;
   height: 14px;
   flex-shrink: 0;
@@ -407,7 +407,7 @@
 }
 
 /* ─── Drawer ─────────────────────────────────────────────── */
-.branch-drawer {
+.user-branch-drawer {
   position: fixed;
   top: 0;
   right: 0;
@@ -532,11 +532,11 @@
   scrollbar-color: #e5e7eb transparent;
 }
 
-.drawer-body::-webkit-scrollbar {
+.user-drawer-body::-webkit-scrollbar {
   width: 4px;
 }
 
-.drawer-body::-webkit-scrollbar-thumb {
+.user-drawer-body::-webkit-scrollbar-thumb {
   background: #e5e7eb;
   border-radius: 4px;
 }
@@ -628,7 +628,7 @@
   gap: 7px;
 }
 
-.drawer-map-placeholder span {
+.user-drawer-map-placeholder span {
   font-size: 12px;
   color: #9ca3af;
   font-family: Arial, sans-serif;
