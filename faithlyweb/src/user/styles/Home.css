@@ -10,19 +10,10 @@
   display: flex;
   flex-direction: column;
   gap: 32px;
-  width: 100%;
-  margin-left: 256px;
-  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  background: #f2f2f2 !important;
-  min-width: 0;
   overflow-x: hidden;
-  box-sizing: border-box;
 }
 
-.user-sidebar-collapsed~.user-main-content {
-  margin-left: 72px;
-}
-
+/* Spacing */
 .user-history-header-row {
   display: flex;
   justify-content: space-between;
@@ -194,7 +185,9 @@
 }
 
 .user-full-width-section {
+  grid-column: 1 / -1;
   width: 100%;
+  margin-top: 8px; /* Extra breathing room */
 }
 
 .user-side-column {
