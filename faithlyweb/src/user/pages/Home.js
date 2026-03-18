@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 import svgPaths from '../../imports/svg-icons';
 import Sidebar from '../components/Sidebar';
+import AnnouncementModal from '../components/AnnouncementModal';
 import API from '../../utils/api';
 import '../styles/Home.css';
 
@@ -13,6 +14,7 @@ export default function Home() {
   const [loanStats, setLoanStats] = useState({ activeCount: 0, remainingBalance: 0 });
   const [donationStats, setDonationStats] = useState({ totalDonated: 0 });
   const [attendanceStats, setAttendanceStats] = useState({ total: 0 });
+  const [showAnnouncements, setShowAnnouncements] = useState(false);
   const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -206,6 +208,19 @@ export default function Home() {
             </div>
           </div>
 
+          <div className="user-stat-card user-stat-orange" style={{ cursor: 'pointer' }} onClick={() => setShowAnnouncements(true)}>
+            <div className="user-stat-icon-box">
+              <svg className="user-stat-icon" fill="none" viewBox="0 0 24 24">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+              </svg>
+            </div>
+            <div className="user-stat-content">
+              <p className="user-stat-label">Announcements</p>
+              <p className="user-stat-value user-fade-in" style={{ fontSize: '0.85rem', fontWeight: '500' }}>Church Updates</p>
+            </div>
+          </div>
+
         </div>
 
         {/* Dashboard Grid */}
@@ -307,6 +322,12 @@ export default function Home() {
           <path d={svgPaths.p261dfb00} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
         </svg>
       </button>
+
+      {/* Announcements Modal */}
+      <AnnouncementModal
+        isOpen={showAnnouncements}
+        onClose={() => setShowAnnouncements(false)}
+      />
     </div>
   );
 }

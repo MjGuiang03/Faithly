@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { users, admins, otps } from '../config/db.js';
+import { users, admins, otps, announcements } from '../config/db.js';
 import { validate } from '../middleware/validate.js';
 import { loginLimiter } from '../middleware/rateLimiter.js';
 import { authenticateAdmin } from '../middleware/auth.js';
@@ -249,4 +249,53 @@ router.post('/create-admin', authenticateAdmin, async (req, res) => {
   }
 });
 
-export default router;
+/* ================== ANNOUNCEMENTS - GET ALL (USER) ================== */
+router.get('/announcements', async (req, res) => {
+  try {
+    const all = await announcements.find({}).sort({ createdAt: -1 }).toArray();
+    res.status(200).json({ success: true, announcements: all });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to fetch announcements' });
+  }
+});
+
+/* ================== ANNOUNCEMENTS - CREATE (ADMIN) ================== */
+router.post('/announcements', authenticateAdmin, async (req, res) => {
+  try {
+    const { title, body, category } = req.body;
+    if (!title || !body) {
+      return res.status(400).json({ success: false, message: 'Title and body are required' });
+    }
+    const doc = {
+      title,
+      body,
+      category: category || 'General',
+      createdBy: req.admin.email,
+      createdAt: new Date(),
+    };
+    const result = await announcements.insertOne(doc);
+    res.status(201).json({ success: true, message: 'Announcement created', id: result.insertedId });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to create announcement' });
+  }
+});
+
+/* ================== ANNOUNCEMENTS - DELETE (ADMIN) ================== */
+router.delete('/announcements/:id', authenticateAdmin, async (req, res) => {
+  try {
+    const { ObjectId } = await import('mongodb');
+    const { id } = req.params;
+    const result = await announcements.deleteOne({ _id: new ObjectId(id) });
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ success: false, message: 'Announcement not found' });
+    }
+    res.status(200).json({ success: true, message: 'Announcement deleted' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to delete announcement' });
+  }
+});
+
+export default router;
