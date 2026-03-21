@@ -459,4 +459,20 @@
 .admin-toggle-switch input:checked + .admin-toggle-slider:before { 
   transform: translateX(22px); 
 }
+
+/* ========== DARK MODE OVERRIDES ========== */
+.dark .admin-sidebar {
+  background: #2C2F36;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dark .sidebar-nav-button:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.dark .sidebar-nav-button.active {
+  background: #363940;
+  border-left: 4px solid #F5C800;
+  color: white;
+}
 

@@ -100,7 +100,7 @@
   font-family: Arial, sans-serif;
   font-size: 13px;
   font-weight: 700;
-  color: #2b612b; /* Greenish/Dark Green from screenshot */
+  color: #1E3A8A;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin: 0;
@@ -108,8 +108,8 @@
 }
 
 .user-home-info-pill {
-  background: #0f2854; /* Navy pill background */
-  color: rgba(255, 255, 255, 0.72); /* Light blueish text */
+  background: #0f2854;
+  color: rgba(255, 255, 255, 0.72);
   padding: 8px 18px;
   border-radius: 100px;
   font-size: 14px;
@@ -119,6 +119,26 @@
   gap: 8px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   font-family: Arial, sans-serif;
+}
+
+/* Dark mode overrides for Home Header */
+.dark .user-home-date-top {
+  color: #7090D0;
+}
+
+.dark .user-home-page-title {
+  color: #FFFFFF;
+}
+
+.dark .user-home-page-subtitle {
+  color: #B0B8CC;
+}
+
+.dark .user-home-info-pill {
+  background: #363940;
+  color: #F0F2F8;
+  border-color: #484C55;
+  box-shadow: none;
 }
 
 /* Stats Grid */

@@ -162,7 +162,7 @@
 }
 
 .user-sidebar-nav-button.active {
-  background: rgba(245, 200, 0, 0.12);
+  background: rgba(255, 255, 255, 0.08);
   color: white;
   border-left: 4px solid #F5C800;
 }
@@ -554,5 +554,30 @@
 
 .user-sidebar-collapsed .user-sidebar-theme-toggle {
   padding: 12px 4px;
+}
+
+/* ========== DARK MODE OVERRIDES ========== */
+.dark .user-sidebar {
+  background: #2C2F36;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dark .user-sidebar-toggle-btn {
+  background: #363940;
+  border-color: #484C55;
+}
+
+.dark .user-sidebar-toggle-btn:hover {
+  background: #484C55;
+}
+
+.dark .user-sidebar-nav-button:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.dark .user-sidebar-nav-button.active {
+  background: #363940; /* Dark card color */
+  border-left: 4px solid #F5C800;
+  color: white;
 }
 
