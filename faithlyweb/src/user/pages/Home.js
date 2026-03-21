@@ -114,8 +114,8 @@ export default function Home() {
 
   const quickActions = [
     {
-      title: 'Make a\nDonation',
-      description: 'Support the\nchurch today',
+      title: 'Make a Donation',
+      description: 'Support the church today',
       className: 'user-action-btn-donate',
       action: () => navigate('/donation'),
       icon: (
@@ -126,8 +126,8 @@ export default function Home() {
       )
     },
     {
-      title: 'Check\nAttendance',
-      description: 'View your\nattendance\nrecord',
+      title: 'Check Attendance',
+      description: 'View your attendance record',
       className: 'user-action-btn-attendance',
       action: () => navigate('/attendance'),
       icon: (
@@ -140,8 +140,8 @@ export default function Home() {
       )
     },
     {
-      title: 'View\nNearby\nCommunity',
-      description: 'Find local\nbranches',
+      title: 'View Nearby Community',
+      description: 'Find local branches',
       className: 'user-action-btn-community',
       action: () => navigate('/branches'),
       icon: (
@@ -269,8 +269,8 @@ export default function Home() {
                     {action.icon}
                   </div>
                   <div className="user-action-content">
-                    <h3 className="user-action-title" style={{ whiteSpace: 'pre-line' }}>{action.title}</h3>
-                    <p className="user-action-description" style={{ whiteSpace: 'pre-line' }}>{action.description}</p>
+                    <h3 className="user-action-title">{action.title}</h3>
+                    <p className="user-action-description">{action.description}</p>
                   </div>
                   <svg className="user-action-arrow" fill="none" viewBox="0 0 20 20">
                     <path d="M4.16667 10H15.8333" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
@@ -320,7 +320,6 @@ export default function Home() {
                 </div>
                 <h2 className="user-home-card-title">Recent Activity</h2>
               </div>
-              <button className="user-activity-view-all">View all activity</button>
             </div>
             <div className="user-activity-list">
               {loading ? (
