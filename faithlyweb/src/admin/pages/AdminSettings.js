@@ -26,7 +26,7 @@ export default function AdminSettings() {
   useEffect(() => {
     const adminEmail = localStorage.getItem('adminEmail');
     if (!adminEmail) {
-      navigate('/admin/login');
+      navigate('/');
       return;
     }
   }, [navigate]);

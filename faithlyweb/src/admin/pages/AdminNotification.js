@@ -57,7 +57,7 @@ export default function AdminNotifications() {
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
     if (!token) {
-      navigate('/admin/login');
+      navigate('/');
       return;
     }
     fetchNotifications();

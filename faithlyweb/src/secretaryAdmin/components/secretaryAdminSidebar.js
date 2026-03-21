@@ -71,7 +71,7 @@ export default function SecretaryAdminSidebar() {
         localStorage.removeItem('secretaryRole');
         toast.success('Signed out successfully');
         setShowLogoutModal(false);
-        navigate('/secretary-admin/login');
+        navigate('/');
     };
 
     return (

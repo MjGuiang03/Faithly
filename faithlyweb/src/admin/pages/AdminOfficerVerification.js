@@ -307,7 +307,7 @@ export default function AdminOfficerVerification() {
 
   useEffect(() => {
     const adminEmail = localStorage.getItem('adminEmail');
-    if (!adminEmail) { navigate('/admin/login'); return; }
+    if (!adminEmail) { navigate('/'); return; }
     fetchVerifications();
   }, [navigate, fetchVerifications]);
 

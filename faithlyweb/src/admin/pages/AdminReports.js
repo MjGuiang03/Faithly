@@ -108,7 +108,7 @@ export default function AdminReports() {
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
-    if (!token) { navigate('/admin/login'); return; }
+    if (!token) { navigate('/'); return; }
     fetchReports();
   }, [navigate, fetchReports]);
 

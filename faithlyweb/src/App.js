@@ -19,7 +19,7 @@ import Notifications from './user/pages/Notifications'
 import Settings from './user/pages/Settings';
 
 // Admin Pages
-import AdminLogin from './admin/pages/AdminLogin';
+
 import AdminLayout from './admin/pages/AdminLayout';
 import AdminDashboard from './admin/pages/AdminDashboard';
 import AdminMembers from './admin/pages/AdminMembers';
@@ -68,8 +68,6 @@ export default function App() {
           <Route path="/verify-email" element={<VerifyEmail />} />
 
           {/* ========== ADMIN ROUTES ========== */}
-          {/* Public admin login — no layout */}
-          <Route path="/admin/login" element={<AdminLogin />} />
 
           {/* Redirect /admin → /admin/dashboard */}
           <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />

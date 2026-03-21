@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { users, otps, pendingRegistrations } from '../config/db.js';
+import { users, admins, otps, pendingRegistrations } from '../config/db.js';
 import { validate } from '../middleware/validate.js';
 import { loginLimiter, registerLimiter, otpLimiter, resendOtpLimiter } from '../middleware/rateLimiter.js';
 import { authenticateUser } from '../middleware/auth.js';
@@ -189,7 +189,7 @@ router.post('/resend-otp',
   }
 );
 
-/* ================== LOGIN ================== */
+/* ================== UNIFIED LOGIN (Users + Admins) ================== */
 router.post('/login',
   loginLimiter,
   validate([
@@ -199,6 +199,31 @@ router.post('/login',
   async (req, res) => {
     try {
       const { email, password } = req.body;
+
+      /* ---- 1. Check admins collection first ---- */
+      const admin = await admins.findOne({ email });
+      if (admin) {
+        const match = await bcrypt.compare(password, admin.passwordHash);
+        if (!match) return res.status(400).json({ message: 'Invalid credentials' });
+
+        const token = jwt.sign(
+          { email: admin.email, role: admin.role },
+          JWT_SECRET,
+          { expiresIn: '2h', issuer: 'faithly-api', audience: 'faithly-admin' }
+        );
+
+        return res.status(200).json({
+          message: 'Login successful',
+          token,
+          user: {
+            email: admin.email,
+            role: admin.role,
+            fullName: admin.fullName || admin.email.split('@')[0],
+          }
+        });
+      }
+
+      /* ---- 2. Fall through to regular users collection ---- */
       const user = await users.findOne({ email });
       if (!user) return res.status(400).json({ message: 'Invalid credentials' });
 
@@ -296,7 +321,8 @@ router.post('/login',
         user: {
           email: user.email, fullName: user.fullName, full_name: user.fullName,
           phone: user.phone, branch: user.branch, position: user.position,
-          gender: user.gender, birthday: user.birthday, created_at: user.createdAt
+          gender: user.gender, birthday: user.birthday, created_at: user.createdAt,
+          role: 'user'
         }
       });
     } catch (err) {

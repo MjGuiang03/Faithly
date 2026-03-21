@@ -38,7 +38,7 @@ export default function AdminSidebar() {
     localStorage.removeItem('adminRole');
     toast.success('Signed out successfully');
     setShowLogoutModal(false);
-    navigate('/admin/login');
+    navigate('/');
   };
 
   const isActive = (path) => location.pathname === path;

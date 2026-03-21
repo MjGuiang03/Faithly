@@ -25,7 +25,7 @@ export default function LoanAdminNotif() {
 
     useEffect(() => {
         const token = localStorage.getItem('adminToken');
-        if (!token) { navigate('/admin/login'); return; }
+        if (!token) { navigate('/'); return; }
 
         const fetchNotifications = async () => {
             setLoading(true);
@@ -37,7 +37,7 @@ export default function LoanAdminNotif() {
 
                 if (!res.ok) {
                     if (res.status === 401 || res.status === 403) {
-                        navigate('/admin/login');
+                        navigate('/');
                         return;
                     }
                     toast.error(data.message || 'Failed to fetch notifications');

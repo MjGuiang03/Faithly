@@ -30,7 +30,7 @@ export default function LoanAdminDashboard() {
 
     useEffect(() => {
         const token = localStorage.getItem('adminToken');
-        if (!token) { navigate('/admin/login'); return; }
+        if (!token) { navigate('/'); return; }
 
         const fetchDashboard = async () => {
             setLoading(true);
@@ -42,7 +42,7 @@ export default function LoanAdminDashboard() {
 
                 if (!res.ok) {
                     if (res.status === 401 || res.status === 403) {
-                        navigate('/admin/login');
+                        navigate('/');
                         return;
                     }
                     toast.error(data.message || 'Failed to fetch dashboard data');

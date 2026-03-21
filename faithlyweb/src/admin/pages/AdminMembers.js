@@ -306,7 +306,7 @@ export default function AdminMembers() {
     localStorage.getItem('admin_token') ||
     localStorage.getItem('token');
 
-  useEffect(() => { if (!getToken()) navigate('/admin/login'); }, [navigate]);
+  useEffect(() => { if (!getToken()) navigate('/'); }, [navigate]);
 
   /* ── Fetch regular (non-officer) members ── */
   const fetchMembers = useCallback(async () => {
@@ -316,7 +316,7 @@ export default function AdminMembers() {
       const res = await fetch(`${API}/api/admin/members?${q}`, {
         headers: { Authorization: `Bearer ${getToken()}` }
       });
-      if (res.status === 401 || res.status === 403) { navigate('/admin/login'); return; }
+      if (res.status === 401 || res.status === 403) { navigate('/'); return; }
       const data = await res.json();
       if (!data.success) throw new Error(data.message || 'Failed to load members');
       setMembers(data.members    || []);

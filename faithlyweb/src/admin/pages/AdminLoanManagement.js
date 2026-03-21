@@ -35,7 +35,7 @@ export default function AdminLoanManagement() {
   /* ── Auth guard ── */
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
-    if (!token) navigate('/admin/login');
+    if (!token) navigate('/');
   }, [navigate]);
 
   /* ── Fetch from real API ── */
@@ -56,7 +56,7 @@ export default function AdminLoanManagement() {
 
       if (!res.ok) {
         if (res.status === 401 || res.status === 403) {
-          navigate('/admin/login');
+          navigate('/');
           return;
         }
         toast.error(data.message || 'Failed to fetch loans');

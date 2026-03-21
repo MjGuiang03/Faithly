@@ -39,11 +39,23 @@ export const AuthProvider = ({ children }) => {
         return { success: false, message: data.message || 'Login failed', data };
       }
 
+      const role = data.user?.role || 'user';
+
+      // Store token under the unified key
       localStorage.setItem('token', data.token);
+
+      // For admin roles, also populate legacy admin keys so existing
+      // admin dashboard pages (which read localStorage directly) keep working
+      if (role === 'admin' || role === 'loanAdmin' || role === 'secretaryAdmin') {
+        localStorage.setItem('adminToken', data.token);
+        localStorage.setItem('adminEmail', data.user.email);
+        localStorage.setItem('adminRole', role);
+      }
+
       setUser(data.user);
       setProfile(data.user);
       toast.success('Signed in successfully');
-      return { success: true };
+      return { success: true, role };
     } catch (err) {
       toast.error(err.message);
       return { success: false, message: err.message, data: {} };
@@ -198,6 +210,9 @@ export const AuthProvider = ({ children }) => {
   /* ---------- SIGN OUT ---------- */
   const signOut = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminEmail');
+    localStorage.removeItem('adminRole');
     setUser(null);
     setProfile(null);
     toast.success('Signed out successfully');

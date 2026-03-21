@@ -51,7 +51,7 @@ export default function AdminAnnouncements() {
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
-    if (!token) { navigate('/admin/login'); return; }
+    if (!token) { navigate('/'); return; }
     fetchAnnouncements();
     fetchBranches();
   }, [navigate, fetchAnnouncements, fetchBranches]);

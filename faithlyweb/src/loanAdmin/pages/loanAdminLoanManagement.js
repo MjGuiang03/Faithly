@@ -51,7 +51,7 @@ export default function LoanAdminLoanManagement() {
 
             if (!res.ok) {
                 if (res.status === 401 || res.status === 403) {
-                    navigate('/admin/login');
+                    navigate('/');
                     return;
                 }
                 toast.error(data.message || 'Failed to fetch loans');

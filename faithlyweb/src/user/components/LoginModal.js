@@ -135,7 +135,18 @@ export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, o
       if (timerRef.current) clearInterval(timerRef.current);
 
       if (onClose) onClose();
-      navigate('/home');
+
+      // Role-based redirection
+      const role = result.role || 'user';
+      if (role === 'admin') {
+        navigate('/admin/dashboard');
+      } else if (role === 'loanAdmin') {
+        navigate('/loan-admin/dashboard');
+      } else if (role === 'secretaryAdmin') {
+        navigate('/secretary-admin/dashboard');
+      } else {
+        navigate('/home');
+      }
     } else {
       // ── Parse server response ────────────────────────────────────────────
       const data = result.data || {};
