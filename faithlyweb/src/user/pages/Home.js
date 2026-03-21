@@ -155,6 +155,20 @@ export default function Home() {
     },
   ];
 
+  const [currentTime, setCurrentTime] = useState(new Date());
+  
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 60000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatDate = (date) => {
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    const dateStr = date.toLocaleDateString('en-US', options);
+    const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    return `${dateStr} | ${timeStr}`;
+  };
+
   return (
     <div className="user-home-layout">
       <Sidebar />
@@ -162,6 +176,7 @@ export default function Home() {
       <div className="user-main-content">
         {/* Header — avatar removed */}
         <div className="user-home-header">
+          <p className="user-home-date-time">{formatDate(currentTime)}</p>
           <h1 className="user-home-page-title">Welcome Back{user?.fullName ? `, ${user.fullName.split(' ')[0]}` : ''}!</h1>
           <p className="user-home-page-subtitle">Here's an overview of your church activities</p>
         </div>

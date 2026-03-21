@@ -1,29 +1,36 @@
 /* ─── Header ─────────────────────────────────────────────── */
 .user-loans-page-header {
-  margin-bottom: 12px;
+  margin-bottom: 0px;
 }
 
 .user-loans-page-title {
+  font-family: Arial, sans-serif;
   font-size: 26px;
   font-weight: 700;
   color: #101828;
   margin: 0;
   line-height: 34px;
-  font-family: Arial, sans-serif;
 }
 
 .user-loans-page-subtitle {
+  font-family: Arial, sans-serif;
   font-size: 14px;
   color: #000000;
   margin: 0;
   line-height: 20px;
-  font-family: Arial, sans-serif;
 }
 
 .user-loans-header-content {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
+  gap: 16px;
+}
+
+.user-loans-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .user-apply-loan-btn {
@@ -371,7 +378,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px;
+  padding: 16px;
   border-bottom: 0.8px solid #e5e7eb;
 }
 
@@ -402,7 +409,7 @@
 
 /* Modal Form */
 .user-modal-form {
-  padding: 24px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 24px;

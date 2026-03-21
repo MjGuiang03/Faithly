@@ -757,24 +757,27 @@
 
 /* Settings Header */
 .user-settings-page-header {
-  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 0px;
 }
 
 .user-settings-page-title {
+  font-family: Arial, sans-serif;
   font-size: 26px;
   font-weight: 700;
   color: #101828;
   margin: 0;
   line-height: 34px;
-  font-family: Arial, sans-serif;
 }
 
 .user-settings-page-subtitle {
+  font-family: Arial, sans-serif;
   font-size: 14px;
   color: #000000;
   margin: 0;
   line-height: 20px;
-  font-family: Arial, sans-serif;
 }
 
 /* Main Content Layout */

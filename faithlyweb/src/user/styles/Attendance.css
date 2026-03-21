@@ -1,23 +1,26 @@
 /* ─── Header ─────────────────────────────────────────────── */
 .user-attendance-page-header {
-  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 0px;
 }
 
 .user-attendance-page-title {
+  font-family: Arial, sans-serif;
   font-size: 26px;
   font-weight: 700;
   color: #101828;
   margin: 0;
   line-height: 34px;
-  font-family: Arial, sans-serif;
 }
 
 .user-attendance-page-subtitle {
+  font-family: Arial, sans-serif;
   font-size: 14px;
   color: #000000;
   margin: 0;
   line-height: 20px;
-  font-family: Arial, sans-serif;
 }
 
 /* Stats */
@@ -32,7 +35,7 @@
   background: white;
   border: 0.8px solid #e5e7eb;
   border-radius: 12px;
-  padding: 14px 16px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -79,7 +82,7 @@
   background: white;
   border: 0.8px solid #e5e7eb;
   border-radius: 12px;
-  padding: 16px 18px;
+  padding: 12px 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -190,7 +193,7 @@
   background: white;
   border: 0.8px solid #e5e7eb;
   border-radius: 12px;
-  padding: 16px 18px;
+  padding: 12px 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -207,7 +210,7 @@
   font-size: 13px;
   color: #64748b;
   text-align: center;
-  padding: 20px 0;
+  padding: 12px 0;
 }
 
 .user-upcoming-active-list {
@@ -219,7 +222,7 @@
 .user-upcoming-service-item {
   display: flex;
   gap: 14px;
-  padding: 14px;
+  padding: 10px 12px;
   border-radius: 12px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
@@ -545,7 +548,7 @@
   align-items: center;
   justify-content: center;
   z-index: 2000;
-  padding: 20px;
+  padding: 16px;
 }
 
 .user-attendance-modal-content {
@@ -561,7 +564,7 @@
 }
 
 .user-modal-header {
-  padding: 16px 20px;
+  padding: 12px 16px;
   border-bottom: 1px solid #e5e7eb;
   display: flex;
   justify-content: space-between;
@@ -586,7 +589,7 @@
 .user-modal-body {
   flex: 1;
   overflow-y: auto;
-  padding: 20px;
+  padding: 16px;
 }
 
 .user-modal-pagination {
