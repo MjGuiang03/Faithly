@@ -2,8 +2,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import {
-  LayoutGrid, Bell, FileText, BarChart3, Settings, LogOut,
-  Sun, Moon
+  LayoutGrid, Bell, FileText, BarChart3, Settings, LogOut
 } from 'lucide-react';
 import puacLogo from '../../assets/puaclogo.png';
 import '../styles/loanAdminSidebar.css';

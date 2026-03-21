@@ -3,8 +3,7 @@ import { useLocation, useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import {
     LayoutGrid, Bell, FileText, FolderOpen,
-    BarChart3, Settings, LogOut,
-    Sun, Moon
+    BarChart3, Settings, LogOut
 } from 'lucide-react';
 import puacLogo from '../../assets/puaclogo.png';
 

@@ -4,8 +4,7 @@ import { toast } from 'sonner';
 import {
   LayoutGrid, Bell, Users, Heart,
   Settings, LogOut,
-  ChevronDown, ChevronUp, Megaphone,
-  Sun, Moon
+  ChevronDown, ChevronUp, Megaphone
 } from 'lucide-react';
 import puacLogo from '../../assets/puaclogo.png';
 import '../styles/AdminSidebar.css';
