@@ -641,7 +641,131 @@
 
 @media (max-width: 768px) {
   .user-attendance-stats       { grid-template-columns: 1fr; }
-  .user-history-header         { flex-direction: column; align-items: flex-start; }
   .user-history-search-box     { width: 100%; min-width: unset; }
   .user-attendance-table       { min-width: 560px; }
 }
+
+/* ============================================================
+   DARK MODE OVERRIDES 
+   ============================================================ */
+
+/* Page Headers */
+.dark .user-attendance-page-title { color: var(--foreground); }
+.dark .user-attendance-page-subtitle { color: var(--text-secondary); }
+.dark .user-attendance-section-title { color: var(--foreground); }
+
+/* Stats Cards */
+.dark .user-attendance-stat-card {
+  background: var(--card);
+  border-color: var(--border);
+}
+.dark .user-attendance-stat-label { color: var(--text-secondary); }
+.dark .user-attendance-stat-value { color: var(--foreground); }
+
+/* Check-In Card */
+.dark .user-check-in-card {
+  background: var(--card);
+  border-color: var(--border);
+}
+.dark .user-check-in-subtitle { color: var(--text-secondary); }
+
+.dark .user-check-in-method {
+  background: var(--input-background);
+  border-color: var(--border);
+}
+.dark .user-check-in-method:hover {
+  border-color: var(--primary);
+  background: rgba(255, 255, 255, 0.03);
+}
+.dark .user-qr-scanner-box { background: var(--blue-tint); }
+.dark .user-check-in-method-title { color: var(--foreground); }
+.dark .user-check-in-method-description { color: var(--text-secondary); }
+
+.dark .user-check-in-tip {
+  background: var(--blue-tint);
+  border-color: var(--border);
+}
+.dark .user-tip-label, 
+.dark .user-tip-text { color: var(--primary); }
+
+/* Upcoming Services */
+.dark .user-upcoming-services-card {
+  background: var(--card);
+  border-color: var(--border);
+}
+.dark .user-upcoming-loading { color: var(--text-muted); }
+.dark .user-upcoming-service-item {
+  background: var(--input-background);
+  border-color: var(--border);
+}
+.dark .user-upcoming-service-item:hover { border-color: var(--primary); }
+.dark .user-upcoming-service-title { color: var(--foreground); }
+.dark .user-upcoming-service-message { color: var(--text-secondary); }
+.dark .user-upcoming-meta-item { color: var(--text-muted); }
+.dark .user-upcoming-empty {
+  background: var(--input-background);
+  border-color: var(--border);
+}
+.dark .user-upcoming-empty-text { color: var(--text-muted); }
+.dark .user-upcoming-empty-sub { color: var(--text-muted); }
+
+/* Attendance History */
+.dark .user-attendance-history-section {
+  background: var(--card);
+  border-color: var(--border);
+}
+.dark .user-history-search-box {
+  background: var(--input-background);
+  border-color: var(--border);
+}
+.dark .user-history-search-input { color: var(--foreground); }
+.dark .user-history-search-input::placeholder { color: var(--text-muted); }
+
+/* Table */
+.dark .user-attendance-table thead {
+  background: var(--muted);
+  border-bottom-color: var(--border);
+}
+.dark .user-attendance-table th { color: var(--text-secondary); }
+.dark .user-attendance-table tbody tr { border-bottom-color: var(--border); }
+.dark .user-attendance-table tbody tr:hover { background: rgba(255, 255, 255, 0.03); }
+.dark .user-attendance-table td { color: var(--foreground); }
+
+/* Badges */
+.dark .user-method-qr { background: var(--blue-tint); color: var(--primary); }
+.dark .user-method-manual { background: var(--muted); color: var(--text-secondary); }
+
+/* Pagination & Controls */
+.dark .user-pagination { border-top-color: var(--border); }
+.dark .user-attendance-pagination-info { color: var(--text-secondary); }
+.dark .user-attendance-empty-text { color: var(--text-muted); }
+
+.dark .user-page-btn, 
+.dark .user-view-history-btn,
+.dark .user-modal-page-btn {
+  background: var(--input-background);
+  border-color: var(--border);
+  color: var(--foreground);
+}
+.dark .user-page-btn:hover:not(:disabled),
+.dark .user-view-history-btn:hover,
+.dark .user-modal-page-btn:hover:not(:disabled) {
+  background: var(--muted);
+  border-color: var(--muted-foreground);
+}
+.dark .user-page-btn-active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+/* Modals */
+.dark .user-attendance-modal-content {
+  background: var(--card);
+  border-color: var(--border);
+}
+.dark .user-modal-header { border-bottom-color: var(--border); }
+.dark .user-modal-title { color: var(--foreground); }
+.dark .user-modal-close-btn:hover { background: var(--muted); }
+.dark .user-modal-pagination { border-top-color: var(--border); }
+.dark .user-modal-page-info { color: var(--text-secondary); }

@@ -973,3 +973,33 @@
   border: 1px solid #484C55;
   color: white;
 }
+
+/* DARK MODE: Recent Activities & Payments */
+.dark .user-activity-item-horizontal,
+.dark .user-payment-item {
+  background: var(--input-background);
+  border-color: var(--border);
+}
+.dark .user-activity-item-horizontal:hover {
+  background: var(--muted);
+  border-color: var(--muted-foreground);
+}
+.dark .user-activity-icon-compact {
+  background: var(--card);
+}
+.dark .user-payment-icon {
+  background: var(--gold-tint);
+}
+.dark .user-activity-title-compact,
+.dark .user-payment-id,
+.dark .user-payment-amount {
+  color: var(--foreground);
+}
+.dark .user-activity-separator,
+.dark .user-activity-time-compact {
+  color: var(--text-muted);
+}
+.dark .user-activity-desc-compact,
+.dark .user-payment-due {
+  color: var(--text-secondary);
+}

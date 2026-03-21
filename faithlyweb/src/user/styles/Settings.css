@@ -854,3 +854,92 @@
     padding: 16px;
   }
 }
+
+/* ============================================================
+   DARK MODE OVERRIDES 
+   ============================================================ */
+
+/* Page Headers */
+.dark .user-settings-page-title { color: var(--foreground); }
+.dark .user-settings-page-subtitle { color: var(--text-secondary); }
+
+/* Main Section */
+.dark .user-settings-section {
+  background: var(--card);
+  border-color: var(--border);
+}
+.dark .user-settings-section-title { color: var(--foreground); }
+.dark .user-settings-section-subtitle { color: var(--text-secondary); }
+
+/* Icons */
+.dark .user-settings-icon-box.user-notifications-icon { background: var(--blue-tint); }
+.dark .user-settings-icon-box.user-security-icon { background: rgba(34, 197, 94, 0.1); }
+.dark .user-settings-icon-box.user-preferences-icon { background: rgba(147, 51, 234, 0.1); }
+.dark .user-settings-icon-box.user-payment-icon { background: var(--gold-tint); }
+.dark .user-pi-icon-box { background: var(--blue-tint); }
+
+/* Toggles & Items */
+.dark .user-toggle-setting,
+.dark .user-setting-item,
+.dark .user-payment-card-item {
+  background: var(--input-background);
+  border-color: var(--border);
+}
+.dark .user-toggle-title,
+.dark .user-setting-item-title,
+.dark .user-payment-card-number { color: var(--foreground); }
+.dark .user-toggle-description,
+.dark .user-setting-item-description,
+.dark .user-payment-card-expiry { color: var(--text-secondary); }
+
+.dark .user-preferences-title { color: var(--foreground); }
+.dark .user-checkbox-item { color: var(--text-secondary); }
+.dark .user-link-button { color: var(--primary); }
+.dark .user-link-button.danger { color: var(--destructive); }
+
+/* Form Inputs */
+.dark .user-form-label, 
+.dark .user-pi-form-label { color: var(--foreground); }
+
+.dark .user-form-select,
+.dark .user-pi-form-input,
+.dark .user-pi-form-select {
+  background: var(--input-background);
+  border-color: var(--border);
+  color: var(--foreground);
+}
+.dark .user-form-select:focus,
+.dark .user-pi-form-input:focus,
+.dark .user-pi-form-select:focus { border-color: var(--primary); }
+
+.dark .user-pi-readonly-text { color: var(--foreground); }
+
+/* Buttons */
+.dark .user-add-payment-btn,
+.dark .user-reset-btn {
+  background: var(--input-background);
+  border-color: var(--border);
+  color: var(--foreground);
+}
+.dark .user-add-payment-btn:hover,
+.dark .user-reset-btn:hover {
+  background: var(--muted);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.dark .user-save-settings-btn {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+.dark .user-save-settings-btn:hover {
+  background: var(--primary);
+  opacity: 0.9;
+}
+
+.dark .user-pi-btn-edit {
+  background: var(--input-background);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+}
+.dark .user-pi-btn-edit:hover { background: var(--muted); }

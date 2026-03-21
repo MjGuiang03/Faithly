@@ -22,8 +22,68 @@
 
 /* When the sidebar is collapsed, the main content expands */
 .user-sidebar-collapsed + .user-notif-main {      
-  margin-left: 72px;
+  margin-left: 20px;
 }
+
+/* ============================================================
+   DARK MODE OVERRIDES 
+   ============================================================ */
+.dark .user-notif-page { 
+  background: var(--background); 
+}
+
+.dark .user-notifications-page-title { color: var(--foreground); }
+.dark .user-notifications-page-subtitle { color: var(--text-secondary); }
+
+.dark .user-notifications-mark-all-btn { 
+  background: var(--card); 
+  border-color: var(--border); 
+  color: var(--foreground); 
+}
+.dark .user-notifications-mark-all-btn:hover {
+  background: var(--muted); 
+  border-color: var(--muted-foreground);
+}
+
+.dark .user-notif-filters { 
+  background: var(--card); border-color: var(--border); 
+}
+.dark .user-notif-filter-btn {
+  color: var(--text-secondary);
+}
+.dark .user-notif-filter-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+.dark .user-notif-filter-btn.active {
+  background: var(--primary); 
+  color: var(--primary-foreground);
+}
+
+.dark .user-notif-card {
+  border-color: var(--border);
+}
+.dark .user-notif-card-loan { background: var(--blue-tint); border-color: var(--primary); }
+.dark .user-notif-card-donation { background: var(--red-tint); border-color: var(--destructive); }
+.dark .user-notif-card-attendance { background: var(--blue-tint); border-color: var(--primary); }
+.dark .user-notif-card-read { background: var(--card); border-color: var(--border); }
+
+/* Card Text elements */
+.dark .user-notif-body-title { color: var(--foreground); }
+.dark .user-notif-body-title.read { color: var(--text-secondary); }
+.dark .user-notif-body-desc { color: var(--text-secondary); }
+.dark .user-notif-timestamp { color: var(--text-timestamp); }
+
+.dark .user-notif-empty-title { color: var(--foreground); }
+.dark .user-notif-empty-desc { color: var(--text-muted); }
+
+/* Icon Bubbles and Badges */
+.dark .user-notif-icon-loan { background: var(--blue-tint); }
+.dark .user-notif-icon-donation { background: var(--red-tint); }
+.dark .user-notif-icon-attendance { background: var(--blue-tint); }
+
+.dark .user-notif-badge-loan { background: var(--blue-tint); color: var(--primary); }
+.dark .user-notif-badge-donation { background: var(--red-tint); color: var(--destructive); }
+.dark .user-notif-badge-attendance { background: var(--blue-tint); color: var(--primary); }
 
 
 /* Header Section */

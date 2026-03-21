@@ -1129,3 +1129,133 @@
   color: #16a34a !important;
   font-weight: 700;
 }
+
+/* ============================================================
+   DARK MODE OVERRIDES 
+   ============================================================ */
+
+/* Page Headers */
+.dark .user-loans-page-title { color: var(--foreground); }
+.dark .user-loans-page-subtitle { color: var(--text-secondary); }
+.dark .user-loans-section-title { color: var(--foreground); }
+
+/* Locked / Verification Container */
+.dark .user-loans-locked-container {
+  background: var(--card);
+  border-color: var(--border);
+}
+.dark .user-loans-locked-title { color: var(--foreground); }
+.dark .user-loans-locked-subtitle { color: var(--text-secondary); }
+
+/* Apply Loan Button */
+.dark .user-apply-loan-btn {
+  background: var(--primary); /* #1E3A8A / #7090D0 */
+  color: var(--primary-foreground);
+}
+
+/* Stats Cards */
+.dark .user-loan-stat-card {
+  background: var(--card);
+  border-color: var(--border);
+}
+.dark .user-loan-stat-card-active {
+  background: rgba(34, 197, 94, 0.1); /* subtle green tint */
+  border-color: rgba(34, 197, 94, 0.2);
+}
+.dark .user-loan-stat-label { color: var(--text-secondary); }
+.dark .user-loan-stat-card-active .user-loan-stat-label { color: #4ade80; }
+.dark .user-loan-stat-value { color: var(--foreground); }
+
+/* History Section */
+.dark .user-all-loans-section {
+  background: var(--card);
+  border-color: var(--border);
+}
+.dark .user-all-loans-header, 
+.dark .user-loans-history-header {
+  border-bottom-color: var(--border);
+}
+
+/* Search Box */
+.dark .user-history-search-box {
+  background: var(--input-background);
+  border-color: var(--border);
+}
+.dark .user-history-search-input { color: var(--foreground); }
+.dark .user-history-search-input::placeholder { color: var(--text-muted); }
+
+/* Loan Items */
+.dark .user-loan-item { border-bottom-color: var(--border); }
+.dark .user-loan-item-details { border-top-color: var(--border); }
+
+.dark .user-loan-id { color: var(--foreground); }
+.dark .user-loan-amount { color: var(--foreground); }
+.dark .user-loan-purpose-inline { color: var(--text-secondary); }
+.dark .user-loan-applied { color: var(--text-timestamp); }
+.dark .user-loan-detail-label { color: var(--text-secondary); }
+.dark .user-loan-detail-value { color: var(--foreground); }
+
+/* Icons & Badges in Loans */
+.dark .user-loan-icon-box { background: var(--blue-tint); }
+.dark .user-loan-status-badge { background: rgba(34, 197, 94, 0.1); color: #4ade80; }
+
+.dark .user-view-details-btn { color: var(--primary); }
+
+/* Modal Content */
+.dark .user-modal-content {
+  background: var(--card);
+  border-color: var(--border);
+}
+.dark .user-modal-header { border-bottom-color: var(--border); }
+.dark .user-modal-title { color: var(--foreground); }
+.dark .user-modal-close-btn:hover { background: var(--muted); }
+
+/* Form Elements */
+.dark .user-form-label { color: var(--foreground); }
+.dark .user-form-input, 
+.dark .user-form-select {
+  background: var(--input-background);
+  border-color: var(--border);
+  color: var(--foreground);
+}
+.dark .user-form-input:focus, 
+.dark .user-form-select:focus {
+  border-color: var(--primary);
+}
+.dark .user-form-input::placeholder {
+  color: var(--text-muted);
+}
+.dark .user-input-icon { color: var(--text-muted); }
+
+/* Verification Modal Specific */
+.dark .user-vm-container { background: var(--card); }
+.dark .user-vm-close-btn { color: var(--foreground); }
+.dark .user-vm-title { color: var(--foreground); }
+.dark .user-vm-subtitle { color: var(--text-secondary); }
+
+.dark .user-vm-upload-box {
+  background: var(--input-background);
+  border-color: var(--border);
+}
+.dark .user-vm-upload-box:hover {
+  background: var(--muted);
+}
+.dark .user-vm-upload-icon { color: var(--text-secondary); }
+.dark .user-vm-upload-text { color: var(--foreground); }
+.dark .user-vm-upload-subtext { color: var(--text-muted); }
+.dark .user-vm-upload-box-done {
+  background: rgba(34, 197, 94, 0.1) !important;
+  border-color: rgba(34, 197, 94, 0.3) !important;
+}
+.dark .user-vm-upload-box-done .user-vm-upload-text {
+  color: #4ade80 !important;
+}
+
+.dark .user-vm-submit-btn {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+.dark .user-vm-submit-btn:disabled {
+  background: var(--muted);
+  color: var(--muted-foreground);
+}
