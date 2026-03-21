@@ -147,6 +147,93 @@
   background: #fff7ed;
 }
 
+/* Clickable stat card hover effect */
+.user-stat-card-clickable {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.user-stat-card-clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(21, 93, 252, 0.18);
+}
+
+/* Loan Hover Tooltip */
+.user-loan-hover-tooltip {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+  z-index: 50;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+  pointer-events: none;
+  min-width: 220px;
+}
+
+.user-stat-card-clickable:hover .user-loan-hover-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.user-loan-hover-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #155dfc;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 10px 0;
+}
+
+.user-loan-hover-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.user-loan-hover-item:last-of-type {
+  border-bottom: none;
+}
+
+.user-loan-hover-id {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.user-loan-hover-amount {
+  font-size: 13px;
+  font-weight: 700;
+  color: #101828;
+}
+
+.user-loan-hover-more {
+  font-size: 12px;
+  color: #94a3b8;
+  margin: 6px 0 0 0;
+  text-align: center;
+}
+
+.user-loan-hover-cta {
+  font-size: 12px;
+  font-weight: 600;
+  color: #155dfc;
+  margin: 10px 0 0 0;
+  text-align: center;
+  padding-top: 8px;
+  border-top: 1px solid #f1f5f9;
+}
+
 .user-stat-icon {
   width: 22px;
   height: 22px;

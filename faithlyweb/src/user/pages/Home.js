@@ -12,6 +12,7 @@ export default function Home() {
   const { user, profile } = useAuth();
 
   const [loanStats, setLoanStats] = useState({ activeCount: 0, remainingBalance: 0 });
+  const [activeLoans, setActiveLoans] = useState([]);
   const [donationStats, setDonationStats] = useState({ totalDonated: 0 });
   const [attendanceStats, setAttendanceStats] = useState({ total: 0 });
   const [showAnnouncements, setShowAnnouncements] = useState(false);
@@ -39,6 +40,8 @@ export default function Home() {
 
       if (loansRes.ok && loansData.success) {
         setLoanStats(loansData.stats || { activeCount: 0, remainingBalance: 0 });
+        const active = (loansData.loans || []).filter(l => l.status === 'active' || l.status === 'approved' || l.status === 'disbursed');
+        setActiveLoans(active);
       }
       if (donationsRes.ok && donationsData.success) {
         setDonationStats(donationsData.stats || { totalDonated: 0 });
@@ -165,7 +168,7 @@ export default function Home() {
 
         {/* Stats Grid */}
         <div className="user-stats-grid">
-          <div className="user-stat-card user-stat-blue">
+          <div className="user-stat-card user-stat-blue user-stat-card-clickable" onClick={() => navigate('/loans')} style={{ cursor: 'pointer', position: 'relative' }}>
             <div className="user-stat-icon-box">
               <svg className="user-stat-icon" fill="none" viewBox="0 0 24 24">
                 <path d={svgPaths.pb47f400} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
@@ -179,6 +182,29 @@ export default function Home() {
               <p className="user-stat-label">Active Loans</p>
               {loading ? <div className="user-skeleton" style={{ height: '24px', width: '40px', marginTop: '4px' }}></div> : <p className="user-stat-value user-fade-in">{loanStats.activeCount}</p>}
             </div>
+
+            {/* Hover Tooltip showing active loan details */}
+            {!loading && activeLoans.length > 0 && (
+              <div className="user-loan-hover-tooltip">
+                <p className="user-loan-hover-title">Your Active Loans</p>
+                {activeLoans.slice(0, 3).map((loan, idx) => (
+                  <div key={idx} className="user-loan-hover-item">
+                    <span className="user-loan-hover-id">{loan.loanId}</span>
+                    <span className="user-loan-hover-amount">₱{(loan.amount || 0).toLocaleString()}</span>
+                  </div>
+                ))}
+                {activeLoans.length > 3 && (
+                  <p className="user-loan-hover-more">+{activeLoans.length - 3} more loan(s)</p>
+                )}
+                <p className="user-loan-hover-cta">Click to view details →</p>
+              </div>
+            )}
+            {!loading && activeLoans.length === 0 && (
+              <div className="user-loan-hover-tooltip">
+                <p className="user-loan-hover-title">No Active Loans</p>
+                <p className="user-loan-hover-cta">Click to apply for a loan →</p>
+              </div>
+            )}
           </div>
 
           <div className="user-stat-card user-stat-green">
@@ -217,7 +243,7 @@ export default function Home() {
             </div>
             <div className="user-stat-content">
               <p className="user-stat-label">Announcements</p>
-              <p className="user-stat-value user-fade-in" style={{ fontSize: '0.85rem', fontWeight: '500' }}>Church Updates</p>
+              <p className="user-stat-value user-fade-in" style={{ fontSize: '0.85rem', fontWeight: '500' }}>Click here to seeChurch Updates</p>
             </div>
           </div>
 
@@ -255,7 +281,7 @@ export default function Home() {
             <div className="user-community-info-wrap">
               <p className="user-community-branch-name">{profile?.branch || 'PUAC Main'}</p>
             </div>
-            
+
             <div className="user-community-map-container">
               <iframe
                 title="Community Map"
