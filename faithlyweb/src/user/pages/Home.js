@@ -12,7 +12,6 @@ export default function Home() {
   const { user, profile } = useAuth();
 
   const [loanStats, setLoanStats] = useState({ activeCount: 0, remainingBalance: 0 });
-  const [activeLoans, setActiveLoans] = useState([]);
   const [donationStats, setDonationStats] = useState({ totalDonated: 0 });
   const [attendanceStats, setAttendanceStats] = useState({ total: 0 });
   const [showAnnouncements, setShowAnnouncements] = useState(false);
@@ -40,8 +39,6 @@ export default function Home() {
 
       if (loansRes.ok && loansData.success) {
         setLoanStats(loansData.stats || { activeCount: 0, remainingBalance: 0 });
-        const active = (loansData.loans || []).filter(l => l.status === 'active' || l.status === 'approved' || l.status === 'disbursed');
-        setActiveLoans(active);
       }
       if (donationsRes.ok && donationsData.success) {
         setDonationStats(donationsData.stats || { totalDonated: 0 });
@@ -163,11 +160,6 @@ export default function Home() {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
-
-  const formatDateTop = (date) => {
-    const options = { weekday: 'long', month: 'long', day: 'numeric' };
-    return date.toLocaleDateString('en-US', options).toUpperCase();
-  };
 
   const formatTimePill = (date) => {
     const dateStr = date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
