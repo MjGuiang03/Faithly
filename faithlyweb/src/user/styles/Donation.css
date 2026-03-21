@@ -1,6 +1,6 @@
 /* ─── Header ─────────────────────────────────────────────── */
 .user-donation-page-header {
-  margin-bottom: 12px;
+  margin-bottom: 4px;
 }
 
 .user-donation-page-title {
@@ -29,7 +29,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 
 .user-donation-stat-card {
@@ -75,7 +75,7 @@
 .user-donations-content-grid {
   display: grid;
   grid-template-columns: 1.2fr 1fr;
-  gap: 16px;
+  gap: 12px;
   /* FIX: clamp so columns never push past the container */
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
   align-items: start;
