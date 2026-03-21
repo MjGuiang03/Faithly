@@ -90,7 +90,7 @@
   height: 44px;
   border-radius: 50%;
   overflow: hidden;
-  background: white;
+  background: rgba(255, 255, 255, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -170,16 +170,15 @@
 }
 
 .user-sidebar-nav-button.active {
-  background: var(--sidebar-accent);
+  background: rgba(255, 255, 255, 0.15);
   color: white;
-  font-weight: 600;
-  border-left: 4px solid var(--sidebar-active-bar);
+  font-weight: 700;
+  border-left: 3px solid rgba(255, 255, 255, 0.9);
 }
 
 .user-sidebar-collapsed .user-sidebar-nav-button.active {
   border-left: none;
-  outline: 2px solid var(--sidebar-active-bar);
-  outline-offset: -2px;
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .user-sidebar-nav-icon {

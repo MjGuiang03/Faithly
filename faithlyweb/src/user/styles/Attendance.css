@@ -10,7 +10,7 @@
   font-family: Arial, sans-serif;
   font-size: 26px;
   font-weight: 700;
-  color: #101828;
+  color: var(--foreground);
   margin: 0;
   line-height: 34px;
 }
@@ -18,7 +18,7 @@
 .user-attendance-page-subtitle {
   font-family: Arial, sans-serif;
   font-size: 14px;
-  color: #000000;
+  color: var(--text-secondary);
   margin: 0;
   line-height: 20px;
 }
@@ -32,8 +32,8 @@
 }
 
 .user-attendance-stat-card {
-  background: white;
-  border: 0.8px solid #e5e7eb;
+  background: var(--card);
+  border: 0.8px solid var(--border);
   border-radius: 12px;
   padding: 12px 14px;
   display: flex;
@@ -50,7 +50,7 @@
 
 .user-attendance-stat-label {
   font-size: 13px;
-  color: #4a5565;
+  color: var(--text-muted);
   margin: 0;
   line-height: 18px;
   font-family: Arial, sans-serif;
@@ -64,7 +64,7 @@
 .user-attendance-stat-value {
   font-size: 22px;
   font-weight: 700;
-  color: #101828;
+  color: var(--foreground);
   margin: 0;
   line-height: 28px;
   font-family: Arial, sans-serif;
@@ -79,8 +79,8 @@
 
 /* Check In Card */
 .user-check-in-card {
-  background: white;
-  border: 0.8px solid #e5e7eb;
+  background: var(--card);
+  border: 0.8px solid var(--border);
   border-radius: 12px;
   padding: 12px 16px;
   display: flex;
@@ -92,7 +92,7 @@
 .user-attendance-section-title {
   font-size: 17px;
   font-weight: 700;
-  color: #101828;
+  color: var(--foreground);
   margin: 0;
   line-height: 24px;
   font-family: Arial, sans-serif;
@@ -100,15 +100,15 @@
 
 .user-check-in-subtitle {
   font-size: 13px;
-  color: #4a5565;
+  color: var(--text-secondary);
   margin: 0;
   line-height: 18px;
   font-family: Arial, sans-serif;
 }
 
 .user-check-in-method {
-  background: white;
-  border: 0.8px solid #e5e7eb;
+  background: var(--input-background);
+  border: 0.8px solid var(--border);
   border-radius: 10px;
   padding: 16px;
   display: flex;
@@ -148,7 +148,7 @@
 .user-check-in-method-title {
   font-size: 15px;
   font-weight: 700;
-  color: #101828;
+  color: var(--foreground);
   margin: 0;
   line-height: 22px;
   font-family: Arial, sans-serif;
@@ -156,15 +156,15 @@
 
 .user-check-in-method-description {
   font-size: 13px;
-  color: #4a5565;
+  color: var(--text-secondary);
   margin: 0;
   line-height: 18px;
   font-family: Arial, sans-serif;
 }
 
 .user-check-in-tip {
-  background: #eff6ff;
-  border: 0.8px solid #bedbff;
+  background: var(--blue-tint);
+  border: 0.8px solid var(--border);
   border-radius: 10px;
   padding: 10px 14px;
   display: flex;
@@ -175,7 +175,7 @@
 .user-tip-label {
   font-size: 13px;
   font-weight: 700;
-  color: #1E3A8A;
+  color: var(--primary);
   font-family: Arial, sans-serif;
   line-height: 18px;
   flex-shrink: 0;
@@ -183,15 +183,15 @@
 
 .user-tip-text {
   font-size: 13px;
-  color: #1E3A8A;
+  color: var(--primary);
   font-family: Arial, sans-serif;
   line-height: 18px;
 }
 
 /* Upcoming Services Card */
 .user-upcoming-services-card {
-  background: white;
-  border: 0.8px solid #e5e7eb;
+  background: var(--card);
+  border: 0.8px solid var(--border);
   border-radius: 12px;
   padding: 12px 16px;
   display: flex;
@@ -318,28 +318,28 @@
   padding: 32px 0;
   gap: 12px;
   text-align: center;
-  background: #f9fafb;
+  background: var(--secondary);
   border-radius: 12px;
-  border: 1px dashed #e2e8f0;
+  border: 1px dashed var(--border);
 }
 
 .user-upcoming-empty-text {
   font-size: 14px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--text-muted);
   margin: 0;
 }
 
 .user-upcoming-empty-sub {
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--text-timestamp);
   margin: 0;
 }
 
 /* Attendance History */
 .user-attendance-history-section {
-  background: white;
-  border: 0.8px solid #e5e7eb;
+  background: var(--card);
+  border: 0.8px solid var(--border);
   border-radius: 12px;
   padding: 16px 18px;
   display: flex;
@@ -359,8 +359,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #f9fafb;
-  border: 0.8px solid #e5e7eb;
+  background: var(--input-background);
+  border: 0.8px solid var(--border);
   border-radius: 8px;
   padding: 6px 12px;
   min-width: 320px;
@@ -374,14 +374,14 @@
   border: none;
   background: transparent;
   font-size: 13px;
-  color: #101828;
+  color: var(--foreground);
   font-family: Arial, sans-serif;
   outline: none;
   width: 100%;
 }
 
 .user-history-search-input::placeholder {
-  color: #9ca3af;
+  color: var(--text-muted);
 }
 
 .user-attendance-table-wrapper {
@@ -394,8 +394,8 @@
 }
 
 .user-attendance-table thead {
-  background: #f9fafb;
-  border-bottom: 0.8px solid #e5e7eb;
+  background: var(--secondary);
+  border-bottom: 0.8px solid var(--border);
 }
 
 .user-attendance-table th {
@@ -403,13 +403,13 @@
   text-align: left;
   font-size: 13px;
   font-weight: 600;
-  color: #4a5565;
+  color: var(--text-secondary);
   font-family: Arial, sans-serif;
   line-height: 18px;
 }
 
 .user-attendance-table tbody tr {
-  border-bottom: 0.8px solid #f3f4f6;
+  border-bottom: 0.8px solid var(--border);
   transition: background-color 0.15s;
 }
 
@@ -418,13 +418,13 @@
 }
 
 .user-attendance-table tbody tr:hover {
-  background: #f9fafb;
+  background: var(--secondary);
 }
 
 .user-attendance-table td {
   padding: 12px 14px;
   font-size: 14px;
-  color: #101828;
+  color: var(--foreground);
   font-family: Arial, sans-serif;
   line-height: 20px;
 }
@@ -439,9 +439,20 @@
   line-height: 18px;
 }
 
-.user-method-badge.user-method-qr     { background: #dbeafe; color: #1E3A8A; }
-.user-method-badge.user-method-rfid   { background: #dcfce7; color: #00a63e; }
-.user-method-badge.user-method-manual { background: #f3f4f6; color: #6a7282; }
+.user-method-badge.user-method-qr {
+  background: #dbeafe;
+  color: #1E3A8A;
+}
+
+.user-method-badge.user-method-rfid {
+  background: #dcfce7;
+  color: #00a63e;
+}
+
+.user-method-badge.user-method-manual {
+  background: var(--secondary);
+  color: var(--text-muted);
+}
 
 /* Pagination */
 .user-pagination {
@@ -469,11 +480,11 @@
   min-width: 30px;
   height: 30px;
   padding: 0 8px;
-  border: 0.8px solid #e5e7eb;
+  border: 0.8px solid var(--border);
   border-radius: 6px;
-  background: white;
+  background: var(--secondary);
   font-size: 13px;
-  color: #4a5565;
+  color: var(--text-secondary);
   cursor: pointer;
   font-family: Arial, sans-serif;
   transition: all 0.15s;
@@ -483,8 +494,8 @@
 }
 
 .user-page-btn:hover:not(:disabled) {
-  background: #f3f4f6;
-  border-color: #d1d5db;
+  background: var(--muted);
+  border-color: var(--primary);
 }
 
 .user-page-btn:disabled {
@@ -505,14 +516,16 @@
 
 .user-attendance-empty-text {
   font-size: 13px;
-  color: #9ca3af;
+  color: var(--text-muted);
   font-family: Arial, sans-serif;
   margin: 0;
 }
 
 /* Responsive */
 @media (max-width: 1200px) {
-  .user-attendance-content-grid { grid-template-columns: 1fr; }
+  .user-attendance-content-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .user-history-header-row {
@@ -524,19 +537,19 @@
 
 .user-view-history-btn {
   padding: 6px 14px;
-  background: white;
-  border: 0.8px solid #d1d5db;
+  background: var(--secondary);
+  border: 0.8px solid var(--border);
   border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
-  color: #374151;
+  color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.15s;
 }
 
 .user-view-history-btn:hover {
-  background: #f9fafb;
-  border-color: #9ca3af;
+  background: var(--muted);
+  border-color: var(--primary);
 }
 
 /* History Modal Specifics */
@@ -552,8 +565,9 @@
 }
 
 .user-attendance-modal-content {
-  background: white;
+  background: var(--card);
   border-radius: 16px;
+  border: 1px solid var(--border);
   width: 100%;
   max-width: 800px;
   max-height: 90vh;
@@ -565,7 +579,7 @@
 
 .user-modal-header {
   padding: 12px 16px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -574,7 +588,7 @@
 .user-modal-title {
   font-size: 18px;
   font-weight: 700;
-  color: #101828;
+  color: var(--foreground);
   margin: 0;
 }
 
@@ -582,7 +596,7 @@
   background: none;
   border: none;
   font-size: 24px;
-  color: #6b7280;
+  color: var(--text-muted);
   cursor: pointer;
 }
 
@@ -594,7 +608,7 @@
 
 .user-modal-pagination {
   padding: 16px 20px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -603,16 +617,16 @@
 
 .user-modal-page-info {
   font-size: 13px;
-  color: #6b7280;
+  color: var(--text-muted);
 }
 
 .user-modal-page-btn {
   padding: 6px 12px;
   border-radius: 6px;
-  border: 1px solid #d1d5db;
-  background: white;
+  border: 1px solid var(--border);
+  background: var(--secondary);
   font-size: 13px;
-  color: #374151;
+  color: var(--foreground);
   cursor: pointer;
   transition: all 0.15s;
 }
@@ -623,7 +637,7 @@
 }
 
 .user-modal-page-btn:hover:not(:disabled) {
-  background: #f9fafb;
+  background: var(--muted);
 }
 
 /* Fix mobile scaling for history */
@@ -631,18 +645,29 @@
   .user-attendance-stats {
     grid-template-columns: 1fr;
   }
+
   .user-attendance-content-grid {
     grid-template-columns: 1fr;
   }
+
   .user-attendance-modal-content {
     max-height: 85vh;
   }
 }
 
 @media (max-width: 768px) {
-  .user-attendance-stats       { grid-template-columns: 1fr; }
-  .user-history-search-box     { width: 100%; min-width: unset; }
-  .user-attendance-table       { min-width: 560px; }
+  .user-attendance-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .user-history-search-box {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .user-attendance-table {
+    min-width: 560px;
+  }
 }
 
 /* ============================================================
@@ -650,113 +675,208 @@
    ============================================================ */
 
 /* Page Headers */
-.dark .user-attendance-page-title { color: var(--foreground); }
-.dark .user-attendance-page-subtitle { color: var(--text-secondary); }
-.dark .user-attendance-section-title { color: var(--foreground); }
+.dark .user-attendance-page-title {
+  color: var(--foreground);
+}
+
+.dark .user-attendance-page-subtitle {
+  color: var(--text-secondary);
+}
+
+.dark .user-attendance-section-title {
+  color: var(--foreground);
+}
 
 /* Stats Cards */
 .dark .user-attendance-stat-card {
   background: var(--card);
   border-color: var(--border);
 }
-.dark .user-attendance-stat-label { color: var(--text-secondary); }
-.dark .user-attendance-stat-value { color: var(--foreground); }
+
+.dark .user-attendance-stat-label {
+  color: var(--text-secondary);
+}
+
+.dark .user-attendance-stat-value {
+  color: var(--foreground);
+}
 
 /* Check-In Card */
 .dark .user-check-in-card {
   background: var(--card);
   border-color: var(--border);
 }
-.dark .user-check-in-subtitle { color: var(--text-secondary); }
+
+.dark .user-check-in-subtitle {
+  color: var(--text-secondary);
+}
 
 .dark .user-check-in-method {
   background: var(--input-background);
   border-color: var(--border);
 }
+
 .dark .user-check-in-method:hover {
   border-color: var(--primary);
   background: rgba(255, 255, 255, 0.03);
 }
-.dark .user-qr-scanner-box { background: var(--blue-tint); }
-.dark .user-check-in-method-title { color: var(--foreground); }
-.dark .user-check-in-method-description { color: var(--text-secondary); }
+
+.dark .user-qr-scanner-box {
+  background: var(--blue-tint);
+}
+
+.dark .user-check-in-method-title {
+  color: var(--foreground);
+}
+
+.dark .user-check-in-method-description {
+  color: var(--text-secondary);
+}
 
 .dark .user-check-in-tip {
   background: var(--blue-tint);
   border-color: var(--border);
 }
-.dark .user-tip-label, 
-.dark .user-tip-text { color: var(--primary); }
+
+.dark .user-tip-label,
+.dark .user-tip-text {
+  color: var(--primary);
+}
 
 /* Upcoming Services */
 .dark .user-upcoming-services-card {
   background: var(--card);
   border-color: var(--border);
 }
-.dark .user-upcoming-loading { color: var(--text-muted); }
+
+.dark .user-upcoming-loading {
+  color: var(--text-muted);
+}
+
 .dark .user-upcoming-service-item {
   background: var(--input-background);
   border-color: var(--border);
 }
-.dark .user-upcoming-service-item:hover { border-color: var(--muted-foreground); }
-.dark .user-upcoming-service-title { color: var(--foreground); }
-.dark .user-upcoming-service-message { color: var(--text-secondary); }
-.dark .user-upcoming-meta-item { color: var(--text-muted); }
 
-.dark .user-upcoming-type-badge.user-type-svc { background: rgba(21, 128, 61, 0.2); color: #4ade80; }
-.dark .user-upcoming-type-badge.user-type-notif { background: rgba(29, 78, 216, 0.2); color: #60a5fa; }
+.dark .user-upcoming-service-item:hover {
+  border-color: var(--muted-foreground);
+}
+
+.dark .user-upcoming-service-title {
+  color: var(--foreground);
+}
+
+.dark .user-upcoming-service-message {
+  color: var(--text-secondary);
+}
+
+.dark .user-upcoming-meta-item {
+  color: var(--text-muted);
+}
+
+.dark .user-upcoming-type-badge.user-type-svc {
+  background: rgba(21, 128, 61, 0.2);
+  color: #4ade80;
+}
+
+.dark .user-upcoming-type-badge.user-type-notif {
+  background: rgba(29, 78, 216, 0.2);
+  color: #60a5fa;
+}
 
 .dark .user-upcoming-empty {
   background: var(--card);
   border-color: var(--border);
 }
-.dark .user-upcoming-empty-text { color: var(--text-muted); }
-.dark .user-upcoming-empty-sub { color: var(--text-muted); }
+
+.dark .user-upcoming-empty-text {
+  color: var(--text-muted);
+}
+
+.dark .user-upcoming-empty-sub {
+  color: var(--text-muted);
+}
 
 /* Attendance History */
 .dark .user-attendance-history-section {
   background: var(--card);
   border-color: var(--border);
 }
+
 .dark .user-history-search-box {
   background: var(--input-background);
   border-color: var(--border);
 }
-.dark .user-history-search-input { color: var(--foreground); }
-.dark .user-history-search-input::placeholder { color: var(--text-muted); }
+
+.dark .user-history-search-input {
+  color: var(--foreground);
+}
+
+.dark .user-history-search-input::placeholder {
+  color: var(--text-muted);
+}
 
 /* Table */
 .dark .user-attendance-table thead {
   background: var(--muted);
   border-bottom-color: var(--border);
 }
-.dark .user-attendance-table th { color: var(--text-secondary); }
-.dark .user-attendance-table tbody tr { border-bottom-color: var(--border); }
-.dark .user-attendance-table tbody tr:hover { background: rgba(255, 255, 255, 0.03); }
-.dark .user-attendance-table td { color: var(--foreground); }
+
+.dark .user-attendance-table th {
+  color: var(--text-secondary);
+}
+
+.dark .user-attendance-table tbody tr {
+  border-bottom-color: var(--border);
+}
+
+.dark .user-attendance-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.dark .user-attendance-table td {
+  color: var(--foreground);
+}
 
 /* Badges */
-.dark .user-method-qr { background: var(--blue-tint); color: var(--primary); }
-.dark .user-method-manual { background: var(--muted); color: var(--text-secondary); }
+.dark .user-method-qr {
+  background: var(--blue-tint);
+  color: var(--primary);
+}
+
+.dark .user-method-manual {
+  background: var(--muted);
+  color: var(--text-secondary);
+}
 
 /* Pagination & Controls */
-.dark .user-pagination { border-top-color: var(--border); }
-.dark .user-attendance-pagination-info { color: var(--text-secondary); }
-.dark .user-attendance-empty-text { color: var(--text-muted); }
+.dark .user-pagination {
+  border-top-color: var(--border);
+}
 
-.dark .user-page-btn, 
+.dark .user-attendance-pagination-info {
+  color: var(--text-secondary);
+}
+
+.dark .user-attendance-empty-text {
+  color: var(--text-muted);
+}
+
+.dark .user-page-btn,
 .dark .user-view-history-btn,
 .dark .user-modal-page-btn {
   background: var(--input-background);
   border-color: var(--border);
   color: var(--foreground);
 }
+
 .dark .user-page-btn:hover:not(:disabled),
 .dark .user-view-history-btn:hover,
 .dark .user-modal-page-btn:hover:not(:disabled) {
   background: var(--muted);
   border-color: var(--muted-foreground);
 }
+
 .dark .user-page-btn-active {
   background: var(--primary);
   border-color: var(--primary);
@@ -768,8 +888,23 @@
   background: var(--card);
   border-color: var(--border);
 }
-.dark .user-modal-header { border-bottom-color: var(--border); }
-.dark .user-modal-title { color: var(--foreground); }
-.dark .user-modal-close-btn:hover { background: var(--muted); }
-.dark .user-modal-pagination { border-top-color: var(--border); }
-.dark .user-modal-page-info { color: var(--text-secondary); }
+
+.dark .user-modal-header {
+  border-bottom-color: var(--border);
+}
+
+.dark .user-modal-title {
+  color: var(--foreground);
+}
+
+.dark .user-modal-close-btn:hover {
+  background: var(--muted);
+}
+
+.dark .user-modal-pagination {
+  border-top-color: var(--border);
+}
+
+.dark .user-modal-page-info {
+  color: var(--text-secondary);
+}
