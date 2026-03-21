@@ -12,7 +12,7 @@
   top: 0;
   left: 0;
   z-index: 50;
-  background: linear-gradient(180deg, #0f172b 0%, #162456 100%);
+  background: #252c7c;
   color: white;
   display: flex;
   flex-direction: column;
@@ -25,7 +25,7 @@
 /* ── Logo / brand area ── */
 .loan-admin-sidebar-logo {
   padding: 24px;
-  border-bottom: 0.8px solid #1c398e;
+  border-bottom: 0.8px solid #323ba7;
   flex-shrink: 0;
 }
 
@@ -64,7 +64,7 @@
 
 .loan-admin-sidebar-logo-text p {
   font-size: 14px;
-  color: #8ec5ff;
+  color: #a5b4fc;
   margin: 0;
   font-family: 'Arial', sans-serif;
   line-height: 20px;
@@ -87,7 +87,7 @@
   height: 48px;
   background: transparent;
   border: none;
-  color: #bedbff;
+  color: #a5b4fc;
   font-size: 16px;
   font-family: 'Arial', sans-serif;
   border-radius: 10px;
@@ -117,7 +117,7 @@
 /* ── Profile / sign-out footer ── */
 .loan-admin-sidebar-profile {
   padding: 16px;
-  border-top: 0.8px solid #1c398e;
+  border-top: 0.8px solid #323ba7;
   flex-shrink: 0;
 }
 
@@ -163,7 +163,7 @@
 
 .loan-admin-sidebar-profile-email {
   font-size: 12px;
-  color: #8ec5ff;
+  color: #a5b4fc;
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -180,8 +180,8 @@
   gap: 8px;
   padding: 12px;
   background: transparent;
-  border: 1px solid #1c398e;
-  color: #bedbff;
+  border: 1px solid #323ba7;
+  color: #a5b4fc;
   font-size: 14px;
   font-family: 'Arial', sans-serif;
   border-radius: 10px;

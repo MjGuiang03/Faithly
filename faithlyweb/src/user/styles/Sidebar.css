@@ -1,7 +1,7 @@
 .user-sidebar {
   width: 256px;
-  background: linear-gradient(180deg, #0f172b 0%, #162456 100%);
-  border-right: 1px solid #1c398e;
+  background: #252c7c;
+  border-right: 1px solid #323ba7;
   color: white;
   display: flex;
   flex-direction: column;
@@ -57,9 +57,11 @@
 /* ========== LOGO ========== */
 .user-sidebar-logo {
   padding: 24px 0;
-  border-bottom: 0.8px solid #1c398e;
+  border-bottom: 0.8px solid #323ba7;
   flex-shrink: 0;
   display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
 }
 
@@ -71,10 +73,12 @@
 
 .user-sidebar-logo-content {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 0 12px;
+  gap: 12px;
+  padding: 0 16px;
+  text-align: center;
 }
 
 .user-sidebar-collapsed .user-sidebar-logo-content {
@@ -112,7 +116,7 @@
 
 .user-sidebar-logo-text p {
   font-size: 14px;
-  color: #8ec5ff;
+  color: #a5b4fc;
   margin: 0;
   font-family: 'Arial', sans-serif;
   line-height: 20px;
@@ -141,7 +145,7 @@
   height: 48px;
   background: transparent;
   border: none;
-  color: #bedbff;
+  color: #a5b4fc;
   font-size: 16px;
   font-family: 'Arial', sans-serif;
   border-radius: 10px;
@@ -162,7 +166,7 @@
 }
 
 .user-sidebar-nav-button:hover {
-  background: rgba(21, 93, 252, 0.2);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .user-sidebar-nav-button.active {
@@ -188,7 +192,7 @@
 /* ========== PROFILE ========== */
 .user-sidebar-profile {
   padding: 16px;
-  border-top: 0.8px solid #1c398e;
+  border-top: 0.8px solid #323ba7;
   flex-shrink: 0;
 }
 
@@ -217,7 +221,7 @@
 }
 
 .user-sidebar-profile-info:hover {
-  background: rgba(21, 93, 252, 0.2);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .user-sidebar-profile-info:focus-visible {
@@ -263,7 +267,7 @@
 
 .user-sidebar-profile-email {
   font-size: 11px;
-  color: #94a3b8;
+  color: #a5b4fc;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -278,8 +282,8 @@
   gap: 8px;
   padding: 12px;
   background: transparent;
-  border: 1px solid #1c398e;
-  color: #bedbff;
+  border: 1px solid #323ba7;
+  color: #a5b4fc;
   font-size: 14px;
   font-family: 'Arial', sans-serif;
   border-radius: 10px;

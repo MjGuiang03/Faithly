@@ -162,12 +162,15 @@ export default function Home() {
     return () => clearInterval(timer);
   }, []);
 
-  const formatDate = (date) => {
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    const dateStr = date.toLocaleDateString('en-US', options);
-    const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true });
-    const branchStr = profile?.branch ? ` | ${profile.branch} Branch` : '';
-    return `${dateStr} | ${timeStr}${branchStr}`;
+  const formatDateTop = (date) => {
+    const options = { weekday: 'long', month: 'long', day: 'numeric' };
+    return date.toLocaleDateString('en-US', options).toUpperCase();
+  };
+
+  const formatTimePill = (date) => {
+    const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    const branchPrefix = profile?.branch ? ` · ${profile.branch}` : '';
+    return `${timeStr}${branchPrefix}`;
   };
 
   return (
@@ -175,11 +178,18 @@ export default function Home() {
       <Sidebar />
 
       <div className="user-main-content">
-        {/* Header — avatar removed */}
-        <div className="user-home-header">
-          <p className="user-home-date-time">{formatDate(currentTime)}</p>
-          <h1 className="user-home-page-title">Welcome Back{user?.fullName ? `, ${user.fullName.split(' ')[0]}` : ''}!</h1>
-          <p className="user-home-page-subtitle">Here's an overview of your church activities</p>
+        <div className="user-home-header-container">
+          <div className="user-home-header-left">
+            <p className="user-home-date-top">{formatDateTop(currentTime)}</p>
+            <h1 className="user-home-page-title">Welcome back{user?.fullName ? `, ${user.fullName.split(' ')[0]}` : ''}!</h1>
+            <p className="user-home-page-subtitle">Here's an overview of your church activities</p>
+          </div>
+          
+          <div className="user-home-header-right">
+            <div className="user-home-info-pill">
+              {formatTimePill(currentTime)}
+            </div>
+          </div>
         </div>
 
         {/* Stats Grid */}

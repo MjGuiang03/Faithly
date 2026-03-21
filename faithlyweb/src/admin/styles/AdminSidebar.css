@@ -14,7 +14,7 @@
   width: 256px;
   min-width: 256px;
   height: 100%;
-  background: linear-gradient(180deg, #0f172b 0%, #162456 100%);
+  background: #252c7c;
   color: white;
   display: flex;
   flex-direction: column;
@@ -27,7 +27,7 @@
 /* ── Logo / brand area ── */
 .admin-sidebar-logo {
   padding: 24px;
-  border-bottom: 0.8px solid #1c398e;
+  border-bottom: 0.8px solid #323ba7;
   flex-shrink: 0;
 }
 
@@ -71,7 +71,7 @@
 
 .admin-sidebar-logo-text p {
   font-size: 14px;
-  color: #8ec5ff;
+  color: #a5b4fc;
   margin: 0;
   font-family: 'Arial', sans-serif;
   line-height: 20px;
@@ -105,7 +105,7 @@
   height: 48px;
   background: transparent;
   border: none;
-  color: #bedbff;
+  color: #a5b4fc;
   font-size: 16px;
   font-family: 'Arial', sans-serif;
   border-radius: 10px;
@@ -136,7 +136,7 @@
   margin-left: auto;
   display: flex;
   align-items: center;
-  color: #8ec5ff;
+  color: #a5b4fc;
 }
 
 /* ── Dropdown content ── */
@@ -161,7 +161,7 @@
   height: 40px;
   background: transparent;
   border: none;
-  color: #8ec5ff;
+  color: #a5b4fc;
   font-size: 14px;
   font-family: 'Arial', sans-serif;
   border-radius: 8px;
@@ -192,7 +192,7 @@
 /* ── Profile / sign-out footer ── */
 .admin-sidebar-profile {
   padding: 16px;
-  border-top: 0.8px solid #1c398e;
+  border-top: 0.8px solid #323ba7;
   flex-shrink: 0;
 }
 
@@ -238,7 +238,7 @@
 
 .admin-sidebar-profile-email {
   font-size: 12px;
-  color: #8ec5ff;
+  color: #a5b4fc;
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -255,8 +255,8 @@
   gap: 8px;
   padding: 12px;
   background: transparent;
-  border: 1px solid #1c398e;
-  color: #bedbff;
+  border: 1px solid #323ba7;
+  color: #a5b4fc;
   font-size: 14px;
   font-family: 'Arial', sans-serif;
   border-radius: 10px;
