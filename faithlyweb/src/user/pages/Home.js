@@ -243,7 +243,7 @@ export default function Home() {
             </div>
             <div className="user-stat-content">
               <p className="user-stat-label">Announcements</p>
-              <p className="user-stat-value user-fade-in" style={{ fontSize: '0.85rem', fontWeight: '500' }}>Click here to seeChurch Updates</p>
+              <p className="user-stat-value user-fade-in" style={{ fontSize: '0.85rem', fontWeight: '500' }}>Church Updates</p>
             </div>
           </div>
 
