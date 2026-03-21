@@ -158,7 +158,7 @@ export default function Home() {
   ];
 
   const [currentTime, setCurrentTime] = useState(new Date());
-  
+
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
@@ -183,11 +183,10 @@ export default function Home() {
       <div className="user-main-content">
         <div className="user-home-header-container">
           <div className="user-home-header-left">
-            <p className="user-home-date-top">{formatDateTop(currentTime)}</p>
             <h1 className="user-home-page-title">Welcome back{user?.fullName ? `, ${user.fullName.split(' ')[0]}` : ''}!</h1>
             <p className="user-home-page-subtitle">Here's an overview of your church activities</p>
           </div>
-          
+
           <div className="user-home-header-right">
             <div className="user-home-info-pill" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" width="18" height="18">
@@ -203,19 +202,6 @@ export default function Home() {
 
         {/* Stats Grid */}
         <div className="user-stats-grid">
-          <div className="user-stat-card user-stat-green user-stat-card-clickable" onClick={() => navigate('/donation')} style={{ cursor: 'pointer' }}>
-            <div className="user-stat-icon-box">
-              <svg className="user-stat-icon" fill="none" viewBox="0 0 24 24">
-                <path d={svgPaths.p3f86cd40} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-              </svg>
-            </div>
-            <div className="user-stat-content">
-              <p className="user-stat-label">Total Donated</p>
-              {loading ? <div className="user-skeleton" style={{ height: '24px', width: '80px', marginTop: '4px' }}></div> : <p className="user-stat-value user-fade-in">{`₱${(donationStats.totalDonated || 0).toLocaleString()}`}</p>}
-              <p className="user-stat-sub-label">All time giving</p>
-            </div>
-          </div>
-
           <div className="user-stat-card user-stat-blue user-stat-card-clickable" onClick={() => navigate('/loans')} style={{ cursor: 'pointer', position: 'relative' }}>
             <div className="user-stat-icon-box">
               <svg className="user-stat-icon" fill="none" viewBox="0 0 24 24">
@@ -229,7 +215,18 @@ export default function Home() {
             <div className="user-stat-content">
               <p className="user-stat-label">Active Loans</p>
               {loading ? <div className="user-skeleton" style={{ height: '24px', width: '40px', marginTop: '4px' }}></div> : <p className="user-stat-value user-fade-in">{loanStats.activeCount}</p>}
-              <p className="user-stat-sub-label">{activeLoans.length > 0 ? activeLoans[0].loanId : 'None'}</p>
+            </div>
+          </div>
+
+          <div className="user-stat-card user-stat-green user-stat-card-clickable" onClick={() => navigate('/donation')} style={{ cursor: 'pointer' }}>
+            <div className="user-stat-icon-box">
+              <svg className="user-stat-icon" fill="none" viewBox="0 0 24 24">
+                <path d={svgPaths.p3f86cd40} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+              </svg>
+            </div>
+            <div className="user-stat-content">
+              <p className="user-stat-label">Total Donated</p>
+              {loading ? <div className="user-skeleton" style={{ height: '24px', width: '80px', marginTop: '4px' }}></div> : <p className="user-stat-value user-fade-in">{`₱${(donationStats.totalDonated || 0).toLocaleString()}`}</p>}
             </div>
           </div>
 
@@ -245,7 +242,6 @@ export default function Home() {
             <div className="user-stat-content">
               <p className="user-stat-label">Services Attended</p>
               {loading ? <div className="user-skeleton" style={{ height: '24px', width: '40px', marginTop: '4px' }}></div> : <p className="user-stat-value user-fade-in">{attendanceStats.total}</p>}
-              <p className="user-stat-sub-label">This month</p>
             </div>
           </div>
 
@@ -269,14 +265,7 @@ export default function Home() {
         <div className="user-dashboard-grid">
           {/* Quick Actions */}
           <div className="user-home-card user-home-quick-actions-card">
-            <div className="user-home-card-header-with-icon">
-              <div className="user-home-card-header-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                </svg>
-              </div>
-              <h2 className="user-home-card-title">Quick Actions</h2>
-            </div>
+            <h2 className="user-home-card-title">Quick Actions</h2>
             <div className="user-quick-actions-list">
               {quickActions.map((action, index) => (
                 <button
@@ -361,11 +350,11 @@ export default function Home() {
                       <div className="user-activity-icon-compact" style={{ color: activity.iconColor }}>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
                           {activity.type === 'loan' ? (
-                             <rect x="2" y="6" width="20" height="12" rx="2" ry="2"></rect>
+                            <rect x="2" y="6" width="20" height="12" rx="2" ry="2"></rect>
                           ) : activity.type === 'donation' ? (
-                             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                           ) : (
-                             <path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                            <path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
                           )}
                         </svg>
                       </div>
@@ -375,10 +364,10 @@ export default function Home() {
                           <span className="user-activity-desc-compact">{activity.description.split(' — ')[0]}</span>
                         </div>
                         <div className="user-activity-right-col">
-                           <span className={`user-activity-amount-compact user-activity-amount-${activity.type}`}>
-                             {activity.description.split(' — ')[1] || ''}
-                           </span>
-                           <span className="user-activity-time-compact">{formatTimeAgo(activity.date)}</span>
+                          <span className={`user-activity-amount-compact user-activity-amount-${activity.type}`}>
+                            {activity.description.split(' — ')[1] || ''}
+                          </span>
+                          <span className="user-activity-time-compact">{formatTimeAgo(activity.date)}</span>
                         </div>
                       </div>
                     </div>

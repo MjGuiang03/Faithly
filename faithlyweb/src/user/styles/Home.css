@@ -168,31 +168,7 @@
   flex-shrink: 0;
 }
 
-/* Hero stat — blue bg, gold accent */
-.user-stat-green {
-  background: var(--sidebar);
-  border-top: 4px solid var(--gold);
-  border-radius: 12px;
-}
-
-.user-stat-green .user-stat-icon-box {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.user-stat-green .user-stat-icon {
-  stroke: var(--gold);
-}
-
-.user-stat-green .user-stat-label,
-.user-stat-green .user-stat-sub-label {
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.user-stat-green .user-stat-value {
-  color: white;
-}
-
-/* Standard stat — white card, blue accent */
+/* Loans stat — blue */
 .user-stat-blue {
   background: var(--card);
   border-top: 4px solid var(--primary);
@@ -208,44 +184,63 @@
 }
 
 .user-stat-blue .user-stat-label,
-.user-stat-blue .user-stat-value,
-.user-stat-blue .user-stat-sub-label {
+.user-stat-blue .user-stat-value {
   color: var(--foreground);
 }
 
+/* Donations stat — green */
+.user-stat-green {
+  background: var(--card);
+  border-top: 4px solid #16a34a;
+  border-radius: 12px;
+}
+
+.user-stat-green .user-stat-icon-box {
+  background: #dcfce7;
+}
+
+.user-stat-green .user-stat-icon {
+  stroke: #16a34a;
+}
+
+.user-stat-green .user-stat-label,
+.user-stat-green .user-stat-value {
+  color: var(--foreground);
+}
+
+/* Attendance stat — dark navy */
 .user-stat-navy {
   background: var(--card);
-  border-top: 4px solid var(--primary);
+  border-top: 4px solid #0f2854;
   border-radius: 12px;
 }
 
 .user-stat-navy .user-stat-icon-box {
-  background: var(--blue-tint);
+  background: #dbeafe;
 }
 
 .user-stat-navy .user-stat-icon {
-  stroke: var(--primary);
+  stroke: #0f2854;
 }
 
 .user-stat-navy .user-stat-label,
-.user-stat-navy .user-stat-value,
-.user-stat-navy .user-stat-sub-label {
+.user-stat-navy .user-stat-value {
   color: var(--foreground);
 }
 
-/* Alert stat — red accent */
+/* Announcements stat — orange */
 .user-stat-orange {
   background: var(--card);
-  border-top: 4px solid var(--destructive);
+  border-top: 4px solid #F97316;
   border-radius: 12px;
 }
 
 .user-stat-orange .user-stat-icon-box {
-  background: var(--red-tint);
+  background: #ffedd5;
 }
 
 .user-stat-orange .user-stat-icon {
-  stroke: var(--destructive);
+  stroke: #F97316;
 }
 
 .user-stat-orange .user-stat-label,
