@@ -29,7 +29,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .user-donation-stat-card {
@@ -75,10 +75,11 @@
 .user-donations-content-grid {
   display: grid;
   grid-template-columns: 1.2fr 1fr;
-  gap: 12px;
+  gap: 16px;
   /* FIX: clamp so columns never push past the container */
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
   align-items: start;
+  margin-bottom: 20px;
 }
 
 /* ── Left card: Make a Donation ── */
