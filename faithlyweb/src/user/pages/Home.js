@@ -202,12 +202,22 @@ export default function Home() {
             {!loading && activeLoans.length === 0 && (
               <div className="user-loan-hover-tooltip">
                 <p className="user-loan-hover-title">No Active Loans</p>
+                {profile?.verificationStatus !== 'verified' && (
+                  <div className="user-loan-verify-suggestion">
+                    <p className="user-verify-text">You are not yet a verified officer. Get verified to unlock more loan features!</p>
+                  </div>
+                )}
                 <p className="user-loan-hover-cta">Click to apply for a loan →</p>
               </div>
             )}
+            {!loading && activeLoans.length > 0 && profile?.verificationStatus !== 'verified' && (
+               <div className="user-loan-hover-verify-mini">
+                  <p>Get verified for more loan options! →</p>
+               </div>
+            )}
           </div>
 
-          <div className="user-stat-card user-stat-green">
+          <div className="user-stat-card user-stat-green user-stat-card-clickable" onClick={() => navigate('/donation')} style={{ cursor: 'pointer' }}>
             <div className="user-stat-icon-box">
               <svg className="user-stat-icon" fill="none" viewBox="0 0 24 24">
                 <path d={svgPaths.p3f86cd40} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
@@ -219,7 +229,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="user-stat-card user-stat-navy">
+          <div className="user-stat-card user-stat-navy user-stat-card-clickable" onClick={() => navigate('/attendance')} style={{ cursor: 'pointer' }}>
             <div className="user-stat-icon-box">
               <svg className="user-stat-icon" fill="none" viewBox="0 0 24 24">
                 <path d="M8 2V6" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />

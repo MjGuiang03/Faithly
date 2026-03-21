@@ -2,7 +2,7 @@
 .user-settings-container {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
   max-width: 100%;
 }
 
@@ -11,10 +11,10 @@
   background: white;
   border: 0.8px solid #e5e7eb;
   border-radius: 14px;
-  padding: 24px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 /* Section Header */
@@ -757,7 +757,7 @@
 
 /* Settings Header */
 .user-settings-page-header {
-  margin-bottom: 24px;
+  margin-bottom: 12px;
 }
 
 .user-settings-page-title {
@@ -778,11 +778,7 @@
 }
 
 /* Main Content Layout */
-.user-main-content {
-  flex: 1;
-  padding: 32px;
-  overflow-y: auto;
-}
+
 
 .user-home-layout {
   display: flex;

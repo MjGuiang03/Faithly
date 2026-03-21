@@ -1,6 +1,6 @@
 /* ─── Header ─────────────────────────────────────────────── */
 .user-branches-page-header {
-  margin-bottom: 24px;
+  margin-bottom: 12px;
 }
 
 .user-branches-page-title {
@@ -119,8 +119,8 @@
 .user-branches-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-bottom: 14px;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
 .user-branch-stat-card {
@@ -158,8 +158,8 @@
   background: white;
   border: 0.8px solid #e5e7eb;
   border-radius: 12px;
-  padding: 9px 14px;
-  margin-bottom: 18px;
+  padding: 8px 14px;
+  margin-bottom: 12px;
   flex-wrap: wrap;
 }
 
@@ -245,7 +245,7 @@
 
 /* ─── Branch Groups ──────────────────────────────────────── */
 .user-branch-group {
-  margin-bottom: 18px;
+  margin-bottom: 12px;
 }
 
 .user-branch-group-header {
