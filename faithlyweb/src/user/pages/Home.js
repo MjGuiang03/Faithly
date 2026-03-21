@@ -113,45 +113,47 @@ export default function Home() {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
-  const ActivityIcon = ({ type }) => {
-    if (type === 'loan') return (
-      <svg fill="none" viewBox="0 0 20 20" width="18" height="18">
-        <path d={svgPaths.pd03f500} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-        <path d={svgPaths.pafc1d00} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-      </svg>
-    );
-    if (type === 'donation') return (
-      <svg fill="none" viewBox="0 0 20 20" width="18" height="18">
-        <path d={svgPaths.p12f1f900} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-      </svg>
-    );
-    return (
-      <svg fill="none" viewBox="0 0 20 20" width="18" height="18">
-        <path d="M0.833333 0.833333V4.16667" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-        <path d={svgPaths.pf3beb80} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-        <path d="M0.833333 0.833333H15.8333" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-      </svg>
-    );
-  };
+
 
   const quickActions = [
     {
-      title: 'Make Donation',
-      description: 'Support the church',
+      title: 'Make a\nDonation',
+      description: 'Support the\nchurch today',
       className: 'user-action-btn-donate',
       action: () => navigate('/donation'),
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      )
     },
     {
-      title: 'Check Attendance',
-      description: 'View your attendance',
+      title: 'Check\nAttendance',
+      description: 'View your\nattendance\nrecord',
       className: 'user-action-btn-attendance',
       action: () => navigate('/attendance'),
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+      )
     },
     {
-      title: 'View Nearby Community',
-      description: 'Find local branches',
+      title: 'View\nNearby\nCommunity',
+      description: 'Find local\nbranches',
       className: 'user-action-btn-community',
       action: () => navigate('/branches'),
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="2" y1="12" x2="22" y2="12"></line>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+        </svg>
+      )
     },
   ];
 
@@ -194,6 +196,19 @@ export default function Home() {
 
         {/* Stats Grid */}
         <div className="user-stats-grid">
+          <div className="user-stat-card user-stat-green user-stat-card-clickable" onClick={() => navigate('/donation')} style={{ cursor: 'pointer' }}>
+            <div className="user-stat-icon-box">
+              <svg className="user-stat-icon" fill="none" viewBox="0 0 24 24">
+                <path d={svgPaths.p3f86cd40} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+              </svg>
+            </div>
+            <div className="user-stat-content">
+              <p className="user-stat-label">Total Donated</p>
+              {loading ? <div className="user-skeleton" style={{ height: '24px', width: '80px', marginTop: '4px' }}></div> : <p className="user-stat-value user-fade-in">{`₱${(donationStats.totalDonated || 0).toLocaleString()}`}</p>}
+              <p className="user-stat-sub-label">All time giving</p>
+            </div>
+          </div>
+
           <div className="user-stat-card user-stat-blue user-stat-card-clickable" onClick={() => navigate('/loans')} style={{ cursor: 'pointer', position: 'relative' }}>
             <div className="user-stat-icon-box">
               <svg className="user-stat-icon" fill="none" viewBox="0 0 24 24">
@@ -207,51 +222,7 @@ export default function Home() {
             <div className="user-stat-content">
               <p className="user-stat-label">Active Loans</p>
               {loading ? <div className="user-skeleton" style={{ height: '24px', width: '40px', marginTop: '4px' }}></div> : <p className="user-stat-value user-fade-in">{loanStats.activeCount}</p>}
-            </div>
-
-            {/* Hover Tooltip showing active loan details */}
-            {!loading && activeLoans.length > 0 && (
-              <div className="user-loan-hover-tooltip">
-                <p className="user-loan-hover-title">Your Active Loans</p>
-                {activeLoans.slice(0, 3).map((loan, idx) => (
-                  <div key={idx} className="user-loan-hover-item">
-                    <span className="user-loan-hover-id">{loan.loanId}</span>
-                    <span className="user-loan-hover-amount">₱{(loan.amount || 0).toLocaleString()}</span>
-                  </div>
-                ))}
-                {activeLoans.length > 3 && (
-                  <p className="user-loan-hover-more">+{activeLoans.length - 3} more loan(s)</p>
-                )}
-                <p className="user-loan-hover-cta">Click to view details →</p>
-              </div>
-            )}
-            {!loading && activeLoans.length === 0 && (
-              <div className="user-loan-hover-tooltip">
-                <p className="user-loan-hover-title">No Active Loans</p>
-                {profile?.verificationStatus !== 'verified' && (
-                  <div className="user-loan-verify-suggestion">
-                    <p className="user-verify-text">You are not yet a verified officer. Get verified to unlock more loan features!</p>
-                  </div>
-                )}
-                <p className="user-loan-hover-cta">Click to apply for a loan →</p>
-              </div>
-            )}
-            {!loading && activeLoans.length > 0 && profile?.verificationStatus !== 'verified' && (
-               <div className="user-loan-hover-verify-mini">
-                  <p>Get verified for more loan options! →</p>
-               </div>
-            )}
-          </div>
-
-          <div className="user-stat-card user-stat-green user-stat-card-clickable" onClick={() => navigate('/donation')} style={{ cursor: 'pointer' }}>
-            <div className="user-stat-icon-box">
-              <svg className="user-stat-icon" fill="none" viewBox="0 0 24 24">
-                <path d={svgPaths.p3f86cd40} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-              </svg>
-            </div>
-            <div className="user-stat-content">
-              <p className="user-stat-label">Total Donated</p>
-              {loading ? <div className="user-skeleton" style={{ height: '24px', width: '80px', marginTop: '4px' }}></div> : <p className="user-stat-value user-fade-in">{`₱${(donationStats.totalDonated || 0).toLocaleString()}`}</p>}
+              <p className="user-stat-sub-label">{activeLoans.length > 0 ? activeLoans[0].loanId : 'None'}</p>
             </div>
           </div>
 
@@ -267,6 +238,7 @@ export default function Home() {
             <div className="user-stat-content">
               <p className="user-stat-label">Services Attended</p>
               {loading ? <div className="user-skeleton" style={{ height: '24px', width: '40px', marginTop: '4px' }}></div> : <p className="user-stat-value user-fade-in">{attendanceStats.total}</p>}
+              <p className="user-stat-sub-label">This month</p>
             </div>
           </div>
 
@@ -279,7 +251,8 @@ export default function Home() {
             </div>
             <div className="user-stat-content">
               <p className="user-stat-label">Announcements</p>
-              <p className="user-stat-value user-fade-in" style={{ fontSize: '0.85rem', fontWeight: '500' }}>Church Updates</p>
+              <p className="user-stat-value user-fade-in" style={{ fontSize: '0.95rem', fontWeight: '700' }}>Church Updates</p>
+              <p className="user-stat-badge">3 unread</p>
             </div>
           </div>
 
@@ -289,7 +262,14 @@ export default function Home() {
         <div className="user-dashboard-grid">
           {/* Quick Actions */}
           <div className="user-home-card user-home-quick-actions-card">
-            <h2 className="user-home-card-title">Quick Actions</h2>
+            <div className="user-home-card-header-with-icon">
+              <div className="user-home-card-header-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+              </div>
+              <h2 className="user-home-card-title">Quick Actions</h2>
+            </div>
             <div className="user-quick-actions-list">
               {quickActions.map((action, index) => (
                 <button
@@ -297,13 +277,16 @@ export default function Home() {
                   onClick={action.action}
                   className={`user-action-button ${action.className}`}
                 >
+                  <div className="user-action-icon-wrapper">
+                    {action.icon}
+                  </div>
                   <div className="user-action-content">
-                    <h3 className="user-action-title">{action.title}</h3>
-                    <p className="user-action-description">{action.description}</p>
+                    <h3 className="user-action-title" style={{ whiteSpace: 'pre-line' }}>{action.title}</h3>
+                    <p className="user-action-description" style={{ whiteSpace: 'pre-line' }}>{action.description}</p>
                   </div>
                   <svg className="user-action-arrow" fill="none" viewBox="0 0 20 20">
-                    <path d="M4.16667 10H15.8333" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                    <path d={svgPaths.p1ae0b780} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                    <path d="M4.16667 10H15.8333" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+                    <path d={svgPaths.p1ae0b780} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
                   </svg>
                 </button>
               ))}
@@ -339,7 +322,18 @@ export default function Home() {
 
           {/* Recent Activities */}
           <div className="user-home-card user-home-recent-activity-card">
-            <h2 className="user-home-card-title">Recent Activities</h2>
+            <div className="user-home-card-header-with-icon" style={{ justifyContent: 'space-between', width: '100%' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div className="user-home-card-header-icon user-header-icon-recent">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                </div>
+                <h2 className="user-home-card-title">Recent Activity</h2>
+              </div>
+              <button className="user-activity-view-all">View all activity</button>
+            </div>
             <div className="user-activity-list">
               {loading ? (
                 [1, 2, 3, 4, 5].map(i => (
@@ -354,18 +348,31 @@ export default function Home() {
               ) : recentActivity.length === 0 ? (
                 <p className="user-home-empty-text">No recent activity yet.</p>
               ) : (
-                <div className="user-fade-in">
+                <div className="user-fade-in user-activity-flex-col">
                   {recentActivity.map((activity, index) => (
-                    <div key={index} className="user-activity-item-horizontal">
+                    <div key={index} className={`user-activity-item-horizontal user-activity-item-${activity.type}`}>
                       <div className="user-activity-icon-compact" style={{ color: activity.iconColor }}>
-                        <ActivityIcon type={activity.type} />
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
+                          {activity.type === 'loan' ? (
+                             <rect x="2" y="6" width="20" height="12" rx="2" ry="2"></rect>
+                          ) : activity.type === 'donation' ? (
+                             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                          ) : (
+                             <path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                          )}
+                        </svg>
                       </div>
                       <div className="user-activity-details-horizontal">
-                        <span className="user-activity-title-compact">{activity.title}</span>
-                        <span className="user-activity-separator">–</span>
-                        <span className="user-activity-desc-compact">{activity.description}</span>
-                        <span className="user-activity-separator">–</span>
-                        <span className="user-activity-time-compact">{formatTimeAgo(activity.date)}</span>
+                        <div className="user-activity-left-col">
+                          <span className="user-activity-title-compact">{activity.title}</span>
+                          <span className="user-activity-desc-compact">{activity.description.split(' — ')[0]}</span>
+                        </div>
+                        <div className="user-activity-right-col">
+                           <span className={`user-activity-amount-compact user-activity-amount-${activity.type}`}>
+                             {activity.description.split(' — ')[1] || ''}
+                           </span>
+                           <span className="user-activity-time-compact">{formatTimeAgo(activity.date)}</span>
+                        </div>
                       </div>
                     </div>
                   ))}

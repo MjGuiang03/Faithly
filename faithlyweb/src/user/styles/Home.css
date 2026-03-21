@@ -487,65 +487,60 @@
 }
 
 .user-action-button {
-  flex: 1;
-  border-radius: 16px;
-  padding: 14px 18px;
-  border: none;
-  cursor: pointer;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  width: 100%;
-  min-height: 60px;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+  text-decoration: none;
+}
+
+.user-action-icon-wrapper {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.user-action-icon-wrapper svg {
+  width: 22px;
+  height: 22px;
 }
 
 .user-action-button:hover {
-  transform: translateY(-4px) scale(1.02);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
 }
 
 .user-action-content {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-  flex: 1;
-  overflow: hidden;
+  gap: 4px;
 }
 
 .user-action-title {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
-  color: white;
   margin: 0;
-  line-height: 22px;
-  font-family: Arial, sans-serif;
-  text-align: left;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  width: 100%;
+  line-height: 1.3;
 }
 
 .user-action-description {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.8);
   margin: 0;
-  line-height: 18px;
-  font-family: Arial, sans-serif;
-  text-align: left;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  width: 100%;
+  line-height: 1.4;
 }
 
 .user-action-arrow {
-  width: 18px;
-  height: 18px;
-  margin-top: 2px;
+  width: 20px;
+  height: 20px;
   flex-shrink: 0;
 }
 
@@ -558,76 +553,119 @@
   justify-content: space-between;
 }
 
-.user-activity-item-horizontal {
+.user-home-card-header-with-icon {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 6px 10px;
-  background: #f8fafc;
-  border-radius: 10px;
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  margin-bottom: 6px;
-  transition: background 0.2s ease;
-  flex: 1;
-  min-height: 48px;
+  margin-bottom: 20px;
 }
 
+.user-home-card-header-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F3F4F6;
+  color: #111827;
+}
+.user-home-card-header-icon.user-header-icon-recent {
+  background: #F3E8FF;
+  color: #111827;
+}
+
+.user-home-card-header-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.user-activity-view-all {
+  background: transparent;
+  border: 1px solid #E5E7EB;
+  color: #E5E7EB;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.user-activity-item-horizontal {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid #E5E7EB;
+  background: transparent;
+}
 .user-activity-item-horizontal:last-child {
-  margin-bottom: 0;
-}
-
-.user-activity-item-horizontal:hover {
-  background: white;
-  border-color: #e2e8f0;
+  border-bottom: none;
 }
 
 .user-activity-icon-compact {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  background: white;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+.user-activity-item-loan .user-activity-icon-compact {
+  background: #FEF3C7;
+  color: #B45309;
+}
+.user-activity-item-donation .user-activity-icon-compact {
+  background: #EFF6FF;
+  color: #1E3A8A;
+}
+.user-activity-item-attendance .user-activity-icon-compact {
+  background: #F3F4F6;
+  color: #374151;
 }
 
 .user-activity-details-horizontal {
-  flex: 1;
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 8px;
-  overflow: hidden;
+  flex: 1;
+}
+
+.user-activity-left-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.user-activity-right-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
 }
 
 .user-activity-title-compact {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: #101828;
-  white-space: nowrap;
 }
 
-.user-activity-separator {
-  color: #9ca3af;
-  font-weight: 400;
-}
-
-.user-activity-desc-compact {
+.user-activity-desc-compact, .user-activity-time-compact {
   font-size: 13px;
   color: #64748b;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  flex: 1;
 }
 
-.user-activity-time-compact {
-  font-size: 12px;
-  color: #9ca3af;
-  white-space: nowrap;
-  margin-left: auto;
-  font-weight: 500;
+.user-activity-amount-loan {
+  font-size: 14px;
+  font-weight: 700;
+  color: #B45309;
+}
+
+.user-activity-amount-donation {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1E3A8A;
 }
 
 /* Floating Chat Button */
@@ -857,149 +895,143 @@
   }
 }
 
-/* =========================================
-   NEW QUICK ACTION & DARK THEME OVERRIDES 
-   BASED ON USER SPECIFIC MOCKUP COLORS
-========================================= */
-
-/* LIGHT MODE: Quick Actions (Retaining original design colors) */
+/* LIGHT MODE: Quick Actions & Stats (Mockup Exact Match) */
 .user-action-btn-donate {
-  background: linear-gradient(137.368deg, rgb(0, 166, 62) 0%, rgb(0, 130, 54) 100%);
+  background: #1E3A8A;
   color: white;
 }
+.user-action-btn-donate .user-action-icon-wrapper {
+  background: rgba(255, 255, 255, 0.15);
+  color: #F5C800;
+}
+.user-action-btn-donate .user-action-arrow { color: rgba(255, 255, 255, 0.7); }
+.user-action-btn-donate .user-action-description { color: rgba(255, 255, 255, 0.8); }
+
 .user-action-btn-attendance {
-  background: #0f2854;
-  color: white;
+  background: #FFFBEB;
+  color: #92400E;
+  border: 1px solid #FEF3C7;
+  box-shadow: none;
 }
-.user-action-btn-community {
-  background: linear-gradient(137.368deg, rgb(21, 93, 252) 0%, rgb(20, 71, 230) 100%);
-  color: white;
+.user-action-btn-attendance .user-action-icon-wrapper {
+  background: #FEF3C7;
+  color: #92400E;
+}
+.user-action-btn-attendance .user-action-title,
+.user-action-btn-attendance .user-action-description,
+.user-action-btn-attendance .user-action-arrow {
+  color: #92400E;
 }
 
-/* DARK MODE: Stat Cards */
-.dark .user-stat-card {
-  background: transparent;
-  border: 1px solid #484C55;
+.user-action-btn-community {
+  background: white;
+  color: #101828;
+  border: 1px solid #E5E7EB;
+  box-shadow: none;
+}
+.user-action-btn-community .user-action-icon-wrapper {
+  background: #F3F4F6;
+  color: #374151;
+}
+.user-action-btn-community .user-action-title { color: #101828; }
+.user-action-btn-community .user-action-description,
+.user-action-btn-community .user-action-arrow { color: #64748B; }
+
+/* Mockup Exact Stat Cards */
+.user-stat-green { /* Actually Total Donated in JSX */
+  background: #1E3A8A;
+  border-top: 4px solid #F5C800;
   border-radius: 12px;
 }
+.user-stat-green .user-stat-icon-box { background: rgba(255, 255, 255, 0.15); }
+.user-stat-green .user-stat-icon { stroke: #F5C800; }
+.user-stat-green .user-stat-label,
+.user-stat-green .user-stat-sub-label { color: rgba(255, 255, 255, 0.8); }
+.user-stat-green .user-stat-value { color: white; }
 
-/* "Total Donated" Card (Green code mapping) */
-.dark .user-stat-green {
-  background: #1E3A8A; /* Solid Blue as per Mockup */
-  border-color: rgba(255,255,255,0.05);
-  border-top: 4px solid #F5C800; /* Gold top border */
+.user-stat-blue {
+  background: white;
+  border-top: 4px solid #1E3A8A;
+  border-radius: 12px;
 }
-.dark .user-stat-green .user-stat-icon-box {
-  background: #3A60D8; /* Lighter blue square */
+.user-stat-blue .user-stat-icon-box { background: #EFF6FF; }
+.user-stat-blue .user-stat-icon { stroke: #1E3A8A; }
+.user-stat-blue .user-stat-label, .user-stat-blue .user-stat-value, .user-stat-blue .user-stat-sub-label { color: #101828; }
+
+.user-stat-navy {
+  background: white;
+  border-top: 4px solid #1E3A8A;
+  border-radius: 12px;
 }
-.dark .user-stat-green .user-stat-icon {
-  stroke: #F5C800; /* Gold icon */
+.user-stat-navy .user-stat-icon-box { background: #EFF6FF; }
+.user-stat-navy .user-stat-icon { stroke: #1E3A8A; }
+.user-stat-navy .user-stat-label, .user-stat-navy .user-stat-value, .user-stat-navy .user-stat-sub-label { color: #101828; }
+
+.user-stat-orange {
+  background: white;
+  border-top: 4px solid #DC2626;
+  border-radius: 12px;
 }
-.dark .user-stat-green .user-stat-label,
-.dark .user-stat-green .user-stat-value {
+.user-stat-orange .user-stat-icon-box { background: #FEF2F2; }
+.user-stat-orange .user-stat-icon { stroke: #DC2626; }
+.user-stat-orange .user-stat-label, .user-stat-orange .user-stat-value { color: #101828; }
+.user-stat-badge {
+  background: #DC2626;
   color: white;
-}
-
-/* "Active Loans" Card (Blue code mapping) */
-.dark .user-stat-blue {
-  border-top: 4px solid #1E3A8A;
-}
-
-/* "Services Attended" Card (Navy code mapping) */
-.dark .user-stat-navy {
-  border-top: 4px solid #1E3A8A;
-}
-
-/* "Announcements" Card (Orange code mapping) */
-.dark .user-stat-orange {
-  border-top: 4px solid #CC1111; /* Red top border */
-}
-.dark .user-stat-orange .user-stat-icon-box {
-  background: rgba(204, 17, 17, 0.1);
-}
-.dark .user-stat-orange .user-stat-icon {
-  stroke: #CC1111; /* Red icon */
-}
-
-/* General labels in dark stat cards */
-.dark .user-stat-card .user-stat-label {
-  color: #9CA3AF;
-  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 6px;
   font-size: 11px;
-  letter-spacing: 1px;
-}
-.dark .user-stat-card .user-stat-value {
-  color: #FFFFFF;
-}
-
-/* DARK MODE: Grid Area Backgrounds */
-.dark .user-home-card {
-  background: #2C2F36;
-  border: 1px solid #484C55;
+  font-weight: 700;
+  margin-top: 4px;
+  display: inline-block;
 }
 
-.dark .user-home-community-banner {
-  background: #1E3A8A; /* Match community banner from reference */
-  color: white;
-}
-
-/* DARK MODE: Quick Actions (Exact mockup mapping) */
+/* DARK MODE: Overrides for new structurally laid out cards */
 .dark .user-action-btn-donate {
-  background: #1E3A8A; /* Solid Blue */
+  background: #1E3A8A;
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
-
 .dark .user-action-btn-attendance {
-  background: rgba(245, 200, 0, 0.08); /* Yellow Wash */
-  border: 1px solid rgba(245, 200, 0, 0.3); /* Yellow Border */
-  color: #F5C800; /* Yellow text */
+  background: rgba(245, 200, 0, 0.08);
+  border: 1px solid rgba(245, 200, 0, 0.3);
 }
-
-.dark .user-action-btn-attendance .user-action-title {
+.dark .user-action-btn-attendance .user-action-title,
+.dark .user-action-btn-attendance .user-action-description,
+.dark .user-action-btn-attendance .user-action-arrow {
   color: #F5C800;
 }
-
-.dark .user-action-btn-attendance .user-action-desc {
-  color: rgba(245, 200, 0, 0.7);
-}
-
-.dark .user-action-btn-attendance svg {
-  color: #F5C800;
-}
-
 .dark .user-action-btn-community {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid #484C55;
+}
+.dark .user-action-btn-community .user-action-title,
+.dark .user-action-btn-community .user-action-description,
+.dark .user-action-btn-community .user-action-arrow {
   color: white;
 }
 
-/* DARK MODE: Recent Activities & Payments */
-.dark .user-activity-item-horizontal,
-.dark .user-payment-item {
+.dark .user-activity-item-horizontal {
   background: var(--input-background);
   border-color: var(--border);
 }
 .dark .user-activity-item-horizontal:hover {
   background: var(--muted);
-  border-color: var(--muted-foreground);
-}
-.dark .user-activity-icon-compact {
-  background: var(--card);
-}
-.dark .user-payment-icon {
-  background: var(--gold-tint);
 }
 .dark .user-activity-title-compact,
-.dark .user-payment-id,
-.dark .user-payment-amount {
+.dark .user-payment-id {
   color: var(--foreground);
 }
-.dark .user-activity-separator,
-.dark .user-activity-time-compact {
-  color: var(--text-muted);
-}
 .dark .user-activity-desc-compact,
-.dark .user-payment-due {
+.dark .user-activity-time-compact {
   color: var(--text-secondary);
+}
+.dark .user-stat-card .user-stat-sub-label {
+  color: #9CA3AF;
+  font-size: 12px;
+  margin-top: 2px;
+}
+.dark .user-home-card-header-icon {
+  background: var(--muted);
+  color: var(--foreground);
 }
