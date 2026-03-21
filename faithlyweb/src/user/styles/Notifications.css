@@ -60,12 +60,13 @@
 }
 
 .dark .user-notif-card {
+  background: var(--card);
   border-color: var(--border);
 }
-.dark .user-notif-card-loan { background: var(--blue-tint); border-color: var(--primary); }
-.dark .user-notif-card-donation { background: var(--red-tint); border-color: var(--destructive); }
-.dark .user-notif-card-attendance { background: var(--blue-tint); border-color: var(--primary); }
-.dark .user-notif-card-read { background: var(--card); border-color: var(--border); }
+.dark .user-notif-card-loan       { border-left: 4px solid #F5C800; background: var(--card); }
+.dark .user-notif-card-donation   { border-left: 4px solid #be185d; background: var(--card); }
+.dark .user-notif-card-attendance { border-left: 4px solid #7090D0; background: var(--card); }
+.dark .user-notif-card-read       { background: var(--input-background); border-color: var(--border); border-left-width: 1px; opacity: 0.7; }
 
 /* Card Text elements */
 .dark .user-notif-body-title { color: var(--foreground); }
@@ -223,21 +224,24 @@
 .user-notif-card {
   display: flex;
   align-items: flex-start;
-  gap: 14px;
-  padding: 16px 20px;
+  gap: 16px;
+  padding: 18px 20px;
   border-radius: 12px;
-  border: 0.8px solid #e5e7eb;
-  transition: box-shadow 0.15s;
+  border: 1px solid #e5e7eb;
+  background: white;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .user-notif-card:hover {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);    
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);    
+  transform: translateY(-1px);
 }
 
-.user-notif-card-loan       { background: #f0f6ff; border-color: #bfdbfe; }
-.user-notif-card-donation   { background: #fff0f7; border-color: #fbb6d8; }
-.user-notif-card-attendance { background: #f0f6ff; border-color: #bfdbfe; }
-.user-notif-card-read       { background: white;   border-color: #f3f4f6; }
+.user-notif-card-loan       { border-left: 4px solid #b45309; }
+.user-notif-card-donation   { border-left: 4px solid #be185d; }
+.user-notif-card-attendance { border-left: 4px solid #1E3A8A; }
+.user-notif-card-read       { background: #f9fafb; border-color: #f3f4f6; opacity: 0.85; border-left-width: 1px; }
 
 /* Icon bubbles */
 .user-notif-icon {

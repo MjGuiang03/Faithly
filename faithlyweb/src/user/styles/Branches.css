@@ -743,3 +743,82 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================================
+   DARK MODE OVERRIDES
+   ============================================================ */
+.dark .user-branches-page-title,
+.dark .user-mcb-name,
+.dark .user-branch-stat-value,
+.dark .user-bci-name,
+.dark .user-drawer-branch-name {
+  color: var(--foreground);
+}
+
+.dark .user-branches-page-subtitle,
+.dark .user-mcb-province,
+.dark .user-branch-stat-label,
+.dark .user-drawer-province,
+.dark .user-bci-days {
+  color: var(--text-secondary);
+}
+
+.dark .user-my-community-banner {
+  background: var(--card);
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+.dark .user-mcb-icon { background: var(--blue-tint); }
+
+.dark .user-branch-stat-card,
+.dark .user-branches-filter-bar,
+.dark .user-branch-card-item {
+  background: var(--card);
+  border-color: var(--border);
+}
+
+.dark .user-branches-search-input,
+.dark .user-branches-filter-select {
+  background: var(--input-background);
+  border-color: var(--border);
+  color: var(--foreground);
+}
+.dark .user-branches-search-input:focus,
+.dark .user-branches-filter-select:focus {
+  border-color: var(--primary);
+}
+
+.dark .user-branches-filter-count {
+  background: var(--muted);
+  color: var(--text-muted);
+}
+
+.dark .user-branch-card-item.user-my-branch {
+  background: var(--blue-tint);
+  border-color: var(--primary);
+}
+
+.dark .user-bci-icon { background: var(--muted); }
+.dark .user-bci-icon.user-my-branch-icon { background: var(--primary); }
+
+.dark .user-branch-drawer {
+  background: var(--background);
+  border-left-color: var(--border);
+}
+.dark .user-drawer-close {
+  background: var(--muted);
+}
+.dark .user-drawer-contact-row {
+  background: var(--card);
+  border-color: var(--border);
+}
+.dark .user-contact-btn {
+  background: var(--input-background);
+  border-color: var(--border);
+  color: var(--foreground);
+}
+.dark .user-no-results {
+  background: var(--card);
+  border-color: var(--border);
+  color: var(--text-muted);
+}

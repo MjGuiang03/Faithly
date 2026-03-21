@@ -164,7 +164,7 @@
 .user-sidebar-nav-button.active {
   background: rgba(255, 255, 255, 0.08);
   color: white;
-  border-left: 4px solid #F5C800;
+  border-left: 4px solid white;
 }
 
 .user-sidebar-nav-icon {

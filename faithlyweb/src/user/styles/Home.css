@@ -341,11 +341,13 @@
 }
 
 .user-stat-label {
-  font-size: 12px;
+  font-size: 11px;
   color: #4a5565;
   margin: 0;
   line-height: 18px;
   font-family: Arial, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .user-stat-value {
@@ -373,11 +375,17 @@
 
 /* Community Card — Donation Receipt Style */
 .user-home-community-card {
-  background: #eff6ff !important;
-  border: 1px solid #bedbff !important;
-  box-shadow: 0 4px 12px rgba(21, 93, 252, 0.08) !important;
+  background: white;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 4px 12px rgba(21, 93, 252, 0.08);
   display: flex;
   flex-direction: column;
+}
+
+.dark .user-home-community-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .user-community-content {

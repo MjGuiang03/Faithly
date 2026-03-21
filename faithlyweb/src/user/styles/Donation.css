@@ -58,6 +58,8 @@
   margin: 0;
   line-height: 18px;
   font-family: Arial, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .user-donation-stat-icon {
@@ -1121,3 +1123,76 @@
 .user-donation-main {
   padding-bottom: 0px !important;
 }
+
+/* ============================================================
+   DARK MODE OVERRIDES
+   ============================================================ */
+.dark .user-donation-form-card,
+.dark .user-donation-history-card {
+  background: var(--card);
+  border-color: var(--border);
+}
+
+.dark .user-donation-section-title,
+.dark .user-donation-page-title,
+.dark .user-donation-page-subtitle,
+.dark .user-donation-form-label {
+  color: var(--foreground);
+}
+
+.dark .user-amount-input,
+.dark .user-donation-form-select {
+  background: var(--input-background);
+  border-color: var(--border);
+  color: var(--foreground);
+}
+
+.dark .user-amount-input:focus,
+.dark .user-donation-form-select:focus {
+  border-color: var(--primary);
+}
+
+.dark .user-quick-amount-btn {
+  background: var(--input-background);
+  border-color: var(--border);
+  color: var(--foreground);
+}
+.dark .user-quick-amount-btn:hover {
+  background: var(--muted);
+}
+.dark .user-quick-amount-active {
+  background: rgba(21, 93, 252, 0.15) !important;
+  border-color: var(--primary) !important;
+  color: var(--primary) !important;
+}
+
+.dark .user-payment-method-btn {
+  background: var(--input-background);
+  border-color: var(--border);
+  color: var(--foreground);
+}
+.dark .user-payment-method-btn.active {
+  background: rgba(21, 93, 252, 0.15);
+  border-color: var(--primary);
+}
+
+.dark .user-donation-history-item {
+  border-bottom-color: var(--border);
+}
+.dark .user-donation-history-item:hover {
+  background: var(--muted);
+}
+.dark .user-donation-history-category { color: var(--foreground); }
+.dark .user-donation-history-amount { color: var(--foreground); }
+.dark .user-donation-history-meta { color: var(--text-secondary); }
+.dark .user-donations-empty-text { color: var(--text-muted); }
+
+.dark .user-recurring-title { color: var(--foreground); }
+.dark .user-recurring-description { color: var(--text-secondary); }
+
+.dark .user-donation-stat-card {
+  background: var(--card);
+  border-color: var(--border);
+}
+.dark .user-donation-stat-label { color: var(--text-secondary); }
+.dark .user-donation-stat-value { color: var(--foreground); }

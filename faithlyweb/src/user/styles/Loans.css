@@ -85,11 +85,13 @@
 }
 
 .user-loan-stat-label {
-  font-size: 14px;
+  font-size: 13px;
   color: #4a5565;
   margin: 0;
   line-height: 20px;
   font-family: Arial, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .user-loan-stat-card-active .user-loan-stat-label {
@@ -1140,17 +1142,22 @@
 .dark .user-loans-section-title { color: var(--foreground); }
 
 /* Locked / Verification Container */
-.dark .user-loans-locked-container {
+.dark .user-loans-locked-banner {
   background: var(--card);
   border-color: var(--border);
 }
 .dark .user-loans-locked-title { color: var(--foreground); }
-.dark .user-loans-locked-subtitle { color: var(--text-secondary); }
+.dark .user-loans-locked-text { color: var(--text-secondary); }
 
 /* Apply Loan Button */
 .dark .user-apply-loan-btn {
   background: var(--primary); /* #1E3A8A / #7090D0 */
   color: var(--primary-foreground);
+}
+.dark .user-apply-loan-btn-locked {
+  background: var(--muted);
+  color: var(--muted-foreground);
+  border-color: var(--border);
 }
 
 /* Stats Cards */

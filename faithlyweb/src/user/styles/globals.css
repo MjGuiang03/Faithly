@@ -260,7 +260,7 @@ html {
 }
 
 .user-skeleton {
-  background: #e5e7eb;
+  background: var(--muted);
   position: relative;
   overflow: hidden;
   border-radius: 6px;
@@ -277,10 +277,19 @@ html {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.4) 50%,
+    rgba(255, 255, 255, 0.3) 50%,
     transparent 100%
   );
   animation: user-shimmer 1.5s infinite;
+}
+
+.dark .user-skeleton::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    transparent 100%
+  );
 }
 
 .user-skeleton-text { height: 12px; width: 100%; margin-bottom: 8px; border-radius: 4px; }
