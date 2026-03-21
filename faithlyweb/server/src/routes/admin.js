@@ -249,10 +249,177 @@ router.post('/create-admin', authenticateAdmin, async (req, res) => {
   }
 });
 
-/* ================== ANNOUNCEMENTS - GET ALL (USER) ================== */
+/* ================== GET ALL ADMINS ================== */
+router.get('/admins', authenticateAdmin, async (req, res) => {
+  try {
+    if (req.admin.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Only Main Admin can view admin list' });
+    }
+
+    const { search } = req.query;
+    const page  = Math.max(1, parseInt(req.query.page)  || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+    const skip  = (page - 1) * limit;
+
+    const query = {};
+    if (search) {
+      query.email = { $regex: search, $options: 'i' };
+    }
+
+    const allAdmins = await admins.find(query).sort({ createdAt: -1 }).toArray();
+    const total = allAdmins.length;
+    const paged = allAdmins.slice(skip, skip + limit);
+
+    // Remove passwordHash from response
+    const safe = paged.map(a => {
+      const { passwordHash, ...rest } = a;
+      return rest;
+    });
+
+    const stats = {
+      total: await admins.countDocuments(),
+      admins: await admins.countDocuments({ role: 'admin' }),
+      loanAdmins: await admins.countDocuments({ role: 'loanAdmin' }),
+      secretaryAdmins: await admins.countDocuments({ role: 'secretaryAdmin' }),
+    };
+
+    res.status(200).json({
+      success: true,
+      admins: safe,
+      stats,
+      pagination: {
+        page, limit, total,
+        totalPages: Math.ceil(total / limit) || 1,
+        hasNext: page < Math.ceil(total / limit),
+        hasPrev: page > 1
+      }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to fetch admins' });
+  }
+});
+
+/* ================== UPDATE ADMIN ROLE ================== */
+router.put('/update-admin', authenticateAdmin, async (req, res) => {
+  try {
+    if (req.admin.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Only Main Admin can update roles' });
+    }
+
+    const { email, role, adminPassword } = req.body;
+    if (!email || !role) {
+      return res.status(400).json({ success: false, message: 'Email and role are required' });
+    }
+    if (!adminPassword) {
+      return res.status(400).json({ success: false, message: 'Admin password is required' });
+    }
+
+    // Verify admin password
+    const currentAdmin = await admins.findOne({ email: req.admin.email });
+    const passwordMatch = await bcrypt.compare(adminPassword, currentAdmin.passwordHash);
+    if (!passwordMatch) {
+      return res.status(401).json({ success: false, wrongPassword: true, message: 'Incorrect admin password' });
+    }
+
+    // Protect the seed super admin from being modified
+    const superAdminEmail = process.env.ADMIN_EMAIL;
+    if (email === superAdminEmail) {
+      return res.status(403).json({ success: false, message: 'Cannot modify the Main Super Admin account' });
+    }
+
+    const validRoles = ['admin', 'loanAdmin', 'secretaryAdmin'];
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({ success: false, message: 'Invalid role' });
+    }
+
+    const target = await admins.findOne({ email });
+    if (!target) {
+      return res.status(404).json({ success: false, message: 'Admin not found' });
+    }
+
+    await admins.updateOne({ email }, { $set: { role, updatedAt: new Date() } });
+
+    res.status(200).json({ success: true, message: `Role updated to ${role}` });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to update admin' });
+  }
+});
+
+/* ================== DELETE ADMIN ================== */
+router.delete('/delete-admin', authenticateAdmin, async (req, res) => {
+  try {
+    if (req.admin.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Only Main Admin can delete accounts' });
+    }
+
+    const { email, adminPassword } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email is required' });
+    }
+    if (!adminPassword) {
+      return res.status(400).json({ success: false, message: 'Admin password is required' });
+    }
+
+    // Verify admin password
+    const currentAdmin = await admins.findOne({ email: req.admin.email });
+    const passwordMatch = await bcrypt.compare(adminPassword, currentAdmin.passwordHash);
+    if (!passwordMatch) {
+      return res.status(401).json({ success: false, wrongPassword: true, message: 'Incorrect admin password' });
+    }
+
+    // Protect the seed super admin
+    const superAdminEmail = process.env.ADMIN_EMAIL;
+    if (email === superAdminEmail) {
+      return res.status(403).json({ success: false, message: 'Cannot delete the Main Super Admin account' });
+    }
+
+    // Cannot delete yourself
+    if (email === req.admin.email) {
+      return res.status(400).json({ success: false, message: 'Cannot delete your own account' });
+    }
+
+    const result = await admins.deleteOne({ email });
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ success: false, message: 'Admin not found' });
+    }
+
+    res.status(200).json({ success: true, message: 'Admin account deleted' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to delete admin' });
+  }
+});
+
+/* ================== ANNOUNCEMENTS - GET ALL ================== */
 router.get('/announcements', async (req, res) => {
   try {
-    const all = await announcements.find({}).sort({ createdAt: -1 }).toArray();
+    const { branch, admin: isAdmin } = req.query;
+    const query = {};
+
+    // For user-facing requests, filter out expired announcements
+    if (!isAdmin) {
+      query.$or = [
+        { expiresAt: { $exists: false } },
+        { expiresAt: null },
+        { expiresAt: { $gt: new Date() } }
+      ];
+    }
+
+    let all = await announcements.find(query).sort({ createdAt: -1 }).toArray();
+
+    // For user-facing requests, filter by branch visibility
+    if (!isAdmin && branch) {
+      all = all.filter(a => {
+        if (!a.visibility || a.visibility === 'all') return true;
+        if (a.visibility === 'branches' && Array.isArray(a.targetBranches)) {
+          return a.targetBranches.includes(branch);
+        }
+        return true;
+      });
+    }
+
     res.status(200).json({ success: true, announcements: all });
   } catch (err) {
     console.error(err);
@@ -263,7 +430,7 @@ router.get('/announcements', async (req, res) => {
 /* ================== ANNOUNCEMENTS - CREATE (ADMIN) ================== */
 router.post('/announcements', authenticateAdmin, async (req, res) => {
   try {
-    const { title, body, category } = req.body;
+    const { title, body, category, eventDate, expiresAt, visibility, targetBranches } = req.body;
     if (!title || !body) {
       return res.status(400).json({ success: false, message: 'Title and body are required' });
     }
@@ -271,6 +438,10 @@ router.post('/announcements', authenticateAdmin, async (req, res) => {
       title,
       body,
       category: category || 'General',
+      eventDate: eventDate ? new Date(eventDate) : null,
+      expiresAt: expiresAt ? new Date(expiresAt) : null,
+      visibility: visibility || 'all',
+      targetBranches: Array.isArray(targetBranches) ? targetBranches : [],
       createdBy: req.admin.email,
       createdAt: new Date(),
     };

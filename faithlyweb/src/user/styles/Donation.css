@@ -558,29 +558,90 @@
   border-color: #9ca3af;
 }
 
-/* Responsive */
-@media (max-width: 1200px) {
-  .donations-content-grid {
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .user-donations-content-grid {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 768px) {
-  .donations-stats {
+  .user-donations-stats {
     grid-template-columns: 1fr;
   }
 
-  .payment-methods {
+  .user-payment-methods {
     grid-template-columns: 1fr;
   }
 
-  .quick-amounts {
+  .user-quick-amounts {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .don-hist-pagination {
+  .user-don-hist-pagination {
     flex-direction: column;
     gap: 8px;
+  }
+
+  .user-donation-page-title {
+    font-size: 22px;
+  }
+
+  .user-donation-stat-value {
+    font-size: 20px;
+  }
+
+  .user-donation-form-card,
+  .user-donation-history-card {
+    padding: 14px;
+  }
+
+  .user-receipt-modal-card {
+    max-width: 100%;
+  }
+
+  .user-receipt-header-gradient {
+    padding: 24px 16px;
+  }
+
+  .user-receipt-amount-value {
+    font-size: 28px;
+  }
+
+  .user-receipt-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-donation-page-header {
+    margin-bottom: 16px;
+  }
+
+  .user-donation-page-title {
+    font-size: 20px;
+    line-height: 28px;
+  }
+
+  .user-donations-stats {
+    gap: 10px;
+  }
+
+  .user-donation-stat-card {
+    padding: 10px 12px;
+  }
+
+  .user-donation-stat-value {
+    font-size: 18px;
+  }
+
+  .user-donation-success-modal {
+    padding: 28px 20px 24px;
+    max-width: 100%;
+  }
+
+  .user-donation-success-amount {
+    font-size: 26px;
   }
 }
 
@@ -709,15 +770,15 @@
 }
 
 @media (max-width: 600px) {
-  .donation-history-amount {
+  .user-donation-history-amount {
     font-size: 14px;
   }
 
-  .donation-fund {
+  .user-donation-fund {
     font-size: 13px;
   }
 
-  .donation-modal-content {
+  .user-donation-modal-content {
     max-height: 85vh;
   }
 }

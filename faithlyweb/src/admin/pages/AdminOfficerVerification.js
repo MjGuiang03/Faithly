@@ -55,16 +55,7 @@ function VerificationDetailsModal({ request, onClose, onApprove, onReject }) {
                 <span className="admin-offver-info-label">Church Position</span>
                 <span className="admin-offver-info-value">{request.position || 'â€”'}</span>
               </div>
-              <div className="admin-offver-info-item">
-                <span className="admin-offver-info-label">Occupation</span>
-                <span className="admin-offver-info-value">{request.occupation || 'â€”'}</span>
-              </div>
-              <div className="admin-offver-info-item">
-                <span className="admin-offver-info-label">Monthly Income</span>
-                <span className="admin-offver-info-value">
-                  {request.salary ? `â‚±${Number(request.salary).toLocaleString()}` : 'â€”'}
-                </span>
-              </div>
+
               {request.status === 'rejected' && request.rejectionReason && (
                 <div className="admin-offver-info-item" style={{ gridColumn: '1 / -1' }}>
                   <span className="admin-offver-info-label">Rejection Reason</span>
@@ -135,9 +126,11 @@ function VerificationDetailsModal({ request, onClose, onApprove, onReject }) {
   );
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    REJECT MODAL
-â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   REJECT MODAL
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function RejectModal({ request, onClose, onConfirm }) {
   const [reason,  setReason]  = useState('');
   const [loading, setLoading] = useState(false);
@@ -200,9 +193,9 @@ function RejectModal({ request, onClose, onConfirm }) {
   );
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    APPROVE MODAL
-â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function ApproveModal({ request, onClose, onConfirm }) {
   const [loading, setLoading] = useState(false);
   const token = localStorage.getItem('adminToken');
@@ -272,9 +265,9 @@ function ApproveModal({ request, onClose, onConfirm }) {
   );
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    MAIN COMPONENT
-â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 export default function AdminOfficerVerification() {
   const navigate = useNavigate();
   const [requests,          setRequests]         = useState([]);
@@ -431,7 +424,6 @@ export default function AdminOfficerVerification() {
                   <th className="admin-offver-table-header-cell">Name</th>
                   <th className="admin-offver-table-header-cell">Email</th>
                   <th className="admin-offver-table-header-cell">Church Position</th>
-                  <th className="admin-offver-table-header-cell">Occupation</th>
                   <th className="admin-offver-table-header-cell">Submitted</th>
                   <th className="admin-offver-table-header-cell">Status</th>
                   <th className="admin-offver-table-header-cell">Actions</th>
@@ -440,7 +432,7 @@ export default function AdminOfficerVerification() {
               <tbody>
                 {paginated.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="admin-offver-table-cell admin-offver-empty">
+                    <td colSpan={6} className="admin-offver-table-cell admin-offver-empty">
                       {searchQuery ? 'No results found.' : 'No verification requests yet.'}
                     </td>
                   </tr>
@@ -449,8 +441,7 @@ export default function AdminOfficerVerification() {
                     <tr key={r._id} className="admin-offver-table-row">
                       <td className="admin-offver-table-cell" style={{ fontWeight: 500 }}>{r.memberName}</td>
                       <td className="admin-offver-table-cell">{r.email}</td>
-                      <td className="admin-offver-table-cell">{r.position}</td>
-                      <td className="admin-offver-table-cell">{r.occupation}</td>
+                       <td className="admin-offver-table-cell">{r.position}</td>
                       <td className="admin-offver-table-cell" style={{ whiteSpace: 'nowrap' }}>{fmtDate(r.submittedAt)}</td>
                       <td className="admin-offver-table-cell">
                         <span className={`admin-offver-status-badge ${getStatusBadgeClass(r.status)}`}>

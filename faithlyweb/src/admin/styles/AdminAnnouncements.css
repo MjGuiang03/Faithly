@@ -65,10 +65,22 @@
   gap: 6px;
 }
 
+.admin-announce-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 600px) {
+  .admin-announce-form-row { grid-template-columns: 1fr; }
+}
+
 .admin-announce-label {
   font-size: 13px;
   font-weight: 500;
   color: #475569;
+  display: flex;
+  align-items: center;
 }
 
 .admin-announce-input,
@@ -99,6 +111,86 @@
   box-shadow: 0 0 0 3px rgba(21, 93, 252, 0.1);
 }
 
+/* ─── Radio group ─── */
+.admin-announce-radio-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-announce-radio-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1.5px solid #e2e8f0;
+  cursor: pointer;
+  font-size: 13px;
+  color: #475569;
+  transition: all 0.15s;
+  background: #fcfcfd;
+}
+
+.admin-announce-radio-item:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+.admin-announce-radio-item.active {
+  border-color: #155DFC;
+  background: #eff6ff;
+  color: #155DFC;
+  font-weight: 500;
+}
+
+.admin-announce-radio-item input[type="radio"] {
+  display: none;
+}
+
+/* ─── Branch chips ─── */
+.admin-announce-branch-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-announce-branch-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1.5px solid #e2e8f0;
+  cursor: pointer;
+  font-size: 12px;
+  color: #475569;
+  transition: all 0.15s;
+  background: white;
+}
+
+.admin-announce-branch-chip:hover {
+  border-color: #cbd5e1;
+}
+
+.admin-announce-branch-chip.selected {
+  border-color: #155DFC;
+  background: #eff6ff;
+  color: #155DFC;
+  font-weight: 500;
+}
+
+.admin-announce-branch-chip input[type="checkbox"] {
+  display: none;
+}
+
+.admin-announce-no-branches {
+  font-size: 13px;
+  color: #94a3b8;
+  padding: 8px 0;
+}
+
+/* ─── Submit button ─── */
 .admin-announce-submit {
   padding: 12px;
   background: #155DFC;
@@ -124,7 +216,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-height: 520px;
+  max-height: 620px;
   overflow-y: auto;
 }
 
@@ -137,6 +229,11 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
+  transition: opacity 0.2s;
+}
+
+.admin-announce-item.expired {
+  opacity: 0.55;
 }
 
 .admin-announce-item-content { flex: 1; }
@@ -157,10 +254,18 @@
 
 .admin-announce-item-meta {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.admin-announce-item-footer {
+  display: flex;
+  gap: 4px;
   font-size: 11px;
   color: #94a3b8;
+  margin-top: 4px;
 }
 
 .admin-announce-item-cat {
@@ -170,6 +275,36 @@
   padding: 2px 8px;
   border-radius: 20px;
   font-size: 11px;
+}
+
+.admin-announce-item-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.admin-announce-item-badge.event {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.admin-announce-item-badge.expiry {
+  background: #fce7f3;
+  color: #9d174d;
+}
+
+.admin-announce-item-badge.expired {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.admin-announce-item-badge.scope {
+  background: #ecfdf5;
+  color: #065f46;
 }
 
 .admin-announce-delete {

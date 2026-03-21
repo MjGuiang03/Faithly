@@ -8,8 +8,6 @@ export default function VerificationModal({ isOpen, onClose }) {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [churchId,   setChurchId]   = useState("");
   const [position,   setPosition]   = useState("");
-  const [occupation, setOccupation] = useState("");
-  const [salary,     setSalary]     = useState("");
   const [loading,    setLoading]    = useState(false);
   const [apiError,   setApiError]   = useState("");
 
@@ -19,8 +17,6 @@ export default function VerificationModal({ isOpen, onClose }) {
     setShowConfirmation(false);
     setChurchId("");
     setPosition("");
-    setOccupation("");
-    setSalary("");
     setApiError("");
   };
 
@@ -33,15 +29,11 @@ export default function VerificationModal({ isOpen, onClose }) {
     e.preventDefault();
     setApiError("");
 
-    if (!churchId || !position || !occupation || !salary) {
+    if (!churchId || !position) {
       setApiError("Please fill in all required fields.");
       return;
     }
 
-    if (isNaN(Number(salary)) || Number(salary) <= 0) {
-      setApiError("Please enter a valid monthly salary.");
-      return;
-    }
 
     setLoading(true);
 
@@ -53,7 +45,7 @@ export default function VerificationModal({ isOpen, onClose }) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ churchId, position, occupation, salary: Number(salary) }),
+        body: JSON.stringify({ churchId, position }),
       });
 
       const data = await res.json();
@@ -127,6 +119,8 @@ export default function VerificationModal({ isOpen, onClose }) {
       )}
 
       <form onSubmit={handleSubmit} className="user-verification-form">
+
+
         {/* Church ID */}
         <div className="user-verification-form-group">
           <label className="user-verification-label">Church ID Number</label>
@@ -165,132 +159,6 @@ export default function VerificationModal({ isOpen, onClose }) {
             <option value="National Bishop">National Bishop</option>
             <option value="Apostle">Apostle</option>
           </select>
-        </div>
-
-        {/* Occupation */}
-        <div className="user-verification-form-group">
-          <label className="user-verification-label">Occupation / Job</label>
-          <select
-            className="user-verification-input"
-            value={occupation.startsWith("Others: ") ? "Others" : occupation}
-            onChange={(e) => {
-              if (e.target.value === "Others") {
-                setOccupation("Others: ");
-              } else {
-                setOccupation(e.target.value);
-              }
-            }}
-            required
-            disabled={loading}
-          >
-            <option value="">Select your occupation</option>
-            <optgroup label="Government & Public Service">
-              <option>Government Employee</option>
-              <option>Public School Teacher</option>
-              <option>Police Officer</option>
-              <option>Military Personnel</option>
-              <option>Barangay Official</option>
-              <option>Postal Worker</option>
-            </optgroup>
-            <optgroup label="Healthcare">
-              <option>Doctor / Physician</option>
-              <option>Nurse</option>
-              <option>Midwife</option>
-              <option>Pharmacist</option>
-              <option>Medical Technologist</option>
-              <option>Dentist</option>
-              <option>Caregiver</option>
-            </optgroup>
-            <optgroup label="Education">
-              <option>Private School Teacher</option>
-              <option>Professor / Instructor</option>
-              <option>Tutor</option>
-            </optgroup>
-            <optgroup label="Business & Finance">
-              <option>Business Owner / Entrepreneur</option>
-              <option>Accountant</option>
-              <option>Bank Employee</option>
-              <option>Insurance Agent</option>
-              <option>Real Estate Agent</option>
-              <option>Sales Representative</option>
-            </optgroup>
-            <optgroup label="Technology">
-              <option>Software Developer / Engineer</option>
-              <option>IT Support Specialist</option>
-              <option>Graphic Designer</option>
-              <option>BPO / Call Center Agent</option>
-              <option>Data Analyst</option>
-            </optgroup>
-            <optgroup label="Skilled Trades & Labor">
-              <option>Construction Worker / Mason</option>
-              <option>Electrician</option>
-              <option>Plumber</option>
-              <option>Carpenter</option>
-              <option>Mechanic</option>
-              <option>Welder</option>
-              <option>Factory Worker</option>
-            </optgroup>
-            <optgroup label="Transport & Logistics">
-              <option>Driver (Jeepney / Tricycle / Bus)</option>
-              <option>Delivery Rider</option>
-              <option>Seaman / Seafarer</option>
-              <option>Logistics Staff</option>
-            </optgroup>
-            <optgroup label="Agriculture & Fishing">
-              <option>Farmer</option>
-              <option>Fisher / Fisherman</option>
-              <option>Farm Worker</option>
-            </optgroup>
-            <optgroup label="Retail & Food Service">
-              <option>Sari-sari Store Owner</option>
-              <option>Market Vendor</option>
-              <option>Restaurant / Food Service Staff</option>
-              <option>Cashier / Retail Staff</option>
-            </optgroup>
-            <optgroup label="Domestic & Personal Services">
-              <option>Household Helper / Kasambahay</option>
-              <option>Laundry Service Worker</option>
-              <option>Beautician / Barber</option>
-              <option>Dressmaker / Tailor</option>
-            </optgroup>
-            <optgroup label="OFW & Freelance">
-              <option>OFW (Overseas Filipino Worker)</option>
-              <option>Freelancer / Online Worker</option>
-              <option>Content Creator / Influencer</option>
-            </optgroup>
-            <optgroup label="Other">
-              <option value="Others">Others — please specify</option>
-            </optgroup>
-          </select>
-
-          {/* Show text input when "Others" is selected */}
-          {occupation.startsWith("Others") && (
-            <input
-              type="text"
-              className="user-verification-input"
-              value={occupation.replace("Others: ", "")}
-              onChange={(e) => setOccupation(`Others: ${e.target.value}`)}
-              placeholder="Please specify your occupation"
-              required
-              disabled={loading}
-              style={{ marginTop: "8px" }}
-            />
-          )}
-        </div>
-
-        {/* Salary */}
-        <div className="user-verification-form-group">
-          <label className="user-verification-label">Monthly Income / Salary (₱)</label>
-          <input
-            type="number"
-            min="1"
-            className="user-verification-input"
-            value={salary}
-            onChange={(e) => setSalary(e.target.value)}
-            placeholder="e.g. 25000"
-            required
-            disabled={loading}
-          />
         </div>
 
         <button type="submit" className="user-verification-submit-btn" disabled={loading}>

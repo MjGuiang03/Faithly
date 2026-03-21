@@ -11,9 +11,9 @@ const router = Router();
 router.post('/verification/submit', authenticateUser, async (req, res) => {
   try {
     const email = req.user.email;
-    const { churchId, position, occupation, salary } = req.body;
+    const { churchId, position } = req.body;
 
-    if (!churchId || !position || !occupation || !salary) {
+    if (!churchId || !position) {
       return res.status(400).json({ success: false, message: 'All fields are required' });
     }
 
@@ -31,7 +31,7 @@ router.post('/verification/submit', authenticateUser, async (req, res) => {
 
     await verifications.insertOne({
       email, memberName: user.fullName, churchId, position,
-      occupation, salary: Number(salary), status: 'pending',
+      status: 'pending',
       submittedAt: new Date(), updatedAt: new Date()
     });
 

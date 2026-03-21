@@ -1,25 +1,31 @@
 import { useState, useEffect } from 'react';
 import '../styles/AnnouncementModal.css';
 import API from '../../utils/api';
+import { useAuth } from '../../context/AuthContext';
 
 const fmtDate = (d) =>
   d ? new Date(d).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
 
+const fmtDateTime = (d) =>
+  d ? new Date(d).toLocaleString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+
 export default function AnnouncementModal({ isOpen, onClose }) {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState([]);
 
   useEffect(() => {
     if (!isOpen) return;
     setLoading(true);
-    fetch(`${API}/api/admin/announcements`)
+    const branch = user?.branch || '';
+    fetch(`${API}/api/admin/announcements${branch ? `?branch=${encodeURIComponent(branch)}` : ''}`)
       .then(r => r.json())
       .then(data => {
         if (data.success) setItems(data.announcements || []);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [isOpen]);
+  }, [isOpen, user?.branch]);
 
   if (!isOpen) return null;
 
@@ -70,6 +76,14 @@ export default function AnnouncementModal({ isOpen, onClose }) {
                   <span className="ann-item-category">{a.category}</span>
                 </div>
                 <p className="ann-item-body">{a.body}</p>
+                {a.eventDate && (
+                  <div className="ann-item-event">
+                    <svg fill="none" viewBox="0 0 16 16" width="12" height="12">
+                      <path d="M5.333 1.333v2.667M10.667 1.333v2.667M2 6.667h12M12.667 2.667H3.333c-.736 0-1.333.597-1.333 1.333v8c0 .736.597 1.333 1.333 1.333h9.334c.736 0 1.333-.597 1.333-1.333V4c0-.736-.597-1.333-1.333-1.333z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    <span>{fmtDateTime(a.eventDate)}</span>
+                  </div>
+                )}
                 <div className="ann-item-footer">
                   <svg fill="none" viewBox="0 0 16 16" width="12" height="12">
                     <path d="M8 1.333A6.667 6.667 0 1 0 8 14.667 6.667 6.667 0 0 0 8 1.333z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
