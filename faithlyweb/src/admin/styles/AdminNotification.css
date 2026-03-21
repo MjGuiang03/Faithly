@@ -33,7 +33,7 @@
 }
 
 .admin-notif-badge {
-  background: #155dfc;
+  background: #1E3A8A;
   color: white;
   font-family: Arial, sans-serif;
   font-size: 12px;
@@ -52,7 +52,7 @@
   font-family: Arial, sans-serif;
   font-size: 14px;
   font-weight: 500;
-  color: #155dfc;
+  color: #1E3A8A;
   padding: 0;
   display: flex;
   align-items: center;
@@ -97,14 +97,14 @@
 .admin-notif-tab:hover { background: #f9fafb; }
 
 .admin-notif-tab-active {
-  background: #155dfc;
+  background: #1E3A8A;
   color: white;
-  border-color: #155dfc;
+  border-color: #1E3A8A;
 }
 
 .admin-notif-tab-badge {
   background: white;
-  color: #155dfc;
+  color: #1E3A8A;
   font-size: 11px;
   font-weight: 700;
   padding: 1px 7px;
@@ -141,7 +141,7 @@
 }
 
 .admin-notif-item-unread {
-  border-left-color: #155dfc;
+  border-left-color: #1E3A8A;
   background: #f8fbff;
 }
 
@@ -197,7 +197,7 @@
 .admin-notif-unread-indicator {
   width: 10px;
   height: 10px;
-  background: #155dfc;
+  background: #1E3A8A;
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -237,7 +237,7 @@
 
 .admin-notif-unread-badge {
   background: #eff6ff;
-  color: #155dfc;
+  color: #1E3A8A;
   font-family: Arial, sans-serif;
   font-size: 11px;
   font-weight: 600;
@@ -268,7 +268,7 @@
   font-family: Arial, sans-serif;
   font-size: 12px;
   font-weight: 600;
-  color: #155dfc;
+  color: #1E3A8A;
   padding: 0;
   transition: opacity 0.15s;
   white-space: nowrap;
@@ -330,8 +330,8 @@
 }
 
 .admin-notif-page-btn.active {
-  background: #155dfc;
-  border-color: #155dfc;
+  background: #1E3A8A;
+  border-color: #1E3A8A;
   color: white;
   font-weight: 700;
 }

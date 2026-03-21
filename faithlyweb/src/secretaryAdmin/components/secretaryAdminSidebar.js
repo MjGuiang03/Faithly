@@ -109,17 +109,17 @@ export default function SecretaryAdminSidebar() {
 
             {/* Theme Toggle Section */}
             <div className="sec-admin-sidebar-theme-toggle">
-                <button
-                    onClick={toggleTheme}
-                    className="sec-theme-toggle-button"
-                >
-                    <div className="sec-theme-toggle-icon">
-                        {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
-                    </div>
-                    <span className="sec-theme-toggle-label">
-                        {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
-                    </span>
-                </button>
+                <div className="sec-theme-switch-wrapper">
+                    <span className="sec-theme-switch-label">Dark Mode</span>
+                    <label className="sec-toggle-switch">
+                        <input 
+                            type="checkbox" 
+                            checked={theme === 'dark'} 
+                            onChange={toggleTheme} 
+                        />
+                        <span className="sec-toggle-slider"></span>
+                    </label>
+                </div>
             </div>
 
             {/* Profile + Sign Out */}

@@ -32,7 +32,7 @@
   align-items: center;
   gap: 8px;
   padding: 10px 20px;
-  background: #155DFC;
+  background: #1E3A8A;
   color: white;
   border: none;
   border-radius: 10px;
@@ -119,7 +119,7 @@
 }
 
 .admin-users-search-input:focus {
-  border-color: #155DFC;
+  border-color: #1E3A8A;
   box-shadow: 0 0 0 3px rgba(21,93,252,0.08);
 }
 
@@ -177,7 +177,7 @@
   font-weight: 700;
   padding: 2px 6px;
   border-radius: 4px;
-  background: #155DFC;
+  background: #1E3A8A;
   color: white;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -220,7 +220,7 @@
 }
 
 .admin-users-action-btn.edit {
-  color: #155DFC;
+  color: #1E3A8A;
 }
 
 .admin-users-action-btn.edit:hover {
@@ -265,7 +265,7 @@
 
 .admin-users-info-box .admin-users-info-icon {
   flex-shrink: 0;
-  color: #155DFC;
+  color: #1E3A8A;
   margin-top: 1px;
 }
 
@@ -395,7 +395,7 @@
 .admin-users-input:focus,
 .admin-users-select:focus {
   outline: none;
-  border-color: #155DFC;
+  border-color: #1E3A8A;
   background: white;
   box-shadow: 0 0 0 3px rgba(21,93,252,0.08);
 }
@@ -415,7 +415,7 @@
 }
 
 .admin-users-btn.primary {
-  background: #155DFC;
+  background: #1E3A8A;
   color: white;
 }
 

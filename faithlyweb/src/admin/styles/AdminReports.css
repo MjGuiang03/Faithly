@@ -78,7 +78,7 @@
 }
 
 .admin-reports-stat-value-blue {
-  color: #155dfc;
+  color: #1E3A8A;
 }
 
 .admin-reports-stat-value-green {
@@ -198,7 +198,7 @@
   font-size: 14px;
   font-weight: 700;
   line-height: 20px;
-  color: #155dfc;
+  color: #1E3A8A;
 }
 
 /* Branch Stats */
@@ -235,7 +235,7 @@
   font-size: 18px;
   font-weight: 700;
   line-height: 24px;
-  color: #155dfc;
+  color: #1E3A8A;
 }
 
 .admin-reports-branch-stat-amount {

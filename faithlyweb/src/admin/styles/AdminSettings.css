@@ -57,7 +57,7 @@
 
 .admin-settings-section-icon-blue {
   background: #dbeafe;
-  color: #155dfc;
+  color: #1E3A8A;
 }
 
 .admin-settings-section-icon-purple {
@@ -167,7 +167,7 @@
 .admin-settings-toggle {
   width: 44px;
   height: 24px;
-  background: #155dfc;
+  background: #1E3A8A;
   border-radius: 26843500px;
   border: none;
   cursor: pointer;
@@ -250,7 +250,7 @@
 .admin-settings-change-btn {
   background: none;
   border: none;
-  color: #155dfc;
+  color: #1E3A8A;
   font-family: 'Arial:Regular', sans-serif;
   font-size: 14px;
   cursor: pointer;
@@ -284,7 +284,7 @@
 
 .admin-settings-save-btn {
   flex: 1;
-  background: #155dfc;
+  background: #1E3A8A;
   color: white;
   border: none;
   border-radius: 10px;

@@ -132,17 +132,17 @@ export default function LoanAdminSidebar() {
 
       {/* Theme Toggle Section */}
       <div className="loan-admin-sidebar-theme-toggle">
-        <button
-          onClick={toggleTheme}
-          className="loan-theme-toggle-button"
-        >
-          <div className="loan-theme-toggle-icon">
-            {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
-          </div>
-          <span className="loan-theme-toggle-label">
-            {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
-          </span>
-        </button>
+        <div className="loan-theme-switch-wrapper">
+          <span className="loan-theme-switch-label">Dark Mode</span>
+          <label className="loan-toggle-switch">
+            <input 
+              type="checkbox" 
+              checked={theme === 'dark'} 
+              onChange={toggleTheme} 
+            />
+            <span className="loan-toggle-slider"></span>
+          </label>
+        </div>
       </div>
 
       <div className="loan-admin-sidebar-profile">

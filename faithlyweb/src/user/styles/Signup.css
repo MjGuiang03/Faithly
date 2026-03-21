@@ -177,7 +177,7 @@
 }
 
 .user-signup-form-input:focus {
-  border-color: #155dfc;
+  border-color: #1E3A8A;
 }
 
 .user-signup-form-input.user-input-error {
@@ -269,7 +269,7 @@ input[type="date"].user-signup-form-input {
 }
 
 .user-signup-form-select:focus {
-  border-color: #155dfc;
+  border-color: #1E3A8A;
 }
 
 .user-signup-form-select option {
@@ -310,7 +310,7 @@ input[type="date"].user-signup-form-input {
 }
 
 .user-gender-radio-card--selected {
-  border-color: #155dfc;
+  border-color: #1E3A8A;
   border-width: 1.5px;
   background: #f0f5ff;
 }
@@ -353,11 +353,11 @@ input[type="date"].user-signup-form-input {
 }
 
 .user-gender-radio-card--selected .user-gender-radio-dot {
-  border-color: #155dfc;
+  border-color: #1E3A8A;
 }
 
 .user-gender-radio-card--selected .user-gender-radio-dot::after {
-  background: #155dfc;
+  background: #1E3A8A;
 }
 
 .user-gender-radio-card.user-input-error .user-gender-radio-dot {
@@ -510,7 +510,7 @@ input[type="date"].user-signup-form-input {
   width: 15px;
   height: 15px;
   cursor: not-allowed;
-  accent-color: #155dfc;
+  accent-color: #1E3A8A;
   flex-shrink: 0;
   pointer-events: none;
 }
@@ -525,7 +525,7 @@ input[type="date"].user-signup-form-input {
 .user-signup-link {
   background: none;
   border: none;
-  color: #155dfc;
+  color: #1E3A8A;
   cursor: pointer;
   font-family: 'Arial', sans-serif;
   font-size: 13px;
@@ -546,7 +546,7 @@ input[type="date"].user-signup-form-input {
   width: 100%;
   padding: 0;
   height: 44px;
-  background-color: #155dfc;
+  background-color: #1E3A8A;
   color: white;
   font-family: 'Arial', sans-serif;
   font-size: 15px;
@@ -610,7 +610,7 @@ input[type="date"].user-signup-form-input {
 .user-policy-modal-button {
   width: 100%;
   padding: 10px;
-  background-color: #155dfc;
+  background-color: #1E3A8A;
   color: white;
   font-family: 'Arial', sans-serif;
   font-size: 15px;

@@ -182,7 +182,7 @@
   width: 20px;
   height: 20px;
   border: 2px solid #e5e7eb;
-  border-top-color: #155dfc;
+  border-top-color: #1E3A8A;
   border-radius: 50%;
   animation: admin-don-new-spin 0.8s linear infinite;
 }
@@ -237,8 +237,8 @@
 
 .admin-don-new-pagination-btn:hover:not(:disabled) {
   background: #f9fafb;
-  border-color: #155dfc;
-  color: #155dfc;
+  border-color: #1E3A8A;
+  color: #1E3A8A;
 }
 
 .admin-don-new-pagination-btn:disabled {
@@ -266,20 +266,20 @@
 
 .admin-don-new-pagination-number:hover {
   background: #f9fafb;
-  border-color: #155dfc;
-  color: #155dfc;
+  border-color: #1E3A8A;
+  color: #1E3A8A;
 }
 
 .admin-don-new-pagination-active {
-  background: #155dfc;
-  border-color: #155dfc;
+  background: #1E3A8A;
+  border-color: #1E3A8A;
   color: white;
   font-weight: 700;
 }
 
 .admin-don-new-pagination-active:hover {
-  background: #155dfc;
-  border-color: #155dfc;
+  background: #1E3A8A;
+  border-color: #1E3A8A;
   color: white;
 }
 

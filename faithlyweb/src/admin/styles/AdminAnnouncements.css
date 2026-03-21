@@ -106,7 +106,7 @@
 .admin-announce-select:focus,
 .admin-announce-textarea:focus {
   outline: none;
-  border-color: #155DFC;
+  border-color: #1E3A8A;
   background: white;
   box-shadow: 0 0 0 3px rgba(21, 93, 252, 0.1);
 }
@@ -138,9 +138,9 @@
 }
 
 .admin-announce-radio-item.active {
-  border-color: #155DFC;
+  border-color: #1E3A8A;
   background: #eff6ff;
-  color: #155DFC;
+  color: #1E3A8A;
   font-weight: 500;
 }
 
@@ -174,9 +174,9 @@
 }
 
 .admin-announce-branch-chip.selected {
-  border-color: #155DFC;
+  border-color: #1E3A8A;
   background: #eff6ff;
-  color: #155DFC;
+  color: #1E3A8A;
   font-weight: 500;
 }
 
@@ -193,7 +193,7 @@
 /* ─── Submit button ─── */
 .admin-announce-submit {
   padding: 12px;
-  background: #155DFC;
+  background: #1E3A8A;
   color: white;
   border: none;
   border-radius: 10px;
@@ -270,7 +270,7 @@
 
 .admin-announce-item-cat {
   background: #EFF6FF;
-  color: #155DFC;
+  color: #1E3A8A;
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 20px;

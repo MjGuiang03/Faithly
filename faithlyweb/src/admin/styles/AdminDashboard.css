@@ -142,7 +142,7 @@
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
-  color: #155dfc;
+  color: #1E3A8A;
   background: none;
   border: none;
   cursor: pointer;
@@ -306,8 +306,8 @@
 }
 
 .activity-page-btn.active {
-  background: #155dfc;
-  border-color: #155dfc;
+  background: #1E3A8A;
+  border-color: #1E3A8A;
   color: white;
   font-weight: 700;
 }
@@ -369,7 +369,7 @@
 }
 
 /* Color variants */
-.admin-bg-blue     { background: #155dfc; }
+.admin-bg-blue     { background: #1E3A8A; }
 .admin-bg-green    { background: #00a63e; }
 .admin-bg-pink     { background: #e60076; }
 .admin-bg-darkblue { background: #1e293b; }
@@ -378,7 +378,7 @@
 .admin-bg-lightred { background: #ffe2e2; }
 
 .admin-text-orange { color: #f54900; }
-.admin-text-blue   { color: #155dfc; }
+.admin-text-blue   { color: #1E3A8A; }
 .admin-text-red    { color: #e7000b; }
 .admin-text-green  { color: #00a63e; }
 

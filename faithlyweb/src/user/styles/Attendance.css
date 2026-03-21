@@ -119,7 +119,7 @@
 }
 
 .user-check-in-method:hover {
-  border-color: #155dfc;
+  border-color: #1E3A8A;
   box-shadow: 0 2px 8px rgba(21, 93, 252, 0.1);
 }
 
@@ -175,7 +175,7 @@
 .user-tip-label {
   font-size: 13px;
   font-weight: 700;
-  color: #155dfc;
+  color: #1E3A8A;
   font-family: Arial, sans-serif;
   line-height: 18px;
   flex-shrink: 0;
@@ -183,7 +183,7 @@
 
 .user-tip-text {
   font-size: 13px;
-  color: #155dfc;
+  color: #1E3A8A;
   font-family: Arial, sans-serif;
   line-height: 18px;
 }
@@ -238,7 +238,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #155DFC;
+  background: #1E3A8A;
   margin-top: 6px;
   flex-shrink: 0;
   box-shadow: 0 0 0 4px rgba(21, 93, 252, 0.1);
@@ -439,7 +439,7 @@
   line-height: 18px;
 }
 
-.user-method-badge.user-method-qr     { background: #dbeafe; color: #155dfc; }
+.user-method-badge.user-method-qr     { background: #dbeafe; color: #1E3A8A; }
 .user-method-badge.user-method-rfid   { background: #dcfce7; color: #00a63e; }
 .user-method-badge.user-method-manual { background: #f3f4f6; color: #6a7282; }
 
@@ -493,8 +493,8 @@
 }
 
 .user-page-btn-active {
-  background: #155dfc;
-  border-color: #155dfc;
+  background: #1E3A8A;
+  border-color: #1E3A8A;
   color: white;
   font-weight: 600;
 }

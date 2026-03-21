@@ -132,7 +132,7 @@
 
 .sec-process-payment-option.active {
     background: #dbeafe;
-    border-color: #155dfc;
+    border-color: #1E3A8A;
 }
 
 .sec-process-payment-option span {
@@ -144,7 +144,7 @@
 }
 
 .sec-process-payment-option.active span {
-    color: #155dfc;
+    color: #1E3A8A;
 }
 
 /* Action Buttons */
@@ -182,7 +182,7 @@
 }
 
 .sec-process-btn-confirm {
-    background: #155dfc;
+    background: #1E3A8A;
     color: white;
 }
 

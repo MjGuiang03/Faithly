@@ -132,7 +132,7 @@
 }
 
 .admin-att-add-service-btn {
-  background: #155dfc;
+  background: #1E3A8A;
   border: none;
   border-radius: 10px;
   height: 32px;
@@ -233,7 +233,7 @@
 
 .admin-att-attendance {
   font-weight: 700;
-  color: #155dfc;
+  color: #1E3A8A;
 }
 
 .admin-att-date {
@@ -257,7 +257,7 @@
   width: 20px;
   height: 20px;
   border: 2px solid #e5e7eb;
-  border-top-color: #155dfc;
+  border-top-color: #1E3A8A;
   border-radius: 50%;
   animation: admin-att-spin 0.8s linear infinite;
 }
@@ -342,7 +342,7 @@
 
 .admin-att-form-select:focus,
 .admin-att-form-input:focus {
-  border-color: #155dfc;
+  border-color: #1E3A8A;
 }
 
 .admin-att-form-select::placeholder,
@@ -390,7 +390,7 @@
 }
 
 .admin-att-btn-primary {
-  background: #155dfc;
+  background: #1E3A8A;
   color: white;
 }
 

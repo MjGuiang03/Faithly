@@ -12,7 +12,7 @@
   top: 0;
   left: 0;
   z-index: 50;
-  background: #252c7c;
+  background: #1E3A8A;
   color: white;
   display: flex;
   flex-direction: column;
@@ -25,7 +25,7 @@
 /* ── Logo / brand area ── */
 .loan-admin-sidebar-logo {
   padding: 24px;
-  border-bottom: 0.8px solid #323ba7;
+  border-bottom: 0.8px solid rgba(255, 255, 255, 0.12);
   flex-shrink: 0;
 }
 
@@ -64,7 +64,7 @@
 
 .loan-admin-sidebar-logo-text p {
   font-size: 14px;
-  color: #a5b4fc;
+  color: rgba(255, 255, 255, 0.72);
   margin: 0;
   font-family: 'Arial', sans-serif;
   line-height: 20px;
@@ -87,7 +87,7 @@
   height: 48px;
   background: transparent;
   border: none;
-  color: #a5b4fc;
+  color: rgba(255, 255, 255, 0.72);
   font-size: 16px;
   font-family: 'Arial', sans-serif;
   border-radius: 10px;
@@ -104,7 +104,7 @@
 }
 
 .loan-admin-sidebar-nav-button.active {
-  background: #155dfc;
+  background: #1E3A8A;
   color: white;
 }
 
@@ -117,7 +117,7 @@
 /* ── Profile / sign-out footer ── */
 .loan-admin-sidebar-profile {
   padding: 16px;
-  border-top: 0.8px solid #323ba7;
+  border-top: 0.8px solid rgba(255, 255, 255, 0.12);
   flex-shrink: 0;
 }
 
@@ -132,7 +132,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: #155dfc;
+  background: #1E3A8A;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -163,7 +163,7 @@
 
 .loan-admin-sidebar-profile-email {
   font-size: 12px;
-  color: #a5b4fc;
+  color: rgba(255, 255, 255, 0.72);
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -180,8 +180,8 @@
   gap: 8px;
   padding: 12px;
   background: transparent;
-  border: 1px solid #323ba7;
-  color: #a5b4fc;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.72);
   font-size: 14px;
   font-family: 'Arial', sans-serif;
   border-radius: 10px;
@@ -233,7 +233,7 @@
 
 .sidebar-nav-button.active .sidebar-notif-badge {
   background: rgba(255, 255, 255, 0.9);
-  color: #155dfc;
+  color: #1E3A8A;
 }
 
 @keyframes badge-pop {
@@ -317,47 +317,70 @@
   background: #dc2626;
 }
 
-/* ── Theme Toggle ── */
+/* ── Theme Toggle (Switch Style) ── */
 .loan-admin-sidebar-theme-toggle {
-  padding: 8px 16px;
+  padding: 12px 16px;
   margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   flex-shrink: 0;
 }
 
-.loan-theme-toggle-button {
+.loan-theme-switch-wrapper {
   display: flex;
   align-items: center;
-  gap: 12px;
-  width: 100%;
-  padding: 10px 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  color: #a5b4fc;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
 }
 
-.loan-theme-toggle-button:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-}
-
-.loan-theme-toggle-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.3s ease;
-}
-
-.loan-theme-toggle-button:hover .loan-theme-toggle-icon {
-  transform: rotate(15deg);
-}
-
-.loan-theme-toggle-label {
-  font-size: 14px;
+.loan-theme-switch-label {
+  font-size: 13px;
   font-weight: 500;
+  color: rgba(255, 255, 255, 0.72);
   font-family: 'Arial', sans-serif;
-  white-space: nowrap;
+}
+
+/* Replicating Settings Toggle Switch */
+.loan-toggle-switch {
+  position: relative;
+  width: 44px;
+  height: 22px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.loan-toggle-switch input { 
+  opacity: 0; 
+  width: 0; 
+  height: 0; 
+}
+
+.loan-toggle-slider {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 34px;
+  transition: 0.3s;
+}
+
+.loan-toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  border-radius: 50%;
+  transition: 0.3s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.loan-toggle-switch input:checked + .loan-toggle-slider { 
+  background-color: #1E3A8A; 
+}
+
+.loan-toggle-switch input:checked + .loan-toggle-slider:before { 
+  transform: translateX(22px); 
 }

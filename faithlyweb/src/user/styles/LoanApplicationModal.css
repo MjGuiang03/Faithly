@@ -139,7 +139,7 @@
 
 .user-loan-application-input:focus,
 .user-loan-application-select:focus {
-  border-color: #155dfc;
+  border-color: #1E3A8A;
   background: white;
   color: #0a0a0a;
   -webkit-text-fill-color: #0a0a0a;
@@ -228,7 +228,7 @@
 }
 
 .user-loan-upload-box:hover {
-  border-color: #155dfc;
+  border-color: #1E3A8A;
   background: #eff6ff;
 }
 
@@ -297,7 +297,7 @@
 .user-loan-application-submit-btn {
   flex: 1;
   height: 49px;
-  background: #155dfc;
+  background: #1E3A8A;
   color: white;
   border: none;
   border-radius: 10px;

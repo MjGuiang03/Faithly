@@ -138,7 +138,7 @@
 }
 
 .user-verification-input::placeholder { color: #9ca3af; }
-.user-verification-input:focus        { border-color: #155dfc; }
+.user-verification-input:focus        { border-color: #1E3A8A; }
 .user-verification-input:disabled     { background: #f9fafb; cursor: not-allowed; }
 
 /* ── Buttons ── */
@@ -151,7 +151,7 @@
   cursor: pointer;
   transition: all 0.2s;
   font-family: inherit;
-  background: #155dfc;
+  background: #1E3A8A;
   color: white;
 }
 
@@ -197,11 +197,11 @@
   background: #eff6ff;
   border-radius: 8px;
   align-items: flex-start;
-  border-left: 3px solid #155dfc;
+  border-left: 3px solid #1E3A8A;
 }
 
 .user-verification-info-icon {
-  color: #155dfc;
+  color: #1E3A8A;
   flex-shrink: 0;
   margin-top: 2px;
 }

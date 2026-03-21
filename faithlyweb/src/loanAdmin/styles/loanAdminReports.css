@@ -68,7 +68,7 @@
 }
 
 .loan-admin-reports-summary-card.blue::before {
-    background: #155DFC;
+    background: #1E3A8A;
 }
 
 .loan-admin-reports-summary-header {
@@ -104,7 +104,7 @@
 }
 
 .loan-admin-reports-summary-card.blue .loan-admin-reports-summary-value {
-    color: #155DFC;
+    color: #1E3A8A;
 }
 
 .loan-admin-reports-summary-period {
@@ -207,7 +207,7 @@
 
 .loan-admin-reports-table-amount {
     font-weight: 600;
-    color: #155DFC;
+    color: #1E3A8A;
 }
 
 /* Recharts Custom Styles */

@@ -113,7 +113,7 @@
 
 .loan-admin-mgmt-search input:focus {
     outline: none;
-    border-color: #155DFC;
+    border-color: #1E3A8A;
 }
 
 /* Table */
@@ -167,7 +167,7 @@
 .loan-admin-mgmt-table-id {
     font-family: 'Inter', sans-serif;
     font-weight: 600;
-    color: #155DFC;
+    color: #1E3A8A;
 }
 
 .loan-admin-mgmt-table-member {
@@ -237,7 +237,7 @@
 
 .loan-admin-mgmt-btn-details {
     padding: 8px 16px;
-    background: #155DFC;
+    background: #1E3A8A;
     border: none;
     border-radius: 6px;
     font-family: 'Inter', sans-serif;
@@ -311,12 +311,12 @@
 
 .loan-admin-mgmt-pagination-btn:hover:not(:disabled) {
     background: #F9FAFB;
-    border-color: #155DFC;
+    border-color: #1E3A8A;
 }
 
 .loan-admin-mgmt-pagination-btn.active {
-    background: #155DFC;
-    border-color: #155DFC;
+    background: #1E3A8A;
+    border-color: #1E3A8A;
     color: #ffffff;
 }
 
@@ -470,7 +470,7 @@
 
 .loan-admin-mgmt-modal-textarea:focus {
     outline: none;
-    border-color: #155DFC;
+    border-color: #1E3A8A;
 }
 
 .loan-admin-mgmt-modal-hint {

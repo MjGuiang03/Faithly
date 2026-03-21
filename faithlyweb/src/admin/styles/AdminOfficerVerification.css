@@ -80,7 +80,7 @@
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: #155dfc;
+  background: #1E3A8A;
   color: white;
   display: flex;
   align-items: center;
@@ -133,7 +133,7 @@
 }
 
 .admin-offver-search-input:focus {
-  border-color: #155DFC;
+  border-color: #1E3A8A;
   box-shadow: 0px 0px 0px 4px rgba(21, 93, 252, 0.1);
   outline: none;
 }
@@ -294,7 +294,7 @@
 
 .admin-offver-pagination-number.active {
   background: #F9F5FF;
-  color: #155DFC;
+  color: #1E3A8A;
   font-weight: 600;
 }
 
@@ -529,7 +529,7 @@
   transition: border-color 0.2s;
 }
 
-.admin-offver-form-textarea:focus        { border-color: #155dfc; }
+.admin-offver-form-textarea:focus        { border-color: #1E3A8A; }
 .admin-offver-form-textarea::placeholder { color: #9ca3af; }
 
 .admin-offver-benefits {

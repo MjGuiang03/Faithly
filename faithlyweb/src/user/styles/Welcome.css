@@ -148,7 +148,7 @@
 .user-btn-primary-new {
   padding: 16px 0;
   width: 248px;
-  background-color: #155dfc;
+  background-color: #1E3A8A;
   color: white;
   font-family: Arial, sans-serif;
   font-weight: bold;
@@ -286,7 +286,7 @@
 }
 
 .user-cta-card-new {
-  background: linear-gradient(to right, #155dfc, #0092b8);
+  background: linear-gradient(to right, #1E3A8A, #0092b8);
   padding: 4rem 2rem;
   text-align: center;
 }
@@ -313,7 +313,7 @@
   padding: 16px 0;
   width: 212px;
   background-color: white;
-  color: #155dfc;
+  color: #1E3A8A;
   font-family: Arial, sans-serif;
   font-weight: bold;
   font-size: 16px;

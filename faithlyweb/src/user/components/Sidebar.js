@@ -226,20 +226,21 @@ export default function Sidebar() {
 
         {/* Theme Toggle Section */}
         <div className="user-sidebar-theme-toggle">
-          <button
-            onClick={toggleTheme}
-            className={`theme-toggle-button ${collapsed ? 'collapsed' : ''}`}
-            title={collapsed ? (theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode') : undefined}
-          >
-            <div className="theme-toggle-icon">
-              {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
-            </div>
+          <div className={`theme-switch-wrapper ${collapsed ? 'collapsed' : ''}`}>
             {!collapsed && (
-              <span className="theme-toggle-label">
-                {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
-              </span>
+              <div className="theme-switch-info">
+                <span className="theme-switch-label">Dark Mode</span>
+              </div>
             )}
-          </button>
+            <label className="user-toggle-switch" title={collapsed ? (theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode') : undefined}>
+              <input 
+                type="checkbox" 
+                checked={theme === 'dark'} 
+                onChange={toggleTheme} 
+              />
+              <span className="user-toggle-slider"></span>
+            </label>
+          </div>
         </div>
 
         {/* User Profile */}

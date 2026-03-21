@@ -159,7 +159,7 @@
 }
 
 .user-amount-input:focus {
-  border-color: #155dfc;
+  border-color: #1E3A8A;
 }
 
 .user-amount-input:disabled {
@@ -196,9 +196,9 @@
 }
 
 .user-quick-amount-active {
-  border-color: #155dfc !important;
+  border-color: #1E3A8A !important;
   background: #eff6ff !important;
-  color: #155dfc !important;
+  color: #1E3A8A !important;
 }
 
 /* Category select */
@@ -238,7 +238,7 @@
 }
 
 .user-form-select:focus {
-  border-color: #155dfc;
+  border-color: #1E3A8A;
 }
 
 .user-form-select:disabled {
@@ -269,11 +269,11 @@
 }
 
 .user-payment-method-btn:hover {
-  border-color: #155dfc;
+  border-color: #1E3A8A;
 }
 
 .user-payment-method-btn.active {
-  border-color: #155dfc;
+  border-color: #1E3A8A;
   background: #eff6ff;
 }
 
@@ -309,7 +309,7 @@
   height: 15px;
   margin-top: 2px;
   cursor: pointer;
-  accent-color: #155dfc;
+  accent-color: #1E3A8A;
 }
 
 .user-recurring-label {
@@ -343,7 +343,7 @@
 
 .user-donate-btn {
   height: 44px;
-  background: #155dfc;
+  background: #1E3A8A;
   border: none;
   border-radius: 10px;
   color: white;
@@ -458,7 +458,7 @@
 
 .user-recurring-badge {
   background: #dbeafe;
-  color: #155dfc;
+  color: #1E3A8A;
   padding: 1px 7px;
   border-radius: 9999px;
   font-size: 10px;
@@ -533,8 +533,8 @@
 }
 
 .user-don-hist-page-btn-active {
-  background: #155dfc;
-  border-color: #155dfc;
+  background: #1E3A8A;
+  border-color: #1E3A8A;
   color: white;
   font-weight: 700;
 }
@@ -861,7 +861,7 @@
   font-family: Arial, sans-serif;
   font-size: 32px;
   font-weight: 700;
-  color: #155dfc;
+  color: #1E3A8A;
   margin: 0;
   line-height: 40px;
 }
@@ -887,7 +887,7 @@
 .user-donation-success-close {
   width: 100%;
   height: 44px;
-  background: #155dfc;
+  background: #1E3A8A;
   border: none;
   border-radius: 10px;
   color: white;

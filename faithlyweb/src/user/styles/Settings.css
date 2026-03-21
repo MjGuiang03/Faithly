@@ -139,7 +139,7 @@
   transition: 0.3s;
 }
 
-.user-toggle-switch input:checked + .user-toggle-slider { background-color: #155dfc; }
+.user-toggle-switch input:checked + .user-toggle-slider { background-color: #1E3A8A; }
 .user-toggle-switch input:checked + .user-toggle-slider:before { transform: translateX(24px); }
 
 /* Notification Preferences */
@@ -223,7 +223,7 @@
 .user-link-button {
   background: transparent;
   border: none;
-  color: #155dfc;
+  color: #1E3A8A;
   font-size: 14px;
   font-family: Arial, sans-serif;
   cursor: pointer;
@@ -259,7 +259,7 @@
   cursor: pointer;
 }
 
-.user-form-select:focus { border-color: #155dfc; }
+.user-form-select:focus { border-color: #1E3A8A; }
 
 /* Payment Card Item */
 .user-payment-card-item {
@@ -312,8 +312,8 @@
 }
 
 .user-add-payment-btn:hover {
-  border-color: #155dfc;
-  color: #155dfc;
+  border-color: #1E3A8A;
+  color: #1E3A8A;
 }
 
 /* Settings Actions */
@@ -326,7 +326,7 @@
 .user-save-settings-btn {
   flex: 1;
   height: 48px;
-  background: #155dfc;
+  background: #1E3A8A;
   border: none;
   border-radius: 10px;
   color: white;
@@ -513,7 +513,7 @@
   background: white;
   border: none;
   border-radius: 8px;
-  color: #155dfc;
+  color: #1E3A8A;
   font-size: 13px;
   font-weight: 600;
   font-family: Arial, sans-serif;
@@ -590,7 +590,7 @@
   gap: 8px;
   margin: 0;
   font-size: 13px;
-  color: #155dfc;
+  color: #1E3A8A;
   font-family: Arial, sans-serif;
   font-style: italic;
 }
@@ -639,7 +639,7 @@
 }
 
 .user-pi-form-input:focus {
-  border-color: #155dfc;
+  border-color: #1E3A8A;
   box-shadow: 0 0 0 3px rgba(21, 93, 252, 0.08);
 }
 
@@ -697,7 +697,7 @@
   align-items: center;
   gap: 5px;
   padding: 9px 12px;
-  background: #155dfc;
+  background: #1E3A8A;
   color: white;
   font-size: 13px;
   font-weight: 600;
@@ -734,7 +734,7 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #155dfc 0%, #1246d1 100%);
+  background: linear-gradient(135deg, #1E3A8A 0%, #1246d1 100%);
   border: none;
   box-shadow: 0 4px 12px rgba(21, 93, 252, 0.3);
   cursor: pointer;

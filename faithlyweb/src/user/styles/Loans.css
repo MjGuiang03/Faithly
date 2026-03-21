@@ -41,7 +41,7 @@
   align-items: center;
   gap: 8px;
   padding: 10px 20px;
-  background: #155dfc;
+  background: #1E3A8A;
   color: white;
   border: none;
   border-radius: 10px;
@@ -283,7 +283,7 @@
 
 .user-view-details-btn {
   font-size: 14px;
-  color: #155dfc;
+  color: #1E3A8A;
   background: transparent;
   border: none;
   cursor: pointer;
@@ -472,7 +472,7 @@
 .user-form-input:focus,
 .user-form-select:focus {
   outline: none;
-  border-color: #155dfc;
+  border-color: #1E3A8A;
 }
 
 .user-form-select {
@@ -552,7 +552,7 @@
 .user-submit-btn {
   flex: 1;
   height: 49px;
-  background: #155dfc;
+  background: #1E3A8A;
   color: white;
   border: none;
   border-radius: 10px;
@@ -725,7 +725,7 @@
   border: none;
   font-size: 0.78rem;
   font-weight: 700;
-  color: #155dfc;
+  color: #1E3A8A;
   cursor: pointer;
   padding: 0;
   margin-left: 4px;
@@ -800,7 +800,7 @@
 .user-loans-locked-cta {
   display: inline-block;
   padding: 8px 20px;
-  background: #155dfc;
+  background: #1E3A8A;
   color: white;
   border: none;
   border-radius: 8px;
@@ -833,7 +833,7 @@
   width: 36px;
   height: 36px;
   border: 3px solid #e5e7eb;
-  border-top-color: #155dfc;
+  border-top-color: #1E3A8A;
   border-radius: 50%;
   animation: user-loans-spin 0.7s linear infinite;
 }
@@ -895,8 +895,8 @@
 }
 
 .user-page-btn-active {
-  background: #155dfc;
-  border-color: #155dfc;
+  background: #1E3A8A;
+  border-color: #1E3A8A;
   color: white;
   font-weight: 600;
 }

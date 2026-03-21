@@ -270,17 +270,17 @@ export default function AdminSidebar() {
 
       {/* Theme Toggle Section */}
       <div className="admin-sidebar-theme-toggle">
-        <button
-          onClick={toggleTheme}
-          className="admin-theme-toggle-button"
-        >
-          <div className="admin-theme-toggle-icon">
-            {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
-          </div>
-          <span className="admin-theme-toggle-label">
-            {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
-          </span>
-        </button>
+        <div className="admin-theme-switch-wrapper">
+          <span className="admin-theme-switch-label">Dark Mode</span>
+          <label className="admin-toggle-switch">
+            <input 
+              type="checkbox" 
+              checked={theme === 'dark'} 
+              onChange={toggleTheme} 
+            />
+            <span className="admin-toggle-slider"></span>
+          </label>
+        </div>
       </div>
 
       <div className="admin-sidebar-profile">

@@ -40,7 +40,7 @@
 }
 
 .admin-members-add-btn {
-  background: #155dfc;
+  background: #1E3A8A;
   border: none;
   border-radius: 10px;
   height: 48px;
@@ -101,7 +101,7 @@
 }
 
 .admin-members-stat-value-blue {
-  color: #155dfc;
+  color: #1E3A8A;
 }
 
 .admin-members-stat-value-green {
@@ -145,7 +145,7 @@
 }
 
 .admin-members-count-badge {
-  background: #155dfc;
+  background: #1E3A8A;
   color: white;
   font-family: 'Inter', 'Arial', sans-serif;
   font-size: 14px;
@@ -193,7 +193,7 @@
 }
 
 .admin-members-search-input:focus {
-  border-color: #155DFC;
+  border-color: #1E3A8A;
   box-shadow: 0px 0px 0px 4px rgba(21, 93, 252, 0.1);
   outline: none;
 }
@@ -429,8 +429,8 @@
 }
 
 .admin-members-pagination-number.active {
-  background: #155dfc;
-  border-color: #155dfc;
+  background: #1E3A8A;
+  border-color: #1E3A8A;
   color: white;
 }
 
@@ -590,7 +590,7 @@
 }
 
 .admin-members-form-input:focus {
-  border-color: #155dfc;
+  border-color: #1E3A8A;
 }
 
 .admin-members-form-input::placeholder {
@@ -739,7 +739,7 @@
 }
 
 .admin-members-btn-save {
-  background: #155dfc;
+  background: #1E3A8A;
   color: white;
 }
 
