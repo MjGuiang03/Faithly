@@ -157,7 +157,7 @@ export default function Donation() {
     <>
       <div className="user-home-layout">
         <Sidebar />
-        <div className="user-main-content">
+        <div className="user-main-content user-donation-main">
 
           {/* Header */}
           <div className="user-donation-page-header">

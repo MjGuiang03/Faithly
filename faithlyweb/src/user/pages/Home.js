@@ -158,15 +158,16 @@ export default function Home() {
   const [currentTime, setCurrentTime] = useState(new Date());
   
   useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 60000);
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
   const formatDate = (date) => {
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     const dateStr = date.toLocaleDateString('en-US', options);
-    const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-    return `${dateStr} | ${timeStr}`;
+    const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true });
+    const branchStr = profile?.branch ? ` | ${profile.branch} Branch` : '';
+    return `${dateStr} | ${timeStr}${branchStr}`;
   };
 
   return (

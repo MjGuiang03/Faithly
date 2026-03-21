@@ -1,5 +1,8 @@
 /* ─── Header ─────────────────────────────────────────────── */
 .user-loans-page-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   margin-bottom: 0px;
 }
 
@@ -211,6 +214,7 @@
   width: 24px;
   height: 24px;
 }
+
 
 .user-loan-item-info {
   display: flex;

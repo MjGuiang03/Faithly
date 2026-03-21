@@ -2,7 +2,7 @@
 .user-donation-page-header {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   margin-bottom: 0px;
 }
 
@@ -82,7 +82,7 @@
   /* FIX: clamp so columns never push past the container */
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
   align-items: start;
-  margin-bottom: 20px;
+  margin-bottom: 0px;
 }
 
 /* ── Left card: Make a Donation ── */
@@ -1116,4 +1116,8 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.user-donation-main {
+  padding-bottom: 0px !important;
 }
