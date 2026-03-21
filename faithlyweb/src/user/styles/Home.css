@@ -5,10 +5,7 @@
   color: var(--foreground);
 }
 
-/* Main Content */
-
-
-/* Spacing */
+/* ── Header ── */
 .user-home-history-header {
   display: flex;
   justify-content: space-between;
@@ -43,8 +40,8 @@
 
 .user-view-all-btn {
   background: transparent;
-  border: 1px solid #1E3A8A;
-  color: #1E3A8A;
+  border: 1px solid var(--primary);
+  color: var(--primary);
   padding: 4px 12px;
   border-radius: 6px;
   font-size: 13px;
@@ -55,16 +52,26 @@
 }
 
 .user-view-all-btn:hover {
-  background: #1E3A8A;
+  background: var(--primary);
   color: white;
 }
 
-/* Welcome Header — simplified, no avatar */
+.dark .user-view-all-btn {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.dark .user-view-all-btn:hover {
+  background: var(--primary);
+  color: white;
+}
+
+/* ── Welcome header ── */
 .user-home-header-container {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  margin-bottom: 0px;
+  margin-bottom: 0;
 }
 
 .user-home-header-left {
@@ -83,7 +90,7 @@
   font-family: Arial, sans-serif;
   font-size: 26px;
   font-weight: 700;
-  color: #101828;
+  color: var(--foreground);
   margin: 0;
   line-height: 34px;
 }
@@ -91,7 +98,7 @@
 .user-home-page-subtitle {
   font-family: Arial, sans-serif;
   font-size: 14px;
-  color: #667085;
+  color: var(--text-muted);
   margin: 0;
   line-height: 20px;
 }
@@ -100,15 +107,19 @@
   font-family: Arial, sans-serif;
   font-size: 13px;
   font-weight: 700;
-  color: #1E3A8A;
+  color: var(--primary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin: 0;
   line-height: 1;
 }
 
+.dark .user-home-date-top {
+  color: var(--primary);
+}
+
 .user-home-info-pill {
-  background: #0f2854;
+  background: var(--sidebar);
   color: rgba(255, 255, 255, 0.72);
   padding: 8px 18px;
   border-radius: 100px;
@@ -121,27 +132,14 @@
   font-family: Arial, sans-serif;
 }
 
-/* Dark mode overrides for Home Header */
-.dark .user-home-date-top {
-  color: #7090D0;
-}
-
-.dark .user-home-page-title {
-  color: #FFFFFF;
-}
-
-.dark .user-home-page-subtitle {
-  color: #B0B8CC;
-}
-
 .dark .user-home-info-pill {
-  background: #363940;
-  color: #F0F2F8;
-  border-color: #484C55;
+  background: var(--card);
+  color: var(--foreground);
+  border: 1px solid var(--border);
   box-shadow: none;
 }
 
-/* Stats Grid */
+/* ── Stats grid ── */
 .user-stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -149,15 +147,15 @@
 }
 
 .user-stat-card {
-  background: white;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: 16px;
   padding: 12px 16px;
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 16px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
 }
 
 .user-stat-icon-box {
@@ -170,57 +168,120 @@
   flex-shrink: 0;
 }
 
-.user-stat-blue .user-stat-icon-box {
-  background: #1E3A8A;
+/* Hero stat — blue bg, gold accent */
+.user-stat-green {
+  background: var(--sidebar);
+  border-top: 4px solid var(--gold);
+  border-radius: 12px;
 }
 
 .user-stat-green .user-stat-icon-box {
-  background: #00a63e;
+  background: rgba(255, 255, 255, 0.15);
 }
 
-.user-stat-navy .user-stat-icon-box {
-  background: #0f2854;
+.user-stat-green .user-stat-icon {
+  stroke: var(--gold);
 }
 
-.user-stat-orange .user-stat-icon-box {
-  background: #f54900;
+.user-stat-green .user-stat-label,
+.user-stat-green .user-stat-sub-label {
+  color: rgba(255, 255, 255, 0.8);
 }
 
+.user-stat-green .user-stat-value {
+  color: white;
+}
+
+/* Standard stat — white card, blue accent */
 .user-stat-blue {
-  background: #eff6ff;
+  background: var(--card);
+  border-top: 4px solid var(--primary);
+  border-radius: 12px;
 }
 
-.user-stat-green {
-  background: #f0fdf4;
+.user-stat-blue .user-stat-icon-box {
+  background: var(--blue-tint);
+}
+
+.user-stat-blue .user-stat-icon {
+  stroke: var(--primary);
+}
+
+.user-stat-blue .user-stat-label,
+.user-stat-blue .user-stat-value,
+.user-stat-blue .user-stat-sub-label {
+  color: var(--foreground);
 }
 
 .user-stat-navy {
-  background: #faf5ff;
+  background: var(--card);
+  border-top: 4px solid var(--primary);
+  border-radius: 12px;
 }
 
+.user-stat-navy .user-stat-icon-box {
+  background: var(--blue-tint);
+}
+
+.user-stat-navy .user-stat-icon {
+  stroke: var(--primary);
+}
+
+.user-stat-navy .user-stat-label,
+.user-stat-navy .user-stat-value,
+.user-stat-navy .user-stat-sub-label {
+  color: var(--foreground);
+}
+
+/* Alert stat — red accent */
 .user-stat-orange {
-  background: #fff7ed;
+  background: var(--card);
+  border-top: 4px solid var(--destructive);
+  border-radius: 12px;
 }
 
-/* Clickable stat card hover effect */
+.user-stat-orange .user-stat-icon-box {
+  background: var(--red-tint);
+}
+
+.user-stat-orange .user-stat-icon {
+  stroke: var(--destructive);
+}
+
+.user-stat-orange .user-stat-label,
+.user-stat-orange .user-stat-value {
+  color: var(--foreground);
+}
+
+.user-stat-badge {
+  background: var(--destructive);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  margin-top: 4px;
+  display: inline-block;
+}
+
+/* Clickable stat hover */
 .user-stat-card-clickable {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .user-stat-card-clickable:hover {
   transform: translateY(-4px) scale(1.02);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08), 0 0 0 2px rgba(21, 93, 252, 0.1);
-  border-color: rgba(21, 93, 252, 0.2);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08), 0 0 0 2px rgba(30, 58, 138, 0.1);
 }
 
-/* Loan Hover Tooltip */
+/* Loan hover tooltip */
 .user-loan-hover-tooltip {
   position: absolute;
   top: calc(100% + 8px);
   left: 0;
   right: 0;
-  background: white;
-  border: 1px solid #e2e8f0;
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 14px 16px;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
@@ -243,7 +304,7 @@
 .user-loan-hover-title {
   font-size: 12px;
   font-weight: 700;
-  color: #1E3A8A;
+  color: var(--primary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin: 0 0 10px 0;
@@ -254,7 +315,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 6px 0;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--border);
 }
 
 .user-loan-hover-item:last-of-type {
@@ -264,42 +325,34 @@
 .user-loan-hover-id {
   font-size: 13px;
   font-weight: 600;
-  color: #334155;
+  color: var(--text-secondary);
 }
 
 .user-loan-hover-amount {
   font-size: 13px;
   font-weight: 700;
-  color: #101828;
+  color: var(--foreground);
 }
 
 .user-loan-verify-suggestion {
-  background: #fff7ed;
-  border: 1px solid #ffedd5;
+  background: var(--gold-tint);
+  border: 1px solid rgba(245, 200, 0, 0.3);
   border-radius: 8px;
   padding: 10px;
   margin-bottom: 12px;
-}
-
-.user-verify-text {
-  font-size: 12px;
-  color: #9a3412;
-  margin: 0;
-  line-height: 1.4;
-  font-weight: 500;
 }
 
 .user-loan-hover-verify-mini {
   position: absolute;
   top: -15px;
   right: -10px;
-  background: #f54900;
+  background: var(--destructive);
   color: white;
   padding: 4px 10px;
   border-radius: 20px;
   font-size: 10px;
   font-weight: 700;
-  box-shadow: 0 4px 10px rgba(245, 73, 0, 0.3);
+  box-shadow: 0 4px 10px rgba(204, 17, 17, 0.3);
   z-index: 60;
   pointer-events: none;
   opacity: 0;
@@ -314,7 +367,7 @@
 
 .user-loan-hover-more {
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--text-muted);
   margin: 6px 0 0 0;
   text-align: center;
 }
@@ -322,11 +375,11 @@
 .user-loan-hover-cta {
   font-size: 12px;
   font-weight: 600;
-  color: #1E3A8A;
+  color: var(--primary);
   margin: 10px 0 0 0;
   text-align: center;
   padding-top: 8px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--border);
 }
 
 .user-stat-icon {
@@ -342,7 +395,7 @@
 
 .user-stat-label {
   font-size: 11px;
-  color: #4a5565;
+  color: var(--text-muted);
   margin: 0;
   line-height: 18px;
   font-family: Arial, sans-serif;
@@ -353,13 +406,13 @@
 .user-stat-value {
   font-size: 22px;
   font-weight: 700;
-  color: #101828;
+  color: var(--foreground);
   margin: 0;
   line-height: 28px;
   font-family: Arial, sans-serif;
 }
 
-/* Content Grid — FIX: ensure proper spacing and alignment */
+/* ── Dashboard grid ── */
 .user-dashboard-grid {
   display: grid;
   grid-template-columns: 3fr 3fr 4fr;
@@ -373,317 +426,268 @@
   width: 100%;
 }
 
-/* Community Card — Donation Receipt Style */
+/* ── Community card ── */
 .user-home-community-card {
-  background: white;
-  border: 1px solid #E5E7EB;
-  box-shadow: 0 4px 12px rgba(21, 93, 252, 0.08);
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.06);
   display: flex;
   flex-direction: column;
 }
 
 .dark .user-home-community-card {
   background: var(--card);
-  border: 1px solid var(--border);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border-color: var(--border);
+  box-shadow: none;
 }
 
-.user-community-content {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 4px 0;
-  flex: 1;
-}
-
-.user-community-info-wrap {
-  text-align: left;
-  width: 100%;
-  margin-bottom: 4px;
-}
-
-.user-community-branch-name {
-  font-size: 15px;
-  font-weight: 700;
-  color: #101828;
-  margin: 0;
-}
-
-.user-community-map-container {
-  width: 100%;
-  height: 150px;
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  margin: 8px 0;
-}
-
-.user-community-text {
-  font-size: 12px;
-  color: #64748b;
-  line-height: 1.5;
-  margin: 0;
-  text-align: left;
-}
-
-.user-community-action-btn {
-  background: white;
-  border: 1.5px solid #1E3A8A;
-  color: #1E3A8A;
-  padding: 8px 16px;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
-  width: 100%;
-  margin-top: auto;
-}
-
-.user-community-action-btn:hover {
-  background: #1E3A8A;
-  color: white;
-  box-shadow: 0 4px 12px rgba(21, 93, 252, 0.2);
-}
-
-.user-side-column {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-/* Card */
+/* ── Generic home card ── */
 .user-home-card {
-  background: white;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  background: var(--card);
   border-radius: 16px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
-  height: auto;
-  /* FIX: prevent card content from pushing past grid cell */
-  min-width: 0;
-  overflow: hidden;
+  padding: 20px;
+  border: 1px solid var(--border);
+}
+
+.dark .user-home-card {
+  background: var(--card);
+  border-color: var(--border);
 }
 
 .user-home-card-title {
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 700;
-  color: #101828;
-  margin: 0;
-  line-height: 24px;
+  color: var(--foreground);
+  margin: 0 0 16px 0;
   font-family: Arial, sans-serif;
 }
 
-.user-home-card-header {
+.user-home-card-header-icon {
+  background: var(--blue-tint);
+  color: var(--primary);
+  border-radius: 8px;
+  padding: 6px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: center;
 }
 
-/* Quick Actions — Premium look */
-.user-quick-actions-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  height: 100%;
-  justify-content: space-between;
+.dark .user-home-card-header-icon {
+  background: var(--muted);
+  color: var(--foreground);
 }
 
+/* ── Quick Actions ── */
 .user-action-button {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 18px;
+  gap: 14px;
+  padding: 14px 16px;
   border-radius: 12px;
   border: none;
   cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
   text-align: left;
-  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
-  text-decoration: none;
+  min-height: 58px;
 }
 
 .user-action-icon-wrapper {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-}
-.user-action-icon-wrapper svg {
-  width: 22px;
-  height: 22px;
-}
-
-.user-action-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
-}
-
-.user-action-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
 }
 
 .user-action-title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
-  margin: 0;
-  line-height: 1.3;
+  font-family: Arial, sans-serif;
 }
 
 .user-action-description {
-  font-size: 13px;
-  margin: 0;
-  line-height: 1.4;
+  font-size: 12px;
+  margin-top: 2px;
+  font-family: Arial, sans-serif;
 }
 
 .user-action-arrow {
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
+  margin-left: auto;
+  font-size: 18px;
 }
 
-/* Recent Activity — Refined design */
-.user-activity-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  height: 100%;
-  justify-content: space-between;
+/* Primary: blue bg + gold icon */
+.user-action-btn-donate {
+  background: var(--sidebar);
+  color: white;
 }
 
-.user-home-card-header-with-icon {
+.user-action-btn-donate .user-action-icon-wrapper {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--gold);
+}
+
+.user-action-btn-donate .user-action-arrow {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.user-action-btn-donate .user-action-description {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.user-action-btn-donate:hover {
+  background: var(--blue-hover);
+}
+
+/* Secondary: gold tint */
+.user-action-btn-attendance {
+  background: var(--gold-tint);
+  color: var(--gold-text);
+  border: 1px solid rgba(245, 200, 0, 0.35);
+  box-shadow: none;
+}
+
+.user-action-btn-attendance .user-action-icon-wrapper {
+  background: rgba(245, 200, 0, 0.25);
+  color: var(--gold-text);
+}
+
+.user-action-btn-attendance .user-action-title,
+.user-action-btn-attendance .user-action-description,
+.user-action-btn-attendance .user-action-arrow {
+  color: var(--gold-text);
+}
+
+/* Tertiary: white/muted */
+.user-action-btn-community {
+  background: var(--secondary);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  box-shadow: none;
+}
+
+.user-action-btn-community .user-action-icon-wrapper {
+  background: var(--card);
+  color: var(--text-secondary);
+}
+
+.user-action-btn-community .user-action-title {
+  color: var(--foreground);
+}
+
+.user-action-btn-community .user-action-description,
+.user-action-btn-community .user-action-arrow {
+  color: var(--text-muted);
+}
+
+.user-action-btn-community:hover {
+  background: var(--blue-tint);
+  border-color: var(--primary);
+}
+
+/* Dark overrides for actions */
+.dark .user-action-btn-donate {
+  background: var(--sidebar);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dark .user-action-btn-attendance {
+  background: rgba(245, 200, 0, 0.08);
+  border: 1px solid rgba(245, 200, 0, 0.25);
+}
+
+.dark .user-action-btn-attendance .user-action-title,
+.dark .user-action-btn-attendance .user-action-description,
+.dark .user-action-btn-attendance .user-action-arrow {
+  color: var(--gold);
+}
+
+.dark .user-action-btn-community {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+}
+
+.dark .user-action-btn-community .user-action-title,
+.dark .user-action-btn-community .user-action-description,
+.dark .user-action-btn-community .user-action-arrow {
+  color: var(--foreground);
+}
+
+/* ── Activity feed ── */
+.user-activity-item-horizontal {
+  background: var(--secondary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 8px;
+  transition: background 0.2s;
 }
 
-.user-home-card-header-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #F3F4F6;
-  color: #111827;
-}
-.user-home-card-header-icon.user-header-icon-recent {
-  background: #F3E8FF;
-  color: #111827;
+.user-activity-item-horizontal:hover {
+  background: var(--muted);
 }
 
-.user-home-card-header-icon svg {
-  width: 18px;
-  height: 18px;
+.dark .user-activity-item-horizontal {
+  background: var(--input-background);
+  border-color: var(--border);
 }
 
-.user-activity-view-all {
-  background: transparent;
-  border: 1px solid #E5E7EB;
-  color: #E5E7EB;
-  padding: 6px 14px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.user-activity-item-horizontal {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 16px 0;
-  border-bottom: 1px solid #E5E7EB;
-  background: transparent;
-}
-.user-activity-item-horizontal:last-child {
-  border-bottom: none;
-}
-
-.user-activity-icon-compact {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.user-activity-item-loan .user-activity-icon-compact {
-  background: #FEF3C7;
-  color: #B45309;
-}
-.user-activity-item-donation .user-activity-icon-compact {
-  background: #EFF6FF;
-  color: #1E3A8A;
-}
-.user-activity-item-attendance .user-activity-icon-compact {
-  background: #F3F4F6;
-  color: #374151;
-}
-
-.user-activity-details-horizontal {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex: 1;
-}
-
-.user-activity-left-col {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.user-activity-right-col {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
+.dark .user-activity-item-horizontal:hover {
+  background: var(--muted);
 }
 
 .user-activity-title-compact {
-  font-size: 15px;
-  font-weight: 700;
-  color: #101828;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--foreground);
+  font-family: Arial, sans-serif;
 }
 
-.user-activity-desc-compact, .user-activity-time-compact {
+.user-activity-desc-compact,
+.user-activity-time-compact {
   font-size: 13px;
-  color: #64748b;
+  color: var(--text-muted);
+}
+
+.dark .user-activity-title-compact {
+  color: var(--foreground);
+}
+
+.dark .user-activity-desc-compact,
+.dark .user-activity-time-compact {
+  color: var(--text-secondary);
 }
 
 .user-activity-amount-loan {
   font-size: 14px;
   font-weight: 700;
-  color: #B45309;
+  color: var(--gold-text);
 }
 
 .user-activity-amount-donation {
   font-size: 14px;
   font-weight: 700;
-  color: #1E3A8A;
+  color: var(--primary);
 }
 
-/* Floating Chat Button */
+.dark .user-activity-amount-loan {
+  color: var(--gold);
+}
+
+/* ── Floating chat button ── */
 .user-chat-button {
   position: fixed;
   bottom: 80px;
   right: 24px;
   width: 52px;
   height: 52px;
-  background: #1E3A8A;
+  background: var(--primary);
   border-radius: 50%;
   border: none;
   cursor: pointer;
@@ -692,11 +696,11 @@
   justify-content: center;
   transition: transform 0.2s, box-shadow 0.2s;
   z-index: 40;
-  box-shadow: 0 4px 12px rgba(21, 93, 252, 0.3);
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
 }
 
 .user-chat-button:hover {
-  box-shadow: 0 8px 20px rgba(21, 93, 252, 0.4);
+  box-shadow: 0 8px 20px rgba(30, 58, 138, 0.4);
 }
 
 .user-chat-button svg {
@@ -704,7 +708,7 @@
   height: 22px;
 }
 
-/* Payments */
+/* ── Payments ── */
 .user-payments-list {
   display: flex;
   flex-direction: column;
@@ -713,7 +717,7 @@
 }
 
 .user-payment-item {
-  background: #f9fafb;
+  background: var(--secondary);
   border-radius: 10px;
   padding: 14px 16px;
   display: flex;
@@ -721,6 +725,10 @@
   align-items: center;
   width: 100%;
   box-sizing: border-box;
+}
+
+.dark .user-payment-item {
+  background: var(--input-background);
 }
 
 .user-payment-info {
@@ -732,7 +740,7 @@
 .user-payment-icon {
   width: 38px;
   height: 38px;
-  background: #ffedd4;
+  background: var(--gold-tint);
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -754,18 +762,20 @@
 .user-payment-id {
   font-size: 15px;
   font-weight: 700;
-  color: #101828;
+  color: var(--foreground);
   margin: 0;
-  line-height: 22px;
   font-family: Arial, sans-serif;
 }
 
 .user-payment-due {
   font-size: 13px;
-  color: #4a5565;
+  color: var(--text-muted);
   margin: 0;
-  line-height: 18px;
   font-family: Arial, sans-serif;
+}
+
+.dark .user-payment-id {
+  color: var(--foreground);
 }
 
 .user-payment-actions {
@@ -778,9 +788,8 @@
 .user-payment-amount {
   font-size: 15px;
   font-weight: 700;
-  color: #101828;
+  color: var(--foreground);
   margin: 0;
-  line-height: 22px;
   font-family: Arial, sans-serif;
 }
 
@@ -796,7 +805,17 @@
   letter-spacing: 0.5px;
 }
 
-/* Responsive */
+.dark .user-payment-status {
+  background: rgba(0, 166, 62, 0.12);
+}
+
+.dark .user-stat-card .user-stat-sub-label {
+  color: var(--text-muted);
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+/* ── Responsive ── */
 @media (max-width: 1200px) {
   .user-stats-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -868,7 +887,6 @@
   .user-activity-time-compact {
     margin-left: auto;
     font-size: 11px;
-    color: #94a3b8;
   }
 
   .user-activity-separator {
@@ -901,145 +919,4 @@
   .user-action-description {
     font-size: 11px;
   }
-}
-
-/* LIGHT MODE: Quick Actions & Stats (Mockup Exact Match) */
-.user-action-btn-donate {
-  background: #1E3A8A;
-  color: white;
-}
-.user-action-btn-donate .user-action-icon-wrapper {
-  background: rgba(255, 255, 255, 0.15);
-  color: #F5C800;
-}
-.user-action-btn-donate .user-action-arrow { color: rgba(255, 255, 255, 0.7); }
-.user-action-btn-donate .user-action-description { color: rgba(255, 255, 255, 0.8); }
-
-.user-action-btn-attendance {
-  background: #FFFBEB;
-  color: #92400E;
-  border: 1px solid #FEF3C7;
-  box-shadow: none;
-}
-.user-action-btn-attendance .user-action-icon-wrapper {
-  background: #FEF3C7;
-  color: #92400E;
-}
-.user-action-btn-attendance .user-action-title,
-.user-action-btn-attendance .user-action-description,
-.user-action-btn-attendance .user-action-arrow {
-  color: #92400E;
-}
-
-.user-action-btn-community {
-  background: white;
-  color: #101828;
-  border: 1px solid #E5E7EB;
-  box-shadow: none;
-}
-.user-action-btn-community .user-action-icon-wrapper {
-  background: #F3F4F6;
-  color: #374151;
-}
-.user-action-btn-community .user-action-title { color: #101828; }
-.user-action-btn-community .user-action-description,
-.user-action-btn-community .user-action-arrow { color: #64748B; }
-
-/* Mockup Exact Stat Cards */
-.user-stat-green { /* Actually Total Donated in JSX */
-  background: #1E3A8A;
-  border-top: 4px solid #F5C800;
-  border-radius: 12px;
-}
-.user-stat-green .user-stat-icon-box { background: rgba(255, 255, 255, 0.15); }
-.user-stat-green .user-stat-icon { stroke: #F5C800; }
-.user-stat-green .user-stat-label,
-.user-stat-green .user-stat-sub-label { color: rgba(255, 255, 255, 0.8); }
-.user-stat-green .user-stat-value { color: white; }
-
-.user-stat-blue {
-  background: white;
-  border-top: 4px solid #1E3A8A;
-  border-radius: 12px;
-}
-.user-stat-blue .user-stat-icon-box { background: #EFF6FF; }
-.user-stat-blue .user-stat-icon { stroke: #1E3A8A; }
-.user-stat-blue .user-stat-label, .user-stat-blue .user-stat-value, .user-stat-blue .user-stat-sub-label { color: #101828; }
-
-.user-stat-navy {
-  background: white;
-  border-top: 4px solid #1E3A8A;
-  border-radius: 12px;
-}
-.user-stat-navy .user-stat-icon-box { background: #EFF6FF; }
-.user-stat-navy .user-stat-icon { stroke: #1E3A8A; }
-.user-stat-navy .user-stat-label, .user-stat-navy .user-stat-value, .user-stat-navy .user-stat-sub-label { color: #101828; }
-
-.user-stat-orange {
-  background: white;
-  border-top: 4px solid #DC2626;
-  border-radius: 12px;
-}
-.user-stat-orange .user-stat-icon-box { background: #FEF2F2; }
-.user-stat-orange .user-stat-icon { stroke: #DC2626; }
-.user-stat-orange .user-stat-label, .user-stat-orange .user-stat-value { color: #101828; }
-.user-stat-badge {
-  background: #DC2626;
-  color: white;
-  padding: 2px 8px;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 700;
-  margin-top: 4px;
-  display: inline-block;
-}
-
-/* DARK MODE: Overrides for new structurally laid out cards */
-.dark .user-action-btn-donate {
-  background: #1E3A8A;
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-.dark .user-action-btn-attendance {
-  background: rgba(245, 200, 0, 0.08);
-  border: 1px solid rgba(245, 200, 0, 0.3);
-}
-.dark .user-action-btn-attendance .user-action-title,
-.dark .user-action-btn-attendance .user-action-description,
-.dark .user-action-btn-attendance .user-action-arrow {
-  color: #F5C800;
-}
-.dark .user-action-btn-community {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid #484C55;
-}
-.dark .user-action-btn-community .user-action-title,
-.dark .user-action-btn-community .user-action-description,
-.dark .user-action-btn-community .user-action-arrow {
-  color: white;
-}
-
-.dark .user-activity-item-horizontal {
-  background: var(--input-background);
-  border-color: var(--border);
-}
-.dark .user-activity-item-horizontal:hover {
-  background: var(--muted);
-}
-.dark .user-activity-title-compact,
-.dark .user-payment-id {
-  color: var(--foreground);
-}
-.dark .user-activity-desc-compact,
-.dark .user-activity-time-compact {
-  color: var(--text-secondary);
-}
-.dark .user-stat-card .user-stat-sub-label {
-  color: #9CA3AF;
-  font-size: 12px;
-  margin-top: 2px;
-}
-.dark .user-home-card-header-icon {
-  background: var(--muted);
-  color: var(--foreground);
 }

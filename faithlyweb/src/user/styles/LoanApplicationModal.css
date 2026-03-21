@@ -1,14 +1,25 @@
 @keyframes user-loan-application-fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes user-loan-application-slideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
-/* Overlay */
 .user-loan-application-overlay {
   position: fixed;
   inset: 0;
@@ -20,15 +31,15 @@
   animation: user-loan-application-fadeIn 0.2s ease-in-out;
 }
 
-/* Modal Content */
 .user-loan-application-content {
-  background: white;
+  background: var(--card);
   border-radius: 14px;
   width: 659px;
   max-width: 90vw;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0px 4px 10px 0px rgba(10, 10, 10, 0.25);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border);
   animation: user-loan-application-slideUp 0.3s ease-out;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -38,13 +49,24 @@
   display: none;
 }
 
-/* Header */
+/* Force light color scheme on number inputs to prevent browser dark mode override */
+.user-loan-application-content input[type="number"] {
+  color-scheme: light;
+  background-color: var(--input-background) !important;
+  color: var(--foreground) !important;
+  -webkit-text-fill-color: var(--foreground) !important;
+}
+
+.dark .user-loan-application-content input[type="number"] {
+  color-scheme: dark;
+}
+
 .user-loan-application-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 16px 24px;
-  border-bottom: 1px solid #686868;
+  border-bottom: 1px solid var(--border);
   position: relative;
   width: 100%;
   box-sizing: border-box;
@@ -54,7 +76,7 @@
   font-family: Arial, sans-serif;
   font-size: 24px;
   font-weight: 700;
-  color: #101828;
+  color: var(--foreground);
   line-height: 32px;
   margin: 0;
 }
@@ -68,14 +90,15 @@
   align-items: center;
   justify-content: center;
   border-radius: 10px;
+  color: var(--text-muted);
   transition: background 0.2s;
 }
 
 .user-loan-application-close-btn:hover {
-  background: #f3f4f6;
+  background: var(--secondary);
+  color: var(--foreground);
 }
 
-/* Form */
 .user-loan-application-form {
   padding: 20px 24px 24px;
   display: flex;
@@ -84,7 +107,6 @@
   position: relative;
 }
 
-/* Form Groups */
 .user-loan-application-form-group {
   display: flex;
   flex-direction: column;
@@ -107,52 +129,45 @@
 .user-loan-application-label {
   font-family: Arial, sans-serif;
   font-size: 13px;
-  color: #364153;
+  color: var(--text-secondary);
   line-height: 16px;
 }
 
-/* Input Wrapper */
 .user-loan-application-input-wrapper {
   position: relative;
   width: 100%;
 }
 
-/* Inputs & Selects */
 .user-loan-application-input,
 .user-loan-application-select {
   width: 100%;
   padding: 8px 16px 8px 40px;
-  border: 0.8px solid #d1d5dc;
+  border: 0.8px solid var(--border-strong);
   border-radius: 10px;
   font-family: Arial, sans-serif;
   font-size: 16px;
-  color: #0a0a0a;
+  color: var(--foreground);
   height: 41.6px;
-  background: white;
+  background: var(--input-background);
   outline: none;
   box-sizing: border-box;
+  transition: border-color 0.2s, background 0.2s;
 }
 
 .user-loan-application-input::placeholder {
-  color: rgba(10, 10, 10, 0.5);
+  color: var(--text-muted);
 }
 
 .user-loan-application-input:focus,
 .user-loan-application-select:focus {
-  border-color: #1E3A8A;
-  background: white;
-  color: #0a0a0a;
-  -webkit-text-fill-color: #0a0a0a;
+  border-color: var(--primary);
+  background: var(--card);
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.08);
 }
 
-/* Remove browser dark styling on number inputs */
-.user-loan-application-content input[type="number"] {
-  -webkit-appearance: textfield;
-  appearance: textfield;
-  background-color: white !important;
-  color: #0a0a0a !important;
-  -webkit-text-fill-color: #0a0a0a !important;
-  color-scheme: light;
+.dark .user-loan-application-input:focus,
+.dark .user-loan-application-select:focus {
+  box-shadow: 0 0 0 3px rgba(112, 144, 208, 0.12);
 }
 
 .user-loan-application-select {
@@ -164,7 +179,6 @@
   padding-right: 40px;
 }
 
-/* Icons */
 .user-loan-application-input-icon {
   position: absolute;
   left: 12px;
@@ -172,7 +186,7 @@
   transform: translateY(-50%);
   font-size: 14px;
   font-weight: 500;
-  color: #99A1AF;
+  color: var(--text-muted);
   pointer-events: none;
   font-family: Arial, sans-serif;
 }
@@ -183,9 +197,10 @@
   top: 50%;
   transform: translateY(-50%);
   pointer-events: none;
+  color: var(--text-muted);
 }
 
-/* Guarantor Section */
+/* ── Guarantor ── */
 .user-loan-application-guarantor-section {
   padding-top: 12px;
   display: flex;
@@ -197,12 +212,12 @@
   font-family: Arial, sans-serif;
   font-size: 16px;
   font-weight: 700;
-  color: #101828;
+  color: var(--foreground);
   line-height: 24px;
   margin: 0;
 }
 
-/* Upload Section */
+/* ── Upload ── */
 .user-loan-application-upload-section {
   padding-top: 12px;
   display: flex;
@@ -210,43 +225,47 @@
   gap: 10px;
 }
 
-/* Upload Box */
 .user-loan-upload-box {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  border: 1.5px dashed #d1d5dc;
+  border: 1.5px dashed var(--border-strong);
   border-radius: 10px;
   padding: 20px 12px;
   cursor: pointer;
-  background: #f9fafb;
+  background: var(--secondary);
   transition: border-color 0.2s, background 0.2s;
   min-height: 110px;
   text-align: center;
 }
 
 .user-loan-upload-box:hover {
-  border-color: #1E3A8A;
-  background: #eff6ff;
+  border-color: var(--primary);
+  background: var(--blue-tint);
 }
 
 .user-loan-upload-box-done {
-  border-color: #16a34a;
-  background: #f0fdf4;
+  border-color: #16a34a !important;
+  background: #f0fdf4 !important;
   border-style: solid;
+}
+
+.dark .user-loan-upload-box-done {
+  background: rgba(22, 163, 74, 0.1) !important;
 }
 
 .user-loan-upload-icon {
   flex-shrink: 0;
+  color: var(--text-muted);
 }
 
 .user-loan-upload-text {
   font-family: Arial, sans-serif;
   font-size: 13px;
   font-weight: 500;
-  color: #374151;
+  color: var(--text-secondary);
   margin: 0;
   line-height: 1.4;
 }
@@ -258,7 +277,7 @@
 .user-loan-upload-subtext {
   font-family: Arial, sans-serif;
   font-size: 11px;
-  color: #9ca3af;
+  color: var(--text-muted);
   margin: 0;
   line-height: 1.3;
   max-width: 160px;
@@ -267,10 +286,10 @@
   white-space: nowrap;
 }
 
-/* Note Box */
+/* ── Note box ── */
 .user-loan-application-note-box {
-  background: #eff6ff;
-  border: 0.8px solid #bedbff;
+  background: var(--blue-tint);
+  border: 0.8px solid var(--border);
   border-radius: 10px;
   padding: 14px 16px;
 }
@@ -278,16 +297,21 @@
 .user-loan-application-note-text {
   font-family: Arial, sans-serif;
   font-size: 14px;
-  color: #193cb8;
+  color: var(--primary);
   line-height: 20px;
   margin: 0;
 }
 
-.user-loan-application-note-text strong {
-  font-weight: 700;
+.dark .user-loan-application-note-box {
+  background: var(--accent);
+  border-color: var(--border);
 }
 
-/* Form Actions */
+.dark .user-loan-application-note-text {
+  color: var(--primary);
+}
+
+/* ── Actions ── */
 .user-loan-application-actions {
   display: flex;
   gap: 12px;
@@ -297,7 +321,7 @@
 .user-loan-application-submit-btn {
   flex: 1;
   height: 49px;
-  background: #1E3A8A;
+  background: var(--sidebar);
   color: white;
   border: none;
   border-radius: 10px;
@@ -308,15 +332,15 @@
 }
 
 .user-loan-application-submit-btn:hover {
-  background: #1246d1;
+  background: var(--blue-hover);
 }
 
 .user-loan-application-cancel-btn {
   width: 96px;
   height: 49px;
-  background: white;
-  color: #364153;
-  border: 0.8px solid #d1d5dc;
+  background: var(--secondary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
   border-radius: 10px;
   font-family: Arial, sans-serif;
   font-size: 16px;
@@ -325,10 +349,9 @@
 }
 
 .user-loan-application-cancel-btn:hover {
-  background: #f3f4f6;
+  background: var(--muted);
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .user-loan-application-content {
     width: 95vw;

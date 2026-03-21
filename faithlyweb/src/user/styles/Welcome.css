@@ -1,21 +1,21 @@
-/* Welcome Container */
+/* Welcome — public landing page, uses PUAC brand colors directly */
 .user-welcome-container-new {
   min-height: 100vh;
-  background: #eee;
+  background: #F5F6F8;
   font-family: Arial, sans-serif;
 }
 
-/* Header */
+/* ── Header ── */
 .user-welcome-header-new {
-  background-color: #101828;
-  border-bottom: 0.8px solid #000;
+  background-color: #1E3A8A;
+  border-bottom: 0.8px solid rgba(0, 0, 0, 0.2);
 }
 
 .user-welcome-header-content-new {
   max-width: 1144px;
   margin-left: 15px;
   padding: 12px 20px;
-  display: flex;  
+  display: flex;
   align-items: center;
   justify-content: space-between;
 }
@@ -44,12 +44,12 @@
 .user-welcome-logo-subtitle-new {
   font-family: Arial, sans-serif;
   font-size: 12px;
-  color: #8ec5ff;
+  color: rgba(255, 255, 255, 0.6);
   margin: 0;
   line-height: 16px;
 }
 
-/* Hero Section */
+/* ── Hero section ── */
 .user-hero-section-new {
   max-width: 1144px;
   margin: 0 auto;
@@ -76,7 +76,6 @@
   }
 }
 
-/* Hero Left */
 .user-hero-left-new {
   padding-top: 2rem;
 }
@@ -86,8 +85,8 @@
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
-  background-color: #e5e7eb;
-  border: 0.8px solid #1447e6;
+  background-color: #EDF1FB;
+  border: 0.8px solid #1E3A8A;
   border-radius: 9999px;
   margin-bottom: 1.5rem;
   font-size: 14px;
@@ -98,20 +97,19 @@
   height: 8px;
   background-color: #05df72;
   border-radius: 9999px;
-  opacity: 0.96;
 }
 
 .user-trust-text-new {
   font-family: Arial, sans-serif;
   font-size: 14px;
-  color: #101f33;
+  color: #1E3A8A;
 }
 
 .user-hero-title-new {
   font-family: Arial, sans-serif;
   font-size: 35px;
   font-weight: bold;
-  color: #0a0a0a;
+  color: #111318;
   margin-bottom: 1.5rem;
   line-height: 1.2;
 }
@@ -124,7 +122,7 @@
 
 .user-hero-title-gradient-new {
   display: block;
-  background: linear-gradient(90deg, #51a2ff 0%, #53eafd 100%);
+  background: linear-gradient(90deg, #1E3A8A 0%, #2A50B8 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -134,7 +132,7 @@
 .user-hero-description-new {
   font-family: Arial, sans-serif;
   font-size: 20px;
-  color: #1d3662;
+  color: #3D4A5E;
   margin-bottom: 2rem;
   line-height: 1.4;
 }
@@ -157,14 +155,14 @@
   border-radius: 10px;
   cursor: pointer;
   transition: background-color 0.3s;
-  box-shadow: 0 10px 15px 0 rgba(28, 57, 142, 0.5), 0 4px 6px 0 rgba(28, 57, 142, 0.5);
+  box-shadow: 0 10px 15px 0 rgba(30, 58, 138, 0.4), 0 4px 6px 0 rgba(30, 58, 138, 0.3);
 }
 
 .user-btn-primary-new:hover {
-  background-color: #1246d1;
+  background-color: #2A50B8;
 }
 
-/* Stats Grid */
+/* ── Stats grid ── */
 .user-stats-grid-new {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -179,7 +177,7 @@
   font-family: Arial, sans-serif;
   font-size: 30px;
   font-weight: bold;
-  color: #101828;
+  color: #111318;
   margin: 0;
   line-height: 36px;
 }
@@ -187,12 +185,12 @@
 .user-stat-label-new {
   font-family: Arial, sans-serif;
   font-size: 14px;
-  color: #1d3662;
+  color: #3D4A5E;
   margin: 0;
   line-height: 20px;
 }
 
-/* Login Card Container */
+/* ── Login card container ── */
 .user-login-card-container {
   display: flex;
   justify-content: center;
@@ -200,11 +198,11 @@
   padding-top: 0;
 }
 
-/* Benefits Section */
+/* ── Benefits section ── */
 .user-benefits-section-new {
-  background-color: #101828;
-  border-top: 0.8px solid rgba(25, 60, 184, 0.5);
-  border-bottom: 0.8px solid rgba(25, 60, 184, 0.5);
+  background-color: #1E3A8A;
+  border-top: 0.8px solid rgba(30, 58, 138, 0.5);
+  border-bottom: 0.8px solid rgba(30, 58, 138, 0.5);
   padding: 4rem 1rem;
 }
 
@@ -230,7 +228,7 @@
 .user-benefits-description-new {
   font-family: Arial, sans-serif;
   font-size: 16px;
-  color: #bedbff;
+  color: rgba(255, 255, 255, 0.7);
   max-width: 656px;
   margin: 0 auto;
   line-height: 24px;
@@ -265,7 +263,7 @@
 .user-benefit-icon-new {
   width: 20px;
   height: 20px;
-  color: #05df72;
+  color: #F5C800;
   flex-shrink: 0;
   margin-top: 2px;
 }
@@ -273,12 +271,12 @@
 .user-benefit-text-new {
   font-family: Arial, sans-serif;
   font-size: 16px;
-  color: #bedbff;
+  color: rgba(255, 255, 255, 0.85);
   margin: 0;
   line-height: 24px;
 }
 
-/* CTA Section */
+/* ── CTA section ── */
 .user-cta-section-new {
   max-width: 100%;
   margin: 0 auto;
@@ -286,7 +284,7 @@
 }
 
 .user-cta-card-new {
-  background: linear-gradient(to right, #1E3A8A, #0092b8);
+  background: #1E3A8A;
   padding: 4rem 2rem;
   text-align: center;
 }
@@ -303,7 +301,7 @@
 .user-cta-description-new {
   font-family: Arial, sans-serif;
   font-size: 16px;
-  color: #dbeafe;
+  color: rgba(255, 255, 255, 0.75);
   max-width: 649px;
   margin: 0 auto 2rem;
   line-height: 24px;
@@ -312,7 +310,7 @@
 .user-cta-button-new {
   padding: 16px 0;
   width: 212px;
-  background-color: white;
+  background-color: #F5C800;
   color: #1E3A8A;
   font-family: Arial, sans-serif;
   font-weight: bold;
@@ -320,18 +318,18 @@
   border: none;
   border-radius: 10px;
   cursor: pointer;
-  transition: background-color 0.3s;
-  box-shadow: 0 10px 15px 0 rgba(0, 0, 0, 0.1), 0 4px 6px 0 rgba(0, 0, 0, 0.1);
+  transition: filter 0.2s;
+  box-shadow: 0 10px 15px 0 rgba(0, 0, 0, 0.1);
 }
 
 .user-cta-button-new:hover {
-  background-color: #f0f0f0;
+  filter: brightness(0.95);
 }
 
-/* Footer */
+/* ── Footer ── */
 .user-welcome-footer-new {
-  background-color: #101828;
-  border-top: 0.8px solid rgba(25, 60, 184, 0.5);
+  background-color: #1E3A8A;
+  border-top: 0.8px solid rgba(255, 255, 255, 0.1);
   padding: 2rem 1rem;
 }
 
@@ -344,12 +342,12 @@
 .user-footer-text-new {
   font-family: Arial, sans-serif;
   font-size: 14px;
-  color: #8ec5ff;
+  color: rgba(255, 255, 255, 0.55);
   margin: 0;
   line-height: 20px;
 }
 
-/* Responsive Design */
+/* ── Responsive ── */
 @media (max-width: 768px) {
   .user-hero-title-new {
     font-size: 28px;
@@ -376,4 +374,4 @@
   .user-cta-title-new {
     font-size: 24px;
   }
-}
+}

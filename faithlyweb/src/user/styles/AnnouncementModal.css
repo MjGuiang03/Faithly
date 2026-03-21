@@ -1,4 +1,3 @@
-/* ─── Announcement Modal overlay ─── */
 .ann-modal-overlay {
   position: fixed;
   inset: 0;
@@ -13,12 +12,17 @@
 }
 
 @keyframes ann-fade-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .ann-modal {
-  background: #ffffff;
+  background: var(--card);
   border-radius: 20px;
   width: 100%;
   max-width: 540px;
@@ -26,21 +30,29 @@
   display: flex;
   flex-direction: column;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border);
   animation: ann-slide-up 0.25s ease;
 }
 
 @keyframes ann-slide-up {
-  from { opacity: 0; transform: translateY(24px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* ─── Header ─── */
+/* ── Header ── */
 .ann-modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 20px 24px 16px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--border);
 }
 
 .ann-modal-header-left {
@@ -53,7 +65,7 @@
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #F54900, #ff7043);
+  background: var(--destructive);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -63,13 +75,13 @@
 .ann-modal-title {
   font-size: 18px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--foreground);
   margin: 0;
 }
 
 .ann-modal-subtitle {
   font-size: 13px;
-  color: #94a3b8;
+  color: var(--text-muted);
   margin: 0;
 }
 
@@ -78,8 +90,8 @@
   height: 32px;
   border-radius: 8px;
   border: none;
-  background: #f1f5f9;
-  color: #64748b;
+  background: var(--secondary);
+  color: var(--text-muted);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -88,11 +100,11 @@
 }
 
 .ann-modal-close:hover {
-  background: #e2e8f0;
-  color: #1e293b;
+  background: var(--muted);
+  color: var(--foreground);
 }
 
-/* ─── Body / List ─── */
+/* ── Body ── */
 .ann-modal-body {
   overflow-y: auto;
   padding: 16px 24px 24px;
@@ -104,7 +116,7 @@
 .ann-empty {
   text-align: center;
   padding: 40px 0;
-  color: #94a3b8;
+  color: var(--text-muted);
   font-size: 14px;
 }
 
@@ -113,17 +125,26 @@
   margin-bottom: 8px;
 }
 
-/* ─── Single announcement card ─── */
+/* ── Announcement card ── */
 .ann-item {
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border);
   border-radius: 14px;
   padding: 16px;
-  background: #fafafa;
-  transition: box-shadow 0.2s;
+  background: var(--secondary);
+  transition: box-shadow 0.2s, background 0.2s;
 }
 
 .ann-item:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+  background: var(--card);
+}
+
+.dark .ann-item {
+  background: var(--input-background);
+}
+
+.dark .ann-item:hover {
+  background: var(--muted);
 }
 
 .ann-item-header {
@@ -137,7 +158,7 @@
 .ann-item-title {
   font-size: 15px;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--foreground);
   margin: 0;
   line-height: 1.3;
 }
@@ -147,15 +168,20 @@
   font-weight: 600;
   padding: 3px 8px;
   border-radius: 20px;
-  background: #EFF6FF;
-  color: #1E3A8A;
+  background: var(--blue-tint);
+  color: var(--primary);
   white-space: nowrap;
   flex-shrink: 0;
 }
 
+.dark .ann-item-category {
+  background: var(--accent);
+  color: var(--primary);
+}
+
 .ann-item-body {
   font-size: 14px;
-  color: #475569;
+  color: var(--text-secondary);
   line-height: 1.6;
   margin: 0 0 10px;
 }
@@ -165,12 +191,17 @@
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: #92400e;
-  background: #fef3c7;
+  color: var(--gold-text);
+  background: var(--gold-tint);
   padding: 4px 10px;
   border-radius: 6px;
   margin-bottom: 8px;
   width: fit-content;
+}
+
+.dark .ann-item-event {
+  color: var(--gold);
+  background: var(--gold-tint);
 }
 
 .ann-item-footer {
@@ -178,5 +209,5 @@
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--text-muted);
 }

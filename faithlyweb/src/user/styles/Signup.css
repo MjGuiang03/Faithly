@@ -1,6 +1,3 @@
-/* ================================
-   OVERLAY
-   ================================ */
 .user-signup-modal-overlay {
   position: fixed;
   inset: 0;
@@ -14,11 +11,8 @@
   animation: user-fadeIn 0.2s ease;
 }
 
-/* ================================
-   CARD
-   ================================ */
 .user-signup-modal-card {
-  background: white;
+  background: var(--card);
   border-radius: 16px;
   padding: 24px 28px;
   width: 100%;
@@ -26,8 +20,8 @@
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
-  box-shadow: 0px 25px 50px 0px rgba(0, 0, 0, 0.25);
-  border: 0.8px solid rgba(10, 10, 10, 0.1);
+  box-shadow: 0 25px 50px 0 rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border);
   animation: user-slideUp 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -37,9 +31,7 @@
   display: none;
 }
 
-/* ================================
-   BACK BUTTON
-   ================================ */
+/* ── Back button ── */
 .user-signup-back-btn {
   position: absolute;
   top: 20px;
@@ -47,7 +39,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: #010101;
+  color: var(--foreground);
   padding: 4px;
   display: flex;
   align-items: center;
@@ -60,9 +52,7 @@
   opacity: 0.6;
 }
 
-/* ================================
-   HEADER
-   ================================ */
+/* ── Header ── */
 .user-signup-header {
   text-align: center;
   margin-bottom: 20px;
@@ -77,25 +67,23 @@
 }
 
 .user-signup-title {
-  font-family: 'Arial', sans-serif;
+  font-family: Arial, sans-serif;
   font-size: 20px;
   font-weight: bold;
-  color: #0a0a0a;
+  color: var(--foreground);
   margin: 0 0 3px;
   line-height: 28px;
 }
 
 .user-signup-subtitle {
-  font-family: 'Arial', sans-serif;
+  font-family: Arial, sans-serif;
   font-size: 13px;
-  color: rgba(10, 10, 10, 0.45);
+  color: var(--text-muted);
   line-height: 18px;
   margin: 0;
 }
 
-/* ================================
-   FORM
-   ================================ */
+/* ── Form ── */
 .user-signup-form {
   display: flex;
   flex-direction: column;
@@ -108,7 +96,6 @@
   gap: 12px;
 }
 
-/* Gender + Birthday + Community */
 .user-signup-form-row-3 {
   display: grid;
   grid-template-columns: 1fr 1fr 1.4fr;
@@ -122,10 +109,10 @@
 }
 
 .user-signup-form-label {
-  font-family: 'Arial', sans-serif;
+  font-family: Arial, sans-serif;
   font-size: 13px;
   font-weight: bold;
-  color: #0a0a0a;
+  color: var(--foreground);
   line-height: 18px;
   display: flex;
   align-items: center;
@@ -138,9 +125,7 @@
   font-size: 12px;
 }
 
-/* ================================
-   INPUTS
-   ================================ */
+/* ── Inputs ── */
 .user-signup-input-wrapper {
   position: relative;
   display: flex;
@@ -152,7 +137,7 @@
   left: 10px;
   width: 16px;
   height: 16px;
-  color: rgba(10, 10, 10, 0.45);
+  color: var(--text-muted);
   pointer-events: none;
   z-index: 1;
 }
@@ -160,28 +145,29 @@
 .user-signup-form-input {
   width: 100%;
   padding: 0 12px 0 34px;
-  background: white;
-  border: 0.8px solid rgba(192, 190, 190, 0.7);
+  background: var(--input-background);
+  border: 0.8px solid var(--border-strong);
   border-radius: 8px;
-  font-family: 'Arial', sans-serif;
+  font-family: Arial, sans-serif;
   font-size: 13px;
-  color: #0a0a0a;
+  color: var(--foreground);
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, background 0.2s;
   height: 40px;
   box-sizing: border-box;
 }
 
 .user-signup-form-input::placeholder {
-  color: rgba(10, 10, 10, 0.38);
+  color: var(--text-muted);
 }
 
 .user-signup-form-input:focus {
-  border-color: #1E3A8A;
+  border-color: var(--primary);
+  background: var(--card);
 }
 
 .user-signup-form-input.user-input-error {
-  border-color: #dc2626;
+  border-color: var(--destructive);
   border-width: 1.5px;
 }
 
@@ -190,7 +176,7 @@
   border-width: 1.5px;
 }
 
-/* Phone Prefix Styles */
+/* Phone prefix */
 .user-signup-phone-input-container {
   display: flex;
   align-items: center;
@@ -202,13 +188,13 @@
   display: flex;
   align-items: center;
   padding: 0 10px 0 34px;
-  background: #f3f4f6;
-  border: 0.8px solid rgba(192, 190, 190, 0.7);
+  background: var(--secondary);
+  border: 0.8px solid var(--border-strong);
   border-right: none;
   border-radius: 8px 0 0 8px;
-  font-family: 'Arial', sans-serif;
+  font-family: Arial, sans-serif;
   font-size: 13px;
-  color: #0a0a0a;
+  color: var(--foreground);
   font-weight: bold;
 }
 
@@ -217,14 +203,11 @@
   padding-left: 8px !important;
 }
 
-/* date input icon alignment */
 input[type="date"].user-signup-form-input {
   padding-left: 34px;
 }
 
-/* ================================
-   SELECT INPUTS
-   ================================ */
+/* ── Select inputs ── */
 .user-signup-select-wrapper {
   position: relative;
   display: flex;
@@ -238,7 +221,7 @@ input[type="date"].user-signup-form-input {
   height: 16px;
   pointer-events: none;
   z-index: 1;
-  color: rgba(10, 10, 10, 0.45);
+  color: var(--text-muted);
 }
 
 .user-signup-select-dropdown {
@@ -248,19 +231,19 @@ input[type="date"].user-signup-form-input {
   height: 13px;
   pointer-events: none;
   z-index: 1;
-  color: rgba(10, 10, 10, 0.45);
+  color: var(--text-muted);
   transform: rotate(90deg);
 }
 
 .user-signup-form-select {
   width: 100%;
   padding: 0 30px 0 34px;
-  background: white;
-  border: 0.8px solid rgba(192, 190, 190, 0.7);
+  background: var(--input-background);
+  border: 0.8px solid var(--border-strong);
   border-radius: 8px;
-  font-family: 'Arial', sans-serif;
+  font-family: Arial, sans-serif;
   font-size: 13px;
-  color: rgba(10, 10, 10, 0.45);
+  color: var(--text-muted);
   outline: none;
   cursor: pointer;
   appearance: none;
@@ -269,20 +252,16 @@ input[type="date"].user-signup-form-input {
 }
 
 .user-signup-form-select:focus {
-  border-color: #1E3A8A;
+  border-color: var(--primary);
+  background: var(--card);
 }
 
 .user-signup-form-select option {
-  color: #0a0a0a;
+  color: var(--foreground);
+  background: var(--card);
 }
 
-.user-signup-form-select:not([value=""]) {
-  color: #0a0a0a;
-}
-
-/* ================================
-   GENDER RADIO BUTTONS
-   ================================ */
+/* ── Gender radio ── */
 .user-gender-radio-group {
   display: flex;
   gap: 8px;
@@ -296,8 +275,8 @@ input[type="date"].user-signup-form-input {
   justify-content: center;
   gap: 7px;
   height: 100%;
-  background: white;
-  border: 0.8px solid rgba(192, 190, 190, 0.7);
+  background: var(--input-background);
+  border: 0.8px solid var(--border-strong);
   border-radius: 8px;
   cursor: pointer;
   transition: border-color 0.2s, background 0.2s;
@@ -305,22 +284,17 @@ input[type="date"].user-signup-form-input {
   user-select: none;
 }
 
-.user-gender-radio-card:hover {
-  border-color: rgba(192, 190, 190, 0.7);
-}
-
 .user-gender-radio-card--selected {
-  border-color: #1E3A8A;
+  border-color: var(--primary);
   border-width: 1.5px;
-  background: #f0f5ff;
+  background: var(--blue-tint);
 }
 
 .user-gender-radio-card.user-input-error {
-  border-color: #dc2626;
+  border-color: var(--destructive);
   border-width: 1.5px;
 }
 
-/* Hide native radio but keep accessible */
 .user-gender-radio-input {
   position: absolute;
   opacity: 0;
@@ -329,13 +303,12 @@ input[type="date"].user-signup-form-input {
   pointer-events: none;
 }
 
-/* Custom radio dot */
 .user-gender-radio-dot {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  border: 1.5px solid rgba(192, 190, 190, 0.9);
-  background: white;
+  border: 1.5px solid var(--border-strong);
+  background: var(--input-background);
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -353,39 +326,37 @@ input[type="date"].user-signup-form-input {
 }
 
 .user-gender-radio-card--selected .user-gender-radio-dot {
-  border-color: #1E3A8A;
+  border-color: var(--primary);
 }
 
 .user-gender-radio-card--selected .user-gender-radio-dot::after {
-  background: #1E3A8A;
+  background: var(--primary);
 }
 
 .user-gender-radio-card.user-input-error .user-gender-radio-dot {
-  border-color: #dc2626;
+  border-color: var(--destructive);
 }
 
 .user-gender-radio-text {
-  font-family: 'Arial', sans-serif;
+  font-family: Arial, sans-serif;
   font-size: 13px;
-  color: rgba(10, 10, 10, 0.45);
+  color: var(--text-muted);
   transition: color 0.2s;
 }
 
 .user-gender-radio-card--selected .user-gender-radio-text {
-  color: #0a0a0a;
+  color: var(--foreground);
   font-weight: bold;
 }
 
-/* ================================
-   PASSWORD TOGGLE
-   ================================ */
+/* ── Password toggle ── */
 .user-signup-password-toggle {
   position: absolute;
   right: 10px;
   background: none;
   border: none;
   cursor: pointer;
-  color: rgba(10, 10, 10, 0.45);
+  color: var(--text-muted);
   padding: 2px;
   display: flex;
   align-items: center;
@@ -398,9 +369,7 @@ input[type="date"].user-signup-form-input {
   opacity: 0.7;
 }
 
-/* ================================
-   PASSWORD SECTION (2 col)
-   ================================ */
+/* ── Password section ── */
 .user-password-section {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -414,12 +383,9 @@ input[type="date"].user-signup-form-input {
   gap: 12px;
 }
 
-/* ================================
-   REQUIREMENTS BOX
-   ================================ */
 .user-password-requirements-box {
-  background: white;
-  border: 0.8px solid rgba(192, 190, 190, 0.7);
+  background: var(--card);
+  border: 0.8px solid var(--border);
   border-radius: 8px;
   padding: 12px 14px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -427,10 +393,10 @@ input[type="date"].user-signup-form-input {
 }
 
 .user-password-requirements-title {
-  font-family: 'Arial', sans-serif;
+  font-family: Arial, sans-serif;
   font-size: 13px;
   font-weight: bold;
-  color: #1a1a1a;
+  color: var(--foreground);
   margin: 0 0 10px;
 }
 
@@ -444,7 +410,7 @@ input[type="date"].user-signup-form-input {
 }
 
 .user-password-requirements-list-v2 li {
-  font-family: 'Arial', sans-serif;
+  font-family: Arial, sans-serif;
   font-size: 12px;
   line-height: 1.4;
   display: flex;
@@ -463,41 +429,37 @@ input[type="date"].user-signup-form-input {
 }
 
 .user-req-unmet {
-  color: #dc2626 !important;
+  color: var(--destructive) !important;
   font-weight: 600;
 }
 
 .user-req-default {
-  color: rgba(10, 10, 10, 0.45) !important;
+  color: var(--text-muted) !important;
 }
 
 .user-read-only-input {
-  background-color: #f9fafb !important;
+  background-color: var(--secondary) !important;
   cursor: default;
 }
 
-/* ================================
-   ERROR TEXT
-   ================================ */
+/* ── Error / success text ── */
 .user-signup-error-text {
-  font-family: 'Arial', sans-serif;
+  font-family: Arial, sans-serif;
   font-size: 11px;
-  color: #dc2626;
+  color: var(--destructive);
   line-height: 15px;
   margin-top: -2px;
 }
 
 .user-signup-success-icon {
-  font-family: 'Arial', sans-serif;
+  font-family: Arial, sans-serif;
   font-size: 11px;
   color: #00bc2c;
   font-weight: bold;
   margin-top: 2px;
 }
 
-/* ================================
-   CHECKBOX
-   ================================ */
+/* ── Checkbox ── */
 .user-signup-checkbox-wrapper {
   display: flex;
   align-items: center;
@@ -510,67 +472,57 @@ input[type="date"].user-signup-form-input {
   width: 15px;
   height: 15px;
   cursor: not-allowed;
-  accent-color: #1E3A8A;
+  accent-color: var(--primary);
   flex-shrink: 0;
   pointer-events: none;
 }
 
 .user-signup-checkbox-label {
-  font-family: 'Arial', sans-serif;
+  font-family: Arial, sans-serif;
   font-size: 13px;
-  color: #0a0a0a;
+  color: var(--foreground);
   line-height: 18px;
 }
 
 .user-signup-link {
   background: none;
   border: none;
-  color: #1E3A8A;
+  color: var(--primary);
   cursor: pointer;
-  font-family: 'Arial', sans-serif;
+  font-family: Arial, sans-serif;
   font-size: 13px;
   padding: 0;
-  text-decoration: none;
   transition: opacity 0.2s;
 }
 
-.signup-link:hover {
-  opacity: 0.8;
-  text-decoration: underline;
-}
-
-/* ================================
-   SUBMIT BUTTON
-   ================================ */
+/* ── Submit ── */
 .user-signup-submit-button {
   width: 100%;
   padding: 0;
   height: 44px;
-  background-color: #1E3A8A;
+  background-color: var(--sidebar);
   color: white;
-  font-family: 'Arial', sans-serif;
+  font-family: Arial, sans-serif;
   font-size: 15px;
   font-weight: bold;
   border-radius: 10px;
   border: none;
   cursor: pointer;
   transition: background-color 0.2s;
-  box-shadow: 0px 8px 15px rgba(28, 57, 142, 0.4), 0px 3px 6px rgba(28, 57, 142, 0.35);
+  box-shadow: 0 8px 15px rgba(30, 58, 138, 0.3);
 }
 
 .user-signup-submit-button:hover:not(:disabled) {
-  background-color: #1048c9;
+  background-color: var(--blue-hover);
 }
 
 .user-signup-submit-button:disabled {
-  background-color: #9ca3af;
+  background-color: var(--text-muted);
   cursor: not-allowed;
   box-shadow: none;
 }
 
-/* ================================
-   POLICY MODAL
-   ================================ */
+/* ── Policy modal ── */
 .user-policy-modal-overlay {
   position: fixed;
   inset: 0;
@@ -583,26 +535,27 @@ input[type="date"].user-signup-form-input {
 }
 
 .user-policy-modal-content {
-  background: white;
+  background: var(--card);
   border-radius: 12px;
   padding: 28px;
   max-width: 480px;
   width: 100%;
+  border: 1px solid var(--border);
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 }
 
 .user-policy-modal-content h3 {
-  font-family: 'Arial', sans-serif;
+  font-family: Arial, sans-serif;
   font-size: 18px;
   font-weight: bold;
-  color: #0a0a0a;
+  color: var(--foreground);
   margin-bottom: 12px;
 }
 
 .user-policy-modal-content p {
-  font-family: 'Arial', sans-serif;
+  font-family: Arial, sans-serif;
   font-size: 14px;
-  color: #0a0a0a;
+  color: var(--text-secondary);
   line-height: 1.5;
   margin-bottom: 20px;
 }
@@ -610,9 +563,9 @@ input[type="date"].user-signup-form-input {
 .user-policy-modal-button {
   width: 100%;
   padding: 10px;
-  background-color: #1E3A8A;
+  background-color: var(--sidebar);
   color: white;
-  font-family: 'Arial', sans-serif;
+  font-family: Arial, sans-serif;
   font-size: 15px;
   font-weight: bold;
   border-radius: 8px;
@@ -622,16 +575,15 @@ input[type="date"].user-signup-form-input {
 }
 
 .user-policy-modal-button:hover {
-  background-color: #1048c9;
+  background-color: var(--blue-hover);
 }
 
-/* POLICY CONTENT ENHANCEMENTS */
 .user-policy-modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid var(--border);
   padding-bottom: 10px;
 }
 
@@ -643,7 +595,7 @@ input[type="date"].user-signup-form-input {
   background: none;
   border: none;
   font-size: 24px;
-  color: rgba(0, 0, 0, 0.45);
+  color: var(--text-muted);
   cursor: pointer;
   padding: 0;
   line-height: 1;
@@ -656,7 +608,6 @@ input[type="date"].user-signup-form-input {
   padding-right: 10px;
 }
 
-/* Custom scrollbar for policy body */
 .user-policy-modal-body::-webkit-scrollbar {
   width: 6px;
 }
@@ -666,7 +617,7 @@ input[type="date"].user-signup-form-input {
 }
 
 .user-policy-modal-body::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.1);
+  background: var(--border);
   border-radius: 10px;
 }
 
@@ -680,21 +631,19 @@ input[type="date"].user-signup-form-input {
 }
 
 .user-policy-list li {
-  font-family: 'Arial', sans-serif;
+  font-family: Arial, sans-serif;
   font-size: 13px;
-  color: #333;
+  color: var(--text-secondary);
   line-height: 1.6;
 }
 
 .user-policy-list li strong {
-  color: #000;
+  color: var(--foreground);
   display: inline-block;
   margin-bottom: 2px;
 }
 
-/* ================================
-   RESPONSIVE
-   ================================ */
+/* ── Responsive ── */
 @media (max-width: 600px) {
   .user-signup-modal-card {
     padding: 20px;
@@ -719,15 +668,9 @@ input[type="date"].user-signup-form-input {
     grid-template-columns: 1fr;
     gap: 12px;
   }
-
-  .user-password-requirements-box {
-    margin-top: 0;
-  }
 }
 
-/* ================================
-   ANIMATIONS
-   ================================ */
+/* ── Animations ── */
 @keyframes user-fadeIn {
   from {
     opacity: 0;
@@ -738,7 +681,7 @@ input[type="date"].user-signup-form-input {
   }
 }
 
-@keyframes slideUp {
+@keyframes user-slideUp {
   from {
     opacity: 0;
     transform: translateY(20px) scale(0.97);
