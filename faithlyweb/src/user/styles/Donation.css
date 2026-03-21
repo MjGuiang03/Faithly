@@ -10,7 +10,7 @@
   font-family: Arial, sans-serif;
   font-size: 26px;
   font-weight: 700;
-  color: #101828;
+  color: var(--foreground);
   margin: 0;
   line-height: 34px;
 }
@@ -18,7 +18,7 @@
 .user-donation-page-subtitle {
   font-family: Arial, sans-serif;
   font-size: 14px;
-  color: #000000;
+  color: var(--foreground);
   margin: 0;
   line-height: 20px;
 }
@@ -36,8 +36,8 @@
 }
 
 .user-donation-stat-card {
-  background: white;
-  border: 0.8px solid #e5e7eb;
+  background: var(--card);
+  border: 0.8px solid var(--border);
   border-radius: 12px;
   padding: 12px 14px;
   display: flex;

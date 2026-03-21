@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './user/components/ProtectedRoute';
 import AdminProtectedRoute from './admin/pages/AdminProtectedRoute';
 
@@ -51,7 +52,8 @@ import SecretaryAdminSettings from './secretaryAdmin/pages/secretaryAdminSetting
 export default function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
         <Toaster
           position="top-right"
           richColors
@@ -132,7 +134,8 @@ export default function App() {
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </AuthProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   );
 }

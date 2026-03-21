@@ -4,15 +4,18 @@ import { toast } from 'sonner';
 import {
   LayoutGrid, Bell, Users, Heart,
   Settings, LogOut,
-  ChevronDown, ChevronUp, Megaphone
+  ChevronDown, ChevronUp, Megaphone,
+  Sun, Moon
 } from 'lucide-react';
 import puacLogo from '../../assets/puaclogo.png';
 import '../styles/AdminSidebar.css';
+import { useTheme } from '../../context/ThemeContext';
 
 import API from '../../utils/api';
 const ADMIN_READ_KEY = 'faithly_admin_read_notifications';
 
 export default function AdminSidebar() {
+  const { theme, toggleTheme } = useTheme();
   const navigate  = useNavigate();
   const location  = useLocation();
   const [unreadCount, setUnreadCount] = useState(0);
@@ -263,6 +266,21 @@ export default function AdminSidebar() {
           )}
         </div>
 
+      </div>
+
+      {/* Theme Toggle Section */}
+      <div className="admin-sidebar-theme-toggle">
+        <button
+          onClick={toggleTheme}
+          className="admin-theme-toggle-button"
+        >
+          <div className="admin-theme-toggle-icon">
+            {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+          </div>
+          <span className="admin-theme-toggle-label">
+            {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+          </span>
+        </button>
       </div>
 
       <div className="admin-sidebar-profile">

@@ -1,10 +1,11 @@
 import { useNavigate, useLocation } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 import { useState, useEffect } from 'react';
-import { LayoutGrid, FileText, Heart, Calendar, Building2, Settings, LogOut, Bell, ChevronLeft, ChevronRight, Menu, X } from 'lucide-react';
+import { LayoutGrid, FileText, Heart, Calendar, Building2, Settings, LogOut, Bell, ChevronLeft, ChevronRight, Menu, X, Sun, Moon } from 'lucide-react';
 import { toast } from 'sonner';
 import puacLogo from '../../assets/puaclogo.png';
 import '../styles/Sidebar.css';
+import { useTheme } from '../../context/ThemeContext';
 
 import API from '../../utils/api';
 const READ_KEY = 'faithly_notif_read';
@@ -13,6 +14,7 @@ export default function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, profile, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [collapsed, setCollapsed] = useState(() => {
@@ -220,6 +222,24 @@ export default function Sidebar() {
               )}
             </button>
           ))}
+        </div>
+
+        {/* Theme Toggle Section */}
+        <div className="user-sidebar-theme-toggle">
+          <button
+            onClick={toggleTheme}
+            className={`theme-toggle-button ${collapsed ? 'collapsed' : ''}`}
+            title={collapsed ? (theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode') : undefined}
+          >
+            <div className="theme-toggle-icon">
+              {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+            </div>
+            {!collapsed && (
+              <span className="theme-toggle-label">
+                {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+              </span>
+            )}
+          </button>
         </div>
 
         {/* User Profile */}

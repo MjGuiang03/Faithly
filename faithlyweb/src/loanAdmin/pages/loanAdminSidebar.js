@@ -2,15 +2,18 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import {
-  LayoutGrid, Bell, FileText, BarChart3, Settings, LogOut
+  LayoutGrid, Bell, FileText, BarChart3, Settings, LogOut,
+  Sun, Moon
 } from 'lucide-react';
 import puacLogo from '../../assets/puaclogo.png';
 import '../styles/loanAdminSidebar.css';
+import { useTheme } from '../../context/ThemeContext';
 
 import API from '../../utils/api';
 const LOAN_ADMIN_READ_KEY = 'faithly_admin_read_notifications'; // Uses the same key if they share the notifications endpoint, or a distinct one if needed. Let's use the same
 
 export default function LoanAdminSidebar() {
+  const { theme, toggleTheme } = useTheme();
   const navigate  = useNavigate();
   const location  = useLocation();
   const [unreadCount, setUnreadCount] = useState(0);
@@ -124,6 +127,21 @@ export default function LoanAdminSidebar() {
         >
           <Settings size={20} />
           <span>Settings</span>
+        </button>
+      </div>
+
+      {/* Theme Toggle Section */}
+      <div className="loan-admin-sidebar-theme-toggle">
+        <button
+          onClick={toggleTheme}
+          className="loan-theme-toggle-button"
+        >
+          <div className="loan-theme-toggle-icon">
+            {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+          </div>
+          <span className="loan-theme-toggle-label">
+            {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+          </span>
         </button>
       </div>
 

@@ -3,11 +3,13 @@ import { useLocation, useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import {
     LayoutGrid, Bell, FileText, FolderOpen,
-    BarChart3, Settings, LogOut
+    BarChart3, Settings, LogOut,
+    Sun, Moon
 } from 'lucide-react';
 import puacLogo from '../../assets/puaclogo.png';
 
 import '../styles/secretaryAdminSidebar.css';
+import { useTheme } from '../../context/ThemeContext';
 
 import API from '../../utils/api';
 const SEC_ADMIN_READ_KEY = 'faithly_admin_read_notifications';
@@ -15,6 +17,7 @@ const SEC_ADMIN_READ_KEY = 'faithly_admin_read_notifications';
 export default function SecretaryAdminSidebar() {
     const location = useLocation();
     const navigate = useNavigate();
+    const { theme, toggleTheme } = useTheme();
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     const currentPath = location.pathname;
     const [unreadCount, setUnreadCount] = useState(0);
@@ -103,6 +106,21 @@ export default function SecretaryAdminSidebar() {
                     </button>
                 ))}
             </nav>
+
+            {/* Theme Toggle Section */}
+            <div className="sec-admin-sidebar-theme-toggle">
+                <button
+                    onClick={toggleTheme}
+                    className="sec-theme-toggle-button"
+                >
+                    <div className="sec-theme-toggle-icon">
+                        {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+                    </div>
+                    <span className="sec-theme-toggle-label">
+                        {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+                    </span>
+                </button>
+            </div>
 
             {/* Profile + Sign Out */}
             <div className="sec-admin-sidebar-profile">

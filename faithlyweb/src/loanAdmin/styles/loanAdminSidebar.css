@@ -316,3 +316,48 @@
 .logout-modal-confirm:hover {
   background: #dc2626;
 }
+
+/* ── Theme Toggle ── */
+.loan-admin-sidebar-theme-toggle {
+  padding: 8px 16px;
+  margin-top: auto;
+  flex-shrink: 0;
+}
+
+.loan-theme-toggle-button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: #a5b4fc;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.loan-theme-toggle-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+.loan-theme-toggle-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.loan-theme-toggle-button:hover .loan-theme-toggle-icon {
+  transform: rotate(15deg);
+}
+
+.loan-theme-toggle-label {
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Arial', sans-serif;
+  white-space: nowrap;
+}
