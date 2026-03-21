@@ -138,19 +138,19 @@ export default function Home() {
     {
       title: 'Make Donation',
       description: 'Support the church',
-      gradient: 'linear-gradient(137.368deg, rgb(0, 166, 62) 0%, rgb(0, 130, 54) 100%)',
+      className: 'user-action-btn-donate',
       action: () => navigate('/donation'),
     },
     {
       title: 'Check Attendance',
       description: 'View your attendance',
-      bg: '#0f2854',
+      className: 'user-action-btn-attendance',
       action: () => navigate('/attendance'),
     },
     {
       title: 'View Nearby Community',
       description: 'Find local branches',
-      gradient: 'linear-gradient(137.368deg, rgb(21, 93, 252) 0%, rgb(20, 71, 230) 100%)',
+      className: 'user-action-btn-community',
       action: () => navigate('/branches'),
     },
   ];
@@ -295,8 +295,7 @@ export default function Home() {
                 <button
                   key={index}
                   onClick={action.action}
-                  className="user-action-button"
-                  style={{ background: action.gradient || action.bg }}
+                  className={`user-action-button ${action.className}`}
                 >
                   <div className="user-action-content">
                     <h3 className="user-action-title">{action.title}</h3>

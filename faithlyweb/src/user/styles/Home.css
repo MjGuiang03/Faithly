@@ -856,3 +856,120 @@
     font-size: 11px;
   }
 }
+
+/* =========================================
+   NEW QUICK ACTION & DARK THEME OVERRIDES 
+   BASED ON USER SPECIFIC MOCKUP COLORS
+========================================= */
+
+/* LIGHT MODE: Quick Actions (Retaining original design colors) */
+.user-action-btn-donate {
+  background: linear-gradient(137.368deg, rgb(0, 166, 62) 0%, rgb(0, 130, 54) 100%);
+  color: white;
+}
+.user-action-btn-attendance {
+  background: #0f2854;
+  color: white;
+}
+.user-action-btn-community {
+  background: linear-gradient(137.368deg, rgb(21, 93, 252) 0%, rgb(20, 71, 230) 100%);
+  color: white;
+}
+
+/* DARK MODE: Stat Cards */
+.dark .user-stat-card {
+  background: transparent;
+  border: 1px solid #484C55;
+  border-radius: 12px;
+}
+
+/* "Total Donated" Card (Green code mapping) */
+.dark .user-stat-green {
+  background: #1E3A8A; /* Solid Blue as per Mockup */
+  border-color: rgba(255,255,255,0.05);
+  border-top: 4px solid #F5C800; /* Gold top border */
+}
+.dark .user-stat-green .user-stat-icon-box {
+  background: #3A60D8; /* Lighter blue square */
+}
+.dark .user-stat-green .user-stat-icon {
+  stroke: #F5C800; /* Gold icon */
+}
+.dark .user-stat-green .user-stat-label,
+.dark .user-stat-green .user-stat-value {
+  color: white;
+}
+
+/* "Active Loans" Card (Blue code mapping) */
+.dark .user-stat-blue {
+  border-top: 4px solid #1E3A8A;
+}
+
+/* "Services Attended" Card (Navy code mapping) */
+.dark .user-stat-navy {
+  border-top: 4px solid #1E3A8A;
+}
+
+/* "Announcements" Card (Orange code mapping) */
+.dark .user-stat-orange {
+  border-top: 4px solid #CC1111; /* Red top border */
+}
+.dark .user-stat-orange .user-stat-icon-box {
+  background: rgba(204, 17, 17, 0.1);
+}
+.dark .user-stat-orange .user-stat-icon {
+  stroke: #CC1111; /* Red icon */
+}
+
+/* General labels in dark stat cards */
+.dark .user-stat-card .user-stat-label {
+  color: #9CA3AF;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+.dark .user-stat-card .user-stat-value {
+  color: #FFFFFF;
+}
+
+/* DARK MODE: Grid Area Backgrounds */
+.dark .user-home-card {
+  background: #2C2F36;
+  border: 1px solid #484C55;
+}
+
+.dark .user-home-community-banner {
+  background: #1E3A8A; /* Match community banner from reference */
+  color: white;
+}
+
+/* DARK MODE: Quick Actions (Exact mockup mapping) */
+.dark .user-action-btn-donate {
+  background: #1E3A8A; /* Solid Blue */
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dark .user-action-btn-attendance {
+  background: rgba(245, 200, 0, 0.08); /* Yellow Wash */
+  border: 1px solid rgba(245, 200, 0, 0.3); /* Yellow Border */
+  color: #F5C800; /* Yellow text */
+}
+
+.dark .user-action-btn-attendance .user-action-title {
+  color: #F5C800;
+}
+
+.dark .user-action-btn-attendance .user-action-desc {
+  color: rgba(245, 200, 0, 0.7);
+}
+
+.dark .user-action-btn-attendance svg {
+  color: #F5C800;
+}
+
+.dark .user-action-btn-community {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #484C55;
+  color: white;
+}
