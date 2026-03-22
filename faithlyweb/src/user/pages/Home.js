@@ -257,7 +257,7 @@ export default function Home() {
             <div className="user-stat-content">
               <p className="user-stat-label">Announcements</p>
               <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap', gap: '8px' }}>
-                <p className="user-stat-value user-fade-in" style={{ whiteSpace: 'nowrap' }}>Church Updates</p>
+                <p className="user-stat-value user-fade-in" style={{ whiteSpace: 'nowrap', fontSize: '1.05rem' }}>Church Updates</p>
                 {!loading && announcementsCount > 0 && <span className="user-stat-badge">{announcementsCount} unread</span>}
               </div>
             </div>

@@ -1,9 +1,11 @@
 import { useNavigate, useLocation } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 import { useState, useEffect } from 'react';
-import { LayoutGrid, FileText, Heart, Calendar, Building2, Settings, LogOut, Bell, ChevronLeft, ChevronRight, Menu, X } from 'lucide-react';
+import { LayoutGrid, FileText, Heart, Calendar, Building2, Settings, LogOut, Bell, Menu, X } from 'lucide-react';
 import { toast } from 'sonner';
 import puacLogo from '../../assets/puaclogo.png';
+import sidebarOpenIcon from '../../assets/sidebaropen.png';
+import sidebarCloseIcon from '../../assets/sidebarclose.png';
 import '../styles/Sidebar.css';
 
 import API from '../../utils/api';
@@ -181,7 +183,11 @@ export default function Sidebar() {
         {isMobile ? (
           collapsed ? <Menu size={20} /> : <X size={20} />
         ) : (
-          collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />
+          collapsed ? (
+            <img src={sidebarOpenIcon} alt="Expand" style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
+          ) : (
+            <img src={sidebarCloseIcon} alt="Collapse" style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
+          )
         )}
       </button>
 

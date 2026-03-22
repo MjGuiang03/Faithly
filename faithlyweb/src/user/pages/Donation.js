@@ -222,7 +222,7 @@ export default function Donation() {
                       disabled={submitting}
                     />
                   </div>
-                  <div className="user-quick-amounts">
+                  <div className="user-quick-amounts" style={{ marginTop: '20px', marginBottom: '8px' }}>
                     {QUICK_AMOUNTS.map((q) => (
                       <button
                         key={q}
