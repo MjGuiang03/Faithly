@@ -4,7 +4,7 @@ import Sidebar from '../components/Sidebar';
 import { ChevronDown, Receipt, X, Download, Share2 } from 'lucide-react';
 import '../styles/Donation.css';
 import gcashLogo from '../../assets/gcashlogo.png';
-import bankLogo from '../../assets/whitebanklogo.png';
+import bank from '../../assets/bank.png';
 
 import API from '../../utils/api';
 
@@ -38,7 +38,7 @@ const GCashIcon = () => (
 
 const BankIcon = () => (
   <img
-    src={bankLogo}
+    src={bank}
     alt="Bank Transfer"
     style={{ width: 32, height: 32, objectFit: 'contain' }}
   />
@@ -59,7 +59,7 @@ export default function Donation() {
   const [successModal, setSuccessModal] = useState(null);
   const [selectedDonation, setSelectedDonation] = useState(null);
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
-  
+
   /* ── History Modal States ── */
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [modalPage, setModalPage] = useState(1);
@@ -278,21 +278,7 @@ export default function Donation() {
                   </div>
                 </div>
 
-                {/* Recurring */}
-                <div className="user-recurring-container">
-                  <input
-                    type="checkbox"
-                    id="recurring"
-                    className="user-recurring-checkbox"
-                    checked={isRecurring}
-                    onChange={(e) => setIsRecurring(e.target.checked)}
-                    disabled={submitting}
-                  />
-                  <label htmlFor="recurring" className="user-recurring-label">
-                    <span className="user-recurring-title">Make this a recurring donation</span>
-                    <span className="user-recurring-description">Automatically donate this amount monthly</span>
-                  </label>
-                </div>
+
 
                 {formError && <p className="user-donation-form-error">{formError}</p>}
 
@@ -332,7 +318,7 @@ export default function Donation() {
                   ))}
                 </div>
               )}
-              
+
               {!loading && donationHistory.length === 0 && (
                 <p className="user-donations-empty-text">No donations yet.</p>
               )}
@@ -340,8 +326,8 @@ export default function Donation() {
               {!loading && donationHistory.length > 0 && (
                 <div className="user-donation-history-list user-fade-in">
                   {donationHistory.slice(0, 5).map((d) => (
-                    <div 
-                      key={d._id || d.donationId} 
+                    <div
+                      key={d._id || d.donationId}
                       className="user-donation-history-item user-clickable"
                       onClick={() => handleOpenReceipt(d)}
                     >
@@ -443,8 +429,8 @@ export default function Donation() {
               ) : (
                 <div className="user-modal-history-list">
                   {modalHistory.map((d) => (
-                    <div 
-                      key={d._id || d.donationId} 
+                    <div
+                      key={d._id || d.donationId}
                       className="user-donation-history-item user-modal-item user-clickable"
                       onClick={() => handleOpenReceipt(d)}
                     >
@@ -490,8 +476,8 @@ export default function Donation() {
                 <h2 className="user-receipt-header-title">Donation Receipt</h2>
                 <p className="user-receipt-header-subtitle">Faithly Official Record</p>
               </div>
-              <button 
-                className="user-receipt-close-btn" 
+              <button
+                className="user-receipt-close-btn"
                 onClick={() => setIsReceiptModalOpen(false)}
               >
                 <X size={20} />

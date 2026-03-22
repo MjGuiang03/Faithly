@@ -21,7 +21,12 @@ export default function AnnouncementModal({ isOpen, onClose }) {
     fetch(`${API}/api/admin/announcements${branch ? `?branch=${encodeURIComponent(branch)}` : ''}`)
       .then(r => r.json())
       .then(data => {
-        if (data.success) setItems(data.announcements || []);
+        if (data.success) {
+          setItems(data.announcements || []);
+          const readIds = new Set(JSON.parse(localStorage.getItem('faithly_ann_read') || '[]'));
+          (data.announcements || []).forEach(a => readIds.add(a._id));
+          localStorage.setItem('faithly_ann_read', JSON.stringify(Array.from(readIds)));
+        }
       })
       .catch(() => {})
       .finally(() => setLoading(false));

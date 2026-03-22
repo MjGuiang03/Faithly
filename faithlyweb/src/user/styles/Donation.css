@@ -293,7 +293,7 @@
 
 .user-payment-method-btn span {
   font-size: 13px;
-  color: #0a0a0a;
+  color: var(--foreground);
   font-family: Arial, sans-serif;
 }
 

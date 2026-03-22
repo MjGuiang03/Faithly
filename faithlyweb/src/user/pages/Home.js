@@ -14,6 +14,7 @@ export default function Home() {
   const [loanStats, setLoanStats] = useState({ activeCount: 0, remainingBalance: 0 });
   const [donationStats, setDonationStats] = useState({ totalDonated: 0 });
   const [attendanceStats, setAttendanceStats] = useState({ total: 0 });
+  const [announcementsCount, setAnnouncementsCount] = useState(0);
   const [showAnnouncements, setShowAnnouncements] = useState(false);
   const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,16 +26,19 @@ export default function Home() {
     try {
       const headers = { Authorization: `Bearer ${token}` };
 
-      const [loansRes, donationsRes, attendanceRes] = await Promise.all([
+      const branch = profile?.branch || '';
+      const [loansRes, donationsRes, attendanceRes, annRes] = await Promise.all([
         fetch(`${API}/api/loans/my-loans`, { headers }),
         fetch(`${API}/api/donations/my-donations`, { headers }),
         fetch(`${API}/api/attendance/my-attendance`, { headers }),
+        fetch(`${API}/api/admin/announcements${branch ? `?branch=${encodeURIComponent(branch)}` : ''}`, { headers }),
       ]);
 
-      const [loansData, donationsData, attendanceData] = await Promise.all([
-        loansRes.json(),
-        donationsRes.json(),
-        attendanceRes.json(),
+      const [loansData, donationsData, attendanceData, annData] = await Promise.all([
+        loansRes.ok ? loansRes.json() : { success: false },
+        donationsRes.ok ? donationsRes.json() : { success: false },
+        attendanceRes.ok ? attendanceRes.json() : { success: false },
+        annRes.ok ? annRes.json() : { success: false },
       ]);
 
       if (loansRes.ok && loansData.success) {
@@ -45,6 +49,12 @@ export default function Home() {
       }
       if (attendanceRes.ok && attendanceData.success) {
         setAttendanceStats(attendanceData.stats || { total: 0 });
+      }
+
+      if (annRes.ok && annData.success) {
+        const readIds = JSON.parse(localStorage.getItem('faithly_ann_read') || '[]');
+        const unread = (annData.announcements || []).filter(a => !readIds.includes(a._id)).length;
+        setAnnouncementsCount(unread);
       }
 
       const activities = [];
@@ -246,8 +256,10 @@ export default function Home() {
             </div>
             <div className="user-stat-content">
               <p className="user-stat-label">Announcements</p>
-              <p className="user-stat-value user-fade-in" style={{ fontSize: '0.95rem', fontWeight: '700' }}>Church Updates</p>
-              <p className="user-stat-badge">3 unread</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <p className="user-stat-value user-fade-in">Church Updates</p>
+                {!loading && announcementsCount > 0 && <span className="user-stat-badge">{announcementsCount} unread</span>}
+              </div>
             </div>
           </div>
 

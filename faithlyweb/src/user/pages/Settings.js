@@ -6,6 +6,7 @@ import '../styles/Settings.css';
 import Sidebar from '../components/Sidebar';
 import VerifyEmailModal from '../components/VerifyEmail';
 import VerificationModal from '../components/OfficerVerification';
+import { useTheme } from '../../context/ThemeContext';
 
 import API from '../../utils/api';
 
@@ -30,6 +31,7 @@ const COMMUNITIES = {
 export default function Settings() {
   const navigate = useNavigate();
   const { user, profile, updateProfile, requestEmailChange, verifyEmailChange } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   /* ── Personal Info ───────────────────────────────────────────────────── */
   const [isEditing,     setIsEditing]     = useState(false);
@@ -300,37 +302,29 @@ export default function Settings() {
                 </div>
               </div>
 
-              {/* Edit / Save buttons */}
               <div className="user-pi-card-actions">
-                {isEditing ? (
+                {isEditing && (
                   <>
                     <button className="user-pi-btn-cancel" onClick={handleCancelEdit} disabled={isSaving}>Cancel</button>
                     <button className="user-pi-btn-save"   onClick={handleSaveChanges} disabled={isSaving}>
-                      {isSaving ? 'Saving…' : 'Save Changes'}
+                      {isSaving ? 'Saving…' : 'Save'}
                     </button>
                   </>
-                ) : (
-                  <button className="user-pi-btn-edit" onClick={() => setIsEditing(true)}>
-                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24">
-                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="#155DFC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5Z" stroke="#155DFC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                    Edit Profile
-                  </button>
                 )}
               </div>
             </div>
 
             {/* ── Edit Form ─────────────────────────────────────────── */}
-            {isEditing && (
-              <div className="user-pi-edit-form">
+            <div className="user-pi-edit-form">
+              {isEditing && (
                 <p className="user-pi-edit-notice">
                   <svg width="14" height="14" fill="none" viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="#155DFC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5Z" stroke="#155DFC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
-                  Editing your profile — changes won't be saved until you click Save Changes
+                  Editing your profile — changes won't be saved until you click Save
                 </p>
+              )}
 
                 {formError && (
                   <div style={{ display:'flex', alignItems:'center', gap:8, background:'#FEF2F2', border:'1px solid #FECACA', borderRadius:10, padding:'10px 14px', marginBottom:16 }}>
@@ -346,13 +340,13 @@ export default function Settings() {
                   {/* Full Name */}
                   <div className="user-pi-form-field">
                     <label className="user-pi-form-label">FULL NAME</label>
-                    <input type="text" className="user-pi-form-input" value={editForm.fullName} onChange={e => handleEditChange('fullName', e.target.value)} placeholder="Enter full name" />
+                    <input type="text" className="user-pi-form-input" value={editForm.fullName} onChange={e => handleEditChange('fullName', e.target.value)} placeholder="Enter full name" disabled={!isEditing} />
                   </div>
 
                   {/* Email */}
                   <div className="user-pi-form-field">
                     <label className="user-pi-form-label">EMAIL ADDRESS</label>
-                    <input type="email" className="user-pi-form-input" value={editForm.email} onChange={e => handleEditChange('email', e.target.value)} placeholder="Enter email" />
+                    <input type="email" className="user-pi-form-input" value={editForm.email} onChange={e => handleEditChange('email', e.target.value)} placeholder="Enter email" disabled={!isEditing} />
                     {editForm.email.trim().toLowerCase() !== (user?.email || '').trim().toLowerCase() && editForm.email ? (
                       <span style={{ display:'flex', alignItems:'center', gap:5, fontSize:11, color:'#D97706', marginTop:5 }}>
                         <svg width="12" height="12" fill="none" viewBox="0 0 20 20"><path d="M10 2L2 17h16L10 2Z" stroke="#D97706" strokeWidth="1.5" strokeLinejoin="round"/><path d="M10 8v4M10 14h.01" stroke="#D97706" strokeWidth="1.5" strokeLinecap="round"/></svg>
@@ -369,13 +363,13 @@ export default function Settings() {
                   {/* Phone */}
                   <div className="user-pi-form-field">
                     <label className="user-pi-form-label">PHONE NUMBER</label>
-                    <input type="tel" className="user-pi-form-input" value={editForm.phone} onChange={e => handleEditChange('phone', e.target.value)} placeholder="+63 90 000 0000" />
+                    <input type="tel" className="user-pi-form-input" value={editForm.phone} onChange={e => handleEditChange('phone', e.target.value)} placeholder="+63 90 000 0000" disabled={!isEditing} />
                   </div>
 
                   {/* Community */}
                   <div className="user-pi-form-field">
                     <label className="user-pi-form-label">COMMUNITY</label>
-                    <select className="user-pi-form-input user-pi-form-select" value={editForm.community} onChange={e => handleEditChange('community', e.target.value)}>
+                    <select className="user-pi-form-input user-pi-form-select" value={editForm.community} onChange={e => handleEditChange('community', e.target.value)} disabled={!isEditing}>
                       <option value="">— Select Community —</option>
                       {Object.entries(COMMUNITIES).map(([region, places]) => (
                         <optgroup key={region} label={region}>
@@ -409,12 +403,47 @@ export default function Settings() {
                     </div>
                   </div>
 
-                  <div className="user-pi-form-field-full">
+                  <div className="user-pi-form-field-full" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
                     <span className="user-pi-readonly-note">These fields cannot be changed</span>
+                    {!isEditing && (
+                      <button className="user-pi-btn-edit-bottom" onClick={() => setIsEditing(true)}>
+                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" style={{ marginRight: '6px' }}>
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        Edit Profile
+                      </button>
+                    )}
                   </div>
                 </div>
+            </div>
+          </div>
+
+          {/* ── Appearance ─────────────────────────────────────────── */}
+          <div className="user-settings-section">
+            <div className="user-settings-section-header">
+              <div className="user-settings-icon-box" style={{ background: '#f3e8ff' }}>
+                <svg className="user-settings-section-icon" fill="none" viewBox="0 0 24 24" stroke="#8B5CF6" strokeWidth="2">
+                   <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
               </div>
-            )}
+              <div className="user-settings-header-text">
+                <h2 className="user-settings-section-title">Appearance</h2>
+                <p className="user-settings-section-subtitle">Customize your interface theme</p>
+              </div>
+            </div>
+            <div className="user-settings-group">
+              <div className="user-toggle-setting">
+                <div className="user-toggle-setting-info">
+                  <h3 className="user-toggle-title">Dark Mode</h3>
+                  <p className="user-toggle-description">Switch between light and dark themes</p>
+                </div>
+                <label className="user-toggle-switch">
+                  <input type="checkbox" checked={theme === 'dark'} onChange={toggleTheme} />
+                  <span className="user-toggle-slider"></span>
+                </label>
+              </div>
+            </div>
           </div>
 
           {/* ── Notifications ─────────────────────────────────────────── */}

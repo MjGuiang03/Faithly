@@ -629,6 +629,31 @@
   cursor: not-allowed;
 }
 
+.user-pi-btn-edit-bottom {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  background: var(--card);
+  border: 1px solid var(--primary);
+  border-radius: 8px;
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: Arial, sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.user-pi-btn-edit-bottom:hover {
+  background: var(--blue-tint);
+}
+
+.dark .user-pi-btn-edit-bottom:hover {
+  background: var(--muted);
+}
+
 /* ── Edit Form ─────────────────────────────────────────── */
 .user-pi-edit-form {
   display: flex;

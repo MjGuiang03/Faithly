@@ -224,24 +224,7 @@ export default function Sidebar() {
           ))}
         </div>
 
-        {/* Theme Toggle Section */}
-        <div className="user-sidebar-theme-toggle">
-          <div className={`theme-switch-wrapper ${collapsed ? 'collapsed' : ''}`}>
-            {!collapsed && (
-              <div className="theme-switch-info">
-                <span className="theme-switch-label">Dark Mode</span>
-              </div>
-            )}
-            <label className="user-toggle-switch" title={collapsed ? (theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode') : undefined}>
-              <input 
-                type="checkbox" 
-                checked={theme === 'dark'} 
-                onChange={toggleTheme} 
-              />
-              <span className="user-toggle-slider"></span>
-            </label>
-          </div>
-        </div>
+
 
         {/* User Profile */}
         <div className="user-sidebar-profile">
