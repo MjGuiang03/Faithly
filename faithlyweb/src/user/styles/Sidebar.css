@@ -108,7 +108,7 @@
   font-weight: bold;
   margin: 0;
   color: white;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   line-height: 24px;
   white-space: nowrap;
 }
@@ -117,7 +117,7 @@
   font-size: 14px;
   color: var(--sidebar-nav-inactive);
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   line-height: 20px;
   white-space: nowrap;
 }
@@ -146,7 +146,7 @@
   border: none;
   color: var(--sidebar-nav-inactive);
   font-size: 15px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s;
@@ -252,7 +252,7 @@
 .user-sidebar-profile-avatar p {
   margin: 0;
   font-size: 16px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   color: #1E3A8A;
 }
 
@@ -266,7 +266,7 @@
   font-weight: 600;
   color: white;
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   line-height: 20px;
   white-space: nowrap;
   overflow: hidden;
@@ -293,7 +293,7 @@
   border: 1px solid var(--sidebar-border);
   color: var(--sidebar-nav-inactive);
   font-size: 14px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s;
@@ -342,7 +342,7 @@
 }
 
 .user-logout-modal-title {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 20px;
   font-weight: bold;
   color: var(--foreground);
@@ -350,7 +350,7 @@
 }
 
 .user-logout-modal-message {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 16px;
   color: var(--text-secondary);
   line-height: 1.6;
@@ -368,7 +368,7 @@
   padding: 12px 24px;
   border: none;
   border-radius: 10px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -399,7 +399,7 @@
   margin-left: auto;
   background: var(--destructive);
   color: white;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 11px;
   font-weight: 700;
   line-height: 1;

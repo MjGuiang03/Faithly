@@ -33,7 +33,7 @@
   background: transparent;
   font-size: 13px;
   color: var(--foreground);
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   outline: none;
   width: 100%;
 }
@@ -87,7 +87,7 @@
 }
 
 .user-home-page-title {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 26px;
   font-weight: 700;
   color: var(--foreground);
@@ -96,7 +96,7 @@
 }
 
 .user-home-page-subtitle {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 14px;
   color: var(--text-muted);
   margin: 0;
@@ -104,7 +104,7 @@
 }
 
 .user-home-date-top {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 13px;
   font-weight: 700;
   color: var(--primary);
@@ -130,7 +130,7 @@
   align-items: center;
   gap: 10px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-home-info-pill svg {
@@ -393,7 +393,7 @@
   color: var(--text-muted);
   margin: 0;
   line-height: 18px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -404,7 +404,7 @@
   color: var(--foreground);
   margin: 0;
   line-height: 28px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 /* ── Dashboard grid ── */
@@ -445,7 +445,7 @@
   font-weight: 700;
   color: var(--foreground);
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-community-map-container {
@@ -470,7 +470,7 @@
   color: var(--text-muted);
   margin: 0;
   line-height: 1.4;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-community-action-btn {
@@ -514,7 +514,7 @@
   font-weight: 700;
   color: var(--foreground);
   margin: 0 0 16px 0;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-home-card-header-icon {
@@ -570,13 +570,13 @@
 .user-action-title {
   font-size: 15px;
   font-weight: 700;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-action-description {
   font-size: 12px;
   margin-top: 2px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-action-arrow {
@@ -738,7 +738,7 @@
   font-size: 14px;
   font-weight: 600;
   color: var(--foreground);
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-activity-desc-compact,
@@ -856,14 +856,14 @@
   font-weight: 700;
   color: var(--foreground);
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-payment-due {
   font-size: 13px;
   color: var(--text-muted);
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .dark .user-payment-id {
@@ -882,14 +882,14 @@
   font-weight: 700;
   color: var(--foreground);
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-payment-status {
   font-size: 11px;
   color: #00a63e;
   font-weight: 700;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   background: #f0fdf4;
   padding: 4px 10px;
   border-radius: 20px;

@@ -2,7 +2,7 @@
 .user-welcome-container-new {
   min-height: 100vh;
   background: #F5F6F8;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 /* ── Header ── */
@@ -33,7 +33,7 @@
 }
 
 .user-welcome-logo-title-new {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-weight: bold;
   color: white;
   margin: 0;
@@ -42,7 +42,7 @@
 }
 
 .user-welcome-logo-subtitle-new {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 12px;
   color: rgba(255, 255, 255, 0.6);
   margin: 0;
@@ -100,13 +100,13 @@
 }
 
 .user-trust-text-new {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 14px;
   color: #1E3A8A;
 }
 
 .user-hero-title-new {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 35px;
   font-weight: bold;
   color: #111318;
@@ -130,7 +130,7 @@
 }
 
 .user-hero-description-new {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 20px;
   color: #3D4A5E;
   margin-bottom: 2rem;
@@ -148,7 +148,7 @@
   width: 248px;
   background-color: #1E3A8A;
   color: white;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-weight: bold;
   font-size: 17px;
   border: none;
@@ -174,7 +174,7 @@
 }
 
 .user-stat-number-new {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 30px;
   font-weight: bold;
   color: #111318;
@@ -183,7 +183,7 @@
 }
 
 .user-stat-label-new {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 14px;
   color: #3D4A5E;
   margin: 0;
@@ -217,7 +217,7 @@
 }
 
 .user-benefits-title-new {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 30px;
   font-weight: bold;
   color: white;
@@ -226,7 +226,7 @@
 }
 
 .user-benefits-description-new {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 16px;
   color: rgba(255, 255, 255, 0.7);
   max-width: 656px;
@@ -269,7 +269,7 @@
 }
 
 .user-benefit-text-new {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 16px;
   color: rgba(255, 255, 255, 0.85);
   margin: 0;
@@ -290,7 +290,7 @@
 }
 
 .user-cta-title-new {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 30px;
   font-weight: bold;
   color: white;
@@ -299,7 +299,7 @@
 }
 
 .user-cta-description-new {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 16px;
   color: rgba(255, 255, 255, 0.75);
   max-width: 649px;
@@ -312,7 +312,7 @@
   width: 212px;
   background-color: #F5C800;
   color: #1E3A8A;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-weight: bold;
   font-size: 16px;
   border: none;
@@ -340,7 +340,7 @@
 }
 
 .user-footer-text-new {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 14px;
   color: rgba(255, 255, 255, 0.55);
   margin: 0;

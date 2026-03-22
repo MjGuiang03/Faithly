@@ -7,7 +7,7 @@
 }
 
 .user-attendance-page-title {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 26px;
   font-weight: 700;
   color: var(--foreground);
@@ -16,7 +16,7 @@
 }
 
 .user-attendance-page-subtitle {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 14px;
   color: var(--text-secondary);
   margin: 0;
@@ -53,7 +53,7 @@
   color: var(--text-muted);
   margin: 0;
   line-height: 18px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-attendance-stat-icon {
@@ -67,7 +67,7 @@
   color: var(--foreground);
   margin: 0;
   line-height: 28px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 /* Content Grid */
@@ -95,7 +95,7 @@
   color: var(--foreground);
   margin: 0;
   line-height: 24px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-check-in-subtitle {
@@ -103,7 +103,7 @@
   color: var(--text-secondary);
   margin: 0;
   line-height: 18px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-check-in-method {
@@ -151,7 +151,7 @@
   color: var(--foreground);
   margin: 0;
   line-height: 22px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-check-in-method-description {
@@ -159,7 +159,7 @@
   color: var(--text-secondary);
   margin: 0;
   line-height: 18px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-check-in-tip {
@@ -176,7 +176,7 @@
   font-size: 13px;
   font-weight: 700;
   color: var(--primary);
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   line-height: 18px;
   flex-shrink: 0;
 }
@@ -184,7 +184,7 @@
 .user-tip-text {
   font-size: 13px;
   color: var(--primary);
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   line-height: 18px;
 }
 
@@ -375,7 +375,7 @@
   background: transparent;
   font-size: 13px;
   color: var(--foreground);
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   outline: none;
   width: 100%;
 }
@@ -404,7 +404,7 @@
   font-size: 13px;
   font-weight: 600;
   color: var(--text-secondary);
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   line-height: 18px;
 }
 
@@ -425,7 +425,7 @@
   padding: 12px 14px;
   font-size: 14px;
   color: var(--foreground);
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   line-height: 20px;
 }
 
@@ -434,7 +434,7 @@
   padding: 3px 10px;
   border-radius: 9999px;
   font-size: 12px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-weight: 500;
   line-height: 18px;
 }
@@ -467,7 +467,7 @@
 .user-attendance-pagination-info {
   font-size: 12px;
   color: #6a7282;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-pagination-controls {
@@ -486,7 +486,7 @@
   font-size: 13px;
   color: var(--text-secondary);
   cursor: pointer;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   transition: all 0.15s;
   display: flex;
   align-items: center;
@@ -517,7 +517,7 @@
 .user-attendance-empty-text {
   font-size: 13px;
   color: var(--text-muted);
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   margin: 0;
 }
 

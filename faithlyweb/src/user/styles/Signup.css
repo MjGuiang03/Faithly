@@ -67,7 +67,7 @@
 }
 
 .user-signup-title {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 20px;
   font-weight: bold;
   color: var(--foreground);
@@ -76,7 +76,7 @@
 }
 
 .user-signup-subtitle {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 13px;
   color: var(--text-muted);
   line-height: 18px;
@@ -109,7 +109,7 @@
 }
 
 .user-signup-form-label {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 13px;
   font-weight: bold;
   color: var(--foreground);
@@ -148,7 +148,7 @@
   background: var(--input-background);
   border: 0.8px solid var(--border-strong);
   border-radius: 8px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 13px;
   color: var(--foreground);
   outline: none;
@@ -192,7 +192,7 @@
   border: 0.8px solid var(--border-strong);
   border-right: none;
   border-radius: 8px 0 0 8px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 13px;
   color: var(--foreground);
   font-weight: bold;
@@ -241,7 +241,7 @@ input[type="date"].user-signup-form-input {
   background: var(--input-background);
   border: 0.8px solid var(--border-strong);
   border-radius: 8px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 13px;
   color: var(--text-muted);
   outline: none;
@@ -338,7 +338,7 @@ input[type="date"].user-signup-form-input {
 }
 
 .user-gender-radio-text {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 13px;
   color: var(--text-muted);
   transition: color 0.2s;
@@ -393,7 +393,7 @@ input[type="date"].user-signup-form-input {
 }
 
 .user-password-requirements-title {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 13px;
   font-weight: bold;
   color: var(--foreground);
@@ -410,7 +410,7 @@ input[type="date"].user-signup-form-input {
 }
 
 .user-password-requirements-list-v2 li {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 12px;
   line-height: 1.4;
   display: flex;
@@ -444,7 +444,7 @@ input[type="date"].user-signup-form-input {
 
 /* ── Error / success text ── */
 .user-signup-error-text {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 11px;
   color: var(--destructive);
   line-height: 15px;
@@ -452,7 +452,7 @@ input[type="date"].user-signup-form-input {
 }
 
 .user-signup-success-icon {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 11px;
   color: #00bc2c;
   font-weight: bold;
@@ -478,7 +478,7 @@ input[type="date"].user-signup-form-input {
 }
 
 .user-signup-checkbox-label {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 13px;
   color: var(--foreground);
   line-height: 18px;
@@ -489,7 +489,7 @@ input[type="date"].user-signup-form-input {
   border: none;
   color: var(--primary);
   cursor: pointer;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 13px;
   padding: 0;
   transition: opacity 0.2s;
@@ -502,7 +502,7 @@ input[type="date"].user-signup-form-input {
   height: 44px;
   background-color: var(--sidebar);
   color: white;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 15px;
   font-weight: bold;
   border-radius: 10px;
@@ -545,7 +545,7 @@ input[type="date"].user-signup-form-input {
 }
 
 .user-policy-modal-content h3 {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 18px;
   font-weight: bold;
   color: var(--foreground);
@@ -553,7 +553,7 @@ input[type="date"].user-signup-form-input {
 }
 
 .user-policy-modal-content p {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 14px;
   color: var(--text-secondary);
   line-height: 1.5;
@@ -565,7 +565,7 @@ input[type="date"].user-signup-form-input {
   padding: 10px;
   background-color: var(--sidebar);
   color: white;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 15px;
   font-weight: bold;
   border-radius: 8px;
@@ -631,7 +631,7 @@ input[type="date"].user-signup-form-input {
 }
 
 .user-policy-list li {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 13px;
   color: var(--text-secondary);
   line-height: 1.6;

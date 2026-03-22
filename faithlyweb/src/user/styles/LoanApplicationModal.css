@@ -73,7 +73,7 @@
 }
 
 .user-loan-application-title {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 24px;
   font-weight: 700;
   color: var(--foreground);
@@ -127,7 +127,7 @@
 }
 
 .user-loan-application-label {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 13px;
   color: var(--text-secondary);
   line-height: 16px;
@@ -144,7 +144,7 @@
   padding: 8px 16px 8px 40px;
   border: 0.8px solid var(--border-strong);
   border-radius: 10px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 16px;
   color: var(--foreground);
   height: 41.6px;
@@ -188,7 +188,7 @@
   font-weight: 500;
   color: var(--text-muted);
   pointer-events: none;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-loan-application-input-icon-svg {
@@ -209,7 +209,7 @@
 }
 
 .user-loan-application-guarantor-title {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 16px;
   font-weight: 700;
   color: var(--foreground);
@@ -262,7 +262,7 @@
 }
 
 .user-loan-upload-text {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 13px;
   font-weight: 500;
   color: var(--text-secondary);
@@ -275,7 +275,7 @@
 }
 
 .user-loan-upload-subtext {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 11px;
   color: var(--text-muted);
   margin: 0;
@@ -295,7 +295,7 @@
 }
 
 .user-loan-application-note-text {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 14px;
   color: var(--primary);
   line-height: 20px;
@@ -325,7 +325,7 @@
   color: white;
   border: none;
   border-radius: 10px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 16px;
   cursor: pointer;
   transition: background 0.2s;
@@ -342,7 +342,7 @@
   color: var(--text-secondary);
   border: 1px solid var(--border);
   border-radius: 10px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 16px;
   cursor: pointer;
   transition: background 0.2s;

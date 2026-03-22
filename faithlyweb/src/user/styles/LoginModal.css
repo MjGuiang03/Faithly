@@ -84,14 +84,14 @@
   font-weight: bold;
   color: var(--foreground);
   margin-bottom: 0.5rem;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-login-subtitle {
   color: var(--text-muted);
   margin: 0;
   font-size: 1rem;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 /* ── Form ── */
@@ -144,7 +144,7 @@
   font-weight: 600;
   color: var(--text-secondary);
   margin-bottom: 0.5rem;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 /* ── Inputs ── */
@@ -175,7 +175,7 @@
   font-size: 1rem;
   transition: all 0.3s;
   box-sizing: border-box;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-login-input::placeholder {
@@ -247,7 +247,7 @@
 
 /* ── Field error ── */
 .user-login-field-error {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 0.75rem;
   color: var(--destructive);
   margin-top: 0.25rem;
@@ -277,7 +277,7 @@
   cursor: pointer;
   transition: color 0.3s;
   padding: 0;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-login-forgot-password:hover {
@@ -298,7 +298,7 @@
   transition: background-color 0.3s, transform 0.1s;
   box-shadow: 0 10px 15px -3px rgba(30, 58, 138, 0.25);
   font-size: 1rem;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-login-submit-btn:hover:not(:disabled) {
@@ -322,7 +322,7 @@
   color: var(--text-muted);
   margin-top: 0.5rem;
   font-size: 0.875rem;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-login-switch-btn {
@@ -334,7 +334,7 @@
   transition: color 0.3s;
   padding: 0;
   font-size: 0.875rem;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-login-switch-btn:hover {
@@ -367,7 +367,7 @@
 .user-login-terms-text {
   font-size: 0.875rem;
   color: var(--text-muted);
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 /* ── Alert banner ── */
@@ -440,7 +440,7 @@
   color: var(--destructive);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-login-alert-message {
@@ -448,7 +448,7 @@
   font-weight: 500;
   color: var(--destructive);
   line-height: 1.5;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-login-alert-timer {
@@ -501,7 +501,7 @@
   font-size: 12px;
   font-weight: 700;
   color: #fff;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   letter-spacing: 0.02em;
   transition: filter 0.2s, transform 0.1s;
   width: fit-content;

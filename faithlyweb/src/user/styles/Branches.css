@@ -7,7 +7,7 @@
 }
 
 .user-branches-page-title {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 26px;
   font-weight: 700;
   color: var(--foreground);
@@ -16,7 +16,7 @@
 }
 
 .user-branches-page-subtitle {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 14px;
   color: var(--text-secondary);
   margin: 0;
@@ -73,21 +73,21 @@
   color: #1E3A8A;
   text-transform: uppercase;
   letter-spacing: 0.07em;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-mcb-name {
   font-size: 16px;
   font-weight: 700;
   color: var(--foreground);
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   line-height: 22px;
 }
 
 .user-mcb-province {
   font-size: 12px;
   color: var(--text-muted);
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-mcb-right {
@@ -107,7 +107,7 @@
 .user-mcb-day-tag {
   font-size: 11px;
   font-weight: 600;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   border-radius: 5px;
   padding: 3px 8px;
 }
@@ -140,7 +140,7 @@
   font-size: 11px;
   color: var(--text-muted);
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -150,7 +150,7 @@
   font-weight: 700;
   color: var(--foreground);
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 /* ─── Filter Bar ─────────────────────────────────────────── */
@@ -190,7 +190,7 @@
   border-radius: 8px;
   font-size: 13px;
   color: var(--foreground);
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   background: var(--input-background);
   box-sizing: border-box;
   outline: none;
@@ -211,7 +211,7 @@
 .user-branches-filter-label {
   font-size: 12px;
   color: var(--text-muted);
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   white-space: nowrap;
 }
 
@@ -222,7 +222,7 @@
   border-radius: 8px;
   font-size: 13px;
   color: var(--foreground);
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   background: var(--input-background) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M4 6L8 10L12 6' stroke='%2399A1AF' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 8px center;
   appearance: none;
   cursor: pointer;
@@ -239,7 +239,7 @@
   margin-left: auto;
   font-size: 12px;
   color: var(--text-muted);
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   white-space: nowrap;
   padding: 3px 10px;
   background: var(--secondary);
@@ -261,7 +261,7 @@
 
 .user-group-region-badge {
   font-size: 10px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-weight: 700;
   color: #1E3A8A;
   background: #eff4ff;
@@ -276,13 +276,13 @@
   font-size: 13px;
   font-weight: 700;
   color: var(--foreground);
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-group-count {
   font-size: 11px;
   color: #9ca3af;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   background: var(--secondary);
   border-radius: 10px;
   padding: 1px 7px;
@@ -343,7 +343,7 @@
   color: white;
   font-size: 9px;
   font-weight: 700;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   padding: 3px 8px;
@@ -375,7 +375,7 @@
   font-size: 13px;
   font-weight: 700;
   color: var(--foreground);
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   line-height: 17px;
   flex: 1;
   min-width: 0;
@@ -405,7 +405,7 @@
 .user-bci-day-tag {
   font-size: 10px;
   font-weight: 600;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   border-radius: 4px;
   padding: 2px 6px;
   letter-spacing: 0.01em;
@@ -481,14 +481,14 @@
   font-weight: 700;
   color: var(--foreground);
   margin: 0 0 5px 0;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   line-height: 22px;
 }
 
 .user-drawer-my-badge {
   font-size: 10px;
   font-weight: 700;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   background: var(--blue-tint);
@@ -508,7 +508,7 @@
 
 .user-detail-region-badge {
   font-size: 10px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-weight: 700;
   color: var(--primary);
   background: var(--blue-tint);
@@ -520,7 +520,7 @@
 .user-drawer-province {
   font-size: 12px;
   color: var(--text-muted);
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-drawer-close {
@@ -573,7 +573,7 @@
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.07em;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   margin: 0;
 }
 
@@ -601,7 +601,7 @@
 .user-drawer-contact-val {
   font-size: 13px;
   color: var(--text-secondary);
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-drawer-service-list {
@@ -623,7 +623,7 @@
 .user-drawer-day-pill {
   font-size: 12px;
   font-weight: 700;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   border-radius: 5px;
   padding: 3px 10px;
   min-width: 84px;
@@ -634,7 +634,7 @@
 .user-drawer-time {
   font-size: 13px;
   color: var(--text-secondary);
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 /* Map container styled inline in Branches.js */
@@ -656,7 +656,7 @@
   border-radius: 9px;
   color: white;
   font-size: 13px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s;
@@ -674,7 +674,7 @@
   border-radius: 9px;
   color: var(--foreground);
   font-size: 13px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -689,7 +689,7 @@
   padding: 40px;
   text-align: center;
   color: var(--text-muted);
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 13px;
   background: var(--card);
   border: 0.8px solid var(--border);

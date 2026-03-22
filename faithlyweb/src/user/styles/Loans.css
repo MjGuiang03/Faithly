@@ -7,7 +7,7 @@
 }
 
 .user-loans-page-title {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 26px;
   font-weight: 700;
   color: var(--foreground);
@@ -16,7 +16,7 @@
 }
 
 .user-loans-page-subtitle {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 14px;
   color: var(--text-secondary);
   margin: 0;
@@ -46,7 +46,7 @@
   border: none;
   border-radius: 10px;
   font-size: 16px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   cursor: pointer;
   transition: background 0.2s;
   height: 40px;
@@ -89,7 +89,7 @@
   color: var(--text-muted);
   margin: 0;
   line-height: 20px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -104,7 +104,7 @@
   color: var(--foreground);
   margin: 0;
   line-height: 32px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 /* All Loans Section */
@@ -148,7 +148,7 @@
   background: transparent;
   font-size: 13px;
   color: var(--foreground);
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   outline: none;
   width: 100%;
 }
@@ -163,7 +163,7 @@
   color: var(--foreground);
   margin: 0;
   line-height: 28px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 /* Loans List */
@@ -239,7 +239,7 @@
   color: var(--foreground);
   margin: 0;
   line-height: 22px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-loan-status-badge {
@@ -248,7 +248,7 @@
   padding: 2px 10px;
   border-radius: 9999px;
   font-size: 11px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   line-height: 14px;
 }
 
@@ -264,7 +264,7 @@
   color: var(--text-timestamp);
   margin: 0;
   line-height: 14px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-loan-item-amount {
@@ -280,7 +280,7 @@
   color: var(--foreground);
   margin: 0;
   line-height: 24px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-view-details-btn {
@@ -290,7 +290,7 @@
   border: none;
   cursor: pointer;
   padding: 0;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   line-height: 20px;
 }
 
@@ -318,7 +318,7 @@
   color: var(--text-muted);
   margin: 0;
   line-height: 14px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-loan-detail-value {
@@ -327,7 +327,7 @@
   color: var(--foreground);
   margin: 0;
   line-height: 20px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 /* Modal Overlay */
@@ -390,7 +390,7 @@
 }
 
 .user-modal-title {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 24px;
   font-weight: 700;
   color: var(--foreground);
@@ -440,7 +440,7 @@
 }
 
 .user-form-label {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 14px;
   color: var(--text-secondary);
   line-height: 20px;
@@ -459,7 +459,7 @@
   padding: 8px 16px 8px 40px;
   border: 0.8px solid var(--border-strong);
   border-radius: 10px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 16px;
   color: var(--foreground);
   line-height: normal;
@@ -493,7 +493,7 @@
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 20px;
   color: rgba(153, 161, 175, 0.57);
   pointer-events: none;
@@ -517,7 +517,7 @@
 }
 
 .user-guarantor-title {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 16px;
   font-weight: 700;
   color: var(--foreground);
@@ -534,7 +534,7 @@
 }
 
 .user-note-text {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 14px;
   color: var(--primary);
   line-height: 20px;
@@ -559,7 +559,7 @@
   color: white;
   border: none;
   border-radius: 10px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 16px;
   cursor: pointer;
   transition: background 0.2s;
@@ -576,7 +576,7 @@
   color: var(--text-secondary);
   border: 0.8px solid var(--border);
   border-radius: 10px;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 16px;
   cursor: pointer;
   transition: background 0.2s;
@@ -691,7 +691,7 @@
   border-radius: 20px;
   font-size: 0.8rem;
   font-weight: 600;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   white-space: nowrap;
 }
 
@@ -733,7 +733,7 @@
   padding: 0;
   margin-left: 4px;
   text-decoration: underline;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-verify-badge-link:hover {
@@ -788,7 +788,7 @@
   font-weight: 700;
   color: #1e3a8a;
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-loans-locked-text {
@@ -796,7 +796,7 @@
   color: var(--text-secondary);
   margin: 0;
   line-height: 1.6;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   max-width: 520px;
 }
 
@@ -810,7 +810,7 @@
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   transition: background 0.2s;
   margin-top: 0.25rem;
 }
@@ -828,7 +828,7 @@
   padding: 4rem 0;
   gap: 1rem;
   color: var(--text-muted);
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 0.9rem;
 }
 
@@ -860,7 +860,7 @@
 .user-pagination-info {
   font-size: 12px;
   color: var(--text-muted);
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   margin: 0;
 }
 
@@ -880,7 +880,7 @@
   font-size: 13px;
   color: var(--text-secondary);
   cursor: pointer;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   transition: all 0.15s;
   display: flex;
   align-items: center;
@@ -920,7 +920,7 @@
   border-radius: 10px;
   color: var(--destructive);
   font-size: 0.875rem;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   margin-bottom: 1.5rem;
 }
 
@@ -933,7 +933,7 @@
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   white-space: nowrap;
 }
 
@@ -946,7 +946,7 @@
   text-align: center;
   padding: 3.5rem 1rem;
   color: var(--text-muted);
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .user-loans-empty-icon {
@@ -997,7 +997,7 @@
   border-radius: 8px;
   color: var(--destructive);
   font-size: 0.875rem;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   margin-bottom: 1rem;
 }
 
@@ -1018,7 +1018,7 @@
   border-radius: 20px;
   font-size: 12px;
   font-weight: 600;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   overflow: hidden;
   /* keeps children inside the pill shape */
   flex-shrink: 0;
@@ -1046,7 +1046,7 @@
   cursor: pointer;
   font-size: 12px;
   font-weight: 700;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   padding: 2px 10px 2px 8px;
   line-height: 20px;
   transition: opacity 0.15s;
