@@ -5,7 +5,6 @@ import { LayoutGrid, FileText, Heart, Calendar, Building2, Settings, LogOut, Bel
 import { toast } from 'sonner';
 import puacLogo from '../../assets/puaclogo.png';
 import '../styles/Sidebar.css';
-import { useTheme } from '../../context/ThemeContext';
 
 import API from '../../utils/api';
 const READ_KEY = 'faithly_notif_read';
@@ -14,7 +13,6 @@ export default function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, profile, signOut } = useAuth();
-  const { theme, toggleTheme } = useTheme();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [collapsed, setCollapsed] = useState(() => {

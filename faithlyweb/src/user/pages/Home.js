@@ -102,7 +102,7 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, [token, profile?.branch]);
 
   useEffect(() => {
     if (!token) return;
