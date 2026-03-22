@@ -629,6 +629,48 @@
   cursor: not-allowed;
 }
 
+.user-pi-btn-cancel-bottom {
+  padding: 8px 16px;
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: Arial, sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.user-pi-btn-cancel-bottom:hover {
+  background: var(--muted);
+  color: var(--foreground);
+}
+
+.user-pi-btn-save-bottom {
+  padding: 8px 16px;
+  background: var(--primary);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: Arial, sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.user-pi-btn-save-bottom:hover {
+  background: var(--blue-hover);
+}
+
+.user-pi-btn-save-bottom:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .user-pi-btn-edit-bottom {
   display: inline-flex;
   align-items: center;

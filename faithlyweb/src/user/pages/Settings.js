@@ -302,16 +302,6 @@ export default function Settings() {
                 </div>
               </div>
 
-              <div className="user-pi-card-actions">
-                {isEditing && (
-                  <>
-                    <button className="user-pi-btn-cancel" onClick={handleCancelEdit} disabled={isSaving}>Cancel</button>
-                    <button className="user-pi-btn-save"   onClick={handleSaveChanges} disabled={isSaving}>
-                      {isSaving ? 'Saving…' : 'Save'}
-                    </button>
-                  </>
-                )}
-              </div>
             </div>
 
             {/* ── Edit Form ─────────────────────────────────────────── */}
@@ -403,9 +393,15 @@ export default function Settings() {
                     </div>
                   </div>
 
-                  <div className="user-pi-form-field-full" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
-                    <span className="user-pi-readonly-note">These fields cannot be changed</span>
-                    {!isEditing && (
+                  <div className="user-pi-form-field-full" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: '8px' }}>
+                    {isEditing ? (
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button className="user-pi-btn-cancel-bottom" onClick={handleCancelEdit} disabled={isSaving}>Cancel</button>
+                        <button className="user-pi-btn-save-bottom" onClick={handleSaveChanges} disabled={isSaving}>
+                          {isSaving ? 'Saving…' : 'Save'}
+                        </button>
+                      </div>
+                    ) : (
                       <button className="user-pi-btn-edit-bottom" onClick={() => setIsEditing(true)}>
                         <svg width="14" height="14" fill="none" viewBox="0 0 24 24" style={{ marginRight: '6px' }}>
                           <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>

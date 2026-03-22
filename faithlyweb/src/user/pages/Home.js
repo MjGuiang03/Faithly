@@ -256,8 +256,8 @@ export default function Home() {
             </div>
             <div className="user-stat-content">
               <p className="user-stat-label">Announcements</p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <p className="user-stat-value user-fade-in">Church Updates</p>
+              <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap', gap: '8px' }}>
+                <p className="user-stat-value user-fade-in" style={{ whiteSpace: 'nowrap' }}>Church Updates</p>
                 {!loading && announcementsCount > 0 && <span className="user-stat-badge">{announcementsCount} unread</span>}
               </div>
             </div>
@@ -304,8 +304,7 @@ export default function Home() {
               <iframe
                 title="Community Map"
                 width="100%"
-                height="150"
-                style={{ border: 0, borderRadius: '12px' }}
+                style={{ border: 0, flex: 1 }}
                 loading="lazy"
                 allowFullScreen
                 src={`https://maps.google.com/maps?q=${encodeURIComponent(profile?.branch || 'Meycauayan City, Bulacan')},Philippines&t=&z=14&ie=UTF8&iwloc=&output=embed`}
@@ -324,12 +323,6 @@ export default function Home() {
           <div className="user-home-card user-home-recent-activity-card">
             <div className="user-home-card-header-with-icon" style={{ justifyContent: 'space-between', width: '100%' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div className="user-home-card-header-icon user-header-icon-recent">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                  </svg>
-                </div>
                 <h2 className="user-home-card-title">Recent Activity</h2>
               </div>
             </div>
