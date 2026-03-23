@@ -81,9 +81,8 @@ export default function SecretaryLoanProcess() {
             status: loan.disbursed ? 'Processed' : 'Awaiting Processing',
             churchId: loan.churchId || 'N/A',
             position: loan.position || 'Member',
-            occupation: loan.occupation || 'N/A',
-            monthlyIncome: loan.monthlyIncome || 0,
-            gcashNumber: loan.gcashNumber || 'N/A',
+            disbursementMethod: loan.disbursementMethod || 'cash',
+            disbursementAccount: loan.disbursementAccount || '',
             churchActive: 'Active',
             loanHistory: loanHistoryCount,
             totalDonations: totalDonations,
@@ -107,17 +106,22 @@ export default function SecretaryLoanProcess() {
         setShowReceiptModal(true);
     };
 
-    const handleProcessLoan = async (paymentMethod) => {
+    const handleProcessLoan = async (paymentMethod, processReason) => {
         if (!selectedLoan || !selectedLoan._id) return;
 
         try {
             const token = localStorage.getItem('secretaryToken') || localStorage.getItem('adminToken') || localStorage.getItem('token');
             const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
 
+            const payload = { paymentMethod };
+            if (paymentMethod !== selectedLoan.disbursementMethod && processReason) {
+                payload.processReason = processReason;
+            }
+
             const res = await fetch(`${API}/api/admin/loans/${selectedLoan._id}/process`, {
                 method: 'PUT',
                 headers,
-                body: JSON.stringify({ paymentMethod })
+                body: JSON.stringify(payload)
             });
             const data = await res.json();
 

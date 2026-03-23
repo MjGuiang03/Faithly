@@ -156,7 +156,6 @@ export default function LoanAdminLoanManagement() {
                 {/* Header */}
                 <div className="loan-admin-mgmt-header">
                     <h1 className="loan-admin-mgmt-title">Loan Management</h1>
-                    <p className="loan-admin-mgmt-subtitle">Review and approve loan applications</p>
                 </div>
 
                 {/* Status Cards */}
@@ -403,9 +402,25 @@ export default function LoanAdminLoanManagement() {
                                         <p className="loan-admin-mgmt-details-value">{fmt(selectedLoan.amount)}</p>
                                     </div>
                                     <div className="loan-admin-mgmt-details-item">
-                                        <p className="loan-admin-mgmt-details-label">Purpose</p>
+                                        <p className="loan-admin-mgmt-details-label">Loan Type</p>
                                         <p className="loan-admin-mgmt-details-value">{selectedLoan.purpose}</p>
                                     </div>
+                                    <div className="loan-admin-mgmt-details-item">
+                                        <p className="loan-admin-mgmt-details-label">Repayment Terms</p>
+                                        <p className="loan-admin-mgmt-details-value">{selectedLoan.repaymentTerms || 'N/A'}</p>
+                                    </div>
+                                    <div className="loan-admin-mgmt-details-item">
+                                        <p className="loan-admin-mgmt-details-label">Disbursement Method</p>
+                                        <p className="loan-admin-mgmt-details-value" style={{ textTransform: 'capitalize' }}>
+                                            {selectedLoan.disbursementMethod || 'N/A'}
+                                        </p>
+                                    </div>
+                                    {selectedLoan.disbursementAccount && (
+                                        <div className="loan-admin-mgmt-details-item">
+                                            <p className="loan-admin-mgmt-details-label">Account Details</p>
+                                            <p className="loan-admin-mgmt-details-value">{selectedLoan.disbursementAccount}</p>
+                                        </div>
+                                    )}
                                     <div className="loan-admin-mgmt-details-item">
                                         <p className="loan-admin-mgmt-details-label">Applied Date</p>
                                         <p className="loan-admin-mgmt-details-value">{fmtDate(selectedLoan.appliedDate)}</p>

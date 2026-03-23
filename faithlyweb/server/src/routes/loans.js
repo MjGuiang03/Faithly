@@ -204,7 +204,7 @@ router.put('/admin/loans/:id/reject', authenticateAdmin, async (req, res) => {
 router.put('/admin/loans/:id/process', authenticateAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { paymentMethod } = req.body;
+    const { paymentMethod, processReason } = req.body;
 
     if (!paymentMethod) {
       return res.status(400).json({ success: false, message: 'Payment method is required' });
@@ -227,7 +227,8 @@ router.put('/admin/loans/:id/process', authenticateAdmin, async (req, res) => {
         $set: { 
           disbursed: true, 
           disbursementDate: new Date(), 
-          paymentMethod, 
+          paymentMethod,
+          processReason: processReason || null,
           updatedAt: new Date() 
         },
         $push: { statusHistory: { status: 'processed', date: new Date() } }

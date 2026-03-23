@@ -2,10 +2,15 @@ import { useState } from 'react';
 import '../styles/secProcessLoanModal.css';
 
 export default function SecProcessLoanModal({ loan, onClose, onProcess }) {
-    const [paymentMethod, setPaymentMethod] = useState('gcash');
+    const [paymentMethod, setPaymentMethod] = useState(loan.disbursementMethod || 'gcash');
+    const [reason, setReason] = useState('');
 
     const handleProcess = () => {
-        onProcess(paymentMethod);
+        if (paymentMethod !== (loan.disbursementMethod || 'cash') && !reason.trim()) {
+            alert('Please provide a reason for changing the payment method.');
+            return;
+        }
+        onProcess(paymentMethod, reason);
     };
 
     return (
@@ -38,6 +43,9 @@ export default function SecProcessLoanModal({ loan, onClose, onProcess }) {
                     <p className="sec-process-modal-info-text">
                         <span className="label">Purpose:</span> <strong>{loan.purpose}</strong>
                     </p>
+                    <p className="sec-process-modal-info-text" style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #E5E7EB' }}>
+                        <span className="label">User Preference:</span> <strong style={{ textTransform: 'capitalize', color: '#155DFC' }}>{loan.disbursementMethod || 'N/A'}</strong>
+                    </p>
                 </div>
 
                 {/* Payment Method Selection */}
@@ -45,6 +53,17 @@ export default function SecProcessLoanModal({ loan, onClose, onProcess }) {
                     <label className="sec-process-modal-label">Select Payment Method</label>
 
                     <div className="sec-process-modal-payment-options">
+                        <button
+                            className={`sec-process-payment-option ${paymentMethod === 'cash' ? 'active' : ''}`}
+                            onClick={() => setPaymentMethod('cash')}
+                        >
+                            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                                <path d="M5.33334 10.6667H26.6667C28.1394 10.6667 29.3333 11.8606 29.3333 13.3333V24C29.3333 25.4728 28.1394 26.6667 26.6667 26.6667H5.33334C3.86058 26.6667 2.66667 25.4728 2.66667 24V13.3333C2.66667 11.8606 3.86058 10.6667 5.33334 10.6667Z" stroke={paymentMethod === 'cash' ? '#155DFC' : '#99A1AF'} strokeWidth="2.66667" strokeLinecap="round" strokeLinejoin="round" />
+                                <path d="M16 21.3333C17.4728 21.3333 18.6667 20.1394 18.6667 18.6667C18.6667 17.1939 17.4728 16 16 16C14.5272 16 13.3333 17.1939 13.3333 18.6667C13.3333 20.1394 14.5272 21.3333 16 21.3333Z" stroke={paymentMethod === 'cash' ? '#155DFC' : '#99A1AF'} strokeWidth="2.66667" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                            <span>Cash</span>
+                        </button>
+
                         <button
                             className={`sec-process-payment-option ${paymentMethod === 'gcash' ? 'active' : ''}`}
                             onClick={() => setPaymentMethod('gcash')}
@@ -72,6 +91,32 @@ export default function SecProcessLoanModal({ loan, onClose, onProcess }) {
                             <span>Bank Transfer</span>
                         </button>
                     </div>
+
+                    {paymentMethod !== (loan.disbursementMethod || 'cash') && (
+                        <div style={{ marginTop: '16px' }}>
+                            <label className="sec-process-modal-label" style={{ color: '#E7000B' }}>
+                                Reason for overriding user preference <span style={{ color: 'red' }}>*</span>
+                            </label>
+                            <textarea
+                                value={reason}
+                                onChange={e => setReason(e.target.value)}
+                                placeholder="State why the preferred method cannot be used"
+                                style={{
+                                    width: '100%',
+                                    marginTop: '8px',
+                                    padding: '12px',
+                                    border: '1px solid #D1D5DB',
+                                    borderRadius: '8px',
+                                    fontSize: '14px',
+                                    fontFamily: 'Inter',
+                                    minHeight: '80px',
+                                    boxSizing: 'border-box',
+                                    resize: 'none',
+                                    outline: 'none',
+                                }}
+                            />
+                        </div>
+                    )}
                 </div>
 
                 {/* Action Buttons */}
@@ -83,7 +128,7 @@ export default function SecProcessLoanModal({ loan, onClose, onProcess }) {
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                             <path d="M13.3333 4L6 11.3333L2.66667 8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
-                        Process via {paymentMethod === 'gcash' ? 'GCash' : 'Bank Transfer'}
+                        Process Payment
                     </button>
                 </div>
             </div>

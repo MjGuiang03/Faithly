@@ -133,7 +133,6 @@ export default function AdminLoanManagement() {
       {/* Header */}
       <div className="admin-loan-header">
         <h1 className="admin-loan-title">Loan Management</h1>
-        <p className="admin-loan-subtitle">Review and manage loan applications</p>
       </div>
 
       {/* Stats */}
