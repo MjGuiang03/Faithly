@@ -269,6 +269,16 @@
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08), 0 0 0 2px rgba(30, 58, 138, 0.1);
 }
 
+/* When annotations are open, span full width & disable lift */
+.user-stat-ann-card--open {
+  grid-column: 1 / -1;
+}
+
+.user-stat-ann-card--open:hover {
+  transform: none;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+}
+
 /* Loan hover tooltip */
 .user-loan-hover-tooltip {
   position: absolute;

@@ -65,7 +65,7 @@ function AccordionItem({ item, isOpen, onToggle }) {
   );
 }
 
-export default function AnnouncementAccordion() {
+export default function AnnouncementAccordion({ inline = false }) {
   const { profile } = useAuth();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -80,7 +80,6 @@ export default function AnnouncementAccordion() {
       .then(data => {
         if (isMounted && data.success) {
           setItems(data.announcements || []);
-          // Automatically mark as read
           const readIds = new Set(JSON.parse(localStorage.getItem('faithly_ann_read') || '[]'));
           (data.announcements || []).forEach(a => readIds.add(a._id));
           localStorage.setItem('faithly_ann_read', JSON.stringify(Array.from(readIds)));
@@ -98,8 +97,8 @@ export default function AnnouncementAccordion() {
 
   if (loading) {
     return (
-      <div className="aa-container">
-        <h2 className="aa-section-title">Church Updates</h2>
+      <div className={inline ? 'aa-inline-wrapper' : 'aa-container'}>
+        {!inline && <h2 className="aa-section-title" style={{ padding: '18px 20px', borderBottom: '1px solid var(--border)', margin: 0 }}>Church Updates</h2>}
         <div className="aa-list">
           {[1, 2, 3].map(i => (
             <div key={i} className="aa-skeleton-item">
@@ -111,7 +110,35 @@ export default function AnnouncementAccordion() {
     );
   }
 
-  if (items.length === 0) return null;
+  if (items.length === 0) {
+    return (
+      <div className={inline ? 'aa-inline-wrapper' : 'aa-container'}>
+        <div className="ann-empty" style={{ padding: '20px', textAlign: 'center' }}>
+          <p className="ann-empty-icon">📢</p>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>No announcements yet. Check back soon!</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (inline) {
+    return (
+      <div className="aa-inline-wrapper">
+        <div className="aa-list-wrapper">
+          <div className="aa-list">
+            {items.map(item => (
+              <AccordionItem
+                key={item._id}
+                item={item}
+                isOpen={openId === item._id}
+                onToggle={() => handleToggle(item._id)}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="aa-container user-fade-in" id="announcements-section">
