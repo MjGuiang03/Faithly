@@ -131,6 +131,7 @@ export default function Savings() {
     const openDeposit = () => setModal('deposit');
     const openNewGoal = () => setModal('newGoal');
     const openQuickDep = (goal) => { setModalData(goal); setModal('quickDeposit'); };
+    // eslint-disable-next-line no-unused-vars
     const openEditGoal = (goal) => { setModalData(goal); setModal('editGoal'); };
     const closeModal = () => { setModal(null); setModalData(null); fetchAll(); };
 
