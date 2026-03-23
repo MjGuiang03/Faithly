@@ -29,7 +29,6 @@ export default function AdminLoanManagement() {
   const [loading,      setLoading]      = useState(true);
   const [actionLoading, setActionLoading] = useState(null); // stores _id of loan being acted on
   const [page, setPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
   const LIMIT = 10;
 
   /* ── Auth guard ── */
@@ -64,7 +63,6 @@ export default function AdminLoanManagement() {
       }
 
       setLoans(data.loans  || []);
-      setTotalCount(data.totalCount || 0);
       setStats(data.stats  || { pending: 0, active: 0, completed: 0, totalDisbursed: 0 });
     } catch (err) {
       toast.error('Network error. Could not load loans.');

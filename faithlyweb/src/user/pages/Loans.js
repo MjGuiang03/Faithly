@@ -6,7 +6,6 @@ import LoanApplicationModal from '../components/LoanApplicationModal';
 import VerificationModal from '../components/OfficerVerification';
 import '../styles/Loans.css';
 import API from '../../utils/api';
-import svgPaths from '../../imports/svg-icons';
 
 const fmt = (n) =>
   n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : '₱0.00';
