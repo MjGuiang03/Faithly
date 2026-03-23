@@ -269,14 +269,26 @@
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08), 0 0 0 2px rgba(30, 58, 138, 0.1);
 }
 
-/* When annotations are open, span full width & disable lift */
-.user-stat-ann-card--open {
-  grid-column: 1 / -1;
+/* When announcements are active, keep the hover state visually pressed/active */
+.user-stat-ann-active {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -1px rgba(0, 0, 0, 0.04) !important;
+  transform: none !important;
+  border-color: #f97316;
 }
 
-.user-stat-ann-card--open:hover {
-  transform: none;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+/* Announcements dropdown overlay */
+.user-ann-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 420px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--border);
+  z-index: 100;
+  cursor: default;
+  overflow: hidden;
 }
 
 /* Loan hover tooltip */

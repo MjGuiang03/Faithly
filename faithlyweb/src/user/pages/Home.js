@@ -249,33 +249,32 @@ export default function Home() {
           </div>
 
           <div
-            className={`user-stat-card user-stat-orange user-stat-card-clickable user-stat-ann-card${showAnnouncements ? ' user-stat-ann-card--open' : ''}`}
-            style={{ cursor: 'pointer', flexDirection: 'column', alignItems: 'stretch', padding: 0 }}
+            className={`user-stat-card user-stat-orange user-stat-card-clickable${showAnnouncements ? ' user-stat-ann-active' : ''}`}
+            style={{ cursor: 'pointer', position: 'relative' }}
             onClick={() => setShowAnnouncements(s => !s)}
           >
-            <div style={{ display: 'flex', alignItems: 'center', padding: '20px' }}>
-              <div className="user-stat-icon-box" style={{ marginRight: '12px', flexShrink: 0 }}>
-                <svg className="user-stat-icon" fill="none" viewBox="0 0 24 24">
-                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                  <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                </svg>
-              </div>
-              <div className="user-stat-content" style={{ flex: 1 }}>
-                <p className="user-stat-label">Announcements</p>
-                <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap', gap: '8px' }}>
-                  <p className="user-stat-value user-fade-in" style={{ whiteSpace: 'nowrap', fontSize: '1.05rem' }}>Church Updates</p>
-                  {!loading && announcementsCount > 0 && <span className="user-stat-badge">{announcementsCount} unread</span>}
-                </div>
-              </div>
-              <svg
-                style={{ transform: showAnnouncements ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s', marginLeft: '8px', color: '#92400e', flexShrink: 0 }}
-                viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="16" height="16"
-              >
-                <polyline points="6 9 12 15 18 9"></polyline>
+            <div className="user-stat-icon-box">
+              <svg className="user-stat-icon" fill="none" viewBox="0 0 24 24">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
               </svg>
             </div>
+            <div className="user-stat-content" style={{ flex: 1 }}>
+              <p className="user-stat-label">Announcements</p>
+              <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap', gap: '8px' }}>
+                <p className="user-stat-value user-fade-in" style={{ whiteSpace: 'nowrap', fontSize: '1.05rem' }}>Church Updates</p>
+                {!loading && announcementsCount > 0 && <span className="user-stat-badge">{announcementsCount} unread</span>}
+              </div>
+            </div>
+            <svg
+              style={{ transform: showAnnouncements ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s', marginLeft: '8px', color: '#9a3412', flexShrink: 0 }}
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="16" height="16"
+            >
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+
             {showAnnouncements && (
-              <div onClick={e => e.stopPropagation()}>
+              <div className="user-ann-dropdown" onClick={e => e.stopPropagation()}>
                 <AnnouncementAccordion inline />
               </div>
             )}
