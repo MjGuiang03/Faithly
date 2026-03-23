@@ -54,11 +54,13 @@ export default function SecretaryLoanProcess() {
         const loanHistoryCount = memberLoans.length;
 
         let totalDonations = 0;
+        let userChurchId = 'N/A';
+        let userPosition = 'Member';
+        const token = localStorage.getItem('secretaryToken') || localStorage.getItem('adminToken') || localStorage.getItem('token');
+        const headers = { Authorization: `Bearer ${token}` };
+
         try {
-            const token = localStorage.getItem('secretaryToken') || localStorage.getItem('adminToken') || localStorage.getItem('token');
-            const headers = { Authorization: `Bearer ${token}` };
-            
-            // Try fetching donations for this specific member
+            // Fetch donations for this specific member
             const donRes = await fetch(`${API}/api/admin/donations?search=${encodeURIComponent(loan.email)}`, { headers });
             if (donRes.ok) {
                 const donData = await donRes.json();
@@ -70,6 +72,23 @@ export default function SecretaryLoanProcess() {
             console.error('Failed to fetch user donations:', err);
         }
 
+        try {
+            // Fetch verification data for this member's real churchId and position
+            const verRes = await fetch(`${API}/api/admin/verifications`, { headers });
+            if (verRes.ok) {
+                const verData = await verRes.json();
+                if (verData.success && verData.verifications) {
+                    const userVer = verData.verifications.find(v => v.email === loan.email && v.status === 'approved');
+                    if (userVer) {
+                        userChurchId = userVer.churchId || 'N/A';
+                        userPosition = userVer.position || 'Member';
+                    }
+                }
+            }
+        } catch (err) {
+            console.error('Failed to fetch user verification:', err);
+        }
+
         // Synthesize data for the modal
         const loanWithDetails = {
             id: loan.loanId,
@@ -79,8 +98,8 @@ export default function SecretaryLoanProcess() {
             purpose: loan.purpose,
             approvedDate: new Date(loan.approvedDate || loan.appliedDate).toLocaleDateString('en-US'),
             status: loan.disbursed ? 'Processed' : 'Awaiting Processing',
-            churchId: loan.churchId || 'N/A',
-            position: loan.position || 'Member',
+            churchId: userChurchId,
+            position: userPosition,
             disbursementMethod: loan.disbursementMethod || 'cash',
             disbursementAccount: loan.disbursementAccount || '',
             churchActive: 'Active',

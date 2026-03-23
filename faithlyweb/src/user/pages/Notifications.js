@@ -252,9 +252,6 @@ export default function Notifications() {
                 <span className="user-notifications-count-pill">{unreadCount('all')}</span>
               )}
             </div>
-            <p className="user-notifications-page-subtitle">
-              Stay up to date with your loans, donations, and attendance activity.
-            </p>
           </div>
           <button className="user-notifications-mark-all-btn" onClick={markAllAsRead}>
             Mark all as read

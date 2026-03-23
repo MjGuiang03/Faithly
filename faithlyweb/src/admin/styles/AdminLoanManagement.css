@@ -10,46 +10,51 @@
 }
 
 .admin-loan-title {
-  font-family: 'Arial:Bold', sans-serif;
-  font-size: 30px;
-  line-height: 36px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 28px;
   color: #101828;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .admin-loan-subtitle {
-  font-family: 'Arial:Regular', sans-serif;
-  font-size: 16px;
-  line-height: 24px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  line-height: 18px;
   color: #4a5565;
 }
 
 .admin-loan-stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
-  margin-bottom: 24px;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
 .admin-loan-stat-card {
   background: white;
   border: 0.8px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 24.8px;
+  border-radius: 12px;
+  padding: 14px 16px;
 }
 
 .admin-loan-stat-label {
-  font-family: 'Arial:Regular', sans-serif;
-  font-size: 14px;
-  line-height: 20px;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 16px;
   color: #4a5565;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
 }
 
 .admin-loan-stat-value {
-  font-family: 'Arial:Bold', sans-serif;
-  font-size: 24px;
-  line-height: 32px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 26px;
   color: #101828;
 }
 
@@ -75,12 +80,12 @@
 
 .admin-loan-search-input {
   width: 100%;
-  height: 41.6px;
+  height: 40px;
   border: 0.8px solid #d1d5dc;
   border-radius: 10px;
   padding: 8px 16px 8px 40px;
-  font-family: 'Arial:Regular', sans-serif;
-  font-size: 16px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
   color: #0a0a0a;
 }
 
@@ -107,13 +112,13 @@
 }
 
 .admin-loan-filter-button {
-  height: 41.6px;
+  height: 40px;
   border: 0.8px solid #d1d5dc;
   border-radius: 10px;
   padding: 8px 16px;
   background: white;
-  font-family: 'Arial:Regular', sans-serif;
-  font-size: 16px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
   color: rgba(10, 10, 10, 0.5);
   cursor: pointer;
   display: flex;
@@ -149,12 +154,14 @@
 }
 
 .admin-loan-table-header-cell {
-  font-family: 'Arial:Regular', sans-serif;
-  font-size: 14px;
-  line-height: 20px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
   color: #4a5565;
   text-align: left;
-  padding: 10.8px 16px;
+  text-transform: uppercase;
+  padding: 10px 16px;
 }
 
 .admin-loan-table-row {
@@ -163,11 +170,11 @@
 }
 
 .admin-loan-table-cell {
-  font-family: 'Arial:Regular', sans-serif;
-  font-size: 16px;
-  line-height: 24px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  line-height: 20px;
   color: #101828;
-  padding: 18.19px 16px;
+  padding: 14px 16px;
 }
 
 .admin-loan-member-info {
@@ -176,41 +183,44 @@
 }
 
 .admin-loan-member-name {
-  font-family: 'Arial:Regular', sans-serif;
-  font-size: 16px;
-  line-height: 24px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
   color: #101828;
 }
 
 .admin-loan-member-email {
-  font-family: 'Arial:Regular', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 12px;
   line-height: 16px;
   color: #6a7282;
 }
 
 .admin-loan-amount {
-  font-family: 'Arial:Bold', sans-serif;
-  font-size: 16px;
-  line-height: 24px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 20px;
   color: #101828;
 }
 
 .admin-loan-purpose {
-  font-family: 'Arial:Regular', sans-serif;
-  font-size: 16px;
-  line-height: 24px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  line-height: 20px;
   color: #364153;
 }
 
 .admin-loan-status-badge {
   display: inline-flex;
   align-items: center;
-  height: 23.988px;
+  height: 24px;
   padding: 4px 12px;
-  border-radius: 26843500px;
-  font-family: 'Arial:Regular', sans-serif;
+  border-radius: 9999px;
+  font-family: 'Inter', sans-serif;
   font-size: 12px;
+  font-weight: 500;
   line-height: 16px;
 }
 
@@ -230,9 +240,9 @@
 }
 
 .admin-loan-date {
-  font-family: 'Arial:Regular', sans-serif;
-  font-size: 16px;
-  line-height: 24px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  line-height: 20px;
   color: #364153;
 }
 

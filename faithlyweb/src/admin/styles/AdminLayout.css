@@ -26,7 +26,7 @@
 }
 
 .admin-main-inner {
-  padding: 40px;
+  padding: 32px;
   min-height: 100%;        /* lets children push height naturally */
 }
 

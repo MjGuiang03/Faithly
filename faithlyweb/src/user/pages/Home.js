@@ -191,7 +191,6 @@ export default function Home() {
         <div className="user-home-header-container">
           <div className="user-home-header-left">
             <h1 className="user-home-page-title">Welcome back{user?.fullName ? `, ${user.fullName.split(' ')[0]}` : ''}!</h1>
-            <p className="user-home-page-subtitle">Here's an overview of your church activities</p>
           </div>
 
           <div className="user-home-header-right">

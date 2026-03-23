@@ -587,14 +587,6 @@ export default function LoanDetail() {
                             </div>
                         )}
 
-                        {/* ── Actions ── */}
-                        {loan.status === 'active' && (
-                            <div className="ld-actions-row">
-                                <button className="ld-pay-btn" onClick={() => setShowPayNow(true)}>
-                                    Pay now
-                                </button>
-                            </div>
-                        )}
                     </>
                 )}
             </div>
