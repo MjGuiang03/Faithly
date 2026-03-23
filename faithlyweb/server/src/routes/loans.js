@@ -11,10 +11,13 @@ const router = Router();
 router.post('/loans/apply', authenticateUser, async (req, res) => {
   try {
     const email = req.user.email;
-    const { amount, purpose, termMonths } = req.body;
+    const {
+      amount, loanType, purpose, termMonths,
+      interestRate, totalInterest, totalRepayment, monthlyPayment
+    } = req.body;
 
-    if (!amount || !purpose) {
-      return res.status(400).json({ success: false, message: 'Amount and purpose are required' });
+    if (!amount || (!loanType && !purpose)) {
+      return res.status(400).json({ success: false, message: 'Amount and loan type are required' });
     }
 
     const user = await users.findOne({ email });
@@ -25,7 +28,16 @@ router.post('/loans/apply', authenticateUser, async (req, res) => {
 
     const newLoan = {
       loanId, email, memberName: user.fullName, amount: Number(amount),
-      purpose, termMonths: termMonths || 12, status: 'pending',
+      loanType: loanType || 'personal',
+      purpose: purpose || loanType || 'Personal Loan',
+      termMonths: Number(termMonths) || 12,
+      interestRate: Number(interestRate) || 0,
+      totalInterest: Number(totalInterest) || 0,
+      totalRepayment: Number(totalRepayment) || Number(amount),
+      monthlyPayment: Number(monthlyPayment) || 0,
+      remainingBalance: Number(totalRepayment) || Number(amount),
+      paidMonths: 0,
+      status: 'pending',
       appliedDate: new Date(), updatedAt: new Date(),
       statusHistory: [{ status: 'pending', date: new Date() }]
     };
@@ -37,6 +49,7 @@ router.post('/loans/apply', authenticateUser, async (req, res) => {
     res.status(500).json({ success: false, message: 'Failed to apply for loan' });
   }
 });
+
 
 /* ================== USER - GET MY LOANS ================== */
 router.get('/loans/my-loans', authenticateUser, async (req, res) => {

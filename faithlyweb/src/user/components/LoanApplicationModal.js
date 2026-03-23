@@ -98,9 +98,9 @@ export default function LoanApplicationModal({
 
   const termOptions = selectedType
     ? Array.from(
-        { length: selectedType.maxTerm - selectedType.minTerm + 1 },
-        (_, i) => selectedType.minTerm + i,
-      )
+      { length: selectedType.maxTerm - selectedType.minTerm + 1 },
+      (_, i) => selectedType.minTerm + i,
+    )
     : [];
 
   /* ── calculation breakdown ── */
@@ -137,23 +137,22 @@ export default function LoanApplicationModal({
     try {
       const token = localStorage.getItem('token');
 
-      // Build FormData to include files
-      const fd = new FormData();
-      fd.append('amount', calc.principal);
-      fd.append('loanType', selectedType.key);
-      fd.append('purpose', selectedType.name);
-      fd.append('termMonths', calc.months);
-      fd.append('interestRate', selectedType.rate);
-      fd.append('totalInterest', calc.totalInterest);
-      fd.append('totalRepayment', calc.totalRepayment);
-      fd.append('monthlyPayment', calc.monthly);
-      if (selfieFile) fd.append('selfie', selfieFile);
-      if (idFile) fd.append('governmentId', idFile);
-
       const res = await fetch(`${API}/api/loans/apply`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-        body: fd,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          amount: calc.principal,
+          loanType: selectedType.key,
+          purpose: selectedType.name,
+          termMonths: calc.months,
+          interestRate: selectedType.rate,
+          totalInterest: calc.totalInterest,
+          totalRepayment: calc.totalRepayment,
+          monthlyPayment: calc.monthly,
+        }),
       });
 
       const data = await res.json();
@@ -318,7 +317,7 @@ export default function LoanApplicationModal({
                   <span>{calc.months} month{calc.months > 1 ? 's' : ''}</span>
                 </div>
                 <div className="ula-calc-row">
-                  <span>Total interest <span className="ula-calc-formula">(P × R × T)</span></span>
+                  <span>Total interest <span className="ula-calc-formula"></span></span>
                   <span>{fmt(calc.totalInterest)}</span>
                 </div>
                 <div className="ula-calc-divider" />
@@ -372,7 +371,7 @@ export default function LoanApplicationModal({
                   {selfieFile ? (
                     <>
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="user-loan-upload-icon">
-                        <path d="M20 6L9 17l-5-5" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M20 6L9 17l-5-5" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                       <p className="user-loan-upload-text user-loan-upload-text-done">File selected</p>
                       <p className="user-loan-upload-subtext">{selfieFile.name}</p>
@@ -380,9 +379,9 @@ export default function LoanApplicationModal({
                   ) : (
                     <>
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="user-loan-upload-icon">
-                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                        <polyline points="17 8 12 3 7 8" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                        <line x1="12" y1="3" x2="12" y2="15" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                        <polyline points="17 8 12 3 7 8" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                        <line x1="12" y1="3" x2="12" y2="15" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                       <p className="user-loan-upload-text">Click to upload or drag and drop</p>
                       <p className="user-loan-upload-subtext">PNG, JPG</p>
@@ -408,7 +407,7 @@ export default function LoanApplicationModal({
                   {idFile ? (
                     <>
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="user-loan-upload-icon">
-                        <path d="M20 6L9 17l-5-5" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M20 6L9 17l-5-5" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                       <p className="user-loan-upload-text user-loan-upload-text-done">File selected</p>
                       <p className="user-loan-upload-subtext">{idFile.name}</p>
@@ -416,9 +415,9 @@ export default function LoanApplicationModal({
                   ) : (
                     <>
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="user-loan-upload-icon">
-                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                        <polyline points="17 8 12 3 7 8" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                        <line x1="12" y1="3" x2="12" y2="15" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                        <polyline points="17 8 12 3 7 8" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                        <line x1="12" y1="3" x2="12" y2="15" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                       <p className="user-loan-upload-text">Click to upload or drag and drop</p>
                       <p className="user-loan-upload-subtext">PNG, JPG</p>
