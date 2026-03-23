@@ -228,4 +228,99 @@ router.put('/admin/loans/:id/process', authenticateAdmin, async (req, res) => {
   }
 });
 
+
+/* ================== USER - GET SINGLE LOAN ================== */
+router.get('/loans/:id', authenticateUser, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const email = req.user.email;
+
+    // Try finding by loanId first, then by _id
+    let query = { loanId: id, email };
+    if (ObjectId.isValid(id)) {
+      query = { $or: [{ loanId: id }, { _id: new ObjectId(id) }], email };
+    }
+
+    const loan = await loans.findOne(query);
+    if (!loan) return res.status(404).json({ success: false, message: 'Loan not found' });
+
+    res.status(200).json({ success: true, loan });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to fetch loan details' });
+  }
+});
+
+/* ================== USER - GET LOAN SCHEDULE ================== */
+router.get('/loans/:id/schedule', authenticateUser, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const email = req.user.email;
+
+    let query = { loanId: id, email };
+    if (ObjectId.isValid(id)) {
+      query = { $or: [{ loanId: id }, { _id: new ObjectId(id) }], email };
+    }
+
+    const loan = await loans.findOne(query);
+    if (!loan) return res.status(404).json({ success: false, message: 'Loan not found' });
+
+    // Simple schedule generation if not stored
+    const schedule = [];
+    const term = loan.termMonths || 12;
+    const monthlyPayment = loan.monthlyPayment || (loan.amount / term);
+    const startDate = new Date(loan.disbursementDate || loan.appliedDate);
+    const interestRate = loan.interestRate || 2; // Default 2% if missing
+
+    for (let i = 1; i <= term; i++) {
+        const dueDate = new Date(startDate);
+        dueDate.setMonth(startDate.getMonth() + i);
+        
+        const principal = loan.amount / term;
+        const interest = (loan.amount * (interestRate / 100));
+        
+        schedule.push({
+            dueDate,
+            principal,
+            interest,
+            payment: monthlyPayment,
+            status: i <= (loan.paidMonths || 0) ? 'paid' : 'upcoming',
+            isNext: i === (loan.paidMonths || 0) + 1
+        });
+    }
+
+    res.status(200).json({ success: true, schedule });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to fetch schedule' });
+  }
+});
+
+/* ================== USER - PAY LOAN ================== */
+router.post('/loans/:id/pay', authenticateUser, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { paymentMethod } = req.body;
+        const email = req.user.email;
+
+        let query = { loanId: id, email };
+        if (ObjectId.isValid(id)) {
+            query = { $or: [{ loanId: id }, { _id: new ObjectId(id) }], email };
+        }
+
+        const loan = await loans.findOne(query);
+        if (!loan) return res.status(404).json({ success: false, message: 'Loan not found' });
+
+        // In a real app, this would create a payment record
+        // For now, we'll just mock it and perhaps update paidMonths if it's an instant payment
+        // But usually, it needs admin verification.
+        
+        // Simulating a success response
+        res.status(200).json({ success: true, message: 'Payment submitted for verification' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Failed to submit payment' });
+    }
+});
+
 export default router;

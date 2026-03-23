@@ -363,21 +363,26 @@ export default function LoanDetail() {
         if (!token) { navigate('/'); return; }
         const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
         try {
+            const encodedId = encodeURIComponent(loanId);
             const [loanRes, schedRes] = await Promise.all([
-                fetch(`${API}/api/loans/${loanId}`, { headers }),
-                fetch(`${API}/api/loans/${loanId}/schedule`, { headers }),
+                fetch(`${API}/api/loans/${encodedId}`, { headers }),
+                fetch(`${API}/api/loans/${encodedId}/schedule`, { headers }),
             ]);
+            
             if (loanRes.status === 401) { localStorage.removeItem('token'); navigate('/'); return; }
+            
             const loanData = await loanRes.json();
             const schedData = schedRes.ok ? await schedRes.json() : { schedule: [] };
+            
             if (loanRes.ok && loanData.success) {
                 setLoan(loanData.loan);
                 setSchedule(schedData.schedule || []);
             } else {
                 setError(loanData.message || 'Failed to load loan details.');
             }
-        } catch {
-            setError('Network error. Please try again.');
+        } catch (err) {
+            console.error('Fetch error:', err);
+            setError('Connection failed. Please check your internet or retry later.');
         } finally {
             setLoading(false);
         }
