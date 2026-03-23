@@ -1,62 +1,171 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { toast } from 'sonner';
 import '../styles/LoanApplicationModal.css';
-
 import API from '../../utils/api';
 
-export default function LoanApplicationModal({ isOpen, onClose }) {
-  const [formData, setFormData] = useState({
-    loanAmount: '',
-    loanPurpose: '',
-    repaymentPeriod: '',
-    monthlyIncome: '',
-    guarantorName: '',
-    guarantorPhone: ''
-  });
+/* ── Loan-type config ── */
+const LOAN_TYPES = [
+  {
+    key: 'personal',
+    name: 'Personal Loan',
+    multiplier: 2,
+    minTerm: 3,
+    maxTerm: 12,
+    rate: 0.02,
+    rateLabel: '2% / mo',
+    color: 'blue',
+    desc: 'For everyday needs, big purchases, or personal goals.',
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="1.3" />
+        <path d="M10 6.5v4l2.5 2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+  {
+    key: 'emergency',
+    name: 'Emergency Loan',
+    multiplier: 1.5,
+    minTerm: 1,
+    maxTerm: 6,
+    rate: 0.015,
+    rateLabel: '1.5% / mo',
+    color: 'amber',
+    desc: 'Fast-tracked for urgent and unexpected situations.',
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M10 2l1.7 5.2H17l-4.3 3.1 1.6 5.2L10 12.5l-4.3 3 1.6-5.2L3 7.2h5.3L10 2z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+  {
+    key: 'short-term',
+    name: 'Short-Term Loan',
+    multiplier: 1,
+    minTerm: 1,
+    maxTerm: 3,
+    rate: 0.01,
+    rateLabel: '1% / mo',
+    color: 'teal',
+    desc: 'Quick, low-interest loan for short bridge financing.',
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <rect x="2" y="6" width="16" height="10" rx="2.5" stroke="currentColor" strokeWidth="1.3" />
+        <path d="M6.5 6V4.5a3.5 3.5 0 0 1 7 0V6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+        <path d="M7 11.5h6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+];
+
+const fmt = (n) =>
+  n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : '₱0.00';
+
+const CheckIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+    <circle cx="8" cy="8" r="7" fill="#dcfce7" stroke="#16a34a" strokeWidth="1.2" />
+    <path d="M5 8.2l2 2 4-4" stroke="#16a34a" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const XIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+    <circle cx="8" cy="8" r="7" fill="#fef2f2" stroke="#dc2626" strokeWidth="1.2" />
+    <path d="M5.5 5.5l5 5M10.5 5.5l-5 5" stroke="#dc2626" strokeWidth="1.4" strokeLinecap="round" />
+  </svg>
+);
+
+export default function LoanApplicationModal({
+  isOpen,
+  onClose,
+  totalSavings = 0,
+  existingLoanBalance = 0,
+  hasOverdueLoans = false,
+}) {
+  const [loanType, setLoanType] = useState('');
+  const [amount, setAmount] = useState('');
+  const [termMonths, setTermMonths] = useState('');
   const [selfieFile, setSelfieFile] = useState(null);
-  const [idFile,     setIdFile]     = useState(null);
+  const [idFile, setIdFile] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  /* ── derived ── */
+  const selectedType = LOAN_TYPES.find((t) => t.key === loanType) || null;
+
+  const maxLoanable = selectedType
+    ? Math.max(0, totalSavings * selectedType.multiplier - existingLoanBalance)
+    : 0;
+
+  const termOptions = selectedType
+    ? Array.from(
+        { length: selectedType.maxTerm - selectedType.minTerm + 1 },
+        (_, i) => selectedType.minTerm + i,
+      )
+    : [];
+
+  /* ── calculation breakdown ── */
+  const calc = useMemo(() => {
+    const principal = Number(amount) || 0;
+    const months = Number(termMonths) || 0;
+    if (!selectedType || principal <= 0 || months <= 0) return null;
+    const totalInterest = principal * selectedType.rate * months;
+    const totalRepayment = principal + totalInterest;
+    const monthly = totalRepayment / months;
+    return { principal, totalInterest, totalRepayment, monthly, rate: selectedType.rate, months };
+  }, [amount, termMonths, selectedType]);
 
   if (!isOpen) return null;
 
+
+  /* ── eligibility ── */
+  const savingsOk = totalSavings >= 1000;
+  const noOverdue = !hasOverdueLoans;
+  const amountOk = calc ? calc.principal >= 500 && calc.principal <= maxLoanable : true;
+  const allEligible = savingsOk && noOverdue && (calc ? amountOk : true);
+
+  /* ── submit ── */
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!selectedType) { toast.error('Please select a loan type.'); return; }
+    if (!calc) { toast.error('Please fill in amount and term.'); return; }
+    if (calc.principal < 500) { toast.error('Minimum loan amount is ₱500.'); return; }
+    if (calc.principal > maxLoanable) { toast.error(`Amount exceeds your max loanable of ${fmt(maxLoanable)}.`); return; }
+    if (!savingsOk) { toast.error('You need at least ₱1,000 in savings.'); return; }
+    if (hasOverdueLoans) { toast.error('You have overdue loans. Please settle them first.'); return; }
+
     setLoading(true);
-    
-    // File reading for base64 could be done here if the backend supports file upload for loans,
-    // but the main issue is the loan itself isn't being saved. We'll send the main data to the API.
     try {
       const token = localStorage.getItem('token');
+
+      // Build FormData to include files
+      const fd = new FormData();
+      fd.append('amount', calc.principal);
+      fd.append('loanType', selectedType.key);
+      fd.append('purpose', selectedType.name);
+      fd.append('termMonths', calc.months);
+      fd.append('interestRate', selectedType.rate);
+      fd.append('totalInterest', calc.totalInterest);
+      fd.append('totalRepayment', calc.totalRepayment);
+      fd.append('monthlyPayment', calc.monthly);
+      if (selfieFile) fd.append('selfie', selfieFile);
+      if (idFile) fd.append('governmentId', idFile);
+
       const res = await fetch(`${API}/api/loans/apply`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          amount: Number(formData.loanAmount),
-          purpose: formData.loanPurpose,
-          termMonths: Number(formData.repaymentPeriod),
-          monthlyIncome: Number(formData.monthlyIncome),
-          guarantorName: formData.guarantorName,
-          guarantorPhone: formData.guarantorPhone
-        })
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd,
       });
-      
+
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Failed to submit application');
-      
+
       toast.success('Loan application submitted successfully!');
-      
-      // Reset form
-      setFormData({
-        loanAmount: '', loanPurpose: '', repaymentPeriod: '',
-        monthlyIncome: '', guarantorName: '', guarantorPhone: ''
-      });
+      setLoanType('');
+      setAmount('');
+      setTermMonths('');
       setSelfieFile(null);
       setIdFile(null);
-      
-      onClose(); // This triggers fetchAll in Loans.js to refresh the list
+      onClose();
     } catch (err) {
       toast.error(err.message || 'Network error. Please try again.');
     } finally {
@@ -64,162 +173,191 @@ export default function LoanApplicationModal({ isOpen, onClose }) {
     }
   };
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
   return (
     <div className="user-loan-application-overlay" onClick={onClose}>
       <div className="user-loan-application-content" onClick={(e) => e.stopPropagation()}>
 
-        {/* Modal Header */}
+        {/* Header */}
         <div className="user-loan-application-header">
           <h2 className="user-loan-application-title">Apply for Loan</h2>
           <button className="user-loan-application-close-btn" onClick={(e) => { e.stopPropagation(); onClose(); }} type="button">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M15 5L5 15" stroke="#0A0A0A" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M5 5L15 15" stroke="#0A0A0A" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M15 5L5 15" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M5 5L15 15" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
         </div>
 
-        {/* Modal Form */}
+        {/* Form */}
         <form className="user-loan-application-form" onSubmit={handleSubmit}>
           {/* Focus trap */}
           <input type="text" style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 0, height: 0 }} aria-hidden="true" readOnly />
 
-          {/* Loan Amount */}
-          <div className="user-loan-application-form-group">
-            <label className="user-loan-application-label">Loan Amount (₱)</label>
-            <div className="user-loan-application-input-wrapper">
-              <span className="user-loan-application-input-icon">₱</span>
-              <input
-                type="number"
-                name="loanAmount"
-                className="user-loan-application-input"
-                placeholder="Enter amount"
-                value={formData.loanAmount}
-                onChange={handleChange}
-                required
-              />
+          {/* ── Savings context ── */}
+          <div className="ula-savings-ctx">
+            <div className="ula-savings-ctx-row">
+              <span className="ula-savings-ctx-label">Your total savings</span>
+              <span className={`ula-savings-ctx-value ${totalSavings < 1000 ? 'ula-savings-ctx-value--low' : ''}`}>{fmt(totalSavings)}</span>
             </div>
-          </div>
-
-          {/* Loan Purpose */}
-          <div className="user-loan-application-form-group">
-            <label className="user-loan-application-label">Loan Purpose</label>
-            <div className="user-loan-application-input-wrapper">
-              <select
-                name="loanPurpose"
-                className="user-loan-application-select"
-                style={{ paddingLeft: '16px' }}
-                value={formData.loanPurpose}
-                onChange={handleChange}
-                required
-              >
-                <option value="">Select purpose</option>
-                <option value="Education">Education</option>
-                <option value="Medical Emergency">Medical Emergency</option>
-                <option value="Business Development">Business Development</option>
-                <option value="Home Improvement">Home Improvement</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Repayment Period & Monthly Income */}
-          <div className="user-loan-application-row">
-            <div className="user-loan-application-group-half">
-              <label className="user-loan-application-label">Repayment Period</label>
-              <div className="user-loan-application-input-wrapper">
-                <svg className="user-loan-application-input-icon-svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M6.66667 1.66667V5" stroke="#99A1AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M13.3333 1.66667V5" stroke="#99A1AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-                  <rect x="2.5" y="3.33333" width="15" height="14.1667" rx="2" stroke="#99A1AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M2.5 8.33333H17.5" stroke="#99A1AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <select
-                  name="repaymentPeriod"
-                  className="user-loan-application-select"
-                  style={{ paddingLeft: '40px' }}
-                  value={formData.repaymentPeriod}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Select period</option>
-                  <option value="6">6 months</option>
-                  <option value="12">12 months</option>
-                  <option value="18">18 months</option>
-                  <option value="24">24 months</option>
-                  <option value="36">36 months</option>
-                </select>
+            {existingLoanBalance > 0 && (
+              <div className="ula-savings-ctx-row">
+                <span className="ula-savings-ctx-label">Existing loan balance</span>
+                <span className="ula-savings-ctx-value ula-savings-ctx-value--low">−{fmt(existingLoanBalance)}</span>
               </div>
-            </div>
+            )}
+          </div>
 
-            <div className="user-loan-application-group-half">
-              <label className="user-loan-application-label">Monthly Income (₱)</label>
-              <div className="user-loan-application-input-wrapper">
-                <span className="user-loan-application-input-icon">₱</span>
-                <input
-                  type="number"
-                  name="monthlyIncome"
-                  className="user-loan-application-input"
-                  placeholder="Enter income"
-                  value={formData.monthlyIncome}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
+          {/* ── Loan Type selector ── */}
+          <div className="user-loan-application-form-group">
+            <label className="user-loan-application-label">Select Loan Type</label>
+            <div className="ula-type-cards">
+              {LOAN_TYPES.map((lt) => {
+                const isSelected = loanType === lt.key;
+                const ltMax = Math.max(0, totalSavings * lt.multiplier - existingLoanBalance);
+                return (
+                  <button
+                    key={lt.key}
+                    type="button"
+                    className={`ula-type-card ula-type-card--${lt.color} ${isSelected ? 'ula-type-card--active' : ''}`}
+                    onClick={() => { setLoanType(lt.key); setTermMonths(''); }}
+                  >
+                    <div className={`ula-type-icon ula-type-icon--${lt.color}`}>{lt.icon}</div>
+                    <div className="ula-type-name">{lt.name}</div>
+                    <div className="ula-type-mult">{lt.multiplier}× savings</div>
+                    <div className="ula-type-desc">{lt.desc}</div>
+                    <div className="ula-type-meta">
+                      <span>{lt.rateLabel}</span>
+                      <span>{lt.minTerm}–{lt.maxTerm} mo</span>
+                    </div>
+                    <div className="ula-type-max">Max: {fmt(ltMax)}</div>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          {/* Guarantor Information */}
-          <div className="user-loan-application-guarantor-section">
-            <h3 className="user-loan-application-guarantor-title">Guarantor Information</h3>
+          {/* ── Amount + Term row ── */}
+          {selectedType && (
             <div className="user-loan-application-row">
               <div className="user-loan-application-group-half">
-                <label className="user-loan-application-label">Guarantor Name</label>
+                <label className="user-loan-application-label">
+                  Loan Amount (₱)
+                  <span className="ula-max-tag">Max: {fmt(maxLoanable)}</span>
+                </label>
                 <div className="user-loan-application-input-wrapper">
-                  <svg className="user-loan-application-input-icon-svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path d="M16.6667 17.5C16.6667 15.1988 13.6819 13.3333 10 13.3333C6.31812 13.3333 3.33334 15.1988 3.33334 17.5" stroke="#99A1AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-                    <circle cx="10" cy="6.66667" r="3.33333" stroke="#99A1AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  <span className="user-loan-application-input-icon">₱</span>
                   <input
-                    type="text"
-                    name="guarantorName"
+                    type="number"
                     className="user-loan-application-input"
-                    placeholder="Enter name"
-                    value={formData.guarantorName}
-                    onChange={handleChange}
+                    placeholder="Enter amount"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    min="500"
+                    max={maxLoanable}
                     required
                   />
                 </div>
+                {amount && Number(amount) > maxLoanable && (
+                  <span className="ula-field-error">Exceeds your max loanable amount</span>
+                )}
+                {amount && Number(amount) > 0 && Number(amount) < 500 && (
+                  <span className="ula-field-error">Minimum loan is ₱500</span>
+                )}
               </div>
 
               <div className="user-loan-application-group-half">
-                <label className="user-loan-application-label">Guarantor Phone</label>
+                <label className="user-loan-application-label">Repayment Term</label>
                 <div className="user-loan-application-input-wrapper">
                   <svg className="user-loan-application-input-icon-svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path d="M3.33334 3.33333H7.50001L9.16668 7.5L6.87501 8.75C7.93432 10.9028 9.59726 12.5657 11.75 13.625L13 11.3333L17.1667 13V17.1667C17.1667 17.6269 16.9824 18.0685 16.6542 18.3967C16.3261 18.7248 15.8845 18.9091 15.4243 18.9091C8.86193 18.5113 3.48875 13.1381 3.09093 6.57576C3.09093 6.11557 3.27519 5.67399 3.60334 5.34584C3.93148 5.01769 4.37306 4.83333 4.83334 4.83333" stroke="#99A1AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M6.66667 1.66667V5" stroke="#99A1AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M13.3333 1.66667V5" stroke="#99A1AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+                    <rect x="2.5" y="3.33333" width="15" height="14.1667" rx="2" stroke="#99A1AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M2.5 8.33333H17.5" stroke="#99A1AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                  <input
-                    type="tel"
-                    name="guarantorPhone"
-                    className="user-loan-application-input"
-                    placeholder="Enter phone"
-                    value={formData.guarantorPhone}
-                    onChange={handleChange}
+                  <select
+                    className="user-loan-application-select"
+                    style={{ paddingLeft: '40px' }}
+                    value={termMonths}
+                    onChange={(e) => setTermMonths(e.target.value)}
                     required
-                  />
+                  >
+                    <option value="">Select term</option>
+                    {termOptions.map((m) => (
+                      <option key={m} value={m}>
+                        {m} month{m > 1 ? 's' : ''}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Upload Documents */}
+          {/* ── Live calculation breakdown ── */}
+          {calc && (
+            <div className="ula-calc-card">
+              <div className="ula-calc-header">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.2" />
+                  <path d="M8 5v4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+                  <circle cx="8" cy="11.5" r="0.6" fill="currentColor" />
+                </svg>
+                Loan Calculation Breakdown
+              </div>
+              <div className="ula-calc-rows">
+                <div className="ula-calc-row">
+                  <span>Principal amount</span>
+                  <span>{fmt(calc.principal)}</span>
+                </div>
+                <div className="ula-calc-row">
+                  <span>Interest rate</span>
+                  <span>{(calc.rate * 100).toFixed(1)}% per month</span>
+                </div>
+                <div className="ula-calc-row">
+                  <span>Term</span>
+                  <span>{calc.months} month{calc.months > 1 ? 's' : ''}</span>
+                </div>
+                <div className="ula-calc-row">
+                  <span>Total interest <span className="ula-calc-formula">(P × R × T)</span></span>
+                  <span>{fmt(calc.totalInterest)}</span>
+                </div>
+                <div className="ula-calc-divider" />
+                <div className="ula-calc-row ula-calc-row--bold">
+                  <span>Total repayment</span>
+                  <span>{fmt(calc.totalRepayment)}</span>
+                </div>
+                <div className="ula-calc-row ula-calc-row--bold ula-calc-row--primary">
+                  <span>Monthly payment</span>
+                  <span>{fmt(calc.monthly)}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── Eligibility checklist ── */}
+          {selectedType && (
+            <div className="ula-eligibility">
+              <div className="ula-eligibility-title">Eligibility Check</div>
+              <div className="ula-eligibility-list">
+                <div className="ula-eligibility-item">
+                  {savingsOk ? <CheckIcon /> : <XIcon />}
+                  <span>Minimum savings of ₱1,000</span>
+                </div>
+                <div className="ula-eligibility-item">
+                  {noOverdue ? <CheckIcon /> : <XIcon />}
+                  <span>No overdue or unpaid loans</span>
+                </div>
+                {calc && (
+                  <div className="ula-eligibility-item">
+                    {amountOk ? <CheckIcon /> : <XIcon />}
+                    <span>Amount within computed limit ({fmt(maxLoanable)})</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ── Upload Documents ── */}
           <div className="user-loan-application-upload-section">
             <h3 className="user-loan-application-guarantor-title">Upload Documents</h3>
             <div className="user-loan-application-row">
@@ -302,14 +440,18 @@ export default function LoanApplicationModal({ isOpen, onClose }) {
           {/* Note */}
           <div className="user-loan-application-note-box">
             <p className="user-loan-application-note-text">
-              <strong>Note:</strong> Your application will be reviewed within 2-3 business days. You will be notified via email about the status.
+              <strong>Note:</strong> Your application will be reviewed within 2–3 business days. A late payment penalty of 3% per month applies after a 3-day grace period.
             </p>
           </div>
 
-          {/* Form Actions */}
+          {/* Actions */}
           <div className="user-loan-application-actions">
-            <button type="submit" className="user-loan-application-submit-btn" disabled={loading}>
-              {loading ? 'Submitting...' : 'Submit Application'}
+            <button
+              type="submit"
+              className="user-loan-application-submit-btn"
+              disabled={loading || !allEligible || !calc}
+            >
+              {loading ? 'Submitting…' : 'Submit Application'}
             </button>
             <button type="button" className="user-loan-application-cancel-btn" onClick={onClose} disabled={loading}>
               Cancel

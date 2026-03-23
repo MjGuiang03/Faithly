@@ -12,6 +12,8 @@ export default function Home() {
   const { user, profile } = useAuth();
 
   const [loanStats, setLoanStats] = useState({ activeCount: 0, remainingBalance: 0 });
+  const [activeLoansList, setActiveLoansList] = useState([]);
+
   const [donationStats, setDonationStats] = useState({ totalDonated: 0 });
   const [attendanceStats, setAttendanceStats] = useState({ total: 0 });
   const [announcementsCount, setAnnouncementsCount] = useState(0);
@@ -42,6 +44,8 @@ export default function Home() {
 
       if (loansRes.ok && loansData.success) {
         setLoanStats(loansData.stats || { activeCount: 0, remainingBalance: 0 });
+        const activeList = (loansData.loans || []).filter(l => l.status === 'active');
+        setActiveLoansList(activeList);
       }
       if (donationsRes.ok && donationsData.success) {
         setDonationStats(donationsData.stats || { totalDonated: 0 });
@@ -219,6 +223,24 @@ export default function Home() {
               <p className="user-stat-label">Active Loans</p>
               {loading ? <div className="user-skeleton" style={{ height: '24px', width: '40px', marginTop: '4px' }}></div> : <p className="user-stat-value user-fade-in">{loanStats.activeCount}</p>}
             </div>
+
+            {/* Hover Tooltip */}
+            {!loading && activeLoansList.length > 0 && (
+              <div className="user-loan-hover-tooltip">
+                <p className="user-loan-hover-title">Active Loans</p>
+                {activeLoansList.slice(0, 1).map(loan => (
+                  <div key={loan._id} className="user-loan-hover-item">
+                    <span className="user-loan-hover-id">{loan.loanId}</span>
+                    <span className="user-loan-hover-amount">₱{loan.amount.toLocaleString()}</span>
+                  </div>
+                ))}
+                {activeLoansList.length > 1 && (
+                  <p className="user-loan-hover-more">+{activeLoansList.length - 1} more</p>
+                )}
+                <p className="user-loan-hover-cta">Click to view details</p>
+              </div>
+            )}
+
           </div>
 
           <div className="user-stat-card user-stat-green user-stat-card-clickable" onClick={() => navigate('/donation')} style={{ cursor: 'pointer' }}>

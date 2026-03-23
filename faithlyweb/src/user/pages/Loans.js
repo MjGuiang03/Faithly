@@ -41,6 +41,7 @@ export default function Loans() {
   const [error, setError] = useState('');
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [totalSavings, setTotalSavings] = useState(0);
   const LIMIT = 5;
 
   const fetchAll = useCallback(async () => {
@@ -54,11 +55,12 @@ export default function Loans() {
     }
     const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
     try {
-      const [loansRes, verifyRes] = await Promise.all([
+      const [loansRes, verifyRes, savingsRes] = await Promise.all([
         fetch(`${API}/api/loans/my-loans?page=${page}&limit=${LIMIT}`, { headers }),
         fetch(`${API}/api/verification/status`, { headers }),
+        fetch(`${API}/api/savings/stats`, { headers }),
       ]);
-      if (loansRes.status === 401 || verifyRes.status === 401) {
+      if (loansRes.status === 401 || verifyRes.status === 401 || savingsRes.status === 401) {
         localStorage.removeItem('token');
         navigate('/');
         return;
@@ -84,6 +86,10 @@ export default function Loans() {
         setVerificationStatus(verifyData.verificationStatus || 'unverified');
       } else {
         setVerificationStatus('unverified');
+      }
+      const savingsData = await savingsRes.json();
+      if (savingsRes.ok && savingsData.success) {
+        setTotalSavings(savingsData.stats?.totalSavings || 0);
       }
     } catch (err) {
       setError('Network error. Please try again.');
@@ -569,7 +575,13 @@ export default function Loans() {
         )}
       </div>
 
-      <LoanApplicationModal isOpen={isLoanModalOpen} onClose={handleLoanClose} />
+      <LoanApplicationModal
+        isOpen={isLoanModalOpen}
+        onClose={handleLoanClose}
+        totalSavings={totalSavings}
+        existingLoanBalance={stats.remainingBalance || 0}
+        hasOverdueLoans={loans.some(l => l.status === 'overdue')}
+      />
       <VerificationModal isOpen={isVerifyModalOpen} onClose={handleVerificationClose} />
     </div>
   );

@@ -19,6 +19,7 @@ import Branches from './user/pages/Branches';
 import Notifications from './user/pages/Notifications'
 import Settings from './user/pages/Settings';
 import LoanDetail from './user/pages/LoanDetail';
+import Savings from './user/pages/Savings';
 
 // Admin Pages
 
@@ -131,6 +132,7 @@ export default function App() {
           <Route path="/branches"   element={<ProtectedRoute><Branches /></ProtectedRoute>} />
           <Route path="/notifications"   element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
           <Route path="/settings"   element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+          <Route path="/savings"    element={<ProtectedRoute><Savings /></ProtectedRoute>} />
           <Route path="/loans/:loanId" element={<ProtectedRoute><LoanDetail /></ProtectedRoute>} />
 
           {/* Fallback */}

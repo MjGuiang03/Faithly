@@ -1,0 +1,844 @@
+/* =============================================================
+   Savings.css  (sv- prefix)
+   Mirrors Loans.css structure and variable conventions exactly
+   ============================================================= */
+
+/* ── Page header ─────────────────────────────────────────── */
+.sv-page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.sv-page-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--foreground);
+    margin: 0;
+}
+
+.sv-page-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 3px 0 0;
+}
+
+/* ── Top-right deposit button ────────────────────────────── */
+.sv-deposit-header-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 18px;
+    background: #1E3A8A;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
+}
+
+.sv-deposit-header-btn:hover {
+    background: #1447e6;
+}
+
+/* ── Error / retry ───────────────────────────────────────── */
+.sv-error-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 12px 16px;
+    background: var(--red-tint);
+    border: 1.5px solid rgba(204, 17, 17, 0.3);
+    border-radius: 10px;
+    color: var(--destructive);
+    font-size: 0.875rem;
+    font-family: 'Inter', sans-serif;
+    margin-bottom: 1.5rem;
+}
+
+.sv-retry-btn {
+    background: #dc2626;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 5px 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    white-space: nowrap;
+}
+
+.sv-retry-btn:hover {
+    background: #b91c1c;
+}
+
+/* ── Nudge / info bar ────────────────────────────────────── */
+.sv-nudge-bar {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    background: #e6f1fb;
+    border-left: 3px solid #378add;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 20px;
+}
+
+.sv-nudge-text {
+    font-size: 13px;
+    color: #0c447c;
+    line-height: 1.55;
+    font-family: 'Inter', sans-serif;
+}
+
+.sv-nudge-text strong {
+    font-weight: 700;
+}
+
+.dark .sv-nudge-bar {
+    background: rgba(30, 58, 138, 0.15);
+    border-left-color: #378add;
+}
+
+.dark .sv-nudge-text {
+    color: #93c5fd;
+}
+
+/* ── Stats ───────────────────────────────────────────────── */
+.sv-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.sv-stat-card {
+    background: var(--card);
+    border: 0.8px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.sv-stat-card--green {
+    background: #eaf3de;
+    border-color: #c0dd97;
+}
+
+.sv-stat-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+}
+
+.sv-stat-card--green .sv-stat-label {
+    color: #3b6d11;
+}
+
+.sv-stat-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--foreground);
+    font-family: 'Inter', sans-serif;
+}
+
+.sv-stat-value--muted {
+    color: var(--text-muted);
+    font-size: 18px;
+}
+
+.sv-stat-card--green .sv-stat-value {
+    color: #27500a;
+}
+
+.sv-stat-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+}
+
+.sv-stat-card--green .sv-stat-sub {
+    color: #3b6d11;
+}
+
+.dark .sv-stat-card {
+    background: var(--card);
+    border-color: var(--border);
+}
+
+.dark .sv-stat-card--green {
+    background: rgba(34, 197, 94, 0.08);
+    border-color: rgba(34, 197, 94, 0.2);
+}
+
+.dark .sv-stat-card--green .sv-stat-label,
+.dark .sv-stat-card--green .sv-stat-value,
+.dark .sv-stat-card--green .sv-stat-sub {
+    color: #4ade80;
+}
+
+/* ── Section card ────────────────────────────────────────── */
+.sv-section {
+    background: var(--card);
+    border: 0.8px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.sv-section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 0.8px solid var(--border);
+}
+
+.sv-section-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--foreground);
+    font-family: 'Inter', sans-serif;
+}
+
+.sv-section-link {
+    font-size: 12px;
+    color: #1E3A8A;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    padding: 0;
+}
+
+.sv-section-link:hover {
+    text-decoration: underline;
+}
+
+.dark .sv-section {
+    background: var(--card);
+    border-color: var(--border);
+}
+
+.dark .sv-section-head {
+    border-bottom-color: var(--border);
+}
+
+.dark .sv-section-title {
+    color: var(--foreground);
+}
+
+.dark .sv-section-link {
+    color: #93c5fd;
+}
+
+/* ── Goal rows ───────────────────────────────────────────── */
+.sv-goals-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.sv-goal-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 20px;
+    border-bottom: 0.8px solid var(--border);
+    transition: background 0.12s;
+}
+
+.sv-goal-row:last-child {
+    border-bottom: none;
+}
+
+.sv-goal-row:hover {
+    background: var(--secondary);
+}
+
+.sv-goal-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.sv-goal-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.sv-goal-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--foreground);
+    font-family: 'Inter', sans-serif;
+}
+
+.sv-goal-detail {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    font-family: 'Inter', sans-serif;
+}
+
+.sv-goal-bar-wrap {
+    margin-top: 7px;
+}
+
+.sv-goal-bar-track {
+    height: 5px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.sv-goal-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.4s ease;
+}
+
+.sv-goal-right {
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.sv-goal-saved {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--foreground);
+    font-family: 'Inter', sans-serif;
+}
+
+.sv-goal-target {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    font-family: 'Inter', sans-serif;
+}
+
+.sv-goal-pct {
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 2px;
+    font-family: 'Inter', sans-serif;
+}
+
+.sv-goal-pct--done {
+    color: #166534;
+}
+
+.sv-goal-more-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: 0.8px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    margin-left: 4px;
+}
+
+.sv-goal-more-btn:hover {
+    background: var(--secondary);
+    border-color: #1E3A8A;
+    color: #1E3A8A;
+}
+
+/* ── Goals empty state ───────────────────────────────────── */
+.sv-goals-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    gap: 12px;
+    text-align: center;
+}
+
+.sv-goals-empty-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background: var(--secondary);
+    border: 0.8px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.sv-goals-empty-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--foreground);
+    font-family: 'Inter', sans-serif;
+}
+
+.sv-goals-empty-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+    max-width: 280px;
+    line-height: 1.55;
+    margin: 0;
+}
+
+.sv-goals-empty-btn {
+    background: #1E3A8A;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    margin-top: 4px;
+    transition: background 0.2s;
+}
+
+.sv-goals-empty-btn:hover {
+    background: #1447e6;
+}
+
+/* ── Inline deposit strip ────────────────────────────────── */
+.sv-deposit-strip {
+    padding: 14px 20px;
+    background: var(--secondary);
+    border-top: 0.8px solid var(--border);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.sv-deposit-input {
+    flex: 1;
+    border: 0.8px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+    background: var(--card);
+    color: var(--foreground);
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    cursor: pointer;
+}
+
+.sv-deposit-input:focus {
+    border-color: #1E3A8A;
+}
+
+.sv-deposit-select {
+    border: 0.8px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+    background: var(--card);
+    color: var(--foreground);
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    cursor: pointer;
+}
+
+.sv-deposit-btn {
+    background: #1E3A8A;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    white-space: nowrap;
+    transition: background 0.2s;
+}
+
+.sv-deposit-btn:hover {
+    background: #1447e6;
+}
+
+/* ── Loanable banner ─────────────────────────────────────── */
+.sv-loanable-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 20px;
+    background: #eaf3de;
+    border-top: 0.8px solid #c0dd97;
+    flex-wrap: wrap;
+}
+
+.sv-loanable-banner--empty {
+    background: var(--secondary);
+    border-top-color: var(--border);
+}
+
+.sv-loanable-text strong {
+    font-size: 13px;
+    font-weight: 700;
+    color: #27500a;
+    display: block;
+    font-family: 'Inter', sans-serif;
+}
+
+.sv-loanable-banner--empty .sv-loanable-text strong {
+    color: var(--text-secondary);
+}
+
+.sv-loanable-text span {
+    font-size: 12px;
+    color: #3b6d11;
+    font-family: 'Inter', sans-serif;
+}
+
+.sv-loanable-banner--empty .sv-loanable-text span {
+    color: var(--text-muted);
+}
+
+.sv-loanable-pills {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.sv-loanable-pill {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 9999px;
+    font-family: 'Inter', sans-serif;
+}
+
+.sv-loanable-pill--blue {
+    background: #e6f1fb;
+    color: #0c447c;
+}
+
+.sv-loanable-pill--amber {
+    background: #faeeda;
+    color: #633806;
+}
+
+.sv-loanable-pill--teal {
+    background: #e1f5ee;
+    color: #085041;
+}
+
+.sv-loanable-pill--muted {
+    background: var(--border);
+    color: var(--text-muted);
+}
+
+.dark .sv-loanable-banner {
+    background: rgba(34, 197, 94, 0.08);
+    border-top-color: rgba(34, 197, 94, 0.2);
+}
+
+.dark .sv-loanable-banner .sv-loanable-text strong {
+    color: #4ade80;
+}
+
+.dark .sv-loanable-banner .sv-loanable-text span {
+    color: #86efac;
+}
+
+/* ── Transactions ────────────────────────────────────────── */
+.sv-txn-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.sv-txn-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    border-bottom: 0.8px solid var(--border);
+}
+
+.sv-txn-row:last-child {
+    border-bottom: none;
+}
+
+.sv-txn-dot-wrap {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.sv-txn-dot-wrap--in {
+    background: #eaf3de;
+}
+
+.sv-txn-dot-wrap--out {
+    background: #fee2e2;
+}
+
+.sv-txn-info {
+    flex: 1;
+}
+
+.sv-txn-label {
+    font-size: 13px;
+    color: var(--foreground);
+    font-family: 'Inter', sans-serif;
+}
+
+.sv-txn-date {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    font-family: 'Inter', sans-serif;
+}
+
+.sv-txn-amt {
+    font-size: 13px;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+}
+
+.sv-txn-amt--in {
+    color: #27500a;
+}
+
+.sv-txn-amt--out {
+    color: #991b1b;
+}
+
+/* ── Transaction empty state ─────────────────────────────── */
+.sv-txn-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 36px 24px;
+    gap: 8px;
+    text-align: center;
+}
+
+.sv-txn-empty-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: var(--secondary);
+    border: 0.8px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.sv-txn-empty-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--foreground);
+    font-family: 'Inter', sans-serif;
+}
+
+.sv-txn-empty-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+}
+
+/* ── Pagination ──────────────────────────────────────────── */
+.sv-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    padding: 12px 20px;
+    border-top: 0.8px solid var(--border);
+}
+
+.sv-pagination-info {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+    margin-right: auto;
+}
+
+.sv-page-btn {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 10px;
+    border: 0.8px solid var(--border);
+    border-radius: 6px;
+    background: var(--secondary);
+    font-size: 13px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.15s;
+}
+
+.sv-page-btn:hover:not(:disabled) {
+    background: var(--muted);
+    border-color: var(--primary);
+}
+
+.sv-page-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.sv-page-btn--active {
+    background: #1E3A8A;
+    border-color: #1E3A8A;
+    color: #fff;
+    font-weight: 600;
+}
+
+/* ── Skeleton ─────────────────────────────────────────────── */
+.sv-skeleton {
+    background: linear-gradient(90deg, var(--border) 25%, var(--muted) 50%, var(--border) 75%);
+    background-size: 200% 100%;
+    animation: sv-shimmer 1.2s infinite;
+    border-radius: 6px;
+}
+
+@keyframes sv-shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* ── Fade-in animation ───────────────────────────────────── */
+.sv-fade-in {
+    animation: sv-fadeIn 0.25s ease-in-out;
+}
+
+@keyframes sv-fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 1200px) {
+    .sv-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .sv-page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .sv-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .sv-goal-row {
+        gap: 10px;
+    }
+
+    .sv-deposit-strip {
+        flex-wrap: wrap;
+    }
+
+    .sv-deposit-input {
+        min-width: 0;
+    }
+
+    .sv-loanable-banner {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .sv-pagination {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
+/* ── Dark mode specifics ─────────────────────────────────── */
+.dark .sv-txn-dot-wrap--in {
+    background: rgba(34, 197, 94, 0.12);
+}
+
+.dark .sv-txn-dot-wrap--out {
+    background: rgba(239, 68, 68, 0.12);
+}
+
+.dark .sv-txn-amt--in {
+    color: #4ade80;
+}
+
+.dark .sv-txn-amt--out {
+    color: #f87171;
+}
+
+.dark .sv-goal-row:hover {
+    background: var(--secondary);
+}
+
+.dark .sv-goal-name {
+    color: var(--foreground);
+}
+
+.dark .sv-goal-saved {
+    color: var(--foreground);
+}
+
+.dark .sv-goal-pct--done {
+    color: #4ade80;
+}
+
+.dark .sv-deposit-input,
+.dark .sv-deposit-select {
+    background: var(--card);
+    border-color: var(--border);
+    color: var(--foreground);
+}
+
+.dark .sv-loanable-pill--muted {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-muted);
+}

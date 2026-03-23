@@ -1,25 +1,14 @@
 @keyframes user-loan-application-fadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes user-loan-application-slideUp {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
+/* ── Overlay ── */
 .user-loan-application-overlay {
   position: fixed;
   inset: 0;
@@ -31,12 +20,13 @@
   animation: user-loan-application-fadeIn 0.2s ease-in-out;
 }
 
+/* ── Content shell ── */
 .user-loan-application-content {
   background: var(--card);
   border-radius: 14px;
-  width: 659px;
-  max-width: 90vw;
-  max-height: 90vh;
+  width: 700px;
+  max-width: 92vw;
+  max-height: 92vh;
   overflow-y: auto;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
   border: 1px solid var(--border);
@@ -49,7 +39,6 @@
   display: none;
 }
 
-/* Force light color scheme on number inputs to prevent browser dark mode override */
 .user-loan-application-content input[type="number"] {
   color-scheme: light;
   background-color: var(--input-background) !important;
@@ -61,6 +50,7 @@
   color-scheme: dark;
 }
 
+/* ── Header ── */
 .user-loan-application-header {
   display: flex;
   align-items: center;
@@ -99,11 +89,12 @@
   color: var(--foreground);
 }
 
+/* ── Form ── */
 .user-loan-application-form {
   padding: 20px 24px 24px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18px;
   position: relative;
 }
 
@@ -131,6 +122,9 @@
   font-size: 13px;
   color: var(--text-secondary);
   line-height: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .user-loan-application-input-wrapper {
@@ -200,9 +194,300 @@
   color: var(--text-muted);
 }
 
-/* ── Guarantor ── */
-.user-loan-application-guarantor-section {
-  padding-top: 12px;
+/* ── Savings context banner ── */
+.ula-savings-ctx {
+  background: var(--secondary);
+  border: 0.8px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ula-savings-ctx-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ula-savings-ctx-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.ula-savings-ctx-value {
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.ula-savings-ctx-value--low {
+  color: #dc2626;
+}
+
+/* ── Loan type cards ── */
+.ula-type-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.ula-type-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  padding: 14px 10px 12px;
+  border-radius: 12px;
+  border: 1.2px solid var(--border);
+  background: var(--card);
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  font-family: 'Inter', sans-serif;
+}
+
+.ula-type-card:hover {
+  border-color: var(--border-strong);
+  background: var(--secondary);
+}
+
+.ula-type-card--active.ula-type-card--blue {
+  border-color: #1E3A8A;
+  background: #e6f1fb;
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.10);
+}
+
+.ula-type-card--active.ula-type-card--amber {
+  border-color: #ba7517;
+  background: #faeeda;
+  box-shadow: 0 0 0 3px rgba(186, 117, 23, 0.10);
+}
+
+.ula-type-card--active.ula-type-card--teal {
+  border-color: #1d9e75;
+  background: #e1f5ee;
+  box-shadow: 0 0 0 3px rgba(29, 158, 117, 0.10);
+}
+
+.dark .ula-type-card--active.ula-type-card--blue {
+  background: rgba(30, 58, 138, 0.12);
+}
+
+.dark .ula-type-card--active.ula-type-card--amber {
+  background: rgba(186, 117, 23, 0.12);
+}
+
+.dark .ula-type-card--active.ula-type-card--teal {
+  background: rgba(29, 158, 117, 0.12);
+}
+
+.ula-type-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ula-type-icon--blue {
+  background: #e6f1fb;
+  color: #185fa5;
+}
+
+.ula-type-icon--amber {
+  background: #faeeda;
+  color: #854f0b;
+}
+
+.ula-type-icon--teal {
+  background: #e1f5ee;
+  color: #0f6e56;
+}
+
+.dark .ula-type-icon--blue { background: rgba(30, 58, 138, 0.15); }
+.dark .ula-type-icon--amber { background: rgba(186, 117, 23, 0.15); }
+.dark .ula-type-icon--teal { background: rgba(29, 158, 117, 0.15); }
+
+.ula-type-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--foreground);
+  line-height: 1.3;
+}
+
+.ula-type-mult {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--secondary);
+  border-radius: 20px;
+  padding: 2px 8px;
+}
+
+.ula-type-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.ula-type-meta {
+  display: flex;
+  gap: 8px;
+  font-size: 10.5px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.ula-type-meta span {
+  background: var(--secondary);
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.ula-type-max {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* ── Max tag inline label ── */
+.ula-max-tag {
+  font-size: 11px;
+  font-weight: 600;
+  color: #185fa5;
+  background: #e6f1fb;
+  padding: 2px 8px;
+  border-radius: 20px;
+  margin-left: auto;
+}
+
+.dark .ula-max-tag {
+  background: rgba(30, 58, 138, 0.15);
+  color: #7090d0;
+}
+
+/* ── Field error ── */
+.ula-field-error {
+  font-family: 'Inter', sans-serif;
+  font-size: 11.5px;
+  color: #dc2626;
+  padding-left: 2px;
+}
+
+/* ── Calculation breakdown ── */
+.ula-calc-card {
+  background: var(--secondary);
+  border: 0.8px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.ula-calc-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--foreground);
+  border-bottom: 0.8px solid var(--border);
+}
+
+.ula-calc-rows {
+  padding: 10px 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ula-calc-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.ula-calc-row span:last-child {
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.ula-calc-row--bold {
+  font-weight: 700 !important;
+}
+
+.ula-calc-row--bold span {
+  font-weight: 700 !important;
+  color: var(--foreground) !important;
+}
+
+.ula-calc-row--primary span:last-child {
+  color: #1E3A8A !important;
+  font-size: 15px;
+}
+
+.dark .ula-calc-row--primary span:last-child {
+  color: #7090d0 !important;
+}
+
+.ula-calc-formula {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.ula-calc-divider {
+  height: 0;
+  border-top: 0.8px dashed var(--border-strong);
+  margin: 2px 0;
+}
+
+/* ── Eligibility checklist ── */
+.ula-eligibility {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ula-eligibility-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.ula-eligibility-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ula-eligibility-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.ula-eligibility-item svg {
+  flex-shrink: 0;
+}
+
+/* ── Upload ── */
+.user-loan-application-upload-section {
+  padding-top: 4px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -215,14 +500,6 @@
   color: var(--foreground);
   line-height: 24px;
   margin: 0;
-}
-
-/* ── Upload ── */
-.user-loan-application-upload-section {
-  padding-top: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
 }
 
 .user-loan-upload-box {
@@ -328,11 +605,16 @@
   font-family: 'Inter', sans-serif;
   font-size: 16px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s, opacity 0.2s;
 }
 
-.user-loan-application-submit-btn:hover {
+.user-loan-application-submit-btn:hover:not(:disabled) {
   background: var(--blue-hover);
+}
+
+.user-loan-application-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .user-loan-application-cancel-btn {
@@ -352,6 +634,7 @@
   background: var(--muted);
 }
 
+/* ── Responsive ── */
 @media (max-width: 768px) {
   .user-loan-application-content {
     width: 95vw;
@@ -372,5 +655,29 @@
 
   .user-loan-application-header {
     padding: 16px;
+  }
+
+  .ula-type-cards {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .ula-type-card {
+    flex-direction: row;
+    text-align: left;
+    gap: 12px;
+    padding: 12px 14px;
+  }
+
+  .ula-type-card > .ula-type-icon {
+    margin: 0;
+  }
+
+  .ula-type-desc {
+    display: none;
+  }
+
+  .ula-type-max {
+    margin-top: 0;
   }
 }

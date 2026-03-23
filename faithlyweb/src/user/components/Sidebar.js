@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 import { useState, useEffect } from 'react';
-import { LayoutGrid, FileText, Heart, Calendar, Building2, Settings, LogOut, Bell, ChevronLeft, ChevronRight, Menu, X } from 'lucide-react';
+import { LayoutGrid, FileText, Heart, Calendar, Building2, Settings, LogOut, Bell, ChevronLeft, ChevronRight, Menu, X, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
 import puacLogo from '../../assets/puaclogo.png';
 import '../styles/Sidebar.css';
@@ -154,6 +154,7 @@ export default function Sidebar() {
   const navItems = [
     { path: '/home', icon: <LayoutGrid size={20} />, label: 'Home' },
     { path: '/notifications', icon: <Bell size={20} />, label: 'Notifications', badge: unreadCount },
+    { path: '/savings', icon: <Wallet size={20} />, label: 'Savings' },
     { path: '/loans', icon: <FileText size={20} />, label: 'Loans' },
     { path: '/donation', icon: <Heart size={20} />, label: 'Donations' },
     { path: '/attendance', icon: <Calendar size={20} />, label: 'Attendance' },
