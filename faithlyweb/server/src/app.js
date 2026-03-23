@@ -15,6 +15,7 @@ import verificationRoutes from './routes/verification.js';
 import adminRoutes        from './routes/admin.js';
 import notificationRoutes from './routes/notifications.js';
 import announcementRoutes from './routes/announcements.js';
+import savingsRoutes      from './routes/savings.js';
 
 
 const app = express();
@@ -54,6 +55,7 @@ app.use('/api',        verificationRoutes);
 app.use('/api/admin',  adminRoutes);
 app.use('/api/admin',  notificationRoutes);
 app.use('/api',        announcementRoutes);
+app.use('/api',        savingsRoutes);
 
 
 export default app;

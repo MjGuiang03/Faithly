@@ -36,6 +36,8 @@ export const attendance    = db.collection('attendance');
 export const verifications       = db.collection('verifications');
 export const pendingRegistrations = db.collection('pending_registrations');
 export const announcements      = db.collection('announcements');
+export const savingsGoals       = db.collection('savings_goals');
+export const savingsTransactions = db.collection('savings_transactions');
 
 
 /* ================== DATABASE INDEXES ================== */
@@ -61,6 +63,9 @@ await otps.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 await pendingRegistrations.createIndex({ createdAt: 1 }, { expireAfterSeconds: 86400 });
 await pendingRegistrations.createIndex({ email: 1 }, { unique: true });
 await announcements.createIndex({ createdAt: -1 });
+await savingsGoals.createIndex({ email: 1 });
+await savingsTransactions.createIndex({ email: 1 });
+await savingsTransactions.createIndex({ date: -1 });
 
 
 /* ================== CREATE DEFAULT ADMINS ================== */

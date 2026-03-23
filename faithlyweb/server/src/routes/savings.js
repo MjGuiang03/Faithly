@@ -1,0 +1,212 @@
+import { Router } from 'express';
+import { ObjectId } from 'mongodb';
+
+import { users, savingsGoals, savingsTransactions, loans } from '../config/db.js';
+import { authenticateUser } from '../middleware/auth.js';
+
+const router = Router();
+
+/* ================== GET SAVINGS STATS ================== */
+router.get('/savings/stats', authenticateUser, async (req, res) => {
+  try {
+    const email = req.user.email;
+
+    // All goals
+    const goals = await savingsGoals.find({ email }).toArray();
+    const totalSavings = goals.reduce((sum, g) => sum + (g.savedAmount || 0), 0);
+
+    // This month's deposits
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthDeposits = await savingsTransactions.aggregate([
+      { $match: { email, type: 'deposit', date: { $gte: monthStart } } },
+      { $group: { _id: null, total: { $sum: '$amount' } } },
+    ]).toArray();
+    const thisMonth = monthDeposits[0]?.total || 0;
+
+    const activeGoals = goals.filter(g => g.status !== 'completed').length;
+    const completedGoals = goals.filter(g => g.status === 'completed').length;
+
+    // Max loanable (2x savings)
+    const activeLoans = await loans.find({ email, status: 'active' }).toArray();
+    const existingBalance = activeLoans.reduce((sum, l) => sum + (l.remainingBalance || l.amount || 0), 0);
+    const maxLoanable = Math.max(0, totalSavings * 2 - existingBalance);
+
+    res.json({
+      success: true,
+      stats: { totalSavings, thisMonth, activeGoals, completedGoals, maxLoanable },
+    });
+  } catch (err) {
+    console.error('Savings stats error:', err);
+    res.status(500).json({ success: false, message: 'Failed to fetch savings stats' });
+  }
+});
+
+/* ================== GET SAVINGS GOALS ================== */
+router.get('/savings/goals', authenticateUser, async (req, res) => {
+  try {
+    const email = req.user.email;
+    const goals = await savingsGoals.find({ email }).sort({ createdAt: -1 }).toArray();
+    res.json({ success: true, goals });
+  } catch (err) {
+    console.error('Savings goals error:', err);
+    res.status(500).json({ success: false, message: 'Failed to fetch savings goals' });
+  }
+});
+
+/* ================== CREATE SAVINGS GOAL ================== */
+router.post('/savings/goals', authenticateUser, async (req, res) => {
+  try {
+    const email = req.user.email;
+    const { name, targetAmount, monthlyContribution, targetDate, color, iconType } = req.body;
+
+    if (!name || !targetAmount) {
+      return res.status(400).json({ success: false, message: 'Name and target amount are required' });
+    }
+
+    const user = await users.findOne({ email });
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    const goal = {
+      email,
+      memberName: user.fullName,
+      name,
+      targetAmount: Number(targetAmount),
+      savedAmount: 0,
+      monthlyContribution: Number(monthlyContribution) || 0,
+      targetDate: targetDate ? new Date(targetDate) : null,
+      color: color || 'blue',
+      iconType: iconType || 'default',
+      status: 'active',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    const result = await savingsGoals.insertOne(goal);
+    res.status(201).json({ success: true, message: 'Goal created', goalId: result.insertedId });
+  } catch (err) {
+    console.error('Create goal error:', err);
+    res.status(500).json({ success: false, message: 'Failed to create goal' });
+  }
+});
+
+/* ================== UPDATE SAVINGS GOAL ================== */
+router.put('/savings/goals/:id', authenticateUser, async (req, res) => {
+  try {
+    const email = req.user.email;
+    const { id } = req.params;
+    const { name, targetAmount, monthlyContribution, targetDate, color, iconType } = req.body;
+
+    const goal = await savingsGoals.findOne({ _id: new ObjectId(id), email });
+    if (!goal) return res.status(404).json({ success: false, message: 'Goal not found' });
+
+    const updates = {};
+    if (name !== undefined) updates.name = name;
+    if (targetAmount !== undefined) updates.targetAmount = Number(targetAmount);
+    if (monthlyContribution !== undefined) updates.monthlyContribution = Number(monthlyContribution);
+    if (targetDate !== undefined) updates.targetDate = targetDate ? new Date(targetDate) : null;
+    if (color !== undefined) updates.color = color;
+    if (iconType !== undefined) updates.iconType = iconType;
+    updates.updatedAt = new Date();
+
+    // Check if goal is now completed
+    const saved = goal.savedAmount || 0;
+    if (updates.targetAmount && saved >= updates.targetAmount) {
+      updates.status = 'completed';
+    }
+
+    await savingsGoals.updateOne({ _id: new ObjectId(id) }, { $set: updates });
+    res.json({ success: true, message: 'Goal updated' });
+  } catch (err) {
+    console.error('Update goal error:', err);
+    res.status(500).json({ success: false, message: 'Failed to update goal' });
+  }
+});
+
+/* ================== DELETE SAVINGS GOAL ================== */
+router.delete('/savings/goals/:id', authenticateUser, async (req, res) => {
+  try {
+    const email = req.user.email;
+    const { id } = req.params;
+
+    const result = await savingsGoals.deleteOne({ _id: new ObjectId(id), email });
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ success: false, message: 'Goal not found' });
+    }
+    res.json({ success: true, message: 'Goal deleted' });
+  } catch (err) {
+    console.error('Delete goal error:', err);
+    res.status(500).json({ success: false, message: 'Failed to delete goal' });
+  }
+});
+
+/* ================== DEPOSIT TO SAVINGS ================== */
+router.post('/savings/deposit', authenticateUser, async (req, res) => {
+  try {
+    const email = req.user.email;
+    const { goalId, amount, description, source } = req.body;
+
+    if (!goalId || !amount || amount <= 0) {
+      return res.status(400).json({ success: false, message: 'Goal and a positive amount are required' });
+    }
+
+    const goal = await savingsGoals.findOne({ _id: new ObjectId(goalId), email });
+    if (!goal) return res.status(404).json({ success: false, message: 'Goal not found' });
+
+    const depositAmount = Number(amount);
+
+    // Update goal saved amount
+    const newSaved = (goal.savedAmount || 0) + depositAmount;
+    const goalUpdates = { savedAmount: newSaved, updatedAt: new Date() };
+    if (newSaved >= goal.targetAmount) goalUpdates.status = 'completed';
+
+    await savingsGoals.updateOne({ _id: new ObjectId(goalId) }, { $set: goalUpdates });
+
+    // Create transaction record
+    const txn = {
+      email,
+      goalId: new ObjectId(goalId),
+      goalName: goal.name,
+      type: 'deposit',
+      amount: depositAmount,
+      description: description || 'Deposit',
+      source: source || 'Manual',
+      date: new Date(),
+    };
+    await savingsTransactions.insertOne(txn);
+
+    res.json({
+      success: true,
+      message: `₱${depositAmount.toLocaleString()} deposited to ${goal.name}`,
+      newSavedAmount: newSaved,
+    });
+  } catch (err) {
+    console.error('Deposit error:', err);
+    res.status(500).json({ success: false, message: 'Failed to process deposit' });
+  }
+});
+
+/* ================== GET SAVINGS TRANSACTIONS ================== */
+router.get('/savings/transactions', authenticateUser, async (req, res) => {
+  try {
+    const email = req.user.email;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const totalCount = await savingsTransactions.countDocuments({ email });
+    const transactions = await savingsTransactions
+      .find({ email })
+      .sort({ date: -1 })
+      .skip(skip)
+      .limit(limit)
+      .toArray();
+
+    res.json({ success: true, transactions, totalCount, currentPage: page });
+  } catch (err) {
+    console.error('Savings transactions error:', err);
+    res.status(500).json({ success: false, message: 'Failed to fetch transactions' });
+  }
+});
+
+export default router;
