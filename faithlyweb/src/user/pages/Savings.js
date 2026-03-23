@@ -445,7 +445,6 @@ export default function Savings() {
                                     </div>
 
                                     {renderGoals()}
-                                    {renderDepositStrip()}
                                     {renderLoanableBanner()}
                                 </div>
 

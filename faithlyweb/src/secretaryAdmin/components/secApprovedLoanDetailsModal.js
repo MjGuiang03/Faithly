@@ -41,17 +41,15 @@ export default function SecApprovedLoanDetailsModal({ loan, onClose, onProcess }
                                 <p className="sec-loan-details-value">{loan.position}</p>
                             </div>
                             <div className="sec-loan-details-field">
-                                <p className="sec-loan-details-label">Occupation</p>
-                                <p className="sec-loan-details-value">{loan.occupation}</p>
+                                <p className="sec-loan-details-label">Disbursement Method</p>
+                                <p className="sec-loan-details-value" style={{ textTransform: 'capitalize' }}>{loan.disbursementMethod || 'N/A'}</p>
                             </div>
-                            <div className="sec-loan-details-field">
-                                <p className="sec-loan-details-label">Monthly Income</p>
-                                <p className="sec-loan-details-value">₱{loan.monthlyIncome.toLocaleString()}</p>
-                            </div>
-                            <div className="sec-loan-details-field">
-                                <p className="sec-loan-details-label">GCash Number</p>
-                                <p className="sec-loan-details-value gcash">{loan.gcashNumber}</p>
-                            </div>
+                            {loan.disbursementAccount && (
+                                <div className="sec-loan-details-field">
+                                    <p className="sec-loan-details-label">Account Details</p>
+                                    <p className="sec-loan-details-value">{loan.disbursementAccount}</p>
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -61,10 +59,10 @@ export default function SecApprovedLoanDetailsModal({ loan, onClose, onProcess }
                         <div className="sec-loan-details-grid">
                             <div className="sec-loan-details-field">
                                 <p className="sec-loan-details-label">Loan Amount</p>
-                                <p className="sec-loan-details-value amount">₱{loan.amount.toLocaleString()}</p>
+                                <p className="sec-loan-details-value amount">₱{(loan.amount || 0).toLocaleString()}</p>
                             </div>
                             <div className="sec-loan-details-field">
-                                <p className="sec-loan-details-label">Loan Purpose</p>
+                                <p className="sec-loan-details-label">Loan Type</p>
                                 <p className="sec-loan-details-value">{loan.purpose}</p>
                             </div>
                             <div className="sec-loan-details-field">
@@ -111,7 +109,7 @@ export default function SecApprovedLoanDetailsModal({ loan, onClose, onProcess }
                                 </svg>
                             </div>
                             <p className="sec-loan-details-stat-label">Total Donations</p>
-                            <p className="sec-loan-details-stat-value">₱{loan.totalDonations.toLocaleString()}</p>
+                            <p className="sec-loan-details-stat-value">₱{(loan.totalDonations || 0).toLocaleString()}</p>
                         </div>
                     </div>
                 </div>

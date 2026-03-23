@@ -7,6 +7,18 @@ import { authenticateAdmin } from '../middleware/auth.js';
 
 const router = Router();
 
+/* ── Helper: compute nextPaymentDate for an active loan ── */
+function enrichLoanWithNextPayment(loan) {
+  if (loan.status !== 'active') return loan;
+  const term = loan.termMonths || 12;
+  const paidMonths = loan.paidMonths || 0;
+  if (paidMonths >= term) return loan; // fully paid
+  const startDate = new Date(loan.disbursementDate || loan.approvedDate || loan.appliedDate);
+  const nextDue = new Date(startDate);
+  nextDue.setMonth(startDate.getMonth() + paidMonths + 1);
+  return { ...loan, nextPaymentDate: nextDue };
+}
+
 /* ================== USER - APPLY FOR LOAN ================== */
 router.post('/loans/apply', authenticateUser, async (req, res) => {
   try {
@@ -86,7 +98,7 @@ router.get('/loans/my-loans', authenticateUser, async (req, res) => {
 
     res.status(200).json({
       success: true,
-      loans: userLoans,
+      loans: userLoans.map(enrichLoanWithNextPayment),
       totalCount,
       totalPages: Math.ceil(totalCount / limit),
       currentPage: page,
@@ -258,7 +270,7 @@ router.get('/loans/:id', authenticateUser, async (req, res) => {
     const loan = await loans.findOne(query);
     if (!loan) return res.status(404).json({ success: false, message: 'Loan not found' });
 
-    res.status(200).json({ success: true, loan });
+    res.status(200).json({ success: true, loan: enrichLoanWithNextPayment(loan) });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Failed to fetch loan details' });

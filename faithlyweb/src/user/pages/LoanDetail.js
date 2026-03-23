@@ -445,6 +445,11 @@ export default function LoanDetail() {
                                 </div>
                                 <p className="ld-page-subtitle">{loan.purpose} loan · Applied {fmtDate(loan.appliedDate)}</p>
                             </div>
+                            {loan.status === 'active' && (
+                                <button className="ld-pay-now-header-btn" onClick={() => setShowPayNow(true)}>
+                                    Pay now
+                                </button>
+                            )}
                         </div>
 
                         {/* ── Stats ── */}
