@@ -14,90 +14,77 @@ const fmt = (n) =>
 const fmtDate = (d) =>
   d ? new Date(d).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
 
-/* status pill colours */
 const STATUS_CLASS = {
-  active:    'user-loan-status-active',
-  pending:   'user-loan-status-pending',
+  active: 'user-loan-status-active',
+  pending: 'user-loan-status-pending',
   completed: 'user-loan-status-completed',
-  rejected:  'user-loan-status-rejected',
+  rejected: 'user-loan-status-rejected',
 };
+
+/* Lock icon SVG */
+const LockIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+    <rect x="2" y="6" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
+    <path d="M4.5 6V4.5a2.5 2.5 0 0 1 5 0V6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+  </svg>
+);
 
 export default function Loans() {
   const navigate = useNavigate();
   useAuth();
 
-  /* ── modal visibility ── */
-  const [isLoanModalOpen,    setIsLoanModalOpen]    = useState(false);
-  const [isVerifyModalOpen,  setIsVerifyModalOpen]  = useState(false);
-
-  /* ── data ── */
-  const [loans,               setLoans]               = useState([]);
-  const [stats,               setStats]               = useState({ totalBorrowed: 0, remainingBalance: 0, activeCount: 0 });
-  const [activeLoans,         setActiveLoans]         = useState([]);
-  const [verificationStatus,  setVerificationStatus]  = useState(null); // null = loading
-  const [dataLoading,         setDataLoading]         = useState(true);
-  const [error,               setError]               = useState('');
-  const [page,                setPage]                = useState(1);
-  const [totalCount,          setTotalCount]          = useState(0);
+  const [isLoanModalOpen, setIsLoanModalOpen] = useState(false);
+  const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
+  const [loans, setLoans] = useState([]);
+  const [stats, setStats] = useState({ totalBorrowed: 0, remainingBalance: 0, activeCount: 0 });
+  const [activeLoans, setActiveLoans] = useState([]);
+  const [verificationStatus, setVerificationStatus] = useState(null);
+  const [dataLoading, setDataLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
   const LIMIT = 5;
 
-  /* ────────────────────────────────────────────────────────
-     Fetch loans + verification status in parallel
-  ──────────────────────────────────────────────────────── */
   const fetchAll = useCallback(async () => {
     setDataLoading(true);
     setError('');
-
     const token = localStorage.getItem('token');
-
-    // No token at all — treat as unverified, show empty state
     if (!token) {
       setVerificationStatus('unverified');
       setDataLoading(false);
       return;
     }
-
     const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
-
     try {
       const [loansRes, verifyRes] = await Promise.all([
         fetch(`${API}/api/loans/my-loans?page=${page}&limit=${LIMIT}`, { headers }),
-        fetch(`${API}/api/verification/status`,  { headers }),
+        fetch(`${API}/api/verification/status`, { headers }),
       ]);
-
-      // ── Handle expired / invalid token ──────────────────────────────
       if (loansRes.status === 401 || verifyRes.status === 401) {
         localStorage.removeItem('token');
         navigate('/');
         return;
       }
-
-      const loansData  = await loansRes.json();
+      const loansData = await loansRes.json();
       const verifyData = await verifyRes.json();
-
       if (loansRes.ok && loansData.success) {
-        setLoans(loansData.loans  || []);
-        setStats(loansData.stats  || { totalBorrowed: 0, remainingBalance: 0, activeCount: 0 });
+        setLoans(loansData.loans || []);
+        setStats(loansData.stats || { totalBorrowed: 0, remainingBalance: 0, activeCount: 0 });
         setTotalCount(loansData.totalCount || 0);
-
-        // Fetch all active loans once (no limit) to find the upcoming one
         const allLoansRes = await fetch(`${API}/api/loans/my-loans`, { headers });
         const allLoansData = await allLoansRes.json();
         if (allLoansData.success) {
           setActiveLoans(allLoansData.loans?.filter(l => l.status === 'active') || []);
         }
       } else {
-        // 404 means user was deleted from DB — clear loans silently
         setLoans([]);
         setStats({ totalBorrowed: 0, remainingBalance: 0, activeCount: 0 });
         setActiveLoans([]);
         if (loansRes.status !== 404) setError(loansData.message || 'Failed to load loans');
       }
-
       if (verifyRes.ok && verifyData.success) {
         setVerificationStatus(verifyData.verificationStatus || 'unverified');
       } else {
-        // 404 = user doc deleted, reset to unverified cleanly
         setVerificationStatus('unverified');
       }
     } catch (err) {
@@ -109,131 +96,181 @@ export default function Loans() {
   }, [navigate, page]);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
-  
 
-  /* ────────────────────────────────────────────────────────
-     Gate: what happens when "+ Apply for Loan" is clicked
-  ──────────────────────────────────────────────────────── */
   const handleApplyClick = () => {
-    if (verificationStatus === 'verified') {
-      setIsLoanModalOpen(true);
-    } else {
-      setIsVerifyModalOpen(true);
-    }
+    if (verificationStatus === 'verified') setIsLoanModalOpen(true);
+    else setIsVerifyModalOpen(true);
   };
 
-  /* Re-fetch after verification submission so the badge updates */
   const handleVerificationClose = () => {
     setIsVerifyModalOpen(false);
     fetchAll();
   };
 
-  /* Re-fetch after a loan is successfully submitted */
   const handleLoanClose = () => {
     setIsLoanModalOpen(false);
     fetchAll();
   };
 
-  /* ────────────────────────────────────────────────────────
-     Verification status badge
-  ──────────────────────────────────────────────────────── */
-  /*
-  const renderVerificationBadge = () => {
-    if (verificationStatus === null) return null;
+  /* ── Derived state ── */
+  const hasActiveLoan = loans.some(l => l.status === 'active' || l.status === 'pending');
+  const isVerified = verificationStatus === 'verified';
+  const nextDueLoan = activeLoans[0] || null;
 
-    const MAP = {
-      verified:   { cls: 'verify-badge-verified',  icon: '✓', label: 'Officer Verified' },
-      pending:    { cls: 'verify-badge-pending',   icon: '⏳', label: 'Verification Pending' },
-      rejected:   { cls: 'verify-badge-rejected',  icon: '✗', label: 'Verification Rejected' },
-      unverified: { cls: 'verify-badge-unverified',icon: '!', label: 'Verification Required' },
-    };
-
-    const { cls, icon, label } = MAP[verificationStatus] || MAP.unverified;
-
-    return (
-      <div className={`verify-badge ${cls}`}>
-        <span className="verify-badge-icon">{icon}</span>
-        <span>{label}</span>
-        {(verificationStatus === 'unverified' || verificationStatus === 'rejected') && (
-          <button
-            className="verify-badge-link"
-            onClick={() => setIsVerifyModalOpen(true)}
-          >
-            {verificationStatus === 'rejected' ? 'Resubmit' : 'Get verified'}
-          </button>
-        )}
-      </div>
-    );
-  };
-  */
-
-  /* ────────────────────────────────────────────────────────
-     Locked state (shown when not yet verified)
-  ──────────────────────────────────────────────────────── */
+  /* ── Verification locked banner ── */
   const renderLockedBanner = () => (
-    <div className="user-loans-locked-banner">
-      <div className="user-loans-locked-icon">🔒</div>
-      <div className="loans-locked-content">
-        <h3 className="user-loans-locked-title">Officer Verification Required</h3>
-        <p className="user-loans-locked-text">
+    <div className="ul-policy-bar">
+      <div className="ul-policy-text">
+        <strong>
           {verificationStatus === 'pending'
-            ? 'Your verification is under review. You will be notified once approved — this usually takes 3–5 business days.'
+            ? 'Verification under review.'
             : verificationStatus === 'rejected'
-            ? 'Your verification was not approved. Please resubmit with the correct information.'
+              ? 'Verification rejected.'
+              : 'Officer verification required.'}
+        </strong>{' '}
+        {verificationStatus === 'pending'
+          ? 'You will be notified once approved — this usually takes 3–5 business days.'
+          : verificationStatus === 'rejected'
+            ? 'Please resubmit with the correct information.'
             : 'To access the Loan module you must first verify your officer status. This is a one-time process.'}
-        </p>
         {(verificationStatus === 'unverified' || verificationStatus === 'rejected') && (
-          <button className="user-loans-locked-cta" onClick={() => setIsVerifyModalOpen(true)}>
-            {verificationStatus === 'rejected' ? 'Resubmit Verification' : 'Start Verification'}
+          <button className="ul-policy-link" onClick={() => setIsVerifyModalOpen(true)}>
+            {verificationStatus === 'rejected' ? ' Resubmit verification →' : ' Start verification →'}
           </button>
         )}
       </div>
     </div>
   );
 
-  /* ────────────────────────────────────────────────────────
-     Render
-  ──────────────────────────────────────────────────────── */
+  /* ── One-loan policy bar ── */
+  const renderPolicyBar = () => {
+    const pending = loans.find(l => l.status === 'active' || l.status === 'pending');
+    if (!pending) return null;
+    return (
+      <div className="ul-policy-bar">
+        <div className="ul-policy-text">
+          <strong>One active loan at a time.</strong> You cannot apply for a new loan while{' '}
+          <strong>{pending.loanId}</strong> is still outstanding. Complete or fully pay off your
+          current loan to become eligible again.
+        </div>
+      </div>
+    );
+  };
+
+  /* ── Loan type cards (empty state) ── */
+  const renderLoanTypes = () => (
+    <div className="ul-section">
+      <div className="ul-section-head">
+        <div className="ul-section-title">Available loan types</div>
+        <div className="ul-section-sub">Your loanable amount is based on your savings balance × the loan multiplier.</div>
+      </div>
+      <div className="ul-loan-types">
+        {[
+          {
+            color: 'blue',
+            name: 'Personal Loan',
+            multiplier: '2× your savings',
+            desc: 'For everyday needs, big purchases, or personal goals.',
+            term: '3 – 12 months',
+            rate: '2% per month',
+          },
+          {
+            color: 'amber',
+            name: 'Emergency Loan',
+            multiplier: '1.5× your savings',
+            desc: 'Fast-tracked for urgent and unexpected situations.',
+            term: '1 – 6 months',
+            rate: '1.5% per month',
+          },
+          {
+            color: 'teal',
+            name: 'Short-Term Loan',
+            multiplier: '1× your savings',
+            desc: 'Quick, low-interest loan for short bridge financing.',
+            term: '1 – 3 months',
+            rate: '1% per month',
+          },
+        ].map((lt) => (
+          <div key={lt.name} className="ul-lt-card">
+            <div className={`ul-lt-icon ul-lt-icon--${lt.color}`}>
+              {lt.color === 'blue' && (
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="6" stroke="#185fa5" strokeWidth="1.3" /><path d="M9 6v3l2 2" stroke="#185fa5" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              )}
+              {lt.color === 'amber' && (
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2l1.5 4.5H15l-3.75 2.75L12.75 14 9 11.25 5.25 14l1.5-4.75L3 6.5h4.5L9 2z" stroke="#854f0b" strokeWidth="1.3" strokeLinejoin="round" /></svg>
+              )}
+              {lt.color === 'teal' && (
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="5" width="14" height="9" rx="2" stroke="#0f6e56" strokeWidth="1.3" /><path d="M6 5V4a3 3 0 0 1 6 0v1" stroke="#0f6e56" strokeWidth="1.3" strokeLinecap="round" /><path d="M6 10h6" stroke="#0f6e56" strokeWidth="1.3" strokeLinecap="round" /></svg>
+              )}
+            </div>
+            <div className="ul-lt-name">{lt.name}</div>
+            <div className={`ul-lt-multiplier ul-lt-multiplier--${lt.color}`}>{lt.multiplier}</div>
+            <div className="ul-lt-desc">{lt.desc}</div>
+            <hr className="ul-lt-divider" />
+            <div className="ul-lt-row"><span className="ul-lt-key">Term</span><span className="ul-lt-val">{lt.term}</span></div>
+            <div className="ul-lt-row"><span className="ul-lt-key">Interest rate</span><span className="ul-lt-val">{lt.rate}</span></div>
+            <div className="ul-lt-row"><span className="ul-lt-key">Amount basis</span><span className="ul-lt-val">Savings balance</span></div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  /* ── Skeleton loader rows ── */
+  const renderSkeletons = () => (
+    <div className="ul-loans-list">
+      {[1, 2].map(i => (
+        <div key={i} className="ul-loan-card">
+          <div className="ul-skeleton" style={{ height: '18px', width: '30%', marginBottom: '8px' }} />
+          <div className="ul-skeleton" style={{ height: '14px', width: '20%', marginBottom: '16px' }} />
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <div className="ul-skeleton" style={{ height: '48px', flex: 1, borderRadius: '8px' }} />
+            <div className="ul-skeleton" style={{ height: '48px', flex: 1, borderRadius: '8px' }} />
+            <div className="ul-skeleton" style={{ height: '48px', flex: 1, borderRadius: '8px' }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <div className="home-layout">
       <Sidebar />
 
       <div className="user-main-content">
-        {/* Header */}
-        <div className="user-loans-page-header">
-          <div className="user-loans-header-content">
-            <div className="user-loans-header-left">
-              <h1 className="user-loans-page-title">My Loans</h1>
-              <p className="user-loans-page-subtitle">Manage your loan applications and payments</p>
-            </div>
 
-            <div className="user-loans-header-right">
-              <button
-                className={`user-apply-loan-btn ${verificationStatus !== 'verified' ? 'user-apply-loan-btn-locked' : ''}`}
-                onClick={verificationStatus === 'verified' ? handleApplyClick : undefined}
-                disabled={verificationStatus !== 'verified'}
-                title={
-                  verificationStatus === 'pending'
-                    ? 'Your verification is under review — please wait'
-                  : verificationStatus === 'rejected'
-                    ? 'Verification rejected — please resubmit below'
-                  : verificationStatus !== 'verified'
-                    ? 'Officer verification required'
-                  : ''
-                }
-              >
-                {verificationStatus === 'pending'
-                  ? ' Verification Pending'
-                  : verificationStatus !== 'verified'
-                  ? ' Apply for Loan'
-                  : '+ Apply for Loan'}
-              </button>
-            </div>
+        {/* ── Header ── */}
+        <div className="ul-page-header">
+          <div>
+            <h1 className="ul-page-title">My Loans</h1>
+            <p className="ul-page-subtitle">Manage your loan applications and payments</p>
           </div>
+
+          {isVerified && !hasActiveLoan ? (
+            <button className="ul-apply-btn" onClick={handleApplyClick}>
+              + Apply for Loan
+            </button>
+          ) : isVerified && hasActiveLoan ? (
+            <div className="ul-apply-btn-disabled" title="You already have an active or pending loan">
+              <LockIcon /> Apply for Loan
+            </div>
+          ) : (
+            <button
+              className="ul-apply-btn ul-apply-btn--locked"
+              onClick={handleApplyClick}
+              title={
+                verificationStatus === 'pending' ? 'Your verification is under review'
+                  : verificationStatus === 'rejected' ? 'Verification rejected — resubmit below'
+                    : 'Officer verification required'
+              }
+            >
+              <LockIcon />
+              {verificationStatus === 'pending' ? 'Verification Pending' : 'Apply for Loan'}
+            </button>
+          )}
         </div>
 
-
-        {/* Error */}
+        {/* ── Error ── */}
         {!dataLoading && error && (
           <div className="user-loans-error-banner">
             <span>⚠ {error}</span>
@@ -243,215 +280,245 @@ export default function Loans() {
 
         {!dataLoading && !error && (
           <>
-            {/* Locked banner for unverified users */}
-            {verificationStatus !== 'verified' && renderLockedBanner()}
+            {/* ── Verification locked banner ── */}
+            {!isVerified && renderLockedBanner()}
 
-            {/* Stats — always visible */}
-            <div className="user-loans-stats">
-              <div className="user-loan-stat-card">
-                <p className="user-loan-stat-label">Total Borrowed</p>
-                {dataLoading ? <div className="user-skeleton" style={{ height: '24px', width: '100px', margin: '4px 0' }}></div> : <p className="user-loan-stat-value user-fade-in">{fmt(stats.totalBorrowed)}</p>}
+            {/* ── One-loan policy bar ── */}
+            {isVerified && hasActiveLoan && renderPolicyBar()}
+
+            {/* ── Stats ── */}
+            <div className="ul-stats">
+              <div className="ul-stat-card">
+                <label className="ul-stat-label">Total Borrowed</label>
+                <div className="ul-stat-value">{fmt(stats.totalBorrowed)}</div>
+                <div className="ul-stat-sub">{stats.activeCount > 0 ? `${stats.activeCount} active loan` : 'No loans yet'}</div>
               </div>
-              <div className="user-loan-stat-card">
-                <p className="user-loan-stat-label">Remaining Balance</p>
-                {dataLoading ? <div className="user-skeleton" style={{ height: '24px', width: '100px', margin: '4px 0' }}></div> : <p className="user-loan-stat-value user-fade-in">{fmt(stats.remainingBalance)}</p>}
+              <div className="ul-stat-card">
+                <label className="ul-stat-label">Remaining Balance</label>
+                <div className="ul-stat-value">{fmt(stats.remainingBalance)}</div>
+                <div className="ul-stat-sub">
+                  {stats.remainingBalance > 0
+                    ? `${Math.round((stats.remainingBalance / stats.totalBorrowed) * 100)}% outstanding`
+                    : '—'}
+                </div>
               </div>
-              <div className="user-loan-stat-card user-loan-stat-card-active">
-                <p className="user-loan-stat-label">Active Loans</p>
-                {dataLoading ? <div className="user-skeleton" style={{ height: '24px', width: '40px', margin: '4px 0' }}></div> : <p className="user-loan-stat-value user-fade-in">{stats.activeCount}</p>}
+              <div className={`ul-stat-card ${nextDueLoan ? 'ul-stat-card--warn' : ''}`}>
+                {nextDueLoan ? (
+                  <>
+                    <label className="ul-stat-label">Next Payment</label>
+                    <div className="ul-stat-value">{fmt(nextDueLoan.monthlyPayment)}</div>
+                    <div className="ul-stat-sub">Due {fmtDate(nextDueLoan.nextPaymentDate)}</div>
+                  </>
+                ) : (
+                  <>
+                    <label className="ul-stat-label">Active Loans</label>
+                    <div className="ul-stat-value">{stats.activeCount}</div>
+                    <div className="ul-stat-sub">{isVerified ? 'Eligible to apply' : '—'}</div>
+                  </>
+                )}
               </div>
             </div>
 
-            {/* Loans list — only shown when verified */}
-            {verificationStatus === 'verified' && (
-              <div className="user-all-loans-section">
-                <div className="user-loans-history-header">
-                  <h2 className="user-loans-section-title">All Loans</h2>
-                </div>
+            {/* ── Verified content ── */}
+            {isVerified && (
+              <>
+                {/* ── Active loan section ── */}
+                <div className="ul-section">
+                  <div className="ul-section-head">
+                    <div className="ul-section-title">
+                      {hasActiveLoan ? 'Active loan' : 'Active loan'}
+                    </div>
+                  </div>
 
-                {dataLoading ? (
-                  <div className="user-loans-list">
-                    {[1, 2, 3].map(i => (
-                      <div key={i} className="user-loan-item" style={{ padding: '24px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-                          <div style={{ flex: 1 }}>
-                            <div className="user-skeleton" style={{ height: '18px', width: '30%', marginBottom: '8px' }}></div>
-                            <div className="user-skeleton" style={{ height: '14px', width: '20%' }}></div>
-                          </div>
-                          <div style={{ textAlign: 'right' }}>
-                            <div className="user-skeleton" style={{ height: '20px', width: '80px', marginBottom: '8px' }}></div>
-                            <div className="user-skeleton" style={{ height: '32px', width: '100px', borderRadius: '6px' }}></div>
-                          </div>
-                        </div>
-                        <div style={{ display: 'flex', gap: '24px' }}>
-                          <div className="user-skeleton" style={{ height: '40px', flex: 1, borderRadius: '8px' }}></div>
-                          <div className="user-skeleton" style={{ height: '40px', flex: 1, borderRadius: '8px' }}></div>
-                          <div className="user-skeleton" style={{ height: '40px', flex: 1, borderRadius: '8px' }}></div>
-                        </div>
+                  {dataLoading ? renderSkeletons() : loans.filter(l => l.status === 'active' || l.status === 'pending').length === 0 ? (
+                    /* ── Empty state ── */
+                    <div className="ul-empty-state">
+                      <div className="ul-empty-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+                          <rect x="3" y="5" width="18" height="14" rx="3" />
+                          <path d="M3 9h18M8 13h2M14 13h2" />
+                        </svg>
                       </div>
-                    ))}
-                  </div>
-                ) : loans.length === 0 ? (
-                  <div className="user-loans-empty">
-                    <p className="user-loans-empty-icon">📋</p>
-                    <p className="user-loans-empty-title">No loans yet</p>
-                    <p className="user-loans-empty-text">Click "+ Apply for Loan" to get started.</p>
-                  </div>
-                ) : (
-                  <div className="user-loans-list user-fade-in">
-                    {loans.map((loan) => (
-                        <div key={loan._id} className="user-loan-item">
-                        {/* Loan Header */}
-                        <div className="user-loan-item-header">
-                          <div className="user-loan-item-main">
-                            <div className="user-loan-item-info">
-                              <div className="user-loan-item-title-row">
-                                <h3 className="user-loan-id">{loan.loanId}</h3>
-                                <span className={`user-loan-status-badge ${STATUS_CLASS[loan.status] || ''}`}>
+                      <div className="ul-empty-title">No active loan</div>
+                      <p className="ul-empty-sub">You haven't taken out a loan yet. Apply now and get funds disbursed directly to your account.</p>
+                      <button className="ul-empty-apply-btn" onClick={handleApplyClick}>Apply for a loan</button>
+                    </div>
+                  ) : (
+                    /* ── Active/pending loan card ── */
+                    <div className="ul-loans-list user-fade-in">
+                      {loans.filter(l => l.status === 'active' || l.status === 'pending').slice(0, 1).map((loan) => (
+                        <div key={loan._id} className="ul-loan-card">
+                          {/* Card top */}
+                          <div className="ul-loan-card-top">
+                            <div>
+                              <div className="ul-loan-title-row">
+                                <h3 className="ul-loan-id">{loan.loanId}</h3>
+                                <span className={`ul-loan-badge ${STATUS_CLASS[loan.status] || ''}`}>
                                   {loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}
                                 </span>
-                                <span className="user-loan-purpose-inline">— {loan.purpose}</span>
                               </div>
-                              <p className="user-loan-applied">{fmtDate(loan.appliedDate)}</p>
+                              <p className="ul-loan-meta">{fmtDate(loan.appliedDate)} · {loan.purpose}</p>
+                            </div>
+                            <div className="ul-loan-amount-block">
+                              <div className="ul-loan-amount">{fmt(loan.amount)}</div>
+                              <div className="ul-loan-amount-label">Original amount</div>
                             </div>
                           </div>
 
-                          <div className="user-loan-item-amount">
-                            <p className="user-loan-amount">{fmt(loan.amount)}</p>
-                            <button
-                              className="user-view-details-btn"
-                              onClick={() => navigate(`/loans/${loan.loanId}`)}
-                            >
-                              View Details
+                          {/* Progress bar — only for active loans */}
+                          {loan.status === 'active' && loan.termMonths && (
+                            <div className="ul-progress-wrap">
+                              <div className="ul-progress-label">
+                                <span>Repayment progress</span>
+                                <span>
+                                  {loan.paidMonths || 0} of {loan.termMonths} payments made
+                                </span>
+                              </div>
+                              <div className="ul-progress-bar">
+                                <div
+                                  className="ul-progress-fill"
+                                  style={{ width: `${Math.max(2, Math.round(((loan.paidMonths || 0) / loan.termMonths) * 100))}%` }}
+                                />
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Meta grid */}
+                          <div className="ul-loan-meta-grid">
+                            <div className="ul-meta-item">
+                              <div className="ul-meta-label">Monthly payment</div>
+                              <div className="ul-meta-value">{loan.monthlyPayment ? fmt(loan.monthlyPayment) : '—'}</div>
+                            </div>
+                            <div className="ul-meta-item">
+                              <div className="ul-meta-label">Remaining balance</div>
+                              <div className="ul-meta-value">
+                                {loan.status === 'active' && loan.remainingBalance != null ? fmt(loan.remainingBalance) : '—'}
+                              </div>
+                            </div>
+                            <div className={`ul-meta-item ${loan.nextPaymentDate ? 'ul-meta-item--warn' : ''}`}>
+                              <div className="ul-meta-label">Next due date</div>
+                              <div className={`ul-meta-value ${loan.nextPaymentDate ? 'ul-meta-value--warn' : ''}`}>
+                                {loan.nextPaymentDate ? fmtDate(loan.nextPaymentDate) : '—'}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Actions */}
+                          <div className="ul-loan-actions">
+                            <button className="ul-action-btn" onClick={() => navigate(`/loans/${loan.loanId}?tab=schedule`)}>
+                              View schedule
                             </button>
+                            <button className="ul-action-btn" onClick={() => navigate(`/loans/${loan.loanId}`)}>
+                              Loan details
+                            </button>
+                            {loan.status === 'active' && (
+                              <button className="ul-action-btn ul-action-btn--primary" onClick={() => navigate(`/loans/${loan.loanId}?pay=true`)}>
+                                Pay now
+                              </button>
+                            )}
                           </div>
                         </div>
+                      ))}
+                    </div>
+                  )}
 
-                        {/* Loan Details */}
-                        <div className="user-loan-item-details">
-                          <div className="user-loan-detail">
-                            <p className="user-loan-detail-label">Monthly Payment</p>
-                            <p className="user-loan-detail-value">
-                              {loan.monthlyPayment ? fmt(loan.monthlyPayment) : '—'}
-                            </p>
-                          </div>
-                          <div className="user-loan-detail">
-                            <p className="user-loan-detail-label">Remaining Balance</p>
-                            <p className="user-loan-detail-value">
-                              {loan.status === 'active' && loan.remainingBalance != null 
-                                ? fmt(loan.remainingBalance) 
-                                : '—'}
-                            </p>
-                          </div>
-                          <div className="user-loan-detail">
-                            <p className="user-loan-detail-label">Next Payment</p>
-                            <p className="user-loan-detail-value">
-                              {loan.nextPaymentDate ? fmtDate(loan.nextPaymentDate) : '—'}
-                            </p>
-                          </div>
+                  {/* Eligibility nudge */}
+                  {hasActiveLoan && (
+                    <div className="ul-eligible-banner">
+                      <div>
+                        <div className="ul-eligible-title">Eligible to re-apply after full repayment</div>
+                        <div className="ul-eligible-sub">
+                          Pay off {loans.find(l => l.status === 'active' || l.status === 'pending')?.loanId} to unlock your next loan application.
                         </div>
                       </div>
-                      ))}
-                  </div>
-                )}
-
-                {/* Pagination Controls */}
-                {totalCount > LIMIT && (
-                  <div className="user-loans-pagination">
-                    <p className="user-loans-pagination-info">
-                      Showing {((page - 1) * LIMIT) + 1} to {Math.min(page * LIMIT, totalCount)} of {totalCount} records
-                    </p>
-                    <div className="user-loans-pagination-controls">
-                      <button 
-                         className="user-loans-page-btn" 
-                        onClick={() => setPage(p => Math.max(1, p - 1))}
-                        disabled={page === 1}
-                      >
-                        Previous
-                      </button>
-                      {Array.from({ length: Math.ceil(totalCount / LIMIT) }, (_, i) => (
-                        <button
-                          key={i + 1}
-                          className={`user-loans-page-btn ${page === i + 1 ? 'user-loans-page-btn-active' : ''}`}
-                          onClick={() => setPage(i + 1)}
-                        >
-                          {i + 1}
-                        </button>
-                      ))}
-                      <button 
-                         className="user-loans-page-btn" 
-                        onClick={() => setPage(p => Math.min(Math.ceil(totalCount / LIMIT), p + 1))}
-                        disabled={page === Math.ceil(totalCount / LIMIT)}
-                      >
-                        Next
-                      </button>
                     </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Upcoming Loan Payment — Positioned at the bottom of verified content */}
-            {verificationStatus === 'verified' && (
-              <div className="user-all-loans-section" style={{ marginTop: '32px' }}>
-                <div className="user-loans-history-header">
-                  <h2 className="user-loans-section-title">Upcoming Loan Payment</h2>
+                  )}
                 </div>
-                {dataLoading ? (
-                  <div className="user-loans-list">
-                    <div className="user-loan-item" style={{ padding: '24px' }}>
-                      <div className="user-skeleton" style={{ height: '60px', borderRadius: '12px' }}></div>
+
+                {/* ── Loan history / loan types ── */}
+                {loans.length > 0 ? (
+                  <div className="ul-section">
+                    <div className="ul-section-head">
+                      <div className="ul-section-title">Loan history</div>
+                      {totalCount > LIMIT && (
+                        <div className="ul-pagination-info">
+                          Showing {((page - 1) * LIMIT) + 1}–{Math.min(page * LIMIT, totalCount)} of {totalCount}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ) : activeLoans.length === 0 ? (
-                  <p className="user-loans-empty-text" style={{ textAlign: 'center', padding: '20px', color: '#666' }}>No active loans at the moment.</p>
-                ) : (
-                  <div className="user-loans-list user-fade-in">
-                    {activeLoans.slice(0, 1).map((loan, index) => (
-                      <div key={index} className="user-loan-item" style={{ borderLeft: '4px solid #F54900' }}>
-                        <div className="user-loan-item-header">
-                          <div className="user-loan-item-main">
-                            <div className="user-loan-item-info">
-                              <div className="user-loan-item-title-row">
-                                <div className="user-payment-icon" style={{ display: 'inline-flex', verticalAlign: 'middle', marginRight: '12px' }}>
-                                  <svg fill="none" viewBox="0 0 20 20" width="20" height="20">
-                                    <path d="M10 5V10L13.3333 11.6667" stroke="#F54900" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                                    <path d={svgPaths.p14d24500} stroke="#F54900" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                                  </svg>
-                                </div>
-                                <h3 className="user-loan-id">{loan.loanId}</h3>
-                                <span className="user-loan-purpose-inline">— Term: {loan.termMonths}mo · {loan.purpose}</span>
-                              </div>
+
+                    <div className="ul-history-list user-fade-in">
+                      {loans.map((loan) => (
+                        <div key={loan._id} className="ul-history-row" onClick={() => navigate(`/loans/${loan.loanId}`)}>
+                          <div className={`ul-hist-icon ul-hist-icon--${loan.status === 'active' || loan.status === 'pending' ? 'active' : 'closed'}`}>
+                            {loan.status === 'active' || loan.status === 'pending' ? (
+                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="3" stroke="#185fa5" strokeWidth="1.2" /><path d="M5 8h6M5 5.5h4M5 10.5h3" stroke="#185fa5" strokeWidth="1.2" strokeLinecap="round" /></svg>
+                            ) : (
+                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="3" stroke="currentColor" strokeWidth="1.2" /><path d="M5 8.5l2 2 4-4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                            )}
+                          </div>
+                          <div className="ul-hist-info">
+                            <div className="ul-hist-id-row">
+                              <span className="ul-hist-id">{loan.loanId}</span>
+                              <span className={`ul-loan-badge ${STATUS_CLASS[loan.status] || ''}`}>
+                                {loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}
+                              </span>
+                            </div>
+                            <div className="ul-hist-sub">
+                              {loan.purpose} · {loan.termMonths} months
+                              {loan.status === 'active' && loan.paidMonths != null
+                                ? ` · ${loan.paidMonths} of ${loan.termMonths} paid`
+                                : loan.status === 'completed' ? ' · Fully paid' : ''}
                             </div>
                           </div>
-                          <div className="user-loan-item-amount" style={{ textAlign: 'right' }}>
-                            <p className="user-loan-amount" style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#F54900' }}>
-                              ₱{(loan.remainingBalance || loan.amount).toLocaleString()}
-                            </p>
-                            <span className="user-loan-status-badge user-loan-status-active">Active</span>
+                          <div className="ul-hist-right">
+                            <div className="ul-hist-amount">{fmt(loan.amount)}</div>
+                            <div className="ul-hist-date">{fmtDate(loan.appliedDate)}</div>
                           </div>
                         </div>
+                      ))}
+                    </div>
+
+                    {/* Pagination */}
+                    {totalCount > LIMIT && (
+                      <div className="ul-pagination">
+                        <button
+                          className="ul-page-btn"
+                          onClick={() => setPage(p => Math.max(1, p - 1))}
+                          disabled={page === 1}
+                        >
+                          Previous
+                        </button>
+                        {Array.from({ length: Math.ceil(totalCount / LIMIT) }, (_, i) => (
+                          <button
+                            key={i + 1}
+                            className={`ul-page-btn ${page === i + 1 ? 'ul-page-btn--active' : ''}`}
+                            onClick={() => setPage(i + 1)}
+                          >
+                            {i + 1}
+                          </button>
+                        ))}
+                        <button
+                          className="ul-page-btn"
+                          onClick={() => setPage(p => Math.min(Math.ceil(totalCount / LIMIT), p + 1))}
+                          disabled={page === Math.ceil(totalCount / LIMIT)}
+                        >
+                          Next
+                        </button>
                       </div>
-                    ))}
+                    )}
                   </div>
+                ) : (
+                  renderLoanTypes()
                 )}
-              </div>
+              </>
             )}
           </>
         )}
       </div>
 
-      {/* Loan Application Modal — only reachable when verified */}
-      <LoanApplicationModal
-        isOpen={isLoanModalOpen}
-        onClose={handleLoanClose}
-      />
-
-      {/* Officer Verification Modal */}
-      <VerificationModal
-        isOpen={isVerifyModalOpen}
-        onClose={handleVerificationClose}
-      />
+      <LoanApplicationModal isOpen={isLoanModalOpen} onClose={handleLoanClose} />
+      <VerificationModal isOpen={isVerifyModalOpen} onClose={handleVerificationClose} />
     </div>
   );
 }
