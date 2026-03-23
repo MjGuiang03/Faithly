@@ -37,16 +37,18 @@ export default function Notifications() {
     const hdrs  = { Authorization: `Bearer ${token}` };
 
     try {
-      const [lRes, dRes, aRes] = await Promise.all([
+      const [lRes, dRes, aRes, sRes] = await Promise.all([
         fetch(`${API}/api/loans/my-loans`,           { headers: hdrs }),
         fetch(`${API}/api/donations/my-donations`,   { headers: hdrs }),
         fetch(`${API}/api/attendance/my-attendance`, { headers: hdrs }),
+        fetch(`${API}/api/savings/transactions`,     { headers: hdrs }),
       ]);
 
-      const [lData, dData, aData] = await Promise.all([
+      const [lData, dData, aData, sData] = await Promise.all([
         lRes.ok ? lRes.json() : { loans: [] },
         dRes.ok ? dRes.json() : { donations: [] },
         aRes.ok ? aRes.json() : { attendance: [] },
+        sRes.ok ? sRes.json() : { transactions: [] },
       ]);
 
       const items = [];
@@ -127,6 +129,17 @@ export default function Notifications() {
         });
       });
 
+      /* Savings → notifications */
+      (sData.transactions || []).filter(t => t.type === 'deposit').forEach((s) => {
+        items.push({
+          id:        `savings-${s._id}`,
+          type:      'savings',
+          timestamp: s.date,
+          title:     'Savings Deposit',
+          message:   `A deposit of ₱${Number(s.amount).toLocaleString()} was added to ${s.goalName}.`,
+        });
+      });
+
       /* Attendance → notifications */
       (aData.attendance || []).forEach((a) => {
         items.push({
@@ -194,7 +207,7 @@ export default function Notifications() {
         </svg>
       </div>
     );
-    if (type === 'donation') return (
+    if (type === 'donation' || type === 'savings') return (
       <div className="user-notif-icon user-notif-icon-donation">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
           <path d={svgPaths.p31f28900} stroke="#BE185D" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"/>
@@ -215,7 +228,7 @@ export default function Notifications() {
   };
 
   const badgeClass = (type) =>
-    type === 'loan' ? 'user-notif-badge-loan' : type === 'donation' ? 'user-notif-badge-donation' : 'user-notif-badge-attendance';
+    type === 'loan' ? 'user-notif-badge-loan' : (type === 'donation' || type === 'savings') ? 'user-notif-badge-donation' : 'user-notif-badge-attendance';
 
   const cardClass = (type, isRead) => {
     if (isRead) return 'user-notif-card user-notif-card-read';
@@ -223,7 +236,7 @@ export default function Notifications() {
   };
 
   const badgeLabel = (type) =>
-    type === 'loan' ? 'Loan' : type === 'donation' ? 'Donation' : 'Attendance';
+    type === 'loan' ? 'Loan' : type === 'donation' ? 'Donation' : type === 'savings' ? 'Savings' : 'Attendance';
 
   return (
     <div className="user-notif-page">
@@ -255,6 +268,7 @@ export default function Notifications() {
             { key: 'attendance', label: 'Attendance'       },
             { key: 'loan',       label: 'Loan Transaction' },
             { key: 'donation',   label: 'Donations'        },
+            { key: 'savings',    label: 'Savings'          },
           ].map(({ key, label }) => (
             <button
               key={key}

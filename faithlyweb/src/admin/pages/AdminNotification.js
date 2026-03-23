@@ -102,7 +102,7 @@ export default function AdminNotifications() {
   };
 
   const getIconBg = (type) => {
-    if (type === 'donation')   return 'admin-notif-icon-donation';
+    if (type === 'donation' || type === 'savings') return 'admin-notif-icon-donation';
     if (type === 'member')     return 'admin-notif-icon-member';
     if (type === 'attendance') return 'admin-notif-icon-attendance';
     return '';
@@ -129,7 +129,7 @@ export default function AdminNotifications() {
           )}
         </div>
         <p className="admin-notif-subtitle">
-          Member registrations, donations, and attendance check-ins
+          Member registrations, donations, savings deposits, and attendance check-ins
         </p>
       </div>
 
@@ -165,7 +165,7 @@ export default function AdminNotifications() {
                 className={`admin-notif-item${!n.isRead ? ' admin-notif-item-unread' : ''}`}
               >
                 <div className={`admin-notif-icon ${getIconBg(n.type)}`}>
-                  {n.type === 'donation' && (
+                  {(n.type === 'donation' || n.type === 'savings') && (
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="#E60076" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>

@@ -549,6 +549,84 @@
     color: #4ade80;
 }
 
+/* ── Payment methods ───────────────────────────────────────── */
+.svm-payment-options {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.svm-payment-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--foreground);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.svm-payment-btn:hover {
+    border-color: var(--border-strong);
+    background: var(--secondary);
+}
+
+.svm-payment-btn.active {
+    border-color: #1E3A8A;
+    background: #e6f1fb;
+    box-shadow: 0 0 0 1px #1E3A8A;
+}
+
+.dark .svm-payment-btn.active {
+    background: rgba(30, 58, 138, 0.12);
+}
+
+.svm-radio {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border-strong);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.svm-radio.active {
+    border-color: #1E3A8A;
+}
+
+.svm-radio.active::after {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #1E3A8A;
+}
+
+.dark .svm-radio.active {
+    border-color: #7090d0;
+}
+
+.dark .svm-radio.active::after {
+    background: #7090d0;
+}
+
+.svm-info-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.4;
+    margin-top: 6px;
+}
+
 /* ── Responsive ──────────────────────────────────────────── */
 @media (max-width: 480px) {
     .svm-modal {

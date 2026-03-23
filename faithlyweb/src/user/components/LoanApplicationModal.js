@@ -87,6 +87,9 @@ export default function LoanApplicationModal({
   const [termMonths, setTermMonths] = useState('');
   const [selfieFile, setSelfieFile] = useState(null);
   const [idFile, setIdFile] = useState(null);
+  const [disbursementMethod, setDisbursementMethod] = useState('');
+  const [disbursementAccount, setDisbursementAccount] = useState('');
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
 
   /* ── derived ── */
@@ -132,6 +135,12 @@ export default function LoanApplicationModal({
     if (calc.principal > maxLoanable) { toast.error(`Amount exceeds your max loanable of ${fmt(maxLoanable)}.`); return; }
     if (!savingsOk) { toast.error('You need at least ₱1,000 in savings.'); return; }
     if (hasOverdueLoans) { toast.error('You have overdue loans. Please settle them first.'); return; }
+    if (!disbursementMethod) { toast.error('Please select a disbursement method.'); return; }
+    if ((disbursementMethod === 'gcash' || disbursementMethod === 'bank') && !disbursementAccount) {
+      toast.error(`Please provide your ${disbursementMethod === 'gcash' ? 'GCash number' : 'bank account details'}.`);
+      return;
+    }
+    if (!agreedToTerms) { toast.error('Please agree to the Loan Terms and Conditions.'); return; }
 
     setLoading(true);
     try {
@@ -152,6 +161,8 @@ export default function LoanApplicationModal({
           totalInterest: calc.totalInterest,
           totalRepayment: calc.totalRepayment,
           monthlyPayment: calc.monthly,
+          disbursementMethod,
+          disbursementAccount,
         }),
       });
 
@@ -434,6 +445,94 @@ export default function LoanApplicationModal({
               </div>
 
             </div>
+          </div>
+
+          {/* ── Disbursement Method ── */}
+          <div className="ula-disbursement-section">
+            <h3 className="user-loan-application-guarantor-title">Disbursement Method</h3>
+            <p className="ula-disbursement-desc">How would you like to receive your loan once approved?</p>
+            <div className="ula-disbursement-options">
+              {[
+                { id: 'cash', label: 'Cash (Pick up at office)' },
+                { id: 'gcash', label: 'GCash' },
+                { id: 'bank', label: 'Bank Transfer' }
+              ].map(opt => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  className={`ula-disbursement-btn ${disbursementMethod === opt.id ? 'ula-disbursement-btn--active' : ''}`}
+                  onClick={() => setDisbursementMethod(opt.id)}
+                >
+                  <div className={`ula-disbursement-radio ${disbursementMethod === opt.id ? 'active' : ''}`} />
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+            
+            {(disbursementMethod === 'gcash' || disbursementMethod === 'bank') && (
+              <div className="ula-disbursement-account">
+                <label className="user-loan-application-label">
+                  {disbursementMethod === 'gcash' ? 'GCash Name & Number' : 'Bank Name, Account Name & Number'}
+                </label>
+                <input
+                  type="text"
+                  className="user-loan-application-input"
+                  placeholder={disbursementMethod === 'gcash' ? 'e.g. Juan Dela Cruz - 09123456789' : 'e.g. BDO - Juan Dela Cruz - 1234567890'}
+                  value={disbursementAccount}
+                  onChange={(e) => setDisbursementAccount(e.target.value)}
+                  required
+                />
+              </div>
+            )}
+          </div>
+
+          {/* ── Terms & Conditions ── */}
+          <div className="ula-terms-section">
+            <h3 className="user-loan-application-guarantor-title">Loan Terms &amp; Conditions</h3>
+            <div className="ula-terms-box">
+              <div className="ula-terms-group">
+                <strong>10. Repayment Terms</strong>
+                <ul>
+                  <li>Payments are monthly based on the selected term.</li>
+                  <li>Due dates are fixed upon approval.</li>
+                  <li>Accepted payment methods: Cash, Bank transfer, GCash.</li>
+                </ul>
+              </div>
+
+              <div className="ula-terms-group">
+                <strong>11. Early Payment Policy</strong>
+                <ul>
+                  <li>Members may repay early at any time.</li>
+                  <li>Interest is charged only up to the payment date.</li>
+                  <li>No penalties for early settlement.</li>
+                </ul>
+              </div>
+
+              <div className="ula-terms-group">
+                 <strong>12. Late Payment and Penalties</strong>
+                <ul>
+                  <li>Grace period: 3 days.</li>
+                  <li>Penalty: 3% per month on overdue amount.</li>
+                </ul>
+              </div>
+
+              <div className="ula-terms-group">
+                <strong>20. Policy Violations</strong>
+                <ul>
+                   <li>Violations include: Providing false information, Non-payment, System abuse.</li>
+                   <li>Sanctions: Loan denial, Suspension, Account termination.</li>
+                </ul>
+              </div>
+            </div>
+            
+            <label className="ula-terms-checkbox">
+              <input
+                type="checkbox"
+                checked={agreedToTerms}
+                onChange={(e) => setAgreedToTerms(e.target.checked)}
+              />
+              <span>I have read and agree to the Loan Terms &amp; Conditions and policies above.</span>
+            </label>
           </div>
 
           {/* Note */}

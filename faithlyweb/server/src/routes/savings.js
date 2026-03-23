@@ -144,7 +144,7 @@ router.delete('/savings/goals/:id', authenticateUser, async (req, res) => {
 router.post('/savings/deposit', authenticateUser, async (req, res) => {
   try {
     const email = req.user.email;
-    const { goalId, amount, description, source } = req.body;
+    const { goalId, amount, description, source, paymentMethod, referenceNumber } = req.body;
 
     if (!goalId || !amount || amount <= 0) {
       return res.status(400).json({ success: false, message: 'Goal and a positive amount are required' });
@@ -171,6 +171,8 @@ router.post('/savings/deposit', authenticateUser, async (req, res) => {
       amount: depositAmount,
       description: description || 'Deposit',
       source: source || 'Manual',
+      paymentMethod: paymentMethod || 'cash',
+      referenceNumber: referenceNumber || '',
       date: new Date(),
     };
     await savingsTransactions.insertOne(txn);

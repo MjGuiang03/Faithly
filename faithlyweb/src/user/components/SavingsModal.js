@@ -37,6 +37,8 @@ function DepositModal({ goals, onClose }) {
     const [selectedGoal, setSelectedGoal] = useState(goals[0]?._id || '');
     const [amount, setAmount] = useState('');
     const [note, setNote] = useState('');
+    const [paymentMethod, setPaymentMethod] = useState('cash');
+    const [referenceNumber, setReferenceNumber] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -57,6 +59,7 @@ function DepositModal({ goals, onClose }) {
     const handleSubmit = async () => {
         if (!numAmt || numAmt <= 0) { setError('Please enter a valid amount.'); return; }
         if (!selectedGoal) { setError('Please select a goal.'); return; }
+        if (paymentMethod !== 'cash' && !referenceNumber) { setError('Please provide a reference number.'); return; }
         setError('');
         setLoading(true);
         try {
@@ -64,7 +67,7 @@ function DepositModal({ goals, onClose }) {
             const res = await fetch(`${API}/api/savings/deposit`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ goalId: selectedGoal, amount: numAmt, note }),
+                body: JSON.stringify({ goalId: selectedGoal, amount: numAmt, note, paymentMethod, referenceNumber }),
             });
             const data = await res.json();
             if (!res.ok || !data.success) throw new Error(data.message || 'Deposit failed.');
@@ -124,6 +127,43 @@ function DepositModal({ goals, onClose }) {
                             ))}
                         </div>
                     </div>
+
+                    <div className="svm-field">
+                        <label className="svm-label">Payment Method</label>
+                        <div className="svm-payment-options">
+                            {[
+                                { id: 'cash', label: 'Cash (Pay at Office)' },
+                                { id: 'gcash', label: 'GCash' },
+                                { id: 'bank', label: 'Bank Transfer' },
+                            ].map(opt => (
+                                <button
+                                    key={opt.id}
+                                    type="button"
+                                    className={`svm-payment-btn ${paymentMethod === opt.id ? 'active' : ''}`}
+                                    onClick={() => setPaymentMethod(opt.id)}
+                                >
+                                    <div className={`svm-radio ${paymentMethod === opt.id ? 'active' : ''}`} />
+                                    {opt.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {(paymentMethod === 'gcash' || paymentMethod === 'bank') && (
+                        <div className="svm-field">
+                            <label className="svm-label">Reference Number</label>
+                            <input
+                                className="svm-input"
+                                type="text"
+                                placeholder={`Enter ${paymentMethod === 'gcash' ? 'GCash' : 'Bank'} reference no.`}
+                                value={referenceNumber}
+                                onChange={e => setReferenceNumber(e.target.value)}
+                            />
+                            <div className="svm-info-text">
+                                Please transfer to Faithly Inc. ({paymentMethod === 'gcash' ? 'GCash: 0917-XXX-XXXX' : 'BDO Acc: 1234-5678'}) and provide the reference number.
+                            </div>
+                        </div>
+                    )}
 
                     <div className="svm-field">
                         <label className="svm-label">
@@ -317,6 +357,8 @@ function NewGoalModal({ onClose }) {
 function QuickDepositModal({ goal, goals, onClose }) {
     const [amount, setAmount] = useState('');
     const [note, setNote] = useState('');
+    const [paymentMethod, setPaymentMethod] = useState('cash');
+    const [referenceNumber, setReferenceNumber] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
@@ -329,6 +371,7 @@ function QuickDepositModal({ goal, goals, onClose }) {
 
     const handleSubmit = async () => {
         if (!numAmt || numAmt <= 0) { setError('Enter a valid amount.'); return; }
+        if (paymentMethod !== 'cash' && !referenceNumber) { setError('Please provide a reference number.'); return; }
         setError('');
         setLoading(true);
         try {
@@ -336,7 +379,7 @@ function QuickDepositModal({ goal, goals, onClose }) {
             const res = await fetch(`${API}/api/savings/deposit`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ goalId: goal._id, amount: numAmt, note }),
+                body: JSON.stringify({ goalId: goal._id, amount: numAmt, note, paymentMethod, referenceNumber }),
             });
             const data = await res.json();
             if (!res.ok || !data.success) throw new Error(data.message || 'Deposit failed.');
@@ -404,6 +447,44 @@ function QuickDepositModal({ goal, goals, onClose }) {
                                         </div>
                                     </div>
                                     <div className="svm-progress-pct">{newPct}%</div>
+                                </div>
+                            )}
+
+                            <div className="svm-field">
+                                <label className="svm-label">Payment Method</label>
+                                <div className="svm-payment-options">
+                                    {[
+                                        { id: 'cash', label: 'Cash (Office)' },
+                                        { id: 'gcash', label: 'GCash' },
+                                        { id: 'bank', label: 'Bank' },
+                                    ].map(opt => (
+                                        <button
+                                            key={opt.id}
+                                            type="button"
+                                            className={`svm-payment-btn ${paymentMethod === opt.id ? 'active' : ''}`}
+                                            onClick={() => setPaymentMethod(opt.id)}
+                                            style={{ padding: '8px', fontSize: '11px' }}
+                                        >
+                                            <div className={`svm-radio ${paymentMethod === opt.id ? 'active' : ''}`} style={{ width: '12px', height: '12px' }} />
+                                            {opt.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {(paymentMethod === 'gcash' || paymentMethod === 'bank') && (
+                                <div className="svm-field">
+                                    <label className="svm-label">Reference Number</label>
+                                    <input
+                                        className="svm-input"
+                                        type="text"
+                                        placeholder={`Enter ${paymentMethod === 'gcash' ? 'GCash' : 'Bank'} ref. no.`}
+                                        value={referenceNumber}
+                                        onChange={e => setReferenceNumber(e.target.value)}
+                                    />
+                                    <div className="svm-info-text">
+                                        Faithly Inc. ({paymentMethod === 'gcash' ? 'GCash: 0917-XXX-XXXX' : 'BDO: 1234-5678'})
+                                    </div>
                                 </div>
                             )}
 

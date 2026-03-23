@@ -634,6 +634,159 @@
   background: var(--muted);
 }
 
+/* ── Disbursement ── */
+.ula-disbursement-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.ula-disbursement-desc {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0 0 4px;
+}
+
+.ula-disbursement-options {
+  display: flex;
+  gap: 12px;
+}
+
+.ula-disbursement-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--foreground);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ula-disbursement-btn:hover {
+  border-color: var(--border-strong);
+  background: var(--secondary);
+}
+
+.ula-disbursement-btn--active {
+  border-color: #1E3A8A;
+  background: #e6f1fb;
+  box-shadow: 0 0 0 1px #1E3A8A;
+}
+
+.dark .ula-disbursement-btn--active {
+  background: rgba(30, 58, 138, 0.12);
+}
+
+.ula-disbursement-radio {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ula-disbursement-radio.active {
+  border-color: #1E3A8A;
+}
+
+.ula-disbursement-radio.active::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #1E3A8A;
+}
+
+.dark .ula-disbursement-radio.active {
+  border-color: #7090d0;
+}
+.dark .ula-disbursement-radio.active::after {
+  background: #7090d0;
+}
+
+.ula-disbursement-icon {
+  font-size: 16px;
+}
+
+.ula-disbursement-account {
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ── Terms & Conditions ── */
+.ula-terms-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ula-terms-box {
+  background: var(--secondary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  max-height: 200px;
+  overflow-y: auto;
+  font-family: 'Inter', sans-serif;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+.ula-terms-group {
+  margin-bottom: 12px;
+}
+
+.ula-terms-group:last-child {
+  margin-bottom: 0;
+}
+
+.ula-terms-group strong {
+  display: block;
+  color: var(--foreground);
+  margin-bottom: 4px;
+}
+
+.ula-terms-group ul {
+  margin: 0;
+  padding-left: 20px;
+  line-height: 1.5;
+}
+
+.ula-terms-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: var(--foreground);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.ula-terms-checkbox input {
+  margin-top: 2px;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #1E3A8A;
+}
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .user-loan-application-content {

@@ -262,7 +262,7 @@ function ScheduleModal({ loan, schedule, onClose, onPayNow }) {
                 <div className="ld-modal-header">
                     <div>
                         <div className="ld-modal-title">Payment schedule — {loan?.loanId}</div>
-                        <div className="ld-modal-sub">{loan?.termMonths} monthly payments · {loan?.purpose} · {loan?.interestRate}% per month</div>
+                        <div className="ld-modal-sub">{loan?.termMonths} monthly payments · {loan?.purpose} · {(loan?.interestRate < 1 ? loan?.interestRate * 100 : loan?.interestRate) || 0}% per month</div>
                     </div>
                     <button className="ld-modal-close" onClick={onClose}><CloseIcon /></button>
                 </div>
@@ -473,10 +473,10 @@ export default function LoanDetail() {
                                 <div className="ld-stat-value">
                                     {loan.nextPaymentDate
                                         ? new Date(loan.nextPaymentDate).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' })
-                                        : '—'}
+                                        : loan.status === 'pending' ? 'Pending Approval' : '—'}
                                 </div>
                                 <div className="ld-stat-sub">
-                                    {loan.nextPaymentDate ? `${fmt(loan.monthlyPayment)} due` : 'No upcoming payment'}
+                                    {loan.nextPaymentDate ? `${fmt(loan.monthlyPayment)} due` : loan.status === 'pending' ? 'Starts after disbursement' : 'No upcoming payment'}
                                 </div>
                             </div>
                         </div>
@@ -583,16 +583,13 @@ export default function LoanDetail() {
                         )}
 
                         {/* ── Actions ── */}
-                        <div className="ld-actions-row">
-                            <button className="ld-outline-btn" onClick={() => setShowSchedule(true)}>
-                                View full schedule
-                            </button>
-                            {loan.status === 'active' && (
+                        {loan.status === 'active' && (
+                            <div className="ld-actions-row">
                                 <button className="ld-pay-btn" onClick={() => setShowPayNow(true)}>
                                     Pay now
                                 </button>
-                            )}
-                        </div>
+                            </div>
+                        )}
                     </>
                 )}
             </div>

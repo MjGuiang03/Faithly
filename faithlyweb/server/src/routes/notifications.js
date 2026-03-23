@@ -1,24 +1,41 @@
 import { Router } from 'express';
-import { users, donations, attendance, loans } from '../config/db.js';
+import { users, donations, attendance, loans, savingsTransactions } from '../config/db.js';
 import { authenticateAdmin } from '../middleware/auth.js';
 
 const router = Router();
 
 /* ================== GET ALL NOTIFICATIONS ================== */
-// Builds a unified notification feed from donations, members, attendance, loans
+// Builds a unified notification feed from donations, members, attendance, loans, savings
 router.get('/notifications', authenticateAdmin, async (req, res) => {
   try {
     const limit = Math.min(200, parseInt(req.query.limit) || 100);
 
     // Fetch recent events in parallel
-    const [recentDonations, recentMembers, recentAttendance, recentLoans] = await Promise.all([
+    const [recentDonations, recentMembers, recentAttendance, recentLoans, recentSavings] = await Promise.all([
       donations.find({}).sort({ createdAt: -1 }).limit(limit).toArray(),
       users.find({ isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(limit).toArray(),
       attendance.find({}).sort({ createdAt: -1 }).limit(limit).toArray(),
       loans.find({}).sort({ appliedDate: -1 }).limit(limit).toArray(),
+      savingsTransactions.find({ type: 'deposit' }).sort({ date: -1 }).limit(limit).toArray(),
     ]);
 
     const notifications = [];
+
+    // Savings deposits → notification
+    recentSavings.forEach(s => {
+      notifications.push({
+        id:        `savings-${s._id}`,
+        type:      'savings',
+        title:     'Savings deposit received',
+        message:   `A deposit of ₱${Number(s.amount).toLocaleString()} was added to ${s.goalName}.`,
+        timestamp: s.date,
+        isRead:    false,
+        meta: {
+          member: s.email, // using email as identifier for now
+          amount: s.amount,
+        }
+      });
+    });
 
     // Donations → notification
     recentDonations.forEach(d => {

@@ -281,22 +281,29 @@ router.get('/loans/:id/schedule', authenticateUser, async (req, res) => {
     // Simple schedule generation if not stored
     const schedule = [];
     const term = loan.termMonths || 12;
-    const monthlyPayment = loan.monthlyPayment || (loan.amount / term);
     const startDate = new Date(loan.disbursementDate || loan.appliedDate);
-    const interestRate = loan.interestRate || 2; // Default 2% if missing
+    
+    // Calculate using exact saved values if available, fallback to manual math
+    const principalPerMonth = loan.amount / term;
+    let interestPerMonth;
+    if (loan.totalInterest != null && loan.totalInterest > 0) {
+      interestPerMonth = loan.totalInterest / term;
+    } else {
+      let rate = loan.interestRate || 0.02;
+      if (rate > 1) rate = rate / 100; // handle 2 vs 0.02 format
+      interestPerMonth = loan.amount * rate;
+    }
+    const paymentPerMonth = loan.monthlyPayment || (principalPerMonth + interestPerMonth);
 
     for (let i = 1; i <= term; i++) {
         const dueDate = new Date(startDate);
         dueDate.setMonth(startDate.getMonth() + i);
         
-        const principal = loan.amount / term;
-        const interest = (loan.amount * (interestRate / 100));
-        
         schedule.push({
             dueDate,
-            principal,
-            interest,
-            payment: monthlyPayment,
+            principal: principalPerMonth,
+            interest: interestPerMonth,
+            payment: paymentPerMonth,
             status: i <= (loan.paidMonths || 0) ? 'paid' : 'upcoming',
             isNext: i === (loan.paidMonths || 0) + 1
         });
