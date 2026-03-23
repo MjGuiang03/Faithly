@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 import svgPaths from '../../imports/svg-icons';
 import Sidebar from '../components/Sidebar';
-import AnnouncementModal from '../components/AnnouncementModal';
+import AnnouncementAccordion from '../components/AnnouncementAccordion';
 import API from '../../utils/api';
 import '../styles/Home.css';
 
@@ -15,7 +15,6 @@ export default function Home() {
   const [donationStats, setDonationStats] = useState({ totalDonated: 0 });
   const [attendanceStats, setAttendanceStats] = useState({ total: 0 });
   const [announcementsCount, setAnnouncementsCount] = useState(0);
-  const [showAnnouncements, setShowAnnouncements] = useState(false);
   const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -178,6 +177,11 @@ export default function Home() {
     return `${dateStr} · ${timeStr}${branchPrefix}`;
   };
 
+  const scrollToAnnouncements = () => {
+    const el = document.getElementById('announcements-section');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   return (
     <div className="user-home-layout">
       <Sidebar />
@@ -247,7 +251,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="user-stat-card user-stat-orange" style={{ cursor: 'pointer' }} onClick={() => setShowAnnouncements(true)}>
+          <div className="user-stat-card user-stat-orange user-stat-card-clickable" style={{ cursor: 'pointer' }} onClick={scrollToAnnouncements}>
             <div className="user-stat-icon-box">
               <svg className="user-stat-icon" fill="none" viewBox="0 0 24 24">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
@@ -264,6 +268,9 @@ export default function Home() {
           </div>
 
         </div>
+
+        {/* Announcements Accordion */}
+        <AnnouncementAccordion />
 
         {/* Dashboard Grid */}
         <div className="user-dashboard-grid">
@@ -383,11 +390,6 @@ export default function Home() {
         </svg>
       </button>
 
-      {/* Announcements Modal */}
-      <AnnouncementModal
-        isOpen={showAnnouncements}
-        onClose={() => setShowAnnouncements(false)}
-      />
     </div>
   );
 }
