@@ -20,7 +20,6 @@ const STATUS_CLASS = {
   rejected: 'user-loan-status-rejected',
 };
 
-/* Lock icon SVG */
 const LockIcon = () => (
   <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
     <rect x="2" y="6" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
@@ -111,7 +110,6 @@ export default function Loans() {
     fetchAll();
   };
 
-  /* ── Derived state ── */
   const hasActiveLoan = loans.some(l => l.status === 'active' || l.status === 'pending');
   const isVerified = verificationStatus === 'verified';
   const nextDueLoan = activeLoans[0] || null;
@@ -161,34 +159,13 @@ export default function Loans() {
     <div className="ul-section">
       <div className="ul-section-head">
         <div className="ul-section-title">Available loan types</div>
-        <div className="ul-section-sub">Your loanable amount is based on your savings balance × the loan multiplier.</div>
+        <div className="ul-section-sub">Your loanable amount is based on your savings balance x the loan multiplier.</div>
       </div>
       <div className="ul-loan-types">
         {[
-          {
-            color: 'blue',
-            name: 'Personal Loan',
-            multiplier: '2× your savings',
-            desc: 'For everyday needs, big purchases, or personal goals.',
-            term: '3 – 12 months',
-            rate: '2% per month',
-          },
-          {
-            color: 'amber',
-            name: 'Emergency Loan',
-            multiplier: '1.5× your savings',
-            desc: 'Fast-tracked for urgent and unexpected situations.',
-            term: '1 – 6 months',
-            rate: '1.5% per month',
-          },
-          {
-            color: 'teal',
-            name: 'Short-Term Loan',
-            multiplier: '1× your savings',
-            desc: 'Quick, low-interest loan for short bridge financing.',
-            term: '1 – 3 months',
-            rate: '1% per month',
-          },
+          { color: 'blue', name: 'Personal Loan', multiplier: '2x your savings', desc: 'For everyday needs, big purchases, or personal goals.', term: '3 - 12 months', rate: '2% per month' },
+          { color: 'amber', name: 'Emergency Loan', multiplier: '1.5x your savings', desc: 'Fast-tracked for urgent and unexpected situations.', term: '1 - 6 months', rate: '1.5% per month' },
+          { color: 'teal', name: 'Short-Term Loan', multiplier: '1x your savings', desc: 'Quick, low-interest loan for short bridge financing.', term: '1 - 3 months', rate: '1% per month' },
         ].map((lt) => (
           <div key={lt.name} className="ul-lt-card">
             <div className={`ul-lt-icon ul-lt-icon--${lt.color}`}>
@@ -215,21 +192,105 @@ export default function Loans() {
     </div>
   );
 
-  /* ── Skeleton loader rows ── */
-  const renderSkeletons = () => (
-    <div className="ul-loans-list">
-      {[1, 2].map(i => (
-        <div key={i} className="ul-loan-card">
-          <div className="ul-skeleton" style={{ height: '18px', width: '30%', marginBottom: '8px' }} />
-          <div className="ul-skeleton" style={{ height: '14px', width: '20%', marginBottom: '16px' }} />
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <div className="ul-skeleton" style={{ height: '48px', flex: 1, borderRadius: '8px' }} />
-            <div className="ul-skeleton" style={{ height: '48px', flex: 1, borderRadius: '8px' }} />
-            <div className="ul-skeleton" style={{ height: '48px', flex: 1, borderRadius: '8px' }} />
+  /* ── Full page skeleton (initial load) ── */
+  const renderPageSkeleton = () => (
+    <>
+      {/* Header */}
+      <div className="ul-page-header">
+        <div>
+          <div className="ul-skeleton" style={{ height: '26px', width: '120px', marginBottom: '8px' }} />
+          <div className="ul-skeleton" style={{ height: '14px', width: '240px' }} />
+        </div>
+        <div className="ul-skeleton" style={{ height: '38px', width: '140px', borderRadius: '10px' }} />
+      </div>
+
+      {/* Policy bar */}
+      <div className="ul-skeleton" style={{ height: '42px', borderRadius: '0 8px 8px 0', marginBottom: '20px' }} />
+
+      {/* Stats */}
+      <div className="ul-stats" style={{ marginBottom: '20px' }}>
+        {[1, 2, 3].map(i => (
+          <div key={i} className="ul-stat-card" style={{ gap: '8px' }}>
+            <div className="ul-skeleton" style={{ height: '11px', width: '60%' }} />
+            <div className="ul-skeleton" style={{ height: '28px', width: '80%' }} />
+            <div className="ul-skeleton" style={{ height: '11px', width: '50%' }} />
+          </div>
+        ))}
+      </div>
+
+      {/* Active loan section */}
+      <div className="ul-section" style={{ marginBottom: '16px' }}>
+        <div className="ul-section-head">
+          <div className="ul-skeleton" style={{ height: '15px', width: '100px' }} />
+        </div>
+        <div className="ul-loan-card">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div className="ul-skeleton" style={{ height: '18px', width: '120px' }} />
+                <div className="ul-skeleton" style={{ height: '18px', width: '56px', borderRadius: '9999px' }} />
+              </div>
+              <div className="ul-skeleton" style={{ height: '12px', width: '180px' }} />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+              <div className="ul-skeleton" style={{ height: '22px', width: '100px' }} />
+              <div className="ul-skeleton" style={{ height: '11px', width: '80px' }} />
+            </div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <div className="ul-skeleton" style={{ height: '11px', width: '130px' }} />
+              <div className="ul-skeleton" style={{ height: '11px', width: '110px' }} />
+            </div>
+            <div className="ul-skeleton" style={{ height: '6px', width: '100%', borderRadius: '4px' }} />
+          </div>
+          <div className="ul-loan-meta-grid">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="ul-meta-item">
+                <div className="ul-skeleton" style={{ height: '11px', width: '60%', marginBottom: '6px' }} />
+                <div className="ul-skeleton" style={{ height: '16px', width: '75%' }} />
+              </div>
+            ))}
+          </div>
+          <div className="ul-loan-actions">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="ul-skeleton" style={{ flex: 1, height: '34px', borderRadius: '8px' }} />
+            ))}
           </div>
         </div>
-      ))}
-    </div>
+        <div className="ul-skeleton" style={{ height: '52px', margin: 0, borderRadius: 0 }} />
+      </div>
+
+      {/* History section */}
+      <div className="ul-section">
+        <div className="ul-section-head">
+          <div className="ul-skeleton" style={{ height: '15px', width: '90px' }} />
+        </div>
+        {[1, 2, 3].map(i => (
+          <div
+            key={i}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '12px',
+              padding: '12px 20px',
+              borderBottom: i < 3 ? '0.8px solid var(--border)' : 'none',
+            }}
+          >
+            <div className="ul-skeleton" style={{ width: '36px', height: '36px', borderRadius: '50%', flexShrink: 0 }} />
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div className="ul-skeleton" style={{ height: '13px', width: '100px' }} />
+                <div className="ul-skeleton" style={{ height: '13px', width: '50px', borderRadius: '9999px' }} />
+              </div>
+              <div className="ul-skeleton" style={{ height: '11px', width: '160px' }} />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+              <div className="ul-skeleton" style={{ height: '13px', width: '80px' }} />
+              <div className="ul-skeleton" style={{ height: '11px', width: '60px' }} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
   );
 
   return (
@@ -238,277 +299,269 @@ export default function Loans() {
 
       <div className="user-main-content">
 
-        {/* ── Header ── */}
-        <div className="ul-page-header">
-          <div>
-            <h1 className="ul-page-title">My Loans</h1>
-            <p className="ul-page-subtitle">Manage your loan applications and payments</p>
-          </div>
+        {/* Full page skeleton on initial load */}
+        {dataLoading && renderPageSkeleton()}
 
-          {isVerified && !hasActiveLoan ? (
-            <button className="ul-apply-btn" onClick={handleApplyClick}>
-              + Apply for Loan
-            </button>
-          ) : isVerified && hasActiveLoan ? (
-            <div className="ul-apply-btn-disabled" title="You already have an active or pending loan">
-              <LockIcon /> Apply for Loan
-            </div>
-          ) : (
-            <button
-              className="ul-apply-btn ul-apply-btn--locked"
-              onClick={handleApplyClick}
-              title={
-                verificationStatus === 'pending' ? 'Your verification is under review'
-                  : verificationStatus === 'rejected' ? 'Verification rejected — resubmit below'
-                    : 'Officer verification required'
-              }
-            >
-              <LockIcon />
-              {verificationStatus === 'pending' ? 'Verification Pending' : 'Apply for Loan'}
-            </button>
-          )}
-        </div>
-
-        {/* ── Error ── */}
-        {!dataLoading && error && (
-          <div className="user-loans-error-banner">
-            <span>⚠ {error}</span>
-            <button onClick={fetchAll} className="user-loans-retry-btn">Retry</button>
-          </div>
-        )}
-
-        {!dataLoading && !error && (
+        {/* Loaded state */}
+        {!dataLoading && (
           <>
-            {/* ── Verification locked banner ── */}
-            {!isVerified && renderLockedBanner()}
-
-            {/* ── One-loan policy bar ── */}
-            {isVerified && hasActiveLoan && renderPolicyBar()}
-
-            {/* ── Stats ── */}
-            <div className="ul-stats">
-              <div className="ul-stat-card">
-                <label className="ul-stat-label">Total Borrowed</label>
-                <div className="ul-stat-value">{fmt(stats.totalBorrowed)}</div>
-                <div className="ul-stat-sub">{stats.activeCount > 0 ? `${stats.activeCount} active loan` : 'No loans yet'}</div>
+            {/* Header */}
+            <div className="ul-page-header">
+              <div>
+                <h1 className="ul-page-title">My Loans</h1>
+                <p className="ul-page-subtitle">Manage your loan applications and payments</p>
               </div>
-              <div className="ul-stat-card">
-                <label className="ul-stat-label">Remaining Balance</label>
-                <div className="ul-stat-value">{fmt(stats.remainingBalance)}</div>
-                <div className="ul-stat-sub">
-                  {stats.remainingBalance > 0
-                    ? `${Math.round((stats.remainingBalance / stats.totalBorrowed) * 100)}% outstanding`
-                    : '—'}
+
+              {isVerified && !hasActiveLoan ? (
+                <button className="ul-apply-btn" onClick={handleApplyClick}>
+                  + Apply for Loan
+                </button>
+              ) : isVerified && hasActiveLoan ? (
+                <div className="ul-apply-btn-disabled" title="You already have an active or pending loan">
+                  <LockIcon /> Apply for Loan
                 </div>
-              </div>
-              <div className={`ul-stat-card ${nextDueLoan ? 'ul-stat-card--warn' : ''}`}>
-                {nextDueLoan ? (
-                  <>
-                    <label className="ul-stat-label">Next Payment</label>
-                    <div className="ul-stat-value">{fmt(nextDueLoan.monthlyPayment)}</div>
-                    <div className="ul-stat-sub">Due {fmtDate(nextDueLoan.nextPaymentDate)}</div>
-                  </>
-                ) : (
-                  <>
-                    <label className="ul-stat-label">Active Loans</label>
-                    <div className="ul-stat-value">{stats.activeCount}</div>
-                    <div className="ul-stat-sub">{isVerified ? 'Eligible to apply' : '—'}</div>
-                  </>
-                )}
-              </div>
+              ) : (
+                <button
+                  className="ul-apply-btn ul-apply-btn--locked"
+                  onClick={handleApplyClick}
+                  title={
+                    verificationStatus === 'pending' ? 'Your verification is under review'
+                      : verificationStatus === 'rejected' ? 'Verification rejected — resubmit below'
+                        : 'Officer verification required'
+                  }
+                >
+                  <LockIcon />
+                  {verificationStatus === 'pending' ? 'Verification Pending' : 'Apply for Loan'}
+                </button>
+              )}
             </div>
 
-            {/* ── Verified content ── */}
-            {isVerified && (
+            {/* Error */}
+            {error && (
+              <div className="user-loans-error-banner">
+                <span>Error {error}</span>
+                <button onClick={fetchAll} className="user-loans-retry-btn">Retry</button>
+              </div>
+            )}
+
+            {!error && (
               <>
-                {/* ── Active loan section ── */}
-                <div className="ul-section">
-                  <div className="ul-section-head">
-                    <div className="ul-section-title">
-                      {hasActiveLoan ? 'Active loan' : 'Active loan'}
+                {!isVerified && renderLockedBanner()}
+                {isVerified && hasActiveLoan && renderPolicyBar()}
+
+                {/* Stats */}
+                <div className="ul-stats">
+                  <div className="ul-stat-card">
+                    <label className="ul-stat-label">Total Borrowed</label>
+                    <div className="ul-stat-value">{fmt(stats.totalBorrowed)}</div>
+                    <div className="ul-stat-sub">{stats.activeCount > 0 ? `${stats.activeCount} active loan` : 'No loans yet'}</div>
+                  </div>
+                  <div className="ul-stat-card">
+                    <label className="ul-stat-label">Remaining Balance</label>
+                    <div className="ul-stat-value">{fmt(stats.remainingBalance)}</div>
+                    <div className="ul-stat-sub">
+                      {stats.remainingBalance > 0
+                        ? `${Math.round((stats.remainingBalance / stats.totalBorrowed) * 100)}% outstanding`
+                        : '—'}
                     </div>
                   </div>
-
-                  {dataLoading ? renderSkeletons() : loans.filter(l => l.status === 'active' || l.status === 'pending').length === 0 ? (
-                    /* ── Empty state ── */
-                    <div className="ul-empty-state">
-                      <div className="ul-empty-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-                          <rect x="3" y="5" width="18" height="14" rx="3" />
-                          <path d="M3 9h18M8 13h2M14 13h2" />
-                        </svg>
-                      </div>
-                      <div className="ul-empty-title">No active loan</div>
-                      <p className="ul-empty-sub">You haven't taken out a loan yet. Apply now and get funds disbursed directly to your account.</p>
-                      <button className="ul-empty-apply-btn" onClick={handleApplyClick}>Apply for a loan</button>
-                    </div>
-                  ) : (
-                    /* ── Active/pending loan card ── */
-                    <div className="ul-loans-list user-fade-in">
-                      {loans.filter(l => l.status === 'active' || l.status === 'pending').slice(0, 1).map((loan) => (
-                        <div key={loan._id} className="ul-loan-card">
-                          {/* Card top */}
-                          <div className="ul-loan-card-top">
-                            <div>
-                              <div className="ul-loan-title-row">
-                                <h3 className="ul-loan-id">{loan.loanId}</h3>
-                                <span className={`ul-loan-badge ${STATUS_CLASS[loan.status] || ''}`}>
-                                  {loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}
-                                </span>
-                              </div>
-                              <p className="ul-loan-meta">{fmtDate(loan.appliedDate)} · {loan.purpose}</p>
-                            </div>
-                            <div className="ul-loan-amount-block">
-                              <div className="ul-loan-amount">{fmt(loan.amount)}</div>
-                              <div className="ul-loan-amount-label">Original amount</div>
-                            </div>
-                          </div>
-
-                          {/* Progress bar — only for active loans */}
-                          {loan.status === 'active' && loan.termMonths && (
-                            <div className="ul-progress-wrap">
-                              <div className="ul-progress-label">
-                                <span>Repayment progress</span>
-                                <span>
-                                  {loan.paidMonths || 0} of {loan.termMonths} payments made
-                                </span>
-                              </div>
-                              <div className="ul-progress-bar">
-                                <div
-                                  className="ul-progress-fill"
-                                  style={{ width: `${Math.max(2, Math.round(((loan.paidMonths || 0) / loan.termMonths) * 100))}%` }}
-                                />
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Meta grid */}
-                          <div className="ul-loan-meta-grid">
-                            <div className="ul-meta-item">
-                              <div className="ul-meta-label">Monthly payment</div>
-                              <div className="ul-meta-value">{loan.monthlyPayment ? fmt(loan.monthlyPayment) : '—'}</div>
-                            </div>
-                            <div className="ul-meta-item">
-                              <div className="ul-meta-label">Remaining balance</div>
-                              <div className="ul-meta-value">
-                                {loan.status === 'active' && loan.remainingBalance != null ? fmt(loan.remainingBalance) : '—'}
-                              </div>
-                            </div>
-                            <div className={`ul-meta-item ${loan.nextPaymentDate ? 'ul-meta-item--warn' : ''}`}>
-                              <div className="ul-meta-label">Next due date</div>
-                              <div className={`ul-meta-value ${loan.nextPaymentDate ? 'ul-meta-value--warn' : ''}`}>
-                                {loan.nextPaymentDate ? fmtDate(loan.nextPaymentDate) : '—'}
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Actions */}
-                          <div className="ul-loan-actions">
-                            <button className="ul-action-btn" onClick={() => navigate(`/loans/${loan.loanId}?tab=schedule`)}>
-                              View schedule
-                            </button>
-                            <button className="ul-action-btn" onClick={() => navigate(`/loans/${loan.loanId}`)}>
-                              Loan details
-                            </button>
-                            {loan.status === 'active' && (
-                              <button className="ul-action-btn ul-action-btn--primary" onClick={() => navigate(`/loans/${loan.loanId}?pay=true`)}>
-                                Pay now
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Eligibility nudge */}
-                  {hasActiveLoan && (
-                    <div className="ul-eligible-banner">
-                      <div>
-                        <div className="ul-eligible-title">Eligible to re-apply after full repayment</div>
-                        <div className="ul-eligible-sub">
-                          Pay off {loans.find(l => l.status === 'active' || l.status === 'pending')?.loanId} to unlock your next loan application.
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  <div className={`ul-stat-card ${nextDueLoan ? 'ul-stat-card--warn' : ''}`}>
+                    {nextDueLoan ? (
+                      <>
+                        <label className="ul-stat-label">Next Payment</label>
+                        <div className="ul-stat-value">{fmt(nextDueLoan.monthlyPayment)}</div>
+                        <div className="ul-stat-sub">Due {fmtDate(nextDueLoan.nextPaymentDate)}</div>
+                      </>
+                    ) : (
+                      <>
+                        <label className="ul-stat-label">Active Loans</label>
+                        <div className="ul-stat-value">{stats.activeCount}</div>
+                        <div className="ul-stat-sub">{isVerified ? 'Eligible to apply' : '—'}</div>
+                      </>
+                    )}
+                  </div>
                 </div>
 
-                {/* ── Loan history / loan types ── */}
-                {loans.length > 0 ? (
-                  <div className="ul-section">
-                    <div className="ul-section-head">
-                      <div className="ul-section-title">Loan history</div>
-                      {totalCount > LIMIT && (
-                        <div className="ul-pagination-info">
-                          Showing {((page - 1) * LIMIT) + 1}–{Math.min(page * LIMIT, totalCount)} of {totalCount}
+                {isVerified && (
+                  <>
+                    {/* Active loan section */}
+                    <div className="ul-section">
+                      <div className="ul-section-head">
+                        <div className="ul-section-title">Active loan</div>
+                      </div>
+
+                      {loans.filter(l => l.status === 'active' || l.status === 'pending').length === 0 ? (
+                        <div className="ul-empty-state">
+                          <div className="ul-empty-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+                              <rect x="3" y="5" width="18" height="14" rx="3" />
+                              <path d="M3 9h18M8 13h2M14 13h2" />
+                            </svg>
+                          </div>
+                          <div className="ul-empty-title">No active loan</div>
+                          <p className="ul-empty-sub">You haven't taken out a loan yet. Apply now and get funds disbursed directly to your account.</p>
+                          <button className="ul-empty-apply-btn" onClick={handleApplyClick}>Apply for a loan</button>
+                        </div>
+                      ) : (
+                        <div className="ul-loans-list user-fade-in">
+                          {loans.filter(l => l.status === 'active' || l.status === 'pending').slice(0, 1).map((loan) => (
+                            <div key={loan._id} className="ul-loan-card">
+                              <div className="ul-loan-card-top">
+                                <div>
+                                  <div className="ul-loan-title-row">
+                                    <h3 className="ul-loan-id">{loan.loanId}</h3>
+                                    <span className={`ul-loan-badge ${STATUS_CLASS[loan.status] || ''}`}>
+                                      {loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}
+                                    </span>
+                                  </div>
+                                  <p className="ul-loan-meta">{fmtDate(loan.appliedDate)} · {loan.purpose}</p>
+                                </div>
+                                <div className="ul-loan-amount-block">
+                                  <div className="ul-loan-amount">{fmt(loan.amount)}</div>
+                                  <div className="ul-loan-amount-label">Original amount</div>
+                                </div>
+                              </div>
+
+                              {loan.status === 'active' && loan.termMonths && (
+                                <div className="ul-progress-wrap">
+                                  <div className="ul-progress-label">
+                                    <span>Repayment progress</span>
+                                    <span>{loan.paidMonths || 0} of {loan.termMonths} payments made</span>
+                                  </div>
+                                  <div className="ul-progress-bar">
+                                    <div
+                                      className="ul-progress-fill"
+                                      style={{ width: `${Math.max(2, Math.round(((loan.paidMonths || 0) / loan.termMonths) * 100))}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              )}
+
+                              <div className="ul-loan-meta-grid">
+                                <div className="ul-meta-item">
+                                  <div className="ul-meta-label">Monthly payment</div>
+                                  <div className="ul-meta-value">{loan.monthlyPayment ? fmt(loan.monthlyPayment) : '—'}</div>
+                                </div>
+                                <div className="ul-meta-item">
+                                  <div className="ul-meta-label">Remaining balance</div>
+                                  <div className="ul-meta-value">
+                                    {loan.status === 'active' && loan.remainingBalance != null ? fmt(loan.remainingBalance) : '—'}
+                                  </div>
+                                </div>
+                                <div className={`ul-meta-item ${loan.nextPaymentDate ? 'ul-meta-item--warn' : ''}`}>
+                                  <div className="ul-meta-label">Next due date</div>
+                                  <div className={`ul-meta-value ${loan.nextPaymentDate ? 'ul-meta-value--warn' : ''}`}>
+                                    {loan.nextPaymentDate ? fmtDate(loan.nextPaymentDate) : '—'}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="ul-loan-actions">
+                                <button className="ul-action-btn" onClick={() => navigate(`/loans/${loan.loanId}?tab=schedule`)}>
+                                  View schedule
+                                </button>
+                                <button className="ul-action-btn" onClick={() => navigate(`/loans/${loan.loanId}`)}>
+                                  Loan details
+                                </button>
+                                {loan.status === 'active' && (
+                                  <button className="ul-action-btn ul-action-btn--primary" onClick={() => navigate(`/loans/${loan.loanId}?pay=true`)}>
+                                    Pay now
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {hasActiveLoan && (
+                        <div className="ul-eligible-banner">
+                          <div>
+                            <div className="ul-eligible-title">Eligible to re-apply after full repayment</div>
+                            <div className="ul-eligible-sub">
+                              Pay off {loans.find(l => l.status === 'active' || l.status === 'pending')?.loanId} to unlock your next loan application.
+                            </div>
+                          </div>
                         </div>
                       )}
                     </div>
 
-                    <div className="ul-history-list user-fade-in">
-                      {loans.map((loan) => (
-                        <div key={loan._id} className="ul-history-row" onClick={() => navigate(`/loans/${loan.loanId}`)}>
-                          <div className={`ul-hist-icon ul-hist-icon--${loan.status === 'active' || loan.status === 'pending' ? 'active' : 'closed'}`}>
-                            {loan.status === 'active' || loan.status === 'pending' ? (
-                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="3" stroke="#185fa5" strokeWidth="1.2" /><path d="M5 8h6M5 5.5h4M5 10.5h3" stroke="#185fa5" strokeWidth="1.2" strokeLinecap="round" /></svg>
-                            ) : (
-                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="3" stroke="currentColor" strokeWidth="1.2" /><path d="M5 8.5l2 2 4-4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                            )}
-                          </div>
-                          <div className="ul-hist-info">
-                            <div className="ul-hist-id-row">
-                              <span className="ul-hist-id">{loan.loanId}</span>
-                              <span className={`ul-loan-badge ${STATUS_CLASS[loan.status] || ''}`}>
-                                {loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}
-                              </span>
+                    {/* Loan history / loan types */}
+                    {loans.length > 0 ? (
+                      <div className="ul-section">
+                        <div className="ul-section-head">
+                          <div className="ul-section-title">Loan history</div>
+                          {totalCount > LIMIT && (
+                            <div className="ul-pagination-info">
+                              Showing {((page - 1) * LIMIT) + 1}–{Math.min(page * LIMIT, totalCount)} of {totalCount}
                             </div>
-                            <div className="ul-hist-sub">
-                              {loan.purpose} · {loan.termMonths} months
-                              {loan.status === 'active' && loan.paidMonths != null
-                                ? ` · ${loan.paidMonths} of ${loan.termMonths} paid`
-                                : loan.status === 'completed' ? ' · Fully paid' : ''}
-                            </div>
-                          </div>
-                          <div className="ul-hist-right">
-                            <div className="ul-hist-amount">{fmt(loan.amount)}</div>
-                            <div className="ul-hist-date">{fmtDate(loan.appliedDate)}</div>
-                          </div>
+                          )}
                         </div>
-                      ))}
-                    </div>
 
-                    {/* Pagination */}
-                    {totalCount > LIMIT && (
-                      <div className="ul-pagination">
-                        <button
-                          className="ul-page-btn"
-                          onClick={() => setPage(p => Math.max(1, p - 1))}
-                          disabled={page === 1}
-                        >
-                          Previous
-                        </button>
-                        {Array.from({ length: Math.ceil(totalCount / LIMIT) }, (_, i) => (
-                          <button
-                            key={i + 1}
-                            className={`ul-page-btn ${page === i + 1 ? 'ul-page-btn--active' : ''}`}
-                            onClick={() => setPage(i + 1)}
-                          >
-                            {i + 1}
-                          </button>
-                        ))}
-                        <button
-                          className="ul-page-btn"
-                          onClick={() => setPage(p => Math.min(Math.ceil(totalCount / LIMIT), p + 1))}
-                          disabled={page === Math.ceil(totalCount / LIMIT)}
-                        >
-                          Next
-                        </button>
+                        <div className="ul-history-list user-fade-in">
+                          {loans.map((loan) => (
+                            <div key={loan._id} className="ul-history-row" onClick={() => navigate(`/loans/${loan.loanId}`)}>
+                              <div className={`ul-hist-icon ul-hist-icon--${loan.status === 'active' || loan.status === 'pending' ? 'active' : 'closed'}`}>
+                                {loan.status === 'active' || loan.status === 'pending' ? (
+                                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="3" stroke="#185fa5" strokeWidth="1.2" /><path d="M5 8h6M5 5.5h4M5 10.5h3" stroke="#185fa5" strokeWidth="1.2" strokeLinecap="round" /></svg>
+                                ) : (
+                                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="3" stroke="currentColor" strokeWidth="1.2" /><path d="M5 8.5l2 2 4-4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                                )}
+                              </div>
+                              <div className="ul-hist-info">
+                                <div className="ul-hist-id-row">
+                                  <span className="ul-hist-id">{loan.loanId}</span>
+                                  <span className={`ul-loan-badge ${STATUS_CLASS[loan.status] || ''}`}>
+                                    {loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}
+                                  </span>
+                                </div>
+                                <div className="ul-hist-sub">
+                                  {loan.purpose} · {loan.termMonths} months
+                                  {loan.status === 'active' && loan.paidMonths != null
+                                    ? ` · ${loan.paidMonths} of ${loan.termMonths} paid`
+                                    : loan.status === 'completed' ? ' · Fully paid' : ''}
+                                </div>
+                              </div>
+                              <div className="ul-hist-right">
+                                <div className="ul-hist-amount">{fmt(loan.amount)}</div>
+                                <div className="ul-hist-date">{fmtDate(loan.appliedDate)}</div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {totalCount > LIMIT && (
+                          <div className="ul-pagination">
+                            <button
+                              className="ul-page-btn"
+                              onClick={() => setPage(p => Math.max(1, p - 1))}
+                              disabled={page === 1}
+                            >
+                              Previous
+                            </button>
+                            {Array.from({ length: Math.ceil(totalCount / LIMIT) }, (_, i) => (
+                              <button
+                                key={i + 1}
+                                className={`ul-page-btn ${page === i + 1 ? 'ul-page-btn--active' : ''}`}
+                                onClick={() => setPage(i + 1)}
+                              >
+                                {i + 1}
+                              </button>
+                            ))}
+                            <button
+                              className="ul-page-btn"
+                              onClick={() => setPage(p => Math.min(Math.ceil(totalCount / LIMIT), p + 1))}
+                              disabled={page === Math.ceil(totalCount / LIMIT)}
+                            >
+                              Next
+                            </button>
+                          </div>
+                        )}
                       </div>
+                    ) : (
+                      renderLoanTypes()
                     )}
-                  </div>
-                ) : (
-                  renderLoanTypes()
+                  </>
                 )}
               </>
             )}
