@@ -300,25 +300,6 @@ export default function Savings() {
         );
     };
 
-    /* ── deposit strip (inline, bottom of goals section) ── */
-    const renderDepositStrip = () => {
-        if (!hasGoals) return null;
-        return (
-            <div className="sv-deposit-strip">
-                <input
-                    className="sv-deposit-input"
-                    type="text"
-                    placeholder="₱ Amount to deposit"
-                    readOnly
-                    onClick={openDeposit}
-                />
-                <select className="sv-deposit-select" onClick={openDeposit} onChange={() => { }}>
-                    {goals.map(g => <option key={g._id} value={g._id}>{g.name}</option>)}
-                </select>
-                <button className="sv-deposit-btn" onClick={openDeposit}>Deposit</button>
-            </div>
-        );
-    };
 
     /* ── transactions ── */
     const renderTransactions = () => {
