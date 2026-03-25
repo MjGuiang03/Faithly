@@ -1053,3 +1053,243 @@
     font-size: 11px;
   }
 }
+
+/* ── Stat card subtext ── */
+.user-stat-subtext {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  line-height: 16px;
+}
+
+.user-stat-subtext-green {
+  color: #16a34a;
+}
+
+.user-stat-subtext-red {
+  color: #dc2626;
+}
+
+/* ── Horizontal activity scroll feed ── */
+.user-activity-hscroll {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.user-activity-hscroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.user-activity-hscroll::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+.user-activity-hcard {
+  flex: 0 0 auto;
+  min-width: 180px;
+  max-width: 210px;
+  background: var(--secondary);
+  border: 0.8px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.user-activity-hcard:hover {
+  background: var(--muted);
+}
+
+.dark .user-activity-hcard {
+  background: var(--input-background);
+}
+
+.dark .user-activity-hcard:hover {
+  background: var(--muted);
+}
+
+.user-activity-hcard-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.user-activity-hcard-icon-loan,
+.user-activity-hcard-icon-active,
+.user-activity-hcard-icon-approved,
+.user-activity-hcard-icon-pending {
+  background: #eff4ff;
+  color: #155dfc;
+}
+
+.user-activity-hcard-icon-rejected {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.user-activity-hcard-icon-donation {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.user-activity-hcard-icon-attendance {
+  background: #dbeafe;
+  color: #0f2854;
+}
+
+.user-activity-hcard-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.user-activity-hcard-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--foreground);
+  font-family: 'Inter', sans-serif;
+  line-height: 18px;
+}
+
+.user-activity-hcard-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: 'Inter', sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-activity-hcard-amount {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--foreground);
+  font-family: 'Inter', sans-serif;
+  margin-top: auto;
+}
+
+.user-activity-hcard-time {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: 'Inter', sans-serif;
+}
+
+/* ── Upcoming Events card ── */
+.user-home-events-card {
+  overflow: visible;
+}
+
+.user-events-branch-tag {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.user-events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.user-event-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 11px 0;
+  border-bottom: 0.8px solid var(--border);
+}
+
+.user-event-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.user-event-row:first-child {
+  padding-top: 0;
+}
+
+.user-event-date-block {
+  width: 42px;
+  min-width: 42px;
+  height: 46px;
+  background: #1E3A8A;
+  border-radius: 9px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.user-event-day {
+  font-size: 17px;
+  font-weight: 700;
+  color: white;
+  font-family: 'Inter', sans-serif;
+  line-height: 20px;
+}
+
+.user-event-month {
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.75);
+  font-family: 'Inter', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 12px;
+}
+
+.user-event-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  flex: 1;
+}
+
+.user-event-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.user-event-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--foreground);
+  font-family: 'Inter', sans-serif;
+  line-height: 20px;
+}
+
+.user-event-tag {
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  border-radius: 5px;
+  padding: 1px 7px;
+  white-space: nowrap;
+}
+
+.user-event-time {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: 'Inter', sans-serif;
+}
+
+.dark .user-event-date-block {
+  background: rgba(30, 58, 138, 0.7);
+}

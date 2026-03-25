@@ -13,12 +13,16 @@ export default function Home() {
 
   const [loanStats, setLoanStats] = useState({ activeCount: 0, remainingBalance: 0 });
   const [activeLoansList, setActiveLoansList] = useState([]);
+  const [rejectedLoansCount, setRejectedLoansCount] = useState(0);
 
   const [donationStats, setDonationStats] = useState({ totalDonated: 0 });
+  const [monthlyDonationCount, setMonthlyDonationCount] = useState(0);
   const [attendanceStats, setAttendanceStats] = useState({ total: 0 });
+  const [monthlyAttendanceCount, setMonthlyAttendanceCount] = useState(0);
   const [announcementsCount, setAnnouncementsCount] = useState(0);
   const [recentActivity, setRecentActivity] = useState([]);
   const [savingsStats, setSavingsStats] = useState({ totalSavings: 0 });
+  const [monthlyDeposit, setMonthlyDeposit] = useState(0);
   const [savingsGoalsList, setSavingsGoalsList] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -48,16 +52,32 @@ export default function Home() {
         savingsGoalsRes.ok ? savingsGoalsRes.json() : { success: false },
       ]);
 
+      const now = new Date();
+      const thisMonth = now.getMonth();
+      const thisYear = now.getFullYear();
+
       if (loansRes.ok && loansData.success) {
         setLoanStats(loansData.stats || { activeCount: 0, remainingBalance: 0 });
         const activeList = (loansData.loans || []).filter(l => l.status === 'active');
         setActiveLoansList(activeList);
+        const rejected = (loansData.loans || []).filter(l => l.status === 'rejected').length;
+        setRejectedLoansCount(rejected);
       }
       if (donationsRes.ok && donationsData.success) {
         setDonationStats(donationsData.stats || { totalDonated: 0 });
+        const monthlyDons = (donationsData.donations || []).filter(d => {
+          const dt = new Date(d.createdAt);
+          return dt.getMonth() === thisMonth && dt.getFullYear() === thisYear;
+        });
+        setMonthlyDonationCount(monthlyDons.length);
       }
       if (attendanceRes.ok && attendanceData.success) {
         setAttendanceStats(attendanceData.stats || { total: 0 });
+        const monthlyAtt = (attendanceData.attendance || []).filter(a => {
+          const dt = new Date(a.createdAt);
+          return dt.getMonth() === thisMonth && dt.getFullYear() === thisYear;
+        });
+        setMonthlyAttendanceCount(monthlyAtt.length);
       }
 
       if (annRes.ok && annData.success) {
@@ -72,6 +92,20 @@ export default function Home() {
 
       if (savingsGoalsRes.ok && savingsGoalsData.success) {
         setSavingsGoalsList((savingsGoalsData.goals || []).filter(g => g.status !== 'completed'));
+        // monthly deposit: sum transactions this month
+        const goals = savingsGoalsData.goals || [];
+        let monthDeposit = 0;
+        goals.forEach(g => {
+          (g.transactions || []).forEach(tx => {
+            if (tx.type === 'deposit') {
+              const dt = new Date(tx.date || tx.createdAt);
+              if (dt.getMonth() === thisMonth && dt.getFullYear() === thisYear) {
+                monthDeposit += tx.amount || 0;
+              }
+            }
+          });
+        });
+        setMonthlyDeposit(monthDeposit);
       }
 
       const activities = [];
@@ -81,9 +115,10 @@ export default function Home() {
           activities.push({
             type: 'loan',
             title: `Loan ${loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}`,
-            description: `${loan.loanId} — ₱${loan.amount.toLocaleString()}`,
+            loanId: loan.loanId,
+            amount: `₱${loan.amount.toLocaleString()}`,
             date: new Date(loan.appliedDate),
-            iconColor: '#155DFC',
+            status: loan.status,
           });
         });
       }
@@ -93,27 +128,27 @@ export default function Home() {
           activities.push({
             type: 'donation',
             title: 'Donation Made',
-            description: `${donation.category} — ₱${donation.amount.toLocaleString()}`,
+            category: donation.category,
+            amount: `₱${donation.amount.toLocaleString()}`,
             date: new Date(donation.createdAt),
-            iconColor: '#00A63E',
           });
         });
       }
 
       if (attendanceData.success && attendanceData.attendance?.length) {
-        attendanceData.attendance.slice(0, 5).forEach(record => {
+        attendanceData.attendance.slice(0, 3).forEach(record => {
           activities.push({
             type: 'attendance',
             title: 'Service Attended',
-            description: `${record.service} — ${record.branch}`,
+            category: record.service || record.branch,
+            amount: '',
             date: new Date(record.createdAt),
-            iconColor: '#0F2854',
           });
         });
       }
 
       activities.sort((a, b) => b.date - a.date);
-      setRecentActivity(activities.slice(0, 5));
+      setRecentActivity(activities.slice(0, 8));
     } catch (err) {
       console.error('Failed to fetch dashboard data:', err);
     } finally {
@@ -137,7 +172,13 @@ export default function Home() {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
-
+  // Static upcoming events (can be replaced with API data later)
+  const upcomingEvents = [
+    { day: '27', month: 'MAR', title: 'Youth Worship Night', time: '6:00 PM · Main Hall', tag: 'Open', tagColor: '#00A63E' },
+    { day: '30', month: 'MAR', title: 'Sunday Service', time: '9:00 AM · Sanctuary', tag: null },
+    { day: '5', month: 'APR', title: 'Good Friday Service', time: '3:00 PM · Main Hall', tag: 'Reg. closes Apr 2', tagColor: '#c2410c' },
+    { day: '6', month: 'APR', title: 'Easter Sunrise Celebration', time: '5:30 AM · Outdoor Grounds', tag: null },
+  ];
 
   const quickActions = [
     {
@@ -147,8 +188,7 @@ export default function Home() {
       action: () => navigate('/donation'),
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-          <circle cx="12" cy="7" r="4"></circle>
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
         </svg>
       )
     },
@@ -163,19 +203,6 @@ export default function Home() {
           <line x1="16" y1="2" x2="16" y2="6"></line>
           <line x1="8" y1="2" x2="8" y2="6"></line>
           <line x1="3" y1="10" x2="21" y2="10"></line>
-        </svg>
-      )
-    },
-    {
-      title: 'View Nearby Community',
-      description: 'Find local branches',
-      className: 'user-action-btn-community',
-      action: () => navigate('/branches'),
-      icon: (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="2" y1="12" x2="22" y2="12"></line>
-          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
         </svg>
       )
     },
@@ -194,8 +221,6 @@ export default function Home() {
     const branchPrefix = profile?.branch ? ` · ${profile.branch}` : '';
     return `${dateStr} · ${timeStr}${branchPrefix}`;
   };
-
-  const [showAnnouncements, setShowAnnouncements] = useState(false);
 
   return (
     <div className="user-home-layout">
@@ -233,6 +258,7 @@ export default function Home() {
             <div className="user-stat-content">
               <p className="user-stat-label">Total Savings</p>
               {loading ? <div className="user-skeleton" style={{ height: '24px', width: '80px', marginTop: '4px' }}></div> : <p className="user-stat-value user-fade-in">{`₱${(savingsStats.totalSavings || 0).toLocaleString()}`}</p>}
+              {!loading && <p className="user-stat-subtext user-stat-subtext-green">+₱{monthlyDeposit.toLocaleString()} this month</p>}
             </div>
 
             {/* Hover Tooltip */}
@@ -253,6 +279,7 @@ export default function Home() {
             )}
           </div>
 
+          {/* Active Loans */}
           <div className="user-stat-card user-stat-blue user-stat-card-clickable" onClick={() => navigate('/loans')} style={{ cursor: 'pointer', position: 'relative' }}>
             <div className="user-stat-icon-box">
               <svg className="user-stat-icon" fill="none" viewBox="0 0 24 24">
@@ -266,6 +293,7 @@ export default function Home() {
             <div className="user-stat-content">
               <p className="user-stat-label">Active Loans</p>
               {loading ? <div className="user-skeleton" style={{ height: '24px', width: '40px', marginTop: '4px' }}></div> : <p className="user-stat-value user-fade-in">{loanStats.activeCount}</p>}
+              {!loading && <p className="user-stat-subtext user-stat-subtext-red">{rejectedLoansCount > 0 ? `${rejectedLoansCount} rejected` : 'No rejected'}</p>}
             </div>
 
             {/* Hover Tooltip */}
@@ -284,9 +312,9 @@ export default function Home() {
                 <p className="user-loan-hover-cta">Click to view details</p>
               </div>
             )}
-
           </div>
 
+          {/* Total Donated */}
           <div className="user-stat-card user-stat-green user-stat-card-clickable" onClick={() => navigate('/donation')} style={{ cursor: 'pointer' }}>
             <div className="user-stat-icon-box">
               <svg className="user-stat-icon" fill="none" viewBox="0 0 24 24">
@@ -296,9 +324,11 @@ export default function Home() {
             <div className="user-stat-content">
               <p className="user-stat-label">Total Donated</p>
               {loading ? <div className="user-skeleton" style={{ height: '24px', width: '80px', marginTop: '4px' }}></div> : <p className="user-stat-value user-fade-in">{`₱${(donationStats.totalDonated || 0).toLocaleString()}`}</p>}
+              {!loading && <p className="user-stat-subtext">{monthlyDonationCount} contribution{monthlyDonationCount !== 1 ? 's' : ''} this month</p>}
             </div>
           </div>
 
+          {/* Services Attended */}
           <div className="user-stat-card user-stat-navy user-stat-card-clickable" onClick={() => navigate('/attendance')} style={{ cursor: 'pointer' }}>
             <div className="user-stat-icon-box">
               <svg className="user-stat-icon" fill="none" viewBox="0 0 24 24">
@@ -311,13 +341,15 @@ export default function Home() {
             <div className="user-stat-content">
               <p className="user-stat-label">Services Attended</p>
               {loading ? <div className="user-skeleton" style={{ height: '24px', width: '40px', marginTop: '4px' }}></div> : <p className="user-stat-value user-fade-in">{attendanceStats.total}</p>}
+              {!loading && <p className="user-stat-subtext">{monthlyAttendanceCount} this month</p>}
             </div>
           </div>
 
+          {/* Announcements — kept as 5th card */}
           <div
-            className={`user-stat-card user-stat-orange user-stat-card-clickable${showAnnouncements ? ' user-stat-ann-active' : ''}`}
+            className={`user-stat-card user-stat-orange user-stat-card-clickable${false ? ' user-stat-ann-active' : ''}`}
             style={{ cursor: 'pointer', position: 'relative' }}
-            onClick={() => setShowAnnouncements(s => !s)}
+            onClick={() => navigate('/notifications')}
           >
             <div className="user-stat-icon-box">
               <svg className="user-stat-icon" fill="none" viewBox="0 0 24 24">
@@ -331,21 +363,9 @@ export default function Home() {
                 <p className="user-stat-value user-fade-in" style={{ whiteSpace: 'nowrap', fontSize: '1.05rem' }}>Church Updates</p>
                 {!loading && announcementsCount > 0 && <span className="user-stat-badge">{announcementsCount} unread</span>}
               </div>
+              {!loading && <p className="user-stat-subtext">View all updates</p>}
             </div>
-            <svg
-              style={{ transform: showAnnouncements ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s', marginLeft: '8px', color: '#9a3412', flexShrink: 0 }}
-              viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="16" height="16"
-            >
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-
-            {showAnnouncements && (
-              <div className="user-ann-dropdown" onClick={e => e.stopPropagation()}>
-                <AnnouncementAccordion inline />
-              </div>
-            )}
           </div>
-
         </div>
 
         {/* Dashboard Grid */}
@@ -376,7 +396,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Community Section — Real Map */}
+          {/* Community Section */}
           <div className="user-home-card user-home-community-card">
             <h2 className="user-home-card-title">Your Community</h2>
             <div className="user-community-info-wrap">
@@ -402,59 +422,80 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Recent Activities */}
-          <div className="user-home-card user-home-recent-activity-card">
-            <div className="user-home-card-header-with-icon" style={{ justifyContent: 'space-between', width: '100%' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <h2 className="user-home-card-title">Recent Activity</h2>
-              </div>
-            </div>
-            <div className="user-activity-list">
-              {loading ? (
-                [1, 2, 3, 4, 5].map(i => (
-                  <div key={i} className="user-activity-item" style={{ marginBottom: '12px' }}>
-                    <div className="user-skeleton user-skeleton-circle" style={{ width: '40px', height: '40px', flexShrink: 0 }}></div>
-                    <div style={{ flex: 1 }}>
-                      <div className="user-skeleton user-skeleton-text" style={{ height: '14px', width: '40%', marginBottom: '6px' }}></div>
-                      <div className="user-skeleton user-skeleton-text" style={{ height: '12px', width: '70%' }}></div>
-                    </div>
+          {/* Upcoming Events Card */}
+          <div className="user-home-card user-home-events-card">
+            <h2 className="user-home-card-title">
+              Upcoming Events
+              {profile?.branch && <span className="user-events-branch-tag"> · {profile.branch}</span>}
+            </h2>
+            <div className="user-events-list">
+              {upcomingEvents.map((evt, i) => (
+                <div key={i} className="user-event-row">
+                  <div className="user-event-date-block">
+                    <span className="user-event-day">{evt.day}</span>
+                    <span className="user-event-month">{evt.month}</span>
                   </div>
-                ))
-              ) : recentActivity.length === 0 ? (
-                <p className="user-home-empty-text">No recent activity yet.</p>
-              ) : (
-                <div className="user-fade-in user-activity-flex-col">
-                  {recentActivity.map((activity, index) => (
-                    <div key={index} className={`user-activity-item-horizontal user-activity-item-${activity.type}`}>
-                      <div className="user-activity-icon-compact" style={{ color: activity.iconColor }}>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
-                          {activity.type === 'loan' ? (
-                            <rect x="2" y="6" width="20" height="12" rx="2" ry="2"></rect>
-                          ) : activity.type === 'donation' ? (
-                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                          ) : (
-                            <path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                          )}
-                        </svg>
-                      </div>
-                      <div className="user-activity-details-horizontal">
-                        <div className="user-activity-left-col">
-                          <span className="user-activity-title-compact">{activity.title}</span>
-                          <span className="user-activity-desc-compact">{activity.description.split(' — ')[0]}</span>
-                        </div>
-                        <div className="user-activity-right-col">
-                          <span className={`user-activity-amount-compact user-activity-amount-${activity.type}`}>
-                            {activity.description.split(' — ')[1] || ''}
-                          </span>
-                          <span className="user-activity-time-compact">{formatTimeAgo(activity.date)}</span>
-                        </div>
-                      </div>
+                  <div className="user-event-info">
+                    <div className="user-event-title-row">
+                      <span className="user-event-title">{evt.title}</span>
+                      {evt.tag && (
+                        <span className="user-event-tag" style={{ color: evt.tagColor || '#155dfc', background: evt.tagColor ? `${evt.tagColor}18` : '#eff4ff' }}>
+                          {evt.tag}
+                        </span>
+                      )}
                     </div>
-                  ))}
+                    <span className="user-event-time">{evt.time}</span>
+                  </div>
                 </div>
-              )}
+              ))}
             </div>
           </div>
+        </div>
+
+        {/* Recent Activity — horizontal scroll feed */}
+        <div className="user-home-card user-home-full-width-section" style={{ marginBottom: '16px', overflow: 'hidden' }}>
+          <h2 className="user-home-card-title" style={{ marginBottom: '12px' }}>Recent Activity</h2>
+          {loading ? (
+            <div className="user-activity-hscroll">
+              {[1,2,3,4,5].map(i => (
+                <div key={i} className="user-activity-hcard">
+                  <div className="user-skeleton user-skeleton-circle" style={{ width: '32px', height: '32px' }}></div>
+                  <div style={{ flex: 1 }}>
+                    <div className="user-skeleton user-skeleton-text" style={{ height: '12px', width: '70%', marginBottom: '6px' }}></div>
+                    <div className="user-skeleton user-skeleton-text" style={{ height: '11px', width: '50%' }}></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : recentActivity.length === 0 ? (
+            <p className="user-home-empty-text">No recent activity yet.</p>
+          ) : (
+            <div className="user-activity-hscroll user-fade-in">
+              {recentActivity.map((activity, index) => (
+                <div key={index} className={`user-activity-hcard user-activity-hcard-${activity.type}`}>
+                  <div className={`user-activity-hcard-icon user-activity-hcard-icon-${activity.status || activity.type}`}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16">
+                      {activity.type === 'loan' ? (
+                        activity.status === 'rejected'
+                          ? <path d="M18 6 6 18M6 6l12 12" />
+                          : <rect x="2" y="6" width="20" height="12" rx="2" ry="2"></rect>
+                      ) : activity.type === 'donation' ? (
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                      ) : (
+                        <path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                      )}
+                    </svg>
+                  </div>
+                  <div className="user-activity-hcard-body">
+                    <span className="user-activity-hcard-title">{activity.title}</span>
+                    <span className="user-activity-hcard-sub">{activity.loanId || activity.category || ''}</span>
+                  </div>
+                  {activity.amount && <span className="user-activity-hcard-amount">{activity.amount}</span>}
+                  <span className="user-activity-hcard-time">{formatTimeAgo(activity.date)}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
       </div>

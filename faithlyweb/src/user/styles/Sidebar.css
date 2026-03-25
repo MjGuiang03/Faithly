@@ -170,15 +170,15 @@
 }
 
 .user-sidebar-nav-button.active {
-  background: rgba(255, 255, 255, 0.15);
-  color: white;
+  background: rgba(245, 200, 0, 0.18);
+  color: var(--gold, #F5C800);
   font-weight: 700;
-  border-left: 3px solid rgba(255, 255, 255, 0.9);
+  border-left: 3px solid var(--gold, #F5C800);
 }
 
 .user-sidebar-collapsed .user-sidebar-nav-button.active {
   border-left: none;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(245, 200, 0, 0.18);
 }
 
 .user-sidebar-nav-icon {
@@ -426,7 +426,7 @@
 }
 
 .user-sidebar-nav-button.active .user-sidebar-notif-badge {
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--gold, #F5C800);
   color: var(--sidebar);
 }
 
