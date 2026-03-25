@@ -23,15 +23,15 @@ const GOAL_ICONS = [
 ];
 
 const GOAL_NAME_OPTIONS = [
-    { value: 'Vacation Fund', label: '✈️  Vacation Fund' },
-    { value: 'Emergency Fund', label: '🛡️  Emergency Fund' },
-    { value: 'House / Down Payment', label: '🏠  House / Down Payment' },
-    { value: 'Car Purchase', label: '🚗  Car Purchase' },
-    { value: 'Education Fund', label: '🎓  Education Fund' },
-    { value: 'Retirement', label: '🧓  Retirement' },
-    { value: 'Gadget / Tech', label: '💻  Gadget / Tech' },
-    { value: 'Wedding Fund', label: '💍  Wedding Fund' },
-    { value: 'others', label: '✏️  Others (type manually)' },
+    { value: 'Vacation Fund', label: '  Vacation Fund' },
+    { value: 'Emergency Fund', label: '  Emergency Fund' },
+    { value: 'House / Down Payment', label: '  House / Down Payment' },
+    { value: 'Car Purchase', label: '  Car Purchase' },
+    { value: 'Education Fund', label: '  Education Fund' },
+    { value: 'Retirement', label: '  Retirement' },
+    { value: 'Gadget / Tech', label: '  Gadget / Tech' },
+    { value: 'Wedding Fund', label: '  Wedding Fund' },
+    { value: 'others', label: '  Others (Specify)' },
 ];
 
 const QUICK_AMOUNTS = [500, 1000, 2000, 5000];
@@ -281,7 +281,10 @@ function NewGoalModal({ onClose }) {
         <div className="svm-overlay" onClick={onClose}>
             <div className="svm-modal" onClick={e => e.stopPropagation()}>
                 <div className="svm-modal-head">
-                    <div className="svm-modal-title">Create a savings goal</div>
+                    <div>
+                        <div className="svm-modal-title">Create a savings goal</div>
+                        <div className="svm-modal-sub">Set a target and track your progress</div>
+                    </div>
                     <button className="svm-close-btn" onClick={onClose}><CloseIcon /></button>
                 </div>
 
@@ -313,32 +316,17 @@ function NewGoalModal({ onClose }) {
                         )}
                     </div>
 
-                    <div className="svm-field-row">
-                        <div className="svm-field">
-                            <label className="svm-label">Target amount</label>
-                            <div className="svm-amount-wrap">
-                                <span className="svm-peso">₱</span>
-                                <input
-                                    className="svm-input svm-input--amount"
-                                    type="text"
-                                    placeholder="0.00"
-                                    value={targetAmount}
-                                    onChange={e => setTarget(e.target.value.replace(/[^0-9.]/g, ''))}
-                                />
-                            </div>
-                        </div>
-                        <div className="svm-field">
-                            <label className="svm-label">Monthly contribution <span className="svm-label-opt">(optional)</span></label>
-                            <div className="svm-amount-wrap">
-                                <span className="svm-peso">₱</span>
-                                <input
-                                    className="svm-input svm-input--amount"
-                                    type="text"
-                                    placeholder="0.00"
-                                    value={monthly}
-                                    onChange={e => setMonthly(e.target.value.replace(/[^0-9.]/g, ''))}
-                                />
-                            </div>
+                    <div className="svm-field">
+                        <label className="svm-label">Target amount</label>
+                        <div className="svm-amount-wrap">
+                            <span className="svm-peso">₱</span>
+                            <input
+                                className="svm-input svm-input--amount"
+                                type="text"
+                                placeholder="0.00"
+                                value={targetAmount}
+                                onChange={e => setTarget(e.target.value.replace(/[^0-9.]/g, ''))}
+                            />
                         </div>
                     </div>
 
@@ -348,7 +336,7 @@ function NewGoalModal({ onClose }) {
                             <label className="svm-label">Start date</label>
                             <input
                                 className="svm-input"
-                                type="month"
+                                type="date"
                                 value={startDate}
                                 onChange={e => { setStartDate(e.target.value); handleDates(e.target.value, targetDate); }}
                             />
@@ -357,13 +345,28 @@ function NewGoalModal({ onClose }) {
                             <label className="svm-label">Target date <span className="svm-label-opt">(optional)</span></label>
                             <input
                                 className={`svm-input${dateError ? ' svm-input--error' : ''}`}
-                                type="month"
+                                type="date"
                                 value={targetDate}
                                 onChange={e => { setDate(e.target.value); handleDates(startDate, e.target.value); }}
                             />
                         </div>
                     </div>
                     {dateError && <div className="svm-date-error">{dateError}</div>}
+                    <div className="svm-helper-text">When to begin saving</div>
+
+                    <div className="svm-field">
+                        <label className="svm-label">Monthly contribution <span className="svm-label-opt">(optional)</span></label>
+                        <div className="svm-amount-wrap">
+                            <span className="svm-peso">₱</span>
+                            <input
+                                className="svm-input svm-input--amount"
+                                type="text"
+                                placeholder="0.00"
+                                value={monthly}
+                                onChange={e => setMonthly(e.target.value.replace(/[^0-9.]/g, ''))}
+                            />
+                        </div>
+                    </div>
 
                     <div className="svm-field-row">
                         <div className="svm-field">
@@ -496,7 +499,7 @@ function QuickDepositModal({ goal, goals, onClose }) {
                             {goal && numAmt > 0 && (
                                 <div className="svm-progress-hint">
                                     <div style={{ flex: 1 }}>
-                                        <div className="svm-progress-hint-text">Will bring {goal.name} to</div>
+                                        <div className="svm-progress-hint-text">This deposit will bring your {goal.name} Fund to</div>
                                         <div className="svm-progress-bar-wrap">
                                             <div className="svm-progress-bar-fill" style={{ width: `${newPct}%` }} />
                                         </div>
@@ -653,7 +656,10 @@ function EditGoalModal({ goal, onClose }) {
         <div className="svm-overlay" onClick={onClose}>
             <div className="svm-modal" onClick={e => e.stopPropagation()}>
                 <div className="svm-modal-head">
-                    <div className="svm-modal-title">Edit goal</div>
+                    <div>
+                        <div className="svm-modal-title">Edit goal</div>
+                        <div className="svm-modal-sub">Update your savings goal details</div>
+                    </div>
                     <button className="svm-close-btn" onClick={onClose}><CloseIcon /></button>
                 </div>
 
@@ -684,30 +690,16 @@ function EditGoalModal({ goal, onClose }) {
                         )}
                     </div>
 
-                    <div className="svm-field-row">
-                        <div className="svm-field">
-                            <label className="svm-label">Target amount</label>
-                            <div className="svm-amount-wrap">
-                                <span className="svm-peso">₱</span>
-                                <input
-                                    className="svm-input svm-input--amount"
-                                    type="text"
-                                    value={target}
-                                    onChange={e => setTarget(e.target.value.replace(/[^0-9.]/g, ''))}
-                                />
-                            </div>
-                        </div>
-                        <div className="svm-field">
-                            <label className="svm-label">Monthly contribution <span className="svm-label-opt">(optional)</span></label>
-                            <div className="svm-amount-wrap">
-                                <span className="svm-peso">₱</span>
-                                <input
-                                    className="svm-input svm-input--amount"
-                                    type="text"
-                                    value={monthly}
-                                    onChange={e => setMonthly(e.target.value.replace(/[^0-9.]/g, ''))}
-                                />
-                            </div>
+                    <div className="svm-field">
+                        <label className="svm-label">Target amount</label>
+                        <div className="svm-amount-wrap">
+                            <span className="svm-peso">₱</span>
+                            <input
+                                className="svm-input svm-input--amount"
+                                type="text"
+                                value={target}
+                                onChange={e => setTarget(e.target.value.replace(/[^0-9.]/g, ''))}
+                            />
                         </div>
                     </div>
 
@@ -717,7 +709,7 @@ function EditGoalModal({ goal, onClose }) {
                             <label className="svm-label">Start date</label>
                             <input
                                 className="svm-input"
-                                type="month"
+                                type="date"
                                 value={startDate}
                                 onChange={e => { setStartDate(e.target.value); handleDates(e.target.value, targetDate); }}
                             />
@@ -726,13 +718,27 @@ function EditGoalModal({ goal, onClose }) {
                             <label className="svm-label">Target date <span className="svm-label-opt">(optional)</span></label>
                             <input
                                 className={`svm-input${dateError ? ' svm-input--error' : ''}`}
-                                type="month"
+                                type="date"
                                 value={targetDate}
                                 onChange={e => { setDate(e.target.value); handleDates(startDate, e.target.value); }}
                             />
                         </div>
                     </div>
                     {dateError && <div className="svm-date-error">{dateError}</div>}
+                    <div className="svm-helper-text">When to begin saving</div>
+
+                    <div className="svm-field">
+                        <label className="svm-label">Monthly contribution <span className="svm-label-opt">(optional)</span></label>
+                        <div className="svm-amount-wrap">
+                            <span className="svm-peso">₱</span>
+                            <input
+                                className="svm-input svm-input--amount"
+                                type="text"
+                                value={monthly}
+                                onChange={e => setMonthly(e.target.value.replace(/[^0-9.]/g, ''))}
+                            />
+                        </div>
+                    </div>
 
                     <div className="svm-field-row">
                         <div className="svm-field">

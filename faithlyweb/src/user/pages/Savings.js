@@ -131,7 +131,6 @@ export default function Savings() {
     const openDeposit = () => setModal('deposit');
     const openNewGoal = () => setModal('newGoal');
     const openQuickDep = (goal) => { setModalData(goal); setModal('quickDeposit'); };
-    // eslint-disable-next-line no-unused-vars
     const openEditGoal = (goal) => { setModalData(goal); setModal('editGoal'); };
     const closeModal = () => { setModal(null); setModalData(null); fetchAll(); };
 
@@ -284,6 +283,15 @@ export default function Savings() {
                                     : <div className="sv-goal-pct" style={{ color: colors.pct }}>{pct}%</div>
                                 }
                             </div>
+                            <button
+                                className="sv-goal-more-btn"
+                                title="Edit goal"
+                                onClick={() => openEditGoal(goal)}
+                            >
+                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                                    <path d="M8.5 2.5l3 3M2 10l-.5 2.5L4 12l8-8-3-3-7 7z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                            </button>
                             <button
                                 className="sv-goal-more-btn"
                                 title="Quick deposit"

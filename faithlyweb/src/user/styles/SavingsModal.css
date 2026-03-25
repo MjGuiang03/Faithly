@@ -153,6 +153,14 @@
     margin-top: -8px;
 }
 
+.svm-helper-text {
+    font-size: 12px;
+    color: var(--text-muted, #9CA3AF);
+    font-family: 'Inter', sans-serif;
+    font-style: italic;
+    margin-top: -6px;
+}
+
 /* ── Form fields ─────────────────────────────────────────── */
 .svm-field {
     display: flex;
