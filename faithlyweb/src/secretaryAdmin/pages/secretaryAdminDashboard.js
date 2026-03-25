@@ -177,7 +177,7 @@ export default function SecretaryAdminDashboard() {
                                     <p className="sec-admin-reports-chart-subtitle">Funds released per month this year</p>
                                 </div>
                                 <div className="sec-admin-reports-chart-container" style={{ marginTop: '16px' }}>
-                                    <ResponsiveContainer width="100%" height={240}>
+                                    <ResponsiveContainer width="100%" height={200}>
                                         <BarChart data={moneyFlowData}>
                                             <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
                                             <XAxis dataKey="month" stroke="#6B7280" fontSize={12} />
@@ -229,7 +229,7 @@ export default function SecretaryAdminDashboard() {
                                     <p className="sec-admin-reports-chart-subtitle">Disbursement distribution</p>
                                 </div>
                                 <div className="sec-admin-reports-chart-container" style={{ marginTop: '16px' }}>
-                                    <ResponsiveContainer width="100%" height={160}>
+                                    <ResponsiveContainer width="100%" height={140}>
                                         <PieChart>
                                             <Pie data={paymentMethodData} cx="50%" cy="50%" labelLine={false} label={({ name, percentage }) => `${percentage}%`} outerRadius={60} dataKey="value">
                                                 {paymentMethodData.map((entry, index) => (
