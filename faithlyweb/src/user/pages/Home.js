@@ -206,8 +206,7 @@ export default function Home() {
   const formatTimePill = (date) => {
     const dateStr = date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
     const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-    const branchPrefix = profile?.branch ? ` · ${profile.branch}` : '';
-    return `${dateStr} · ${timeStr}${branchPrefix}`;
+    return `${dateStr} · ${timeStr}`;
   };
 
   return (
@@ -396,17 +395,8 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Upcoming Events Card */}
           <div className="user-home-card user-home-events-card">
-            <h2 className="user-home-card-title">
-              Upcoming Events
-              {profile?.branch && (
-                <span className="user-title-dot-wrap">
-                  <span className="user-title-dot">·</span>
-                  <span className="user-title-branch">{profile.branch.replace(/\s*Community\s*/gi, '')}</span>
-                </span>
-              )}
-            </h2>
+            <h2 className="user-home-card-title">Upcoming Events</h2>
             <div className="user-events-list">
               {upcomingEvents.map((evt, i) => (
                 <div key={i} className="user-event-row">

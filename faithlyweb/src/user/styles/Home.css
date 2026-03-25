@@ -148,7 +148,8 @@
 .user-stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .user-stat-card {
@@ -452,9 +453,9 @@
 .user-dashboard-grid {
   display: grid;
   grid-template-columns: 3fr 3fr 4fr;
-  gap: 12px;
+  gap: 10px;
   align-items: stretch;
-  margin-bottom: 24px;
+  margin-bottom: 10px;
 }
 
 .user-home-full-width-section {
@@ -478,7 +479,7 @@
 }
 
 .user-community-info-wrap {
-  margin-bottom: 12px;
+  margin-bottom: 6px;
 }
 
 .user-community-branch-name {
@@ -499,13 +500,14 @@
 }
 
 .user-community-map-container {
-  margin: 16px 0;
+  margin: 8px 0;
   border: 1px solid var(--border);
   border-radius: 12px;
   overflow: hidden;
   display: flex;
   flex: 1;
-  min-height: 150px;
+  min-height: 110px;
+  max-height: 130px;
 }
 
 .user-community-content {
@@ -549,7 +551,7 @@
 .user-home-card {
   background: var(--card);
   border-radius: 16px;
-  padding: 20px;
+  padding: 14px 16px;
   border: 1px solid var(--border);
   overflow: hidden;
 }
@@ -560,10 +562,10 @@
 }
 
 .user-home-card-title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--foreground);
-  margin: 0 0 16px 0;
+  margin: 0 0 10px 0;
   font-family: 'Inter', sans-serif;
 }
 
