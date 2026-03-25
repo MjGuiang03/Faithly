@@ -87,7 +87,6 @@ export default function Home() {
       }
 
       if (annRes.ok && annData.success) {
-        const readIds = JSON.parse(localStorage.getItem('faithly_ann_read') || '[]');
         const list = (annData.announcements || []).map(ann => {
           const d = new Date(ann.createdAt);
           return {
