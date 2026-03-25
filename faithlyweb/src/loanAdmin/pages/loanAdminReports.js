@@ -1,41 +1,50 @@
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { useState, useEffect, useCallback } from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import LoanAdminSidebar from './loanAdminSidebar';
+import API from '../../utils/api';
 import '../styles/loanAdminReports.css';
 
+const fmt = (n) =>
+    n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : '₱0.00';
+
+const fmtShort = (n) => {
+    if (n >= 1_000_000) return `₱${(n / 1_000_000).toFixed(1)}M`;
+    if (n >= 1_000) return `₱${(n / 1_000).toFixed(1)}K`;
+    return `₱${n.toLocaleString()}`;
+};
+
 export default function LoanAdminReports() {
-    // const [selectedPeriod, setSelectedPeriod] = useState('monthly');
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+    const [availableYears, setAvailableYears] = useState([new Date().getFullYear()]);
+    const [summary, setSummary] = useState({ totalReceived: 0, totalReleased: 0, totalInterest: 0 });
+    const [monthlyData, setMonthlyData] = useState([]);
+    const [byType, setByType] = useState([]);
+    const [disbursementByType, setDisbursementByType] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const moneyFlowData = [
-        { month: 'Jan', received: 950000, disbursed: 850000 },
-        { month: 'Feb', received: 1100000, disbursed: 1050000 },
-        { month: 'Mar', received: 1350000, disbursed: 1250000 },
-        { month: 'Apr', received: 1200000, disbursed: 1100000 },
-        { month: 'May', received: 1400000, disbursed: 1300000 },
-        { month: 'Jun', received: 1550000, disbursed: 1450000 }
-    ];
+    const fetchReports = useCallback(async () => {
+        setLoading(true);
+        try {
+            const token = localStorage.getItem('adminToken');
+            const res = await fetch(`${API}/api/admin/loan-reports?year=${selectedYear}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const data = await res.json();
+            if (data.success) {
+                setSummary(data.summary || { totalReceived: 0, totalReleased: 0, totalInterest: 0 });
+                setMonthlyData(data.monthlyData || []);
+                setByType(data.byType || []);
+                setDisbursementByType(data.disbursementByType || []);
+                if (data.availableYears?.length) setAvailableYears(data.availableYears);
+            }
+        } catch (err) {
+            console.error('Failed to fetch loan reports:', err);
+        } finally {
+            setLoading(false);
+        }
+    }, [selectedYear]);
 
-    const fundFlowTrendData = [
-        { month: 'Jan', received: 950000, disbursed: 900000 },
-        { month: 'Feb', received: 1100000, disbursed: 1050000 },
-        { month: 'Mar', received: 1350000, disbursed: 1300000 },
-        { month: 'Apr', received: 1200000, disbursed: 1150000 },
-        { month: 'May', received: 1400000, disbursed: 1350000 },
-        { month: 'Jun', received: 1550000, disbursed: 1500000 }
-    ];
-
-    const loansByPurposeData = [
-        { purpose: 'Education', count: 15, amount: 450000, average: 30000 },
-        { purpose: 'Medical', count: 12, amount: 380000, average: 31666.67 },
-        { purpose: 'Business', count: 8, amount: 720000, average: 90000 },
-        { purpose: 'Home', count: 10, amount: 290000, average: 29000 }
-    ];
-
-    const disbursementData = [
-        { purpose: 'Education', amount: 450000 },
-        { purpose: 'Medical', amount: 380000 },
-        { purpose: 'Business', amount: 720000 },
-        { purpose: 'Home', amount: 290000 }
-    ];
+    useEffect(() => { fetchReports(); }, [fetchReports]);
 
     return (
         <div className="loan-admin-reports-page">
@@ -45,182 +54,153 @@ export default function LoanAdminReports() {
                 {/* Header */}
                 <div className="loan-admin-reports-header">
                     <h1 className="loan-admin-reports-title">Financial Reports & Analytics</h1>
-                    <p className="loan-admin-reports-subtitle">Track church funds, donations, and loan disbursements</p>
-                </div>
-
-                {/* Summary Cards */}
-                <div className="loan-admin-reports-summary">
-                    <div className="loan-admin-reports-summary-card green">
-                        <div className="loan-admin-reports-summary-header">
-                            <p className="loan-admin-reports-summary-label">Total Money Received</p>
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                <path d="M8 14.6667V1.33334" stroke="#00A63E" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333" />
-                                <path d="M11.3333 3.99999L8 1.33333L4.66667 3.99999" stroke="#00A63E" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333" />
-                            </svg>
-                        </div>
-                        <p className="loan-admin-reports-summary-value">₱3930.0M</p>
-                        <p className="loan-admin-reports-summary-period">Jan - Jun 2026</p>
-                    </div>
-
-                    <div className="loan-admin-reports-summary-card red">
-                        <div className="loan-admin-reports-summary-header">
-                            <p className="loan-admin-reports-summary-label">Total Money Released</p>
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                <path d="M8 1.33334V14.6667" stroke="#FF6467" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333" />
-                                <path d="M4.66667 12L8 14.6667L11.3333 12" stroke="#FF6467" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333" />
-                            </svg>
-                        </div>
-                        <p className="loan-admin-reports-summary-value">₱1335.0M</p>
-                        <p className="loan-admin-reports-summary-period">Loan disbursements</p>
-                    </div>
-
-                    <div className="loan-admin-reports-summary-card blue">
-                        <div className="loan-admin-reports-summary-header">
-                            <p className="loan-admin-reports-summary-label">Net Balance</p>
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                <path d="M8 14.6667V1.33334" stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333" />
-                                <path d="M11.3333 3.99999L8 1.33333L4.66667 3.99999" stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333" />
-                            </svg>
-                        </div>
-                        <p className="loan-admin-reports-summary-value">₱2595.0M</p>
-                        <p className="loan-admin-reports-summary-period">Current period</p>
+                    <div className="loan-admin-reports-year-selector">
+                        <label htmlFor="year-select">Year:</label>
+                        <select
+                            id="year-select"
+                            value={selectedYear}
+                            onChange={(e) => setSelectedYear(Number(e.target.value))}
+                        >
+                            {availableYears.map(y => (
+                                <option key={y} value={y}>{y}</option>
+                            ))}
+                        </select>
                     </div>
                 </div>
 
-                {/* Money In vs Money Out Chart */}
-                <div className="loan-admin-reports-chart-section">
-                    <div className="loan-admin-reports-chart-header">
-                        <div>
-                            <h3 className="loan-admin-reports-chart-title">Money In vs Money Out</h3>
-                            <p className="loan-admin-reports-chart-subtitle">Monthly comparison of received funds and loan disbursements</p>
-                        </div>
+                {loading ? (
+                    <div style={{ textAlign: 'center', padding: '60px 0', color: '#9CA3AF', fontSize: '14px' }}>
+                        Loading reports…
                     </div>
-                    <div className="loan-admin-reports-chart-container">
-                        <ResponsiveContainer width="100%" height={280}>
-                            <BarChart data={moneyFlowData}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                                <XAxis dataKey="month" stroke="#6B7280" fontSize={12} />
-                                <YAxis stroke="#6B7280" fontSize={12} />
-                                <Tooltip
-                                    contentStyle={{
-                                        backgroundColor: '#ffffff',
-                                        border: '1px solid #E5E7EB',
-                                        borderRadius: '8px',
-                                        padding: '12px'
-                                    }}
-                                    formatter={(value) => '₱' + value.toLocaleString()}
-                                />
-                                <Legend
-                                    wrapperStyle={{ paddingTop: '20px' }}
-                                    iconType="circle"
-                                />
-                                <Bar dataKey="received" fill="#00A63E" name="Money Received" radius={[4, 4, 0, 0]} />
-                                <Bar dataKey="disbursed" fill="#FF6467" name="Money Released" radius={[4, 4, 0, 0]} />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
+                ) : (
+                    <>
+                        {/* Summary Cards */}
+                        <div className="loan-admin-reports-summary">
+                            <div className="loan-admin-reports-summary-card green">
+                                <div className="loan-admin-reports-summary-header">
+                                    <p className="loan-admin-reports-summary-label">Total Money Received</p>
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                        <path d="M8 14.6667V1.33334" stroke="#00A63E" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333" />
+                                        <path d="M11.3333 3.99999L8 1.33333L4.66667 3.99999" stroke="#00A63E" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333" />
+                                    </svg>
+                                </div>
+                                <p className="loan-admin-reports-summary-value">{fmtShort(summary.totalReceived)}</p>
+                                <p className="loan-admin-reports-summary-period">{selectedYear}</p>
+                            </div>
 
-                {/* Fund Flow Trends Chart */}
-                <div className="loan-admin-reports-chart-section">
-                    <div className="loan-admin-reports-chart-header">
-                        <div>
-                            <h3 className="loan-admin-reports-chart-title">Fund Flow Trends</h3>
-                            <p className="loan-admin-reports-chart-subtitle">Track trends in church funds over time</p>
-                        </div>
-                    </div>
-                    <div className="loan-admin-reports-chart-container">
-                        <ResponsiveContainer width="100%" height={280}>
-                            <LineChart data={fundFlowTrendData}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                                <XAxis dataKey="month" stroke="#6B7280" fontSize={12} />
-                                <YAxis stroke="#6B7280" fontSize={12} />
-                                <Tooltip
-                                    contentStyle={{
-                                        backgroundColor: '#ffffff',
-                                        border: '1px solid #E5E7EB',
-                                        borderRadius: '8px',
-                                        padding: '12px'
-                                    }}
-                                    formatter={(value) => '₱' + value.toLocaleString()}
-                                />
-                                <Legend
-                                    wrapperStyle={{ paddingTop: '20px' }}
-                                    iconType="circle"
-                                />
-                                <Line
-                                    type="monotone"
-                                    dataKey="received"
-                                    stroke="#00A63E"
-                                    strokeWidth={2}
-                                    name="Money Received"
-                                    dot={{ fill: '#00A63E', r: 4 }}
-                                />
-                                <Line
-                                    type="monotone"
-                                    dataKey="disbursed"
-                                    stroke="#FF6467"
-                                    strokeWidth={2}
-                                    name="Money Released"
-                                    dot={{ fill: '#FF6467', r: 4 }}
-                                />
-                            </LineChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
+                            <div className="loan-admin-reports-summary-card red">
+                                <div className="loan-admin-reports-summary-header">
+                                    <p className="loan-admin-reports-summary-label">Total Money Released</p>
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                        <path d="M8 1.33334V14.6667" stroke="#FF6467" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333" />
+                                        <path d="M4.66667 12L8 14.6667L11.3333 12" stroke="#FF6467" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333" />
+                                    </svg>
+                                </div>
+                                <p className="loan-admin-reports-summary-value">{fmtShort(summary.totalReleased)}</p>
+                                <p className="loan-admin-reports-summary-period">Loan disbursements</p>
+                            </div>
 
-                {/* Loan Disbursements by Purpose */}
-                <div className="loan-admin-reports-chart-section">
-                    <div className="loan-admin-reports-chart-header">
-                        <div>
-                            <h3 className="loan-admin-reports-chart-title">Loan Disbursements by Purpose</h3>
-                            <p className="loan-admin-reports-chart-subtitle">Breakdown of where loan funds are allocated</p>
+                            <div className="loan-admin-reports-summary-card blue">
+                                <div className="loan-admin-reports-summary-header">
+                                    <p className="loan-admin-reports-summary-label">Total Interest</p>
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                        <path d="M8 14.6667V1.33334" stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333" />
+                                        <path d="M11.3333 3.99999L8 1.33333L4.66667 3.99999" stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333" />
+                                    </svg>
+                                </div>
+                                <p className="loan-admin-reports-summary-value">{fmtShort(summary.totalInterest)}</p>
+                                <p className="loan-admin-reports-summary-period">Interest earned</p>
+                            </div>
                         </div>
-                    </div>
-                    <div className="loan-admin-reports-chart-container">
-                        <ResponsiveContainer width="100%" height={200}>
-                            <BarChart data={disbursementData} layout="vertical">
-                                <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                                <XAxis type="number" stroke="#6B7280" fontSize={12} />
-                                <YAxis dataKey="purpose" type="category" stroke="#6B7280" fontSize={12} width={80} />
-                                <Tooltip
-                                    contentStyle={{
-                                        backgroundColor: '#ffffff',
-                                        border: '1px solid #E5E7EB',
-                                        borderRadius: '8px',
-                                        padding: '12px'
-                                    }}
-                                    formatter={(value) => '₱' + value.toLocaleString()}
-                                />
-                                <Bar dataKey="amount" fill="#155DFC" radius={[0, 4, 4, 0]} />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </div>
 
-                    {/* Data Table */}
-                    <div className="loan-admin-reports-table-container">
-                        <table className="loan-admin-reports-table">
-                            <thead>
-                                <tr>
-                                    <th>Purpose</th>
-                                    <th>Number of Loans</th>
-                                    <th>Total Amount</th>
-                                    <th>Average</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {loansByPurposeData.map((row, index) => (
-                                    <tr key={index}>
-                                        <td className="loan-admin-reports-table-purpose">{row.purpose}</td>
-                                        <td>{row.count} loans</td>
-                                        <td className="loan-admin-reports-table-amount">₱{row.amount.toLocaleString()}</td>
-                                        <td>₱{row.average.toLocaleString()}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                        {/* Money In vs Money Out Chart */}
+                        <div className="loan-admin-reports-chart-section">
+                            <div className="loan-admin-reports-chart-header">
+                                <div>
+                                    <h3 className="loan-admin-reports-chart-title">Money In vs Money Out</h3>
+                                    <p className="loan-admin-reports-chart-subtitle">Monthly comparison of received funds and loan disbursements</p>
+                                </div>
+                            </div>
+                            <div className="loan-admin-reports-chart-container">
+                                <ResponsiveContainer width="100%" height={280}>
+                                    <BarChart data={monthlyData}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                                        <XAxis dataKey="month" stroke="#6B7280" fontSize={12} />
+                                        <YAxis stroke="#6B7280" fontSize={12} />
+                                        <Tooltip
+                                            contentStyle={{
+                                                backgroundColor: '#ffffff',
+                                                border: '1px solid #E5E7EB',
+                                                borderRadius: '8px',
+                                                padding: '12px'
+                                            }}
+                                            formatter={(value) => '₱' + value.toLocaleString()}
+                                        />
+                                        <Legend
+                                            wrapperStyle={{ paddingTop: '20px' }}
+                                            iconType="circle"
+                                        />
+                                        <Bar dataKey="received" fill="#00A63E" name="Money Received" radius={[4, 4, 0, 0]} />
+                                        <Bar dataKey="disbursed" fill="#FF6467" name="Money Released" radius={[4, 4, 0, 0]} />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+
+                        {/* Loan Disbursements by Type */}
+                        <div className="loan-admin-reports-chart-section">
+                            <div className="loan-admin-reports-chart-header">
+                                <div>
+                                    <h3 className="loan-admin-reports-chart-title">Loan Disbursements by Type</h3>
+                                    <p className="loan-admin-reports-chart-subtitle">Breakdown of loan funds allocated by loan type</p>
+                                </div>
+                            </div>
+                            <div className="loan-admin-reports-chart-container">
+                                <ResponsiveContainer width="100%" height={200}>
+                                    <BarChart data={disbursementByType} layout="vertical">
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                                        <XAxis type="number" stroke="#6B7280" fontSize={12} />
+                                        <YAxis dataKey="type" type="category" stroke="#6B7280" fontSize={12} width={120} />
+                                        <Tooltip
+                                            contentStyle={{
+                                                backgroundColor: '#ffffff',
+                                                border: '1px solid #E5E7EB',
+                                                borderRadius: '8px',
+                                                padding: '12px'
+                                            }}
+                                            formatter={(value) => '₱' + value.toLocaleString()}
+                                        />
+                                        <Bar dataKey="amount" fill="#155DFC" radius={[0, 4, 4, 0]} />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+
+                            {/* Data Table */}
+                            <div className="loan-admin-reports-table-container">
+                                <table className="loan-admin-reports-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Loan Type</th>
+                                            <th>Number of Loans</th>
+                                            <th>Total Amount</th>
+                                            <th>Average</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {byType.map((row, index) => (
+                                            <tr key={index}>
+                                                <td className="loan-admin-reports-table-purpose">{row.label}</td>
+                                                <td>{row.count} loans</td>
+                                                <td className="loan-admin-reports-table-amount">{fmt(row.amount)}</td>
+                                                <td>{fmt(row.average)}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </>
+                )}
             </div>
         </div>
     );

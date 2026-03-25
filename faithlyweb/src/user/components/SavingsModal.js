@@ -22,6 +22,18 @@ const GOAL_ICONS = [
     { key: 'car', label: 'Car' },
 ];
 
+const GOAL_NAME_OPTIONS = [
+    { value: 'Vacation Fund', label: '✈️  Vacation Fund' },
+    { value: 'Emergency Fund', label: '🛡️  Emergency Fund' },
+    { value: 'House / Down Payment', label: '🏠  House / Down Payment' },
+    { value: 'Car Purchase', label: '🚗  Car Purchase' },
+    { value: 'Education Fund', label: '🎓  Education Fund' },
+    { value: 'Retirement', label: '🧓  Retirement' },
+    { value: 'Gadget / Tech', label: '💻  Gadget / Tech' },
+    { value: 'Wedding Fund', label: '💍  Wedding Fund' },
+    { value: 'others', label: '✏️  Others (type manually)' },
+];
+
 const QUICK_AMOUNTS = [500, 1000, 2000, 5000];
 
 const CloseIcon = () => (
@@ -211,18 +223,33 @@ function DepositModal({ goals, onClose }) {
    2.  NEW GOAL MODAL
 ───────────────────────────────────────────────────────────── */
 function NewGoalModal({ onClose }) {
-    const [name, setName] = useState('');
+    const [nameOption, setNameOption] = useState('');
+    const [customName, setCustomName] = useState('');
     const [targetAmount, setTarget] = useState('');
+    const [startDate, setStartDate] = useState('');
     const [targetDate, setDate] = useState('');
+    const [dateError, setDateError] = useState('');
     const [monthly, setMonthly] = useState('');
     const [color, setColor] = useState('blue');
     const [iconType, setIcon] = useState('default');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
+    const isOthers = nameOption === 'others';
+    const resolvedName = isOthers ? customName.trim() : nameOption;
+
+    const handleDates = (start, end) => {
+        if (start && end && end <= start) {
+            setDateError('End date must be after start date.');
+        } else {
+            setDateError('');
+        }
+    };
+
     const handleSubmit = async () => {
-        if (!name.trim()) { setError('Goal name is required.'); return; }
+        if (!resolvedName) { setError('Goal name is required.'); return; }
         if (!targetAmount || parseFloat(targetAmount) <= 0) { setError('Enter a valid target amount.'); return; }
+        if (dateError) { setError(dateError); return; }
         setError('');
         setLoading(true);
         try {
@@ -231,8 +258,9 @@ function NewGoalModal({ onClose }) {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({
-                    name: name.trim(),
+                    name: resolvedName,
                     targetAmount: parseFloat(targetAmount),
+                    startDate: startDate || undefined,
                     targetDate: targetDate || undefined,
                     monthlyContribution: parseFloat(monthly) || 0,
                     color,
@@ -260,15 +288,29 @@ function NewGoalModal({ onClose }) {
                 <div className="svm-modal-body">
                     {error && <div className="svm-error">{error}</div>}
 
+                    {/* GOAL NAME — dropdown + optional manual input */}
                     <div className="svm-field">
                         <label className="svm-label">Goal name</label>
-                        <input
-                            className="svm-input"
-                            type="text"
-                            placeholder="e.g. Vacation Fund"
-                            value={name}
-                            onChange={e => setName(e.target.value)}
-                        />
+                        <select
+                            className="svm-select"
+                            value={nameOption}
+                            onChange={e => { setNameOption(e.target.value); setCustomName(''); }}
+                        >
+                            <option value="" disabled>Select a goal…</option>
+                            {GOAL_NAME_OPTIONS.map(o => (
+                                <option key={o.value} value={o.value}>{o.label}</option>
+                            ))}
+                        </select>
+                        {isOthers && (
+                            <input
+                                className="svm-input svm-input--others"
+                                type="text"
+                                placeholder="e.g. Dream Concert Fund"
+                                value={customName}
+                                onChange={e => setCustomName(e.target.value)}
+                                autoFocus
+                            />
+                        )}
                     </div>
 
                     <div className="svm-field-row">
@@ -286,29 +328,42 @@ function NewGoalModal({ onClose }) {
                             </div>
                         </div>
                         <div className="svm-field">
-                            <label className="svm-label">Target date <span className="svm-label-opt">(optional)</span></label>
-                            <input
-                                className="svm-input"
-                                type="month"
-                                value={targetDate}
-                                onChange={e => setDate(e.target.value)}
-                            />
+                            <label className="svm-label">Monthly contribution <span className="svm-label-opt">(optional)</span></label>
+                            <div className="svm-amount-wrap">
+                                <span className="svm-peso">₱</span>
+                                <input
+                                    className="svm-input svm-input--amount"
+                                    type="text"
+                                    placeholder="0.00"
+                                    value={monthly}
+                                    onChange={e => setMonthly(e.target.value.replace(/[^0-9.]/g, ''))}
+                                />
+                            </div>
                         </div>
                     </div>
 
-                    <div className="svm-field">
-                        <label className="svm-label">Monthly contribution <span className="svm-label-opt">(optional)</span></label>
-                        <div className="svm-amount-wrap">
-                            <span className="svm-peso">₱</span>
+                    {/* START DATE + TARGET DATE side by side */}
+                    <div className="svm-field-row">
+                        <div className="svm-field">
+                            <label className="svm-label">Start date</label>
                             <input
-                                className="svm-input svm-input--amount"
-                                type="text"
-                                placeholder="0.00"
-                                value={monthly}
-                                onChange={e => setMonthly(e.target.value.replace(/[^0-9.]/g, ''))}
+                                className="svm-input"
+                                type="month"
+                                value={startDate}
+                                onChange={e => { setStartDate(e.target.value); handleDates(e.target.value, targetDate); }}
+                            />
+                        </div>
+                        <div className="svm-field">
+                            <label className="svm-label">Target date <span className="svm-label-opt">(optional)</span></label>
+                            <input
+                                className={`svm-input${dateError ? ' svm-input--error' : ''}`}
+                                type="month"
+                                value={targetDate}
+                                onChange={e => { setDate(e.target.value); handleDates(startDate, e.target.value); }}
                             />
                         </div>
                     </div>
+                    {dateError && <div className="svm-date-error">{dateError}</div>}
 
                     <div className="svm-field-row">
                         <div className="svm-field">
@@ -519,18 +574,37 @@ function QuickDepositModal({ goal, goals, onClose }) {
    4.  EDIT GOAL MODAL
 ───────────────────────────────────────────────────────────── */
 function EditGoalModal({ goal, onClose }) {
-    const [name, setName] = useState(goal?.name || '');
+    // Detect if the existing name matches a preset or is custom
+    const matchedPreset = GOAL_NAME_OPTIONS.find(
+        o => o.value !== 'others' && o.value === goal?.name
+    );
+    const [nameOption, setNameOption] = useState(matchedPreset ? goal.name : 'others');
+    const [customName, setCustomName] = useState(!matchedPreset ? (goal?.name || '') : '');
     const [target, setTarget] = useState(String(goal?.targetAmount || ''));
     const [monthly, setMonthly] = useState(String(goal?.monthlyContribution || ''));
+    const [startDate, setStartDate] = useState(goal?.startDate ? goal.startDate.slice(0, 7) : '');
     const [targetDate, setDate] = useState(goal?.targetDate ? goal.targetDate.slice(0, 7) : '');
+    const [dateError, setDateError] = useState('');
     const [color, setColor] = useState(goal?.color || 'blue');
     const [iconType, setIcon] = useState(goal?.iconType || 'default');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [confirmDelete, setConfirmDelete] = useState(false);
 
+    const isOthers = nameOption === 'others';
+    const resolvedName = isOthers ? customName.trim() : nameOption;
+
+    const handleDates = (start, end) => {
+        if (start && end && end <= start) {
+            setDateError('End date must be after start date.');
+        } else {
+            setDateError('');
+        }
+    };
+
     const handleSave = async () => {
-        if (!name.trim()) { setError('Goal name is required.'); return; }
+        if (!resolvedName) { setError('Goal name is required.'); return; }
+        if (dateError) { setError(dateError); return; }
         setError('');
         setLoading(true);
         try {
@@ -539,8 +613,9 @@ function EditGoalModal({ goal, onClose }) {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({
-                    name: name.trim(),
+                    name: resolvedName,
                     targetAmount: parseFloat(target) || goal.targetAmount,
+                    startDate: startDate || undefined,
                     targetDate: targetDate || undefined,
                     monthlyContribution: parseFloat(monthly) || 0,
                     color,
@@ -585,14 +660,28 @@ function EditGoalModal({ goal, onClose }) {
                 <div className="svm-modal-body">
                     {error && <div className="svm-error">{error}</div>}
 
+                    {/* GOAL NAME — dropdown + optional manual input */}
                     <div className="svm-field">
                         <label className="svm-label">Goal name</label>
-                        <input
-                            className="svm-input"
-                            type="text"
-                            value={name}
-                            onChange={e => setName(e.target.value)}
-                        />
+                        <select
+                            className="svm-select"
+                            value={nameOption}
+                            onChange={e => { setNameOption(e.target.value); if (e.target.value !== 'others') setCustomName(''); }}
+                        >
+                            <option value="" disabled>Select a goal…</option>
+                            {GOAL_NAME_OPTIONS.map(o => (
+                                <option key={o.value} value={o.value}>{o.label}</option>
+                            ))}
+                        </select>
+                        {isOthers && (
+                            <input
+                                className="svm-input svm-input--others"
+                                type="text"
+                                placeholder="e.g. Dream Concert Fund"
+                                value={customName}
+                                onChange={e => setCustomName(e.target.value)}
+                            />
+                        )}
                     </div>
 
                     <div className="svm-field-row">
@@ -609,28 +698,41 @@ function EditGoalModal({ goal, onClose }) {
                             </div>
                         </div>
                         <div className="svm-field">
-                            <label className="svm-label">Target date <span className="svm-label-opt">(optional)</span></label>
-                            <input
-                                className="svm-input"
-                                type="month"
-                                value={targetDate}
-                                onChange={e => setDate(e.target.value)}
-                            />
+                            <label className="svm-label">Monthly contribution <span className="svm-label-opt">(optional)</span></label>
+                            <div className="svm-amount-wrap">
+                                <span className="svm-peso">₱</span>
+                                <input
+                                    className="svm-input svm-input--amount"
+                                    type="text"
+                                    value={monthly}
+                                    onChange={e => setMonthly(e.target.value.replace(/[^0-9.]/g, ''))}
+                                />
+                            </div>
                         </div>
                     </div>
 
-                    <div className="svm-field">
-                        <label className="svm-label">Monthly contribution <span className="svm-label-opt">(optional)</span></label>
-                        <div className="svm-amount-wrap">
-                            <span className="svm-peso">₱</span>
+                    {/* START DATE + TARGET DATE side by side */}
+                    <div className="svm-field-row">
+                        <div className="svm-field">
+                            <label className="svm-label">Start date</label>
                             <input
-                                className="svm-input svm-input--amount"
-                                type="text"
-                                value={monthly}
-                                onChange={e => setMonthly(e.target.value.replace(/[^0-9.]/g, ''))}
+                                className="svm-input"
+                                type="month"
+                                value={startDate}
+                                onChange={e => { setStartDate(e.target.value); handleDates(e.target.value, targetDate); }}
+                            />
+                        </div>
+                        <div className="svm-field">
+                            <label className="svm-label">Target date <span className="svm-label-opt">(optional)</span></label>
+                            <input
+                                className={`svm-input${dateError ? ' svm-input--error' : ''}`}
+                                type="month"
+                                value={targetDate}
+                                onChange={e => { setDate(e.target.value); handleDates(startDate, e.target.value); }}
                             />
                         </div>
                     </div>
+                    {dateError && <div className="svm-date-error">{dateError}</div>}
 
                     <div className="svm-field-row">
                         <div className="svm-field">

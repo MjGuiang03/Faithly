@@ -32,6 +32,7 @@ export default function Notifications() {
   const [rawItems,       setRawItems]       = useState([]);
   const [readIds,        setReadIds]        = useState(getReadSet);
   const [loading,        setLoading]        = useState(true);
+  const [detailModal,    setDetailModal]    = useState(null);
 
   /* ── Terms review modal state ── */
   const [termsModal, setTermsModal] = useState(null);  // the loan object
@@ -340,8 +341,15 @@ export default function Notifications() {
               <div
                 key={n.id}
                 className={cardClass(n.type, n.isRead, n.actionRequired)}
-                onClick={() => n.actionRequired && n.loanData ? setTermsModal(n.loanData) : null}
-                style={n.actionRequired ? { cursor: 'pointer' } : {}}
+                onClick={() => {
+                  if (!n.isRead) markAsRead(n.id);
+                  if (n.actionRequired && n.loanData) {
+                    setTermsModal(n.loanData);
+                  } else {
+                    setDetailModal(n);
+                  }
+                }}
+                style={{ cursor: 'pointer' }}
               >
                 {getIcon(n.type)}
                 <div className="user-notif-body">
@@ -354,11 +362,6 @@ export default function Notifications() {
                   <p className="user-notif-msg">{n.message}</p>
                   <div className="user-notif-footer">
                     <span className="user-notif-time">{fmtAgo(n.timestamp)}</span>
-                    {!n.isRead && !n.actionRequired && (
-                      <button className="user-notif-mark-btn" onClick={(e) => { e.stopPropagation(); markAsRead(n.id); }}>
-                        Mark as read
-                      </button>
-                    )}
                     {n.actionRequired && (
                       <span className="user-notif-review-hint">Tap to review →</span>
                     )}
@@ -426,6 +429,42 @@ export default function Notifications() {
                 disabled={termsLoading}
               >
                 {termsLoading ? 'Processing…' : 'Agree to Terms'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Notification Detail Modal ── */}
+      {detailModal && (
+        <div className="user-terms-modal-overlay" onClick={() => setDetailModal(null)}>
+          <div className="user-terms-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="user-terms-modal-header">
+              <h2 className="user-terms-modal-title">{detailModal.title}</h2>
+              <button className="user-terms-modal-close" onClick={() => setDetailModal(null)}>×</button>
+            </div>
+            <div style={{ padding: '20px 24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                {getIcon(detailModal.type)}
+                <span className={`user-notif-type-badge ${badgeClass(detailModal.type)}`} style={{ fontSize: '12px' }}>
+                  {badgeLabel(detailModal.type)}
+                </span>
+                <span style={{ fontSize: '12px', color: '#9CA3AF', marginLeft: 'auto', fontFamily: 'Inter, sans-serif' }}>
+                  {detailModal.timestamp
+                    ? new Date(detailModal.timestamp).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                    : ''}
+                </span>
+              </div>
+              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', color: '#374151', lineHeight: '22px', margin: 0 }}>
+                {detailModal.message}
+              </p>
+            </div>
+            <div style={{ padding: '0 24px 20px', display: 'flex', justifyContent: 'flex-end' }}>
+              <button
+                className="user-terms-btn user-terms-btn--agree"
+                onClick={() => setDetailModal(null)}
+              >
+                Close
               </button>
             </div>
           </div>

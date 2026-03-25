@@ -475,4 +475,100 @@ router.post('/loans/:id/pay', authenticateUser, async (req, res) => {
     }
 });
 
+/* ================== ADMIN - LOAN REPORTS ================== */
+router.get('/admin/loan-reports', authenticateAdmin, async (req, res) => {
+  try {
+    const year = parseInt(req.query.year) || new Date().getFullYear();
+    const yearStart = new Date(year, 0, 1);
+    const yearEnd = new Date(year + 1, 0, 1);
+
+    // All loans that were applied within the selected year
+    const allLoansInYear = await loans.find({
+      appliedDate: { $gte: yearStart, $lt: yearEnd }
+    }).toArray();
+
+    // Disbursed loans (money released) in the selected year
+    const disbursedLoans = await loans.find({
+      disbursed: true,
+      disbursementDate: { $gte: yearStart, $lt: yearEnd }
+    }).toArray();
+
+    // Active/completed loans (money to be received) in the selected year
+    const activeCompletedLoans = allLoansInYear.filter(
+      l => l.status === 'active' || l.status === 'completed'
+    );
+
+    // ── Summary cards ──
+    const totalReceived = activeCompletedLoans.reduce((sum, l) => sum + (l.totalRepayment || l.amount || 0), 0);
+    const totalReleased = disbursedLoans.reduce((sum, l) => sum + (l.amount || 0), 0);
+    const totalInterest = activeCompletedLoans.reduce((sum, l) => sum + (l.totalInterest || 0), 0);
+
+    // ── Monthly chart data (Money In vs Money Out) ──
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthlyData = months.map((month, idx) => {
+      const monthLoansReceived = activeCompletedLoans.filter(l => {
+        const d = new Date(l.appliedDate);
+        return d.getMonth() === idx;
+      });
+      const monthLoansDisbursed = disbursedLoans.filter(l => {
+        const d = new Date(l.disbursementDate);
+        return d.getMonth() === idx;
+      });
+
+      return {
+        month,
+        received: monthLoansReceived.reduce((s, l) => s + (l.totalRepayment || l.amount || 0), 0),
+        disbursed: monthLoansDisbursed.reduce((s, l) => s + (l.amount || 0), 0),
+      };
+    });
+
+    // ── Loans by type ──
+    const LOAN_TYPE_LABELS = {
+      'personal': 'Personal Loan',
+      'emergency': 'Emergency Loan',
+      'short-term': 'Short-Term Loan',
+    };
+    const loanTypeKeys = ['personal', 'emergency', 'short-term'];
+    const byType = loanTypeKeys.map(key => {
+      const matched = allLoansInYear.filter(l => (l.loanType || 'personal') === key);
+      const totalAmount = matched.reduce((s, l) => s + (l.amount || 0), 0);
+      return {
+        type: key,
+        label: LOAN_TYPE_LABELS[key] || key,
+        count: matched.length,
+        amount: totalAmount,
+        average: matched.length > 0 ? totalAmount / matched.length : 0,
+      };
+    });
+
+    // Disbursement chart data by type
+    const disbursementByType = loanTypeKeys.map(key => ({
+      type: LOAN_TYPE_LABELS[key] || key,
+      amount: allLoansInYear
+        .filter(l => (l.loanType || 'personal') === key)
+        .reduce((s, l) => s + (l.amount || 0), 0),
+    }));
+
+    // ── Available years (for the dropdown) ──
+    const oldestLoan = await loans.find().sort({ appliedDate: 1 }).limit(1).toArray();
+    const startYear = oldestLoan.length > 0 ? new Date(oldestLoan[0].appliedDate).getFullYear() : year;
+    const currentYear = new Date().getFullYear();
+    const availableYears = [];
+    for (let y = currentYear; y >= startYear; y--) availableYears.push(y);
+
+    res.json({
+      success: true,
+      year,
+      availableYears,
+      summary: { totalReceived, totalReleased, totalInterest },
+      monthlyData,
+      byType,
+      disbursementByType,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to generate loan reports' });
+  }
+});
+
 export default router;

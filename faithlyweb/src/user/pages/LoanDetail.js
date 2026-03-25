@@ -239,7 +239,7 @@ function PayNowModal({ loan, onClose, onSuccess }) {
                     <div className="ld-modal-footer">
                         <button className="ld-footer-btn-cancel" onClick={onClose}>Cancel</button>
                         <button className="ld-footer-btn-confirm" onClick={handleConfirm} disabled={uploading}>
-                            {uploading ? 'Submitting…' : 'Confirm payment'}
+                            {uploading ? 'Submitting…' : 'Submit Payment'}
                         </button>
                     </div>
                 )}

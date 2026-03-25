@@ -145,6 +145,14 @@
     font-family: 'Inter', sans-serif;
 }
 
+/* ── Date validation error ───────────────────────────────── */
+.svm-date-error {
+    font-size: 11px;
+    color: var(--destructive, #dc2626);
+    font-family: 'Inter', sans-serif;
+    margin-top: -8px;
+}
+
 /* ── Form fields ─────────────────────────────────────────── */
 .svm-field {
     display: flex;
@@ -196,6 +204,25 @@
 
 .svm-input::placeholder {
     color: var(--text-muted);
+}
+
+/* "Others" revealed text input */
+.svm-input--others {
+    margin-top: 2px;
+    border-style: dashed;
+    border-color: #1E3A8A;
+    background: rgba(30, 58, 138, 0.04);
+}
+
+.svm-input--others:focus {
+    border-style: solid;
+    border-color: #1E3A8A;
+    background: var(--card);
+}
+
+/* Error state on input */
+.svm-input--error {
+    border-color: var(--destructive, #dc2626) !important;
 }
 
 .svm-select {
@@ -496,6 +523,15 @@
 
 .dark .svm-input::placeholder {
     color: var(--text-muted);
+}
+
+.dark .svm-input--others {
+    border-color: #93c5fd;
+    background: rgba(147, 197, 253, 0.06);
+}
+
+.dark .svm-input--others:focus {
+    border-color: #93c5fd;
 }
 
 .dark .svm-quick-pill {
