@@ -56,88 +56,87 @@ export default function App() {
     <BrowserRouter>
       <ThemeProvider>
         <AuthProvider>
-        <Toaster
-          position="top-right"
-          richColors
-          closeButton
-          expand={false}
-          duration={4000}
-        />
+          <Toaster
+            position="top-right"
+            richColors
+            closeButton
+            expand={false}
+            duration={4000}
+          />
 
-        <Routes>
-          {/* ========== PUBLIC ROUTES ========== */}
-          <Route path="/" element={<Welcome />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/update-password" element={<UpdatePassword />} />
-          <Route path="/verify-email" element={<VerifyEmail />} />
+          <Routes>
+            {/* ========== PUBLIC ROUTES ========== */}
+            <Route path="/" element={<Welcome />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/update-password" element={<UpdatePassword />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
 
-          {/* ========== ADMIN ROUTES ========== */}
+            {/* ========== ADMIN ROUTES ========== */}
 
-          {/* Redirect /admin → /admin/dashboard */}
-          <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+            {/* Redirect /admin → /admin/dashboard */}
+            <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
 
-          {/*
+            {/*
             All protected admin routes share AdminLayout (sidebar rendered ONCE).
             AdminProtectedRoute wraps AdminLayout so unauthenticated users
             are redirected before the layout even mounts.
           */}
-          <Route
-            element={
-              <AdminProtectedRoute>
-                <AdminLayout />
-              </AdminProtectedRoute>
-            }
-          >
-            <Route path="/admin/dashboard"  element={<AdminDashboard />} />
-            <Route path="/admin/notification"      element={<AdminNotifications />} />
-            <Route path="/admin/officerverification"    element={<AdminOfficerVerification />} />
-            <Route path="/admin/members"    element={<AdminMembers />} />
-            <Route path="/admin/donations"  element={<AdminDonations />} />
-            <Route path="/admin/attendance" element={<AdminAttendance />} />
-            <Route path="/admin/branches"   element={<AdminBranches />} />
-            <Route path="/admin/reports"   element={<AdminReports />} />
-            <Route path="/admin/announcements" element={<AdminAnnouncements />} />
-            <Route path="/admin/users"   element={<AdminUserManagement />} />
-            <Route path="/admin/settings"   element={<AdminSettings />} />
-          </Route>
+            <Route
+              element={
+                <AdminProtectedRoute>
+                  <AdminLayout />
+                </AdminProtectedRoute>
+              }
+            >
+              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/notification" element={<AdminNotifications />} />
+              <Route path="/admin/officerverification" element={<AdminOfficerVerification />} />
+              <Route path="/admin/members" element={<AdminMembers />} />
+              <Route path="/admin/donations" element={<AdminDonations />} />
+              <Route path="/admin/attendance" element={<AdminAttendance />} />
+              <Route path="/admin/branches" element={<AdminBranches />} />
+              <Route path="/admin/reports" element={<AdminReports />} />
+              <Route path="/admin/announcements" element={<AdminAnnouncements />} />
+              <Route path="/admin/users" element={<AdminUserManagement />} />
+              <Route path="/admin/settings" element={<AdminSettings />} />
+            </Route>
 
-          {/* ========== LOAN ADMIN ROUTES ========== */}
-          {/* Redirect /loan-admin → /loan-admin/dashboard */}
-          <Route path="/loan-admin" element={<Navigate to="/loan-admin/dashboard" replace />} />
+            {/* ========== LOAN ADMIN ROUTES ========== */}
+            {/* Redirect /loan-admin → /loan-admin/dashboard */}
+            <Route path="/loan-admin" element={<Navigate to="/loan-admin/dashboard" replace />} />
 
-          {/* Each loanAdmin page embeds its own sidebar, so no layout wrapper needed */}
-          <Route path="/loan-admin/dashboard"       element={<AdminProtectedRoute><LoanAdminDashboard /></AdminProtectedRoute>} />
-          <Route path="/loan-admin/notifications"    element={<AdminProtectedRoute><LoanAdminNotif /></AdminProtectedRoute>} />
-          <Route path="/loan-admin/loan-management"  element={<AdminProtectedRoute><LoanAdminLoanManagement /></AdminProtectedRoute>} />
-          <Route path="/loan-admin/reports"          element={<AdminProtectedRoute><LoanAdminReports /></AdminProtectedRoute>} />
-          <Route path="/loan-admin/settings"         element={<AdminProtectedRoute><LoanAdminSettings /></AdminProtectedRoute>} />
+            {/* Each loanAdmin page embeds its own sidebar, so no layout wrapper needed */}
+            <Route path="/loan-admin/dashboard" element={<AdminProtectedRoute><LoanAdminDashboard /></AdminProtectedRoute>} />
+            <Route path="/loan-admin/notifications" element={<AdminProtectedRoute><LoanAdminNotif /></AdminProtectedRoute>} />
+            <Route path="/loan-admin/loan-management" element={<AdminProtectedRoute><LoanAdminLoanManagement /></AdminProtectedRoute>} />
+            <Route path="/loan-admin/reports" element={<AdminProtectedRoute><LoanAdminReports /></AdminProtectedRoute>} />
+            <Route path="/loan-admin/settings" element={<AdminProtectedRoute><LoanAdminSettings /></AdminProtectedRoute>} />
 
-          {/* ========== SECRETARY ADMIN ROUTES ========== */}
-          {/* Redirect /secretary-admin → /secretary-admin/dashboard */}
-          <Route path="/secretary-admin" element={<Navigate to="/secretary-admin/dashboard" replace />} />
+            {/* ========== SECRETARY ADMIN ROUTES ========== */}
+            {/* Redirect /secretary-admin → /secretary-admin/dashboard */}
+            <Route path="/secretary-admin" element={<Navigate to="/secretary-admin/dashboard" replace />} />
 
-          {/* Each secretaryAdmin page embeds its own sidebar */}
-          <Route path="/secretary-admin/dashboard"       element={<AdminProtectedRoute><SecretaryAdminDashboard /></AdminProtectedRoute>} />
-          <Route path="/secretary-admin/notifications"   element={<AdminProtectedRoute><SecretaryAdminNotif /></AdminProtectedRoute>} />
-          <Route path="/secretary-admin/loan-process"    element={<AdminProtectedRoute><SecretaryAdminLoanProcess /></AdminProtectedRoute>} />
-          <Route path="/secretary-admin/records"         element={<AdminProtectedRoute><SecretaryAdminRecords /></AdminProtectedRoute>} />
-          <Route path="/secretary-admin/reports"         element={<AdminProtectedRoute><SecretaryAdminReports /></AdminProtectedRoute>} />
-          <Route path="/secretary-admin/settings"        element={<AdminProtectedRoute><SecretaryAdminSettings /></AdminProtectedRoute>} />
+            {/* Each secretaryAdmin page embeds its own sidebar */}
+            <Route path="/secretary-admin/dashboard" element={<AdminProtectedRoute><SecretaryAdminDashboard /></AdminProtectedRoute>} />
+            <Route path="/secretary-admin/notifications" element={<AdminProtectedRoute><SecretaryAdminNotif /></AdminProtectedRoute>} />
+            <Route path="/secretary-admin/loan-process" element={<AdminProtectedRoute><SecretaryAdminLoanProcess /></AdminProtectedRoute>} />
+            <Route path="/secretary-admin/records" element={<AdminProtectedRoute><SecretaryAdminRecords /></AdminProtectedRoute>} />
+            <Route path="/secretary-admin/settings" element={<AdminProtectedRoute><SecretaryAdminSettings /></AdminProtectedRoute>} />
 
-          {/* ========== USER ROUTES ========== */}
-          <Route path="/home"       element={<ProtectedRoute><Home /></ProtectedRoute>} />
-          <Route path="/loans"      element={<ProtectedRoute><Loans /></ProtectedRoute>} />
-          <Route path="/donation"   element={<ProtectedRoute><Donation /></ProtectedRoute>} />
-          <Route path="/attendance" element={<ProtectedRoute><Attendance /></ProtectedRoute>} />
-          <Route path="/branches"   element={<ProtectedRoute><Branches /></ProtectedRoute>} />
-          <Route path="/notifications"   element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
-          <Route path="/settings"   element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-          <Route path="/savings"    element={<ProtectedRoute><Savings /></ProtectedRoute>} />
-          <Route path="/loans/:loanId" element={<ProtectedRoute><LoanDetail /></ProtectedRoute>} />
+            {/* ========== USER ROUTES ========== */}
+            <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+            <Route path="/loans" element={<ProtectedRoute><Loans /></ProtectedRoute>} />
+            <Route path="/donation" element={<ProtectedRoute><Donation /></ProtectedRoute>} />
+            <Route path="/attendance" element={<ProtectedRoute><Attendance /></ProtectedRoute>} />
+            <Route path="/branches" element={<ProtectedRoute><Branches /></ProtectedRoute>} />
+            <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            <Route path="/savings" element={<ProtectedRoute><Savings /></ProtectedRoute>} />
+            <Route path="/loans/:loanId" element={<ProtectedRoute><LoanDetail /></ProtectedRoute>} />
 
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+            {/* Fallback */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
         </AuthProvider>
       </ThemeProvider>
     </BrowserRouter>

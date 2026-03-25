@@ -89,11 +89,12 @@ export default function Home() {
       if (annRes.ok && annData.success) {
         const list = (annData.announcements || []).map(ann => {
           const d = new Date(ann.createdAt);
+          const text = ann.content || ann.body || '';
           return {
             day: d.getDate().toString(),
             month: d.toLocaleString('en-US', { month: 'short' }).toUpperCase(),
             title: ann.title,
-            time: ann.content.length > 50 ? ann.content.substring(0, 50) + '...' : ann.content,
+            time: text.length > 50 ? text.substring(0, 50) + '...' : text,
             tag: ann.branch === 'All' ? 'Global' : 'Local',
             tagColor: ann.branch === 'All' ? '#155dfc' : '#16a34a'
           };

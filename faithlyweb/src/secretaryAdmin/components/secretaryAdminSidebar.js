@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import {
     LayoutGrid, Bell, FileText, FolderOpen,
-    BarChart3, Settings, LogOut
+    Settings, LogOut
 } from 'lucide-react';
 import puacLogo from '../../assets/puaclogo.png';
 
@@ -64,7 +64,6 @@ export default function SecretaryAdminSidebar() {
         { id: 'notifications', label: 'Notifications', icon: <Bell size={20} />, path: '/secretary-admin/notifications' },
         { id: 'loan-processing', label: 'Loan Processing', icon: <FileText size={20} />, path: '/secretary-admin/loan-process' },
         { id: 'records', label: 'Records', icon: <FolderOpen size={20} />, path: '/secretary-admin/records' },
-        { id: 'reports', label: 'Reports', icon: <BarChart3 size={20} />, path: '/secretary-admin/reports' },
         { id: 'settings', label: 'Settings', icon: <Settings size={20} />, path: '/secretary-admin/settings' },
     ];
 
