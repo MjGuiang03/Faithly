@@ -74,7 +74,7 @@ export default function Savings() {
     useAuth();
 
     /* ── modal state ── */
-    const [modal, setModal] = useState(null); // 'deposit' | 'newGoal' | 'quickDeposit' | 'editGoal'
+    const [modal, setModal] = useState(null); // 'deposit' | 'newGoal' | 'quickDeposit' | 'editGoal' | 'transfer'
     const [modalData, setModalData] = useState(null);
 
     /* ── page data ── */
@@ -132,6 +132,7 @@ export default function Savings() {
     const openNewGoal = () => setModal('newGoal');
     const openQuickDep = (goal) => { setModalData(goal); setModal('quickDeposit'); };
     const openEditGoal = (goal) => { setModalData(goal); setModal('editGoal'); };
+    const openTransfer = (goal) => { setModalData(goal); setModal('transfer'); };
     const closeModal = () => { setModal(null); setModalData(null); fetchAll(); };
 
     const hasGoals = goals.length > 0;
@@ -290,6 +291,16 @@ export default function Savings() {
                             >
                                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                                     <path d="M8.5 2.5l3 3M2 10l-.5 2.5L4 12l8-8-3-3-7 7z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                            </button>
+                            <button
+                                className="sv-goal-more-btn"
+                                title="Transfer to another goal"
+                                onClick={() => openTransfer(goal)}
+                            >
+                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                                    <path d="M2 5h10M9 2l3 3-3 3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                                    <path d="M12 9H2M5 12l-3-3 3-3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
                                 </svg>
                             </button>
                             <button

@@ -522,7 +522,7 @@ router.get('/admin/loan-reports', authenticateAdmin, async (req, res) => {
       };
     });
 
-    // ── Loans by type ──
+    // ── Loans by type (only secretary-processed / disbursed loans) ──
     const LOAN_TYPE_LABELS = {
       'personal': 'Personal Loan',
       'emergency': 'Emergency Loan',
@@ -530,7 +530,7 @@ router.get('/admin/loan-reports', authenticateAdmin, async (req, res) => {
     };
     const loanTypeKeys = ['personal', 'emergency', 'short-term'];
     const byType = loanTypeKeys.map(key => {
-      const matched = allLoansInYear.filter(l => (l.loanType || 'personal') === key);
+      const matched = disbursedLoans.filter(l => (l.loanType || 'personal') === key);
       const totalAmount = matched.reduce((s, l) => s + (l.amount || 0), 0);
       return {
         type: key,
@@ -544,7 +544,7 @@ router.get('/admin/loan-reports', authenticateAdmin, async (req, res) => {
     // Disbursement chart data by type
     const disbursementByType = loanTypeKeys.map(key => ({
       type: LOAN_TYPE_LABELS[key] || key,
-      amount: allLoansInYear
+      amount: disbursedLoans
         .filter(l => (l.loanType || 'personal') === key)
         .reduce((s, l) => s + (l.amount || 0), 0),
     }));

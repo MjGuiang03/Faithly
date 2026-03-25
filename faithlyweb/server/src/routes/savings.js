@@ -144,7 +144,7 @@ router.delete('/savings/goals/:id', authenticateUser, async (req, res) => {
 router.post('/savings/deposit', authenticateUser, async (req, res) => {
   try {
     const email = req.user.email;
-    const { goalId, amount, description, source, paymentMethod, referenceNumber } = req.body;
+    const { goalId, amount, description, source, paymentMethod, referenceNumber, proofOfPayment } = req.body;
 
     if (!goalId || !amount || amount <= 0) {
       return res.status(400).json({ success: false, message: 'Goal and a positive amount are required' });
@@ -173,6 +173,7 @@ router.post('/savings/deposit', authenticateUser, async (req, res) => {
       source: source || 'Manual',
       paymentMethod: paymentMethod || 'cash',
       referenceNumber: referenceNumber || '',
+      proofOfPayment: proofOfPayment || null,
       date: new Date(),
     };
     await savingsTransactions.insertOne(txn);
@@ -208,6 +209,70 @@ router.get('/savings/transactions', authenticateUser, async (req, res) => {
   } catch (err) {
     console.error('Savings transactions error:', err);
     res.status(500).json({ success: false, message: 'Failed to fetch transactions' });
+  }
+});
+
+/* ================== TRANSFER BETWEEN GOALS ================== */
+router.post('/savings/transfer', authenticateUser, async (req, res) => {
+  try {
+    const email = req.user.email;
+    const { fromGoalId, toGoalId, amount, note } = req.body;
+
+    if (!fromGoalId || !toGoalId || !amount || amount <= 0) {
+      return res.status(400).json({ success: false, message: 'Source, destination, and a positive amount are required' });
+    }
+    if (fromGoalId === toGoalId) {
+      return res.status(400).json({ success: false, message: 'Source and destination must be different goals' });
+    }
+
+    const fromGoal = await savingsGoals.findOne({ _id: new ObjectId(fromGoalId), email });
+    const toGoal = await savingsGoals.findOne({ _id: new ObjectId(toGoalId), email });
+
+    if (!fromGoal) return res.status(404).json({ success: false, message: 'Source goal not found' });
+    if (!toGoal) return res.status(404).json({ success: false, message: 'Destination goal not found' });
+
+    const transferAmount = Number(amount);
+    if ((fromGoal.savedAmount || 0) < transferAmount) {
+      return res.status(400).json({ success: false, message: 'Insufficient balance in source goal' });
+    }
+
+    // Deduct from source
+    const fromNewSaved = (fromGoal.savedAmount || 0) - transferAmount;
+    const fromUpdates = { savedAmount: fromNewSaved, updatedAt: new Date() };
+    if (fromGoal.status === 'completed' && fromNewSaved < fromGoal.targetAmount) {
+      fromUpdates.status = 'active';
+    }
+    await savingsGoals.updateOne({ _id: new ObjectId(fromGoalId) }, { $set: fromUpdates });
+
+    // Add to destination
+    const toNewSaved = (toGoal.savedAmount || 0) + transferAmount;
+    const toUpdates = { savedAmount: toNewSaved, updatedAt: new Date() };
+    if (toNewSaved >= toGoal.targetAmount) toUpdates.status = 'completed';
+    await savingsGoals.updateOne({ _id: new ObjectId(toGoalId) }, { $set: toUpdates });
+
+    // Create two transaction records
+    const now = new Date();
+    const desc = note || `Transfer from ${fromGoal.name} to ${toGoal.name}`;
+    await savingsTransactions.insertMany([
+      {
+        email, goalId: new ObjectId(fromGoalId), goalName: fromGoal.name,
+        type: 'withdrawal', amount: transferAmount,
+        description: desc, source: 'Transfer', date: now,
+      },
+      {
+        email, goalId: new ObjectId(toGoalId), goalName: toGoal.name,
+        type: 'deposit', amount: transferAmount,
+        description: desc, source: 'Transfer', date: now,
+      },
+    ]);
+
+    res.json({
+      success: true,
+      message: `₱${transferAmount.toLocaleString()} transferred from ${fromGoal.name} to ${toGoal.name}`,
+    });
+  } catch (err) {
+    console.error('Transfer error:', err);
+    res.status(500).json({ success: false, message: 'Failed to process transfer' });
   }
 });
 

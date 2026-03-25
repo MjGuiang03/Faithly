@@ -51,6 +51,7 @@ function DepositModal({ goals, onClose }) {
     const [note, setNote] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('cash');
     const [referenceNumber, setReferenceNumber] = useState('');
+    const [receipt, setReceipt] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -72,14 +73,24 @@ function DepositModal({ goals, onClose }) {
         if (!numAmt || numAmt <= 0) { setError('Please enter a valid amount.'); return; }
         if (!selectedGoal) { setError('Please select a goal.'); return; }
         if (paymentMethod !== 'cash' && !referenceNumber) { setError('Please provide a reference number.'); return; }
+        if (!receipt) { setError('Please upload proof of payment.'); return; }
         setError('');
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
+            // Convert file to base64
+            let proofOfPayment = null;
+            if (receipt) {
+                const reader = new FileReader();
+                proofOfPayment = await new Promise((resolve) => {
+                    reader.onload = () => resolve(reader.result);
+                    reader.readAsDataURL(receipt);
+                });
+            }
             const res = await fetch(`${API}/api/savings/deposit`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ goalId: selectedGoal, amount: numAmt, note, paymentMethod, referenceNumber }),
+                body: JSON.stringify({ goalId: selectedGoal, amount: numAmt, note, paymentMethod, referenceNumber, proofOfPayment }),
             });
             const data = await res.json();
             if (!res.ok || !data.success) throw new Error(data.message || 'Deposit failed.');
@@ -188,6 +199,29 @@ function DepositModal({ goals, onClose }) {
                             value={note}
                             onChange={e => setNote(e.target.value)}
                         />
+                    </div>
+
+                    <div className="svm-field">
+                        <label className="svm-label">Proof of payment</label>
+                        <label className={`svm-upload-box ${receipt ? 'svm-upload-box--done' : ''}`}>
+                            <input
+                                type="file"
+                                accept="image/*,application/pdf"
+                                style={{ display: 'none' }}
+                                onChange={(e) => { setReceipt(e.target.files[0]); setError(''); }}
+                            />
+                            {receipt ? (
+                                <span className="svm-upload-done-text">✓ {receipt.name}</span>
+                            ) : (
+                                <>
+                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ marginBottom: '4px' }}>
+                                        <path d="M10 13V7M7 10l3-3 3 3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+                                        <path d="M3 17a4 4 0 0 1 0-8h.5A5.5 5.5 0 0 1 15.5 7H16a3 3 0 0 1 0 6H3z" stroke="currentColor" strokeWidth="1.3" />
+                                    </svg>
+                                    <span>Click to upload screenshot or receipt</span>
+                                </>
+                            )}
+                        </label>
                     </div>
 
                     {goal && numAmt > 0 && (
@@ -417,6 +451,7 @@ function QuickDepositModal({ goal, goals, onClose }) {
     const [note, setNote] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('cash');
     const [referenceNumber, setReferenceNumber] = useState('');
+    const [receipt, setReceipt] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
@@ -430,14 +465,23 @@ function QuickDepositModal({ goal, goals, onClose }) {
     const handleSubmit = async () => {
         if (!numAmt || numAmt <= 0) { setError('Enter a valid amount.'); return; }
         if (paymentMethod !== 'cash' && !referenceNumber) { setError('Please provide a reference number.'); return; }
+        if (!receipt) { setError('Please upload proof of payment.'); return; }
         setError('');
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
+            let proofOfPayment = null;
+            if (receipt) {
+                const reader = new FileReader();
+                proofOfPayment = await new Promise((resolve) => {
+                    reader.onload = () => resolve(reader.result);
+                    reader.readAsDataURL(receipt);
+                });
+            }
             const res = await fetch(`${API}/api/savings/deposit`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ goalId: goal._id, amount: numAmt, note, paymentMethod, referenceNumber }),
+                body: JSON.stringify({ goalId: goal._id, amount: numAmt, note, paymentMethod, referenceNumber, proofOfPayment }),
             });
             const data = await res.json();
             if (!res.ok || !data.success) throw new Error(data.message || 'Deposit failed.');
@@ -555,6 +599,29 @@ function QuickDepositModal({ goal, goals, onClose }) {
                                     value={note}
                                     onChange={e => setNote(e.target.value)}
                                 />
+                            </div>
+
+                            <div className="svm-field">
+                                <label className="svm-label">Proof of payment</label>
+                                <label className={`svm-upload-box ${receipt ? 'svm-upload-box--done' : ''}`}>
+                                    <input
+                                        type="file"
+                                        accept="image/*,application/pdf"
+                                        style={{ display: 'none' }}
+                                        onChange={(e) => { setReceipt(e.target.files[0]); setError(''); }}
+                                    />
+                                    {receipt ? (
+                                        <span className="svm-upload-done-text">✓ {receipt.name}</span>
+                                    ) : (
+                                        <>
+                                            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" style={{ marginBottom: '3px' }}>
+                                                <path d="M10 13V7M7 10l3-3 3 3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+                                                <path d="M3 17a4 4 0 0 1 0-8h.5A5.5 5.5 0 0 1 15.5 7H16a3 3 0 0 1 0 6H3z" stroke="currentColor" strokeWidth="1.3" />
+                                            </svg>
+                                            <span>Upload receipt</span>
+                                        </>
+                                    )}
+                                </label>
                             </div>
                         </>
                     )}
@@ -803,6 +870,165 @@ function EditGoalModal({ goal, onClose }) {
 }
 
 /* ─────────────────────────────────────────────────────────────
+   5.  TRANSFER MODAL  (move funds between goals)
+───────────────────────────────────────────────────────────── */
+function TransferModal({ goal, goals, onClose }) {
+    const [fromGoalId, setFromGoalId] = useState(goal?._id || '');
+    const [toGoalId, setToGoalId] = useState('');
+    const [amount, setAmount] = useState('');
+    const [note, setNote] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState(false);
+
+    const fromGoal = goals.find(g => g._id === fromGoalId);
+    const available = fromGoal?.savedAmount || 0;
+    const numAmt = parseFloat(amount) || 0;
+    const quickAmounts = [100, 500, 1000, 2000].filter(v => v <= available);
+
+    const handleSubmit = async () => {
+        if (!fromGoalId) { setError('Select a source goal.'); return; }
+        if (!toGoalId) { setError('Select a destination goal.'); return; }
+        if (fromGoalId === toGoalId) { setError('Source and destination must be different.'); return; }
+        if (!numAmt || numAmt <= 0) { setError('Enter a valid amount.'); return; }
+        if (numAmt > available) { setError('Amount exceeds available balance.'); return; }
+        setError('');
+        setLoading(true);
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${API}/api/savings/transfer`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ fromGoalId, toGoalId, amount: numAmt, note }),
+            });
+            const data = await res.json();
+            if (!res.ok || !data.success) throw new Error(data.message || 'Transfer failed.');
+            setSuccess(true);
+            setTimeout(onClose, 1500);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="svm-overlay" onClick={onClose}>
+            <div className="svm-modal" onClick={e => e.stopPropagation()}>
+                <div className="svm-modal-head">
+                    <div>
+                        <div className="svm-modal-title">Transfer funds</div>
+                        <div className="svm-modal-sub">Move savings between your goals</div>
+                    </div>
+                    <button className="svm-close-btn" onClick={onClose}><CloseIcon /></button>
+                </div>
+
+                <div className="svm-modal-body">
+                    {error && <div className="svm-error">{error}</div>}
+
+                    {success ? (
+                        <div className="svm-success">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <circle cx="10" cy="10" r="8" fill="#639922" />
+                                <path d="M6.5 10.5l2.5 2.5 4.5-4.5" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                            ₱{numAmt.toLocaleString('en-PH', { minimumFractionDigits: 2 })} transferred!
+                        </div>
+                    ) : (
+                        <>
+                            <div className="svm-field">
+                                <label className="svm-label">From goal</label>
+                                <select
+                                    className="svm-select"
+                                    value={fromGoalId}
+                                    onChange={e => { setFromGoalId(e.target.value); setAmount(''); }}
+                                >
+                                    <option value="" disabled>Select source…</option>
+                                    {goals.filter(g => (g.savedAmount || 0) > 0).map(g => (
+                                        <option key={g._id} value={g._id}>
+                                            {g.name} — {fmt(g.savedAmount)} available
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="svm-field">
+                                <label className="svm-label">To goal</label>
+                                <select
+                                    className="svm-select"
+                                    value={toGoalId}
+                                    onChange={e => setToGoalId(e.target.value)}
+                                >
+                                    <option value="" disabled>Select destination…</option>
+                                    {goals.filter(g => g._id !== fromGoalId).map(g => (
+                                        <option key={g._id} value={g._id}>
+                                            {g.name} — {fmt(g.savedAmount)} saved
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="svm-field">
+                                <label className="svm-label">Amount</label>
+                                <div className="svm-amount-wrap">
+                                    <span className="svm-peso">₱</span>
+                                    <input
+                                        className="svm-input svm-input--amount"
+                                        type="text"
+                                        placeholder="0.00"
+                                        value={amount}
+                                        onChange={e => setAmount(e.target.value.replace(/[^0-9.]/g, ''))}
+                                    />
+                                </div>
+                                {available > 0 && (
+                                    <div className="svm-helper-text">
+                                        Available: {fmt(available)}
+                                    </div>
+                                )}
+                                {quickAmounts.length > 0 && (
+                                    <div className="svm-quick-pills">
+                                        {quickAmounts.map(v => (
+                                            <button key={v} className="svm-quick-pill" onClick={() => setAmount(String(v))}>
+                                                ₱{v.toLocaleString()}
+                                            </button>
+                                        ))}
+                                        <button className="svm-quick-pill" onClick={() => setAmount(String(available))}>
+                                            All
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="svm-field">
+                                <label className="svm-label">
+                                    Note <span className="svm-label-opt">(optional)</span>
+                                </label>
+                                <input
+                                    className="svm-input"
+                                    type="text"
+                                    placeholder="e.g. Re-allocating funds"
+                                    value={note}
+                                    onChange={e => setNote(e.target.value)}
+                                />
+                            </div>
+                        </>
+                    )}
+                </div>
+
+                {!success && (
+                    <div className="svm-modal-footer">
+                        <button className="svm-btn-cancel" onClick={onClose} disabled={loading}>Cancel</button>
+                        <button className="svm-btn-submit" onClick={handleSubmit} disabled={loading || !numAmt}>
+                            {loading ? 'Transferring…' : `Transfer ${numAmt > 0 ? fmt(numAmt) : ''}`}
+                        </button>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
+
+/* ─────────────────────────────────────────────────────────────
    ROOT EXPORT  — renders whichever modal is active
 ───────────────────────────────────────────────────────────── */
 export default function SavingsModals({ modal, modalData, goals, onClose }) {
@@ -827,5 +1053,8 @@ export default function SavingsModals({ modal, modalData, goals, onClose }) {
     if (modal === 'editGoal')
         return <EditGoalModal goal={modalData} onClose={onClose} />;
 
+    if (modal === 'transfer')
+        return <TransferModal goal={modalData} goals={goals} onClose={onClose} />;
+
     return null;
-}
+}
