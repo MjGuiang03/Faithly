@@ -627,6 +627,12 @@
     padding: 28px 28px 0 28px;
     border-radius: 16px;
     border-top: 4px solid #F59E0B;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.loan-admin-mgmt-modal.details-modal::-webkit-scrollbar {
+    display: none;
 }
 
 .ld-title {

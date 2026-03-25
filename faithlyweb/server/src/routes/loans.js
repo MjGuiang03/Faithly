@@ -39,7 +39,9 @@ router.post('/loans/apply', authenticateUser, async (req, res) => {
     const email = req.user.email;
     const {
       amount, loanType, purpose, termMonths,
-      interestRate, totalInterest, totalRepayment, monthlyPayment
+      interestRate, totalInterest, totalRepayment, monthlyPayment,
+      disbursementMethod, disbursementAccount,
+      selfieFileName, idFileName
     } = req.body;
 
     if (!amount || (!loanType && !purpose)) {
@@ -64,6 +66,10 @@ router.post('/loans/apply', authenticateUser, async (req, res) => {
       remainingBalance: Number(totalRepayment) || Number(amount),
       paidMonths: 0,
       status: 'pending',
+      disbursementMethod: disbursementMethod || null,
+      disbursementAccount: disbursementAccount || null,
+      selfieFileName: selfieFileName || null,
+      idFileName: idFileName || null,
       appliedDate: new Date(), updatedAt: new Date(),
       statusHistory: [{ status: 'pending', date: new Date() }]
     };

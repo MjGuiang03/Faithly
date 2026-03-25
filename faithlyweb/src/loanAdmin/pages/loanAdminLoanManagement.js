@@ -621,6 +621,7 @@ export default function LoanAdminLoanManagement() {
                         <div className="ld-section">
                             <h3 className="ld-section-title">UPLOADED DOCUMENTS</h3>
                             <div className="ld-docs-grid">
+                                {/* Selfie with ID & Date */}
                                 <div className="ld-doc-card">
                                     <div className="ld-doc-preview">
                                         <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
@@ -629,17 +630,21 @@ export default function LoanAdminLoanManagement() {
                                             <path d="M3 16l4-4a2 2 0 012.8 0L15 17" stroke="#D1D5DB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                             <path d="M14 14l1-1a2 2 0 012.8 0L21 16" stroke="#D1D5DB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                         </svg>
-                                        <p className="ld-doc-filename">selfie_with_id.jpg</p>
+                                        <p className="ld-doc-filename">{selectedLoan.selfieFileName || 'selfie_with_id.jpg'}</p>
                                         <p className="ld-doc-hint">Click to view full image</p>
                                     </div>
                                     <div className="ld-doc-info">
                                         <span className="ld-doc-name">Selfie with ID & Date</span>
                                         <div className="ld-doc-actions-row">
-                                            <span className="ld-doc-status uploaded">Uploaded</span>
-                                            <button type="button" className="ld-doc-view-btn">View</button>
+                                            <span className={`ld-doc-status ${selectedLoan.selfieFileName ? 'uploaded' : 'missing'}`}>
+                                                {selectedLoan.selfieFileName ? 'Uploaded' : 'Not uploaded'}
+                                            </span>
+                                            {selectedLoan.selfieFileName && <button type="button" className="ld-doc-view-btn">View</button>}
                                         </div>
                                     </div>
                                 </div>
+
+                                {/* Government ID */}
                                 <div className="ld-doc-card">
                                     <div className="ld-doc-preview">
                                         <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
@@ -648,14 +653,16 @@ export default function LoanAdminLoanManagement() {
                                             <path d="M3 16l4-4a2 2 0 012.8 0L15 17" stroke="#D1D5DB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                             <path d="M14 14l1-1a2 2 0 012.8 0L21 16" stroke="#D1D5DB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                         </svg>
-                                        <p className="ld-doc-filename">government_id.jpg</p>
+                                        <p className="ld-doc-filename">{selectedLoan.idFileName || 'government_id.jpg'}</p>
                                         <p className="ld-doc-hint">Click to view full image</p>
                                     </div>
                                     <div className="ld-doc-info">
                                         <span className="ld-doc-name">Valid Government ID</span>
                                         <div className="ld-doc-actions-row">
-                                            <span className="ld-doc-status uploaded">Uploaded</span>
-                                            <button type="button" className="ld-doc-view-btn">View</button>
+                                            <span className={`ld-doc-status ${selectedLoan.idFileName ? 'uploaded' : 'missing'}`}>
+                                                {selectedLoan.idFileName ? 'Uploaded' : 'Not uploaded'}
+                                            </span>
+                                            {selectedLoan.idFileName && <button type="button" className="ld-doc-view-btn">View</button>}
                                         </div>
                                     </div>
                                 </div>

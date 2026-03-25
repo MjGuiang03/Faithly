@@ -163,6 +163,8 @@ export default function LoanApplicationModal({
           monthlyPayment: calc.monthly,
           disbursementMethod,
           disbursementAccount,
+          selfieFileName: selfieFile?.name || null,
+          idFileName: idFile?.name || null,
         }),
       });
 
