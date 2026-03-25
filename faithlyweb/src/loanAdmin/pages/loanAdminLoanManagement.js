@@ -10,20 +10,45 @@ import API from '../../utils/api';
 
 /* ── Loan-type config (mirrors user-side) ── */
 const LOAN_TYPES = [
-  { key: 'personal',   name: 'Personal Loan',   multiplier: 2,   minTerm: 3,  maxTerm: 12, rate: 0.02,  rateLabel: '2% / mo',   color: 'blue' },
-  { key: 'emergency',  name: 'Emergency Loan',  multiplier: 1.5, minTerm: 1,  maxTerm: 6,  rate: 0.015, rateLabel: '1.5% / mo', color: 'amber' },
-  { key: 'short-term', name: 'Short-Term Loan', multiplier: 1,   minTerm: 1,  maxTerm: 3,  rate: 0.01,  rateLabel: '1% / mo',   color: 'teal' },
+    { key: 'personal', name: 'Personal Loan', multiplier: 2, minTerm: 3, maxTerm: 12, rate: 0.02, rateLabel: '2% / mo', color: 'blue' },
+    { key: 'emergency', name: 'Emergency Loan', multiplier: 1.5, minTerm: 1, maxTerm: 6, rate: 0.015, rateLabel: '1.5% / mo', color: 'amber' },
+    { key: 'short-term', name: 'Short-Term Loan', multiplier: 1, minTerm: 1, maxTerm: 3, rate: 0.01, rateLabel: '1% / mo', color: 'teal' },
 ];
 
 const fmt = (n) =>
-  n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : '₱0.00';
+    n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : '₱0.00';
 
 const fmtDate = (d) => {
-  if (!d) return 'N/A';
-  return new Date(d).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
+    if (!d) return 'N/A';
+    return new Date(d).toLocaleDateString('en-US', {
+        month: 'short', day: 'numeric', year: 'numeric',
+    });
 };
+
+/* ── Resolve status helpers ── */
+function resolveStatusClass(status) {
+    if (status === 'pending') return 'pending';
+    if (status === 'awaiting_member_approval') return 'awaiting';
+    if (status === 'active' || status === 'completed') return 'approved';
+    if (status === 'rejected') return 'rejected';
+    return 'pending';
+}
+
+function resolveStatusLabel(status) {
+    if (status === 'pending') return 'Pending';
+    if (status === 'awaiting_member_approval') return 'Awaiting Member';
+    if (status === 'active' || status === 'completed') return 'Approved';
+    if (status === 'rejected') return 'Rejected';
+    return status.charAt(0).toUpperCase() + status.slice(1);
+}
+
+function resolveStatusDesc(status) {
+    if (status === 'pending') return 'Awaiting admin review';
+    if (status === 'awaiting_member_approval') return 'Modified terms sent to member';
+    if (status === 'active' || status === 'completed') return 'Loan has been approved';
+    if (status === 'rejected') return 'Loan application rejected';
+    return '';
+}
 
 export default function LoanAdminLoanManagement() {
     const navigate = useNavigate();
@@ -62,18 +87,15 @@ export default function LoanAdminLoanManagement() {
             const data = await res.json();
 
             if (!res.ok) {
-                if (res.status === 401 || res.status === 403) {
-                    navigate('/');
-                    return;
-                }
+                if (res.status === 401 || res.status === 403) { navigate('/'); return; }
                 toast.error(data.message || 'Failed to fetch loans');
                 return;
             }
 
             setLoans(data.loans || []);
             setStats({
-                pending:  data.stats?.pending  || 0,
-                active:   (data.stats?.active || 0) + (data.stats?.completed || 0),
+                pending: data.stats?.pending || 0,
+                active: (data.stats?.active || 0) + (data.stats?.completed || 0),
                 rejected: data.stats?.rejected || 0,
             });
         } catch (err) {
@@ -84,11 +106,7 @@ export default function LoanAdminLoanManagement() {
     }, [page, debouncedSearch, navigate]);
 
     useEffect(() => { fetchLoans(); }, [fetchLoans]);
-
-    /* Reset page on search change */
-    useEffect(() => {
-        setPage(1);
-    }, [debouncedSearch]);
+    useEffect(() => { setPage(1); }, [debouncedSearch]);
 
     /* ── Approve ── */
     const handleApprove = (loan) => {
@@ -100,7 +118,6 @@ export default function LoanAdminLoanManagement() {
         if (!selectedLoan) return;
         setActionLoading(selectedLoan._id);
 
-        // Check if admin modified the terms
         const amtDiff = Number(approvedAmount) !== Number(selectedLoan.amount);
         const termDiff = Number(repaymentTerm) !== Number(selectedLoan.termMonths);
         const termsModified = amtDiff || termDiff;
@@ -109,7 +126,6 @@ export default function LoanAdminLoanManagement() {
             const token = localStorage.getItem('adminToken');
 
             if (termsModified && !selectedLoan.memberApprovedTerms) {
-                // Propose modified terms → user must agree first
                 const res = await fetch(`${API}/api/admin/loans/${selectedLoan._id}/propose-terms`, {
                     method: 'PUT',
                     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
@@ -125,7 +141,6 @@ export default function LoanAdminLoanManagement() {
                 if (!res.ok) { toast.error(data.message || 'Failed to propose terms'); return; }
                 toast.success('Modified terms sent to member for approval');
             } else {
-                // Direct approve (terms unchanged or member already agreed)
                 const res = await fetch(`${API}/api/admin/loans/${selectedLoan._id}/approve`, {
                     method: 'PUT',
                     headers: { Authorization: `Bearer ${token}` },
@@ -159,10 +174,7 @@ export default function LoanAdminLoanManagement() {
             const token = localStorage.getItem('adminToken');
             const res = await fetch(`${API}/api/admin/loans/${selectedLoan._id}/reject`, {
                 method: 'PUT',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
+                headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ rejectionReason: rejectReason }),
             });
             const data = await res.json();
@@ -187,7 +199,6 @@ export default function LoanAdminLoanManagement() {
         setRepaymentTerm(String(loan.termMonths || ''));
         setShowDetailsModal(true);
 
-        // Fetch member savings
         try {
             const token = localStorage.getItem('adminToken');
             const res = await fetch(`${API}/api/admin/member-savings?email=${encodeURIComponent(loan.email)}`, {
@@ -199,13 +210,13 @@ export default function LoanAdminLoanManagement() {
     };
 
     /* ── Derived loan-type info ── */
-    const selectedType = selectedLoan ? LOAN_TYPES.find(t => t.key === selectedLoan.loanType) || LOAN_TYPES[0] : null;
+    const selectedType = selectedLoan
+        ? LOAN_TYPES.find(t => t.key === selectedLoan.loanType) || LOAN_TYPES[0]
+        : null;
 
-    const maxLoanable = selectedType
-        ? Math.max(0, memberSavings * selectedType.multiplier)
-        : 0;
+    const maxLoanable = selectedType ? Math.max(0, memberSavings * selectedType.multiplier) : 0;
 
-    /* ── Live calculation for admin terms ── */
+    /* ── Live calculation ── */
     const calc = useMemo(() => {
         const principal = Number(approvedAmount) || 0;
         const months = Number(repaymentTerm) || 0;
@@ -216,13 +227,23 @@ export default function LoanAdminLoanManagement() {
         return { principal, totalInterest, totalRepayment, monthly, months };
     }, [approvedAmount, repaymentTerm, selectedType]);
 
-    /* ── Term options for selected type ── */
+    /* ── Term options ── */
     const termOptions = selectedType
         ? Array.from({ length: selectedType.maxTerm - selectedType.minTerm + 1 }, (_, i) => selectedType.minTerm + i)
         : [];
 
     const filteredLoans = loans;
     const counts = stats;
+
+    /* ── Status class helpers for the details modal ── */
+    const detailStatusClass = selectedLoan ? resolveStatusClass(selectedLoan.status) : 'pending';
+    const detailStatusLabel = selectedLoan ? resolveStatusLabel(selectedLoan.status) : '';
+    const detailStatusDesc = selectedLoan ? resolveStatusDesc(selectedLoan.status) : '';
+
+    /* ── Loan pill color helpers ── */
+    const pillColorKey = selectedType?.color || 'blue';
+    const pillColorMap = { blue: '', emergency: 'emergency', teal: 'short-term' };
+    const pillClass = pillColorMap[pillColorKey] || '';
 
     return (
         <div className="loan-admin-mgmt-page">
@@ -250,7 +271,7 @@ export default function LoanAdminLoanManagement() {
                     </div>
                 </div>
 
-                {/* Search Bar */}
+                {/* Search */}
                 <div className="loan-admin-mgmt-search">
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                         <path d={svgPaths.p319f7900} stroke="#9CA3AF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
@@ -264,7 +285,7 @@ export default function LoanAdminLoanManagement() {
                     />
                 </div>
 
-                {/* Loans Table */}
+                {/* Table */}
                 <div className="loan-admin-mgmt-table-container">
                     <table className="loan-admin-mgmt-table">
                         <thead>
@@ -361,7 +382,7 @@ export default function LoanAdminLoanManagement() {
                 </div>
             </div>
 
-            {/* Approve Modal */}
+            {/* ══ Approve Confirm Modal ══ */}
             {showApproveModal && selectedLoan && (
                 <div className="loan-admin-mgmt-modal-overlay" onClick={() => setShowApproveModal(false)}>
                     <div className="loan-admin-mgmt-modal" onClick={(e) => e.stopPropagation()}>
@@ -380,17 +401,8 @@ export default function LoanAdminLoanManagement() {
                             <p><strong>Purpose:</strong> {selectedLoan.purpose}</p>
                         </div>
                         <div className="loan-admin-mgmt-modal-actions">
-                            <button
-                                className="loan-admin-mgmt-modal-btn cancel"
-                                onClick={() => setShowApproveModal(false)}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                className="loan-admin-mgmt-modal-btn approve"
-                                onClick={confirmApprove}
-                                disabled={!!actionLoading}
-                            >
+                            <button className="loan-admin-mgmt-modal-btn cancel" onClick={() => setShowApproveModal(false)}>Cancel</button>
+                            <button className="loan-admin-mgmt-modal-btn approve" onClick={confirmApprove} disabled={!!actionLoading}>
                                 {actionLoading ? 'Approving…' : 'Approve Loan'}
                             </button>
                         </div>
@@ -398,7 +410,7 @@ export default function LoanAdminLoanManagement() {
                 </div>
             )}
 
-            {/* Reject Modal */}
+            {/* ══ Reject Confirm Modal ══ */}
             {showRejectModal && selectedLoan && (
                 <div className="loan-admin-mgmt-modal-overlay" onClick={() => setShowRejectModal(false)}>
                     <div className="loan-admin-mgmt-modal" onClick={(e) => e.stopPropagation()}>
@@ -432,10 +444,7 @@ export default function LoanAdminLoanManagement() {
                         <div className="loan-admin-mgmt-modal-actions">
                             <button
                                 className="loan-admin-mgmt-modal-btn cancel"
-                                onClick={() => {
-                                    setShowRejectModal(false);
-                                    setRejectReason('');
-                                }}
+                                onClick={() => { setShowRejectModal(false); setRejectReason(''); }}
                             >
                                 Cancel
                             </button>
@@ -451,264 +460,268 @@ export default function LoanAdminLoanManagement() {
                 </div>
             )}
 
-            {/* ══════════ REDESIGNED Details Modal ══════════ */}
+            {/* ══════════ DETAILS MODAL — HTML reference layout ══════════ */}
             {showDetailsModal && selectedLoan && (
                 <div className="loan-admin-mgmt-modal-overlay" onClick={() => setShowDetailsModal(false)}>
                     <div className="loan-admin-mgmt-modal details-modal" onClick={(e) => e.stopPropagation()}>
-                        {/* Close */}
-                        <button className="loan-admin-mgmt-modal-close" onClick={() => setShowDetailsModal(false)}>
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <path d="M15 5L5 15" stroke="#6B7280" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                                <path d="M5 5L15 15" stroke="#6B7280" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                            </svg>
-                        </button>
 
-                        {/* Header */}
-                        <h2 className="ld-title">Loan Details</h2>
-                        <p className="ld-request-id">Request ID: {selectedLoan.loanId}</p>
+                        {/* ── Header ── */}
+                        <div className="dm-header">
+                            <div className="dm-header-left">
+                                <p className="dm-title">Loan Details</p>
+                                <p className="dm-req-id">Request ID: {selectedLoan.loanId}</p>
+                            </div>
+                            <button className="dm-x-btn" onClick={() => setShowDetailsModal(false)}>
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                    <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                </svg>
+                            </button>
+                        </div>
 
-                        {/* Status Row */}
-                        <div className="ld-status-row">
-                            <div className="ld-status-left">
-                                <span className="ld-status-dot" data-status={selectedLoan.status} />
-                                <span className={`loan-admin-mgmt-status-badge ${selectedLoan.status === 'awaiting_member_approval' ? 'pending' : selectedLoan.status}`}>
-                                    {selectedLoan.status === 'pending' ? 'Pending' :
-                                     selectedLoan.status === 'awaiting_member_approval' ? 'Awaiting Member' :
-                                     selectedLoan.status === 'active' || selectedLoan.status === 'completed' ? 'Approved' :
-                                     selectedLoan.status === 'rejected' ? 'Rejected' :
-                                     selectedLoan.status.charAt(0).toUpperCase() + selectedLoan.status.slice(1)}
+                        {/* ── Body ── */}
+                        <div className="dm-body">
+
+                            {/* Status Row */}
+                            <div className={`dm-status-row ${detailStatusClass}`}>
+                                <div className="dm-status-left">
+                                    <div className={`dm-sdot ${detailStatusClass}`} />
+                                    <span className={`dm-slabel ${detailStatusClass}`}>Status</span>
+                                    <span className={`loan-admin-mgmt-status-badge ${detailStatusClass === 'awaiting' ? 'pending' : detailStatusClass
+                                        }`}>
+                                        {detailStatusLabel}
+                                    </span>
+                                </div>
+                                <span className={`dm-status-right ${detailStatusClass}`}>
+                                    {detailStatusDesc}
                                 </span>
                             </div>
-                            <span className="ld-status-desc">
-                                {selectedLoan.status === 'pending' && 'Awaiting admin review'}
-                                {selectedLoan.status === 'awaiting_member_approval' && 'Modified terms sent to member — awaiting their response'}
-                                {(selectedLoan.status === 'active' || selectedLoan.status === 'completed') && 'Loan has been approved'}
-                                {selectedLoan.status === 'rejected' && 'Loan application rejected'}
-                            </span>
-                        </div>
 
-                        {/* ── Member Information ── */}
-                        <div className="ld-section">
-                            <h3 className="ld-section-title">MEMBER INFORMATION</h3>
-                            <div className="ld-info-grid">
-                                <div className="ld-info-item">
-                                    <span className="ld-info-label">Member name</span>
-                                    <span className="ld-info-value ld-info-value--bold">{selectedLoan.memberName}</span>
-                                </div>
-                                <div className="ld-info-item">
-                                    <span className="ld-info-label">Email address</span>
-                                    <span className="ld-info-value ld-info-value--email">{selectedLoan.email}</span>
-                                </div>
-                                <div className="ld-info-item">
-                                    <span className="ld-info-label">Applied date</span>
-                                    <span className="ld-info-value ld-info-value--bold">{fmtDate(selectedLoan.appliedDate)}</span>
-                                </div>
-                                <div className="ld-info-item">
-                                    <span className="ld-info-label">Member savings balance</span>
-                                    <span className="ld-info-value ld-info-value--bold ld-info-value--green">{fmt(memberSavings)}</span>
+                            {/* Member Information */}
+                            <div>
+                                <div className="dm-sec-label">Member information</div>
+                                <div className="dm-info-grid">
+                                    <div className="dm-ic">
+                                        <div className="dm-ik">Member name</div>
+                                        <div className="dm-iv">{selectedLoan.memberName}</div>
+                                    </div>
+                                    <div className="dm-ic">
+                                        <div className="dm-ik">Email address</div>
+                                        <div className="dm-iv email">{selectedLoan.email}</div>
+                                    </div>
+                                    <div className="dm-ic">
+                                        <div className="dm-ik">Applied date</div>
+                                        <div className="dm-iv">{fmtDate(selectedLoan.appliedDate)}</div>
+                                    </div>
+                                    <div className="dm-ic">
+                                        <div className="dm-ik">Member savings balance</div>
+                                        <div className="dm-iv green">{fmt(memberSavings)}</div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* ── Requested Loan Type ── */}
-                        <div className="ld-section">
-                            <h3 className="ld-section-title">REQUESTED LOAN TYPE</h3>
-                            <div className="ld-loan-type-card" data-color={selectedType?.color || 'blue'}>
-                                <div className="ld-loan-type-left">
-                                    <div className="ld-loan-type-icon" data-color={selectedType?.color || 'blue'}>
-                                        <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-                                            <circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="1.3" />
-                                            <path d="M10 6.5v4l2.5 2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+                            {/* Requested Loan Type */}
+                            <div>
+                                <div className="dm-sec-label">Requested loan type</div>
+                                <div className={`dm-loan-pill ${pillClass}`}>
+                                    <div className="dm-lt-icon">
+                                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                                            <circle cx="9" cy="9" r="6" stroke="#185fa5" strokeWidth="1.3" />
+                                            <path d="M9 6v3l2 2" stroke="#185fa5" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
                                         </svg>
                                     </div>
                                     <div>
-                                        <div className="ld-loan-type-name">{selectedLoan.purpose || 'Personal Loan'}</div>
-                                        <div className="ld-loan-type-tags">
-                                            <span className="ld-tag">{selectedType?.multiplier || 2}× savings</span>
-                                            <span className="ld-tag">{selectedType?.rateLabel || '2% / mo'}</span>
-                                            <span className="ld-tag">{selectedType?.minTerm || 3}–{selectedType?.maxTerm || 12} months</span>
+                                        <div className={`dm-lt-name ${pillClass}`}>
+                                            {selectedType?.name || 'Personal Loan'}
+                                        </div>
+                                        <div className="dm-lt-tags">
+                                            <span className={`dm-lt-tag ${pillClass}`}>{selectedType?.multiplier || 2}× savings</span>
+                                            <span className={`dm-lt-tag ${pillClass}`}>{selectedType?.rateLabel || '2% / mo'}</span>
+                                            <span className={`dm-lt-tag ${pillClass}`}>{selectedType?.minTerm || 3}–{selectedType?.maxTerm || 12} months</span>
+                                        </div>
+                                    </div>
+                                    <div className="dm-lt-amt">
+                                        <div className="dm-lt-amt-label">Requested amount</div>
+                                        <div className={`dm-lt-amt-val ${pillClass}`}>{fmt(selectedLoan.amount)}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Admin — set repayment terms */}
+                            <div className="dm-edit-box">
+                                <div className="dm-edit-box-title">
+                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                                        <path d="M9.5 2.5l2 2-7 7H2.5v-2l7-7z" stroke="#1E3A8A" strokeWidth="1.2" strokeLinejoin="round" />
+                                    </svg>
+                                    Admin — set repayment terms
+                                </div>
+                                <div className="dm-edit-row">
+                                    <div className="dm-edit-field">
+                                        <label className="dm-edit-label">Approved amount (₱)</label>
+                                        <input
+                                            className="dm-edit-input"
+                                            type="number"
+                                            value={approvedAmount}
+                                            onChange={(e) => setApprovedAmount(e.target.value)}
+                                            min="500"
+                                            max={maxLoanable || undefined}
+                                        />
+                                        {maxLoanable > 0 && (
+                                            <div className="dm-edit-hint">
+                                                Max loanable: {fmt(maxLoanable)} ({selectedType?.multiplier}× savings)
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="dm-edit-field">
+                                        <label className="dm-edit-label">Repayment term</label>
+                                        <select
+                                            className="dm-edit-select"
+                                            value={repaymentTerm}
+                                            onChange={(e) => setRepaymentTerm(e.target.value)}
+                                        >
+                                            <option value="">Select term</option>
+                                            {termOptions.map(m => (
+                                                <option key={m} value={m}>{m} months</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                                {calc && (
+                                    <div className="dm-computed">
+                                        <div className="dm-computed-pill">
+                                            <div className="dm-cp-label">Monthly payment</div>
+                                            <div className="dm-cp-val">{fmt(calc.monthly)}</div>
+                                        </div>
+                                        <div className="dm-computed-pill">
+                                            <div className="dm-cp-label">Total interest</div>
+                                            <div className="dm-cp-val amber">{fmt(calc.totalInterest)}</div>
+                                        </div>
+                                        <div className="dm-computed-pill">
+                                            <div className="dm-cp-label">Total repayment</div>
+                                            <div className="dm-cp-val green">{fmt(calc.totalRepayment)}</div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Disbursement Method */}
+                            <div>
+                                <div className="dm-sec-label">Disbursement method</div>
+                                <div className="dm-disbursement-row">
+                                    {[
+                                        { id: 'cash', label: 'Cash (office)' },
+                                        { id: 'gcash', label: 'GCash' },
+                                        { id: 'bank', label: 'Bank Transfer' },
+                                    ].map(opt => {
+                                        const active = selectedLoan.disbursementMethod === opt.id;
+                                        return (
+                                            <div key={opt.id} className={`dm-dopt ${active ? 'sel' : ''}`}>
+                                                <div className={`dm-rdot ${active ? 'on' : ''}`} />
+                                                <span className="dm-dlabel">{opt.label}</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                {selectedLoan.disbursementAccount && (
+                                    <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '8px' }}>
+                                        Account: {selectedLoan.disbursementAccount}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Uploaded Documents */}
+                            <div>
+                                <div className="dm-sec-label">Uploaded documents</div>
+                                <div className="dm-docs-grid">
+                                    {/* Selfie with ID */}
+                                    <div className="dm-doc-card">
+                                        <div className="dm-doc-placeholder">
+                                            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                                                <rect x="3" y="5" width="22" height="18" rx="3" stroke="currentColor" strokeWidth="1.4" />
+                                                <circle cx="9.5" cy="11.5" r="2.5" stroke="currentColor" strokeWidth="1.4" />
+                                                <path d="M3 20l6-5 4 4 3-3 6 5" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+                                            </svg>
+                                            <span>{selectedLoan.selfieFileName || 'selfie_with_id.jpg'}</span>
+                                            <small>Click to view full image</small>
+                                        </div>
+                                        <div className="dm-doc-footer">
+                                            <span className="dm-doc-name">Selfie with ID & Date</span>
+                                            <div className="dm-doc-actions">
+                                                <span className={`dm-doc-badge ${selectedLoan.selfieFileName ? 'ok' : 'missing'}`}>
+                                                    {selectedLoan.selfieFileName ? 'Uploaded' : 'Not uploaded'}
+                                                </span>
+                                                {selectedLoan.selfieFileName && (
+                                                    <button type="button" className="dm-doc-view">View</button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Government ID */}
+                                    <div className="dm-doc-card">
+                                        <div className="dm-doc-placeholder">
+                                            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                                                <rect x="3" y="5" width="22" height="18" rx="3" stroke="currentColor" strokeWidth="1.4" />
+                                                <circle cx="9.5" cy="11.5" r="2.5" stroke="currentColor" strokeWidth="1.4" />
+                                                <path d="M3 20l6-5 4 4 3-3 6 5" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+                                            </svg>
+                                            <span>{selectedLoan.idFileName || 'government_id.jpg'}</span>
+                                            <small>Click to view full image</small>
+                                        </div>
+                                        <div className="dm-doc-footer">
+                                            <span className="dm-doc-name">Valid Government ID</span>
+                                            <div className="dm-doc-actions">
+                                                <span className={`dm-doc-badge ${selectedLoan.idFileName ? 'ok' : 'missing'}`}>
+                                                    {selectedLoan.idFileName ? 'Uploaded' : 'Not uploaded'}
+                                                </span>
+                                                {selectedLoan.idFileName && (
+                                                    <button type="button" className="dm-doc-view">View</button>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="ld-loan-type-right">
-                                    <span className="ld-loan-type-amount-label">Requested amount</span>
-                                    <span className="ld-loan-type-amount">{fmt(selectedLoan.amount)}</span>
-                                </div>
                             </div>
-                        </div>
 
-                        {/* ── Admin — set repayment terms ── */}
-                        <div className="ld-section">
-                            <h3 className="ld-section-title">
-                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ verticalAlign: 'middle', marginRight: 6 }}>
-                                    <path d="M11.333 2a1.886 1.886 0 0 1 2.667 2.667L5.333 13.333 2 14l.667-3.333L11.333 2z" stroke="#F59E0B" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
-                                Admin — set repayment terms
-                            </h3>
-                            <div className="ld-admin-terms-row">
-                                <div className="ld-admin-terms-group">
-                                    <label className="ld-admin-terms-label">Approved amount (₱)</label>
-                                    <input
-                                        type="number"
-                                        className="ld-admin-terms-input"
-                                        value={approvedAmount}
-                                        onChange={(e) => setApprovedAmount(e.target.value)}
-                                        min="500"
-                                        max={maxLoanable || undefined}
-                                    />
-                                    {maxLoanable > 0 && (
-                                        <span className="ld-admin-terms-hint">Max loanable: {fmt(maxLoanable)} ({selectedType?.multiplier}× savings)</span>
-                                    )}
-                                </div>
-                                <div className="ld-admin-terms-group">
-                                    <label className="ld-admin-terms-label">Repayment term</label>
-                                    <select
-                                        className="ld-admin-terms-select"
-                                        value={repaymentTerm}
-                                        onChange={(e) => setRepaymentTerm(e.target.value)}
-                                    >
-                                        <option value="">Select term</option>
-                                        {termOptions.map(m => (
-                                            <option key={m} value={m}>{m} months</option>
-                                        ))}
-                                    </select>
+                            {/* System Note */}
+                            <div className="dm-note-box">
+                                <div className="dm-note-title">System note</div>
+                                <div className="dm-note-text">
+                                    Application will be reviewed within 2–3 business days. A late payment penalty of 3% per month applies after a 3-day grace period.
                                 </div>
                             </div>
 
-                            {/* Calculation results */}
-                            {calc && (
-                                <div className="ld-calc-results">
-                                    <div className="ld-calc-card">
-                                        <span className="ld-calc-card-label">Monthly payment</span>
-                                        <span className="ld-calc-card-value ld-calc-card-value--blue">{fmt(calc.monthly)}</span>
-                                    </div>
-                                    <div className="ld-calc-card">
-                                        <span className="ld-calc-card-label">Total interest</span>
-                                        <span className="ld-calc-card-value ld-calc-card-value--amber">{fmt(calc.totalInterest)}</span>
-                                    </div>
-                                    <div className="ld-calc-card">
-                                        <span className="ld-calc-card-label">Total repayment</span>
-                                        <span className="ld-calc-card-value ld-calc-card-value--green">{fmt(calc.totalRepayment)}</span>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* ── Disbursement Method ── */}
-                        <div className="ld-section">
-                            <h3 className="ld-section-title">DISBURSEMENT METHOD</h3>
-                            <div className="ld-disbursement-options">
-                                {[
-                                    { id: 'cash', label: 'Cash (office)' },
-                                    { id: 'gcash', label: 'GCash' },
-                                    { id: 'bank', label: 'Bank Transfer' },
-                                ].map(opt => (
-                                    <div
-                                        key={opt.id}
-                                        className={`ld-disbursement-btn ${selectedLoan.disbursementMethod === opt.id ? 'ld-disbursement-btn--active' : ''}`}
-                                    >
-                                        <div className={`ld-disbursement-radio ${selectedLoan.disbursementMethod === opt.id ? 'active' : ''}`} />
-                                        {opt.label}
-                                    </div>
-                                ))}
-                            </div>
-                            {selectedLoan.disbursementAccount && (
-                                <p className="ld-disbursement-account">Account: {selectedLoan.disbursementAccount}</p>
-                            )}
-                        </div>
-
-                        {/* ── Uploaded Documents ── */}
-                        <div className="ld-section">
-                            <h3 className="ld-section-title">UPLOADED DOCUMENTS</h3>
-                            <div className="ld-docs-grid">
-                                {/* Selfie with ID & Date */}
-                                <div className="ld-doc-card">
-                                    <div className="ld-doc-preview">
-                                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-                                            <rect x="3" y="3" width="18" height="18" rx="3" stroke="#D1D5DB" strokeWidth="1.5" />
-                                            <circle cx="8.5" cy="8.5" r="2" stroke="#D1D5DB" strokeWidth="1.5" />
-                                            <path d="M3 16l4-4a2 2 0 012.8 0L15 17" stroke="#D1D5DB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                            <path d="M14 14l1-1a2 2 0 012.8 0L21 16" stroke="#D1D5DB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                        </svg>
-                                        <p className="ld-doc-filename">{selectedLoan.selfieFileName || 'selfie_with_id.jpg'}</p>
-                                        <p className="ld-doc-hint">Click to view full image</p>
-                                    </div>
-                                    <div className="ld-doc-info">
-                                        <span className="ld-doc-name">Selfie with ID & Date</span>
-                                        <div className="ld-doc-actions-row">
-                                            <span className={`ld-doc-status ${selectedLoan.selfieFileName ? 'uploaded' : 'missing'}`}>
-                                                {selectedLoan.selfieFileName ? 'Uploaded' : 'Not uploaded'}
-                                            </span>
-                                            {selectedLoan.selfieFileName && <button type="button" className="ld-doc-view-btn">View</button>}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Government ID */}
-                                <div className="ld-doc-card">
-                                    <div className="ld-doc-preview">
-                                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-                                            <rect x="3" y="3" width="18" height="18" rx="3" stroke="#D1D5DB" strokeWidth="1.5" />
-                                            <circle cx="8.5" cy="8.5" r="2" stroke="#D1D5DB" strokeWidth="1.5" />
-                                            <path d="M3 16l4-4a2 2 0 012.8 0L15 17" stroke="#D1D5DB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                            <path d="M14 14l1-1a2 2 0 012.8 0L21 16" stroke="#D1D5DB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                        </svg>
-                                        <p className="ld-doc-filename">{selectedLoan.idFileName || 'government_id.jpg'}</p>
-                                        <p className="ld-doc-hint">Click to view full image</p>
-                                    </div>
-                                    <div className="ld-doc-info">
-                                        <span className="ld-doc-name">Valid Government ID</span>
-                                        <div className="ld-doc-actions-row">
-                                            <span className={`ld-doc-status ${selectedLoan.idFileName ? 'uploaded' : 'missing'}`}>
-                                                {selectedLoan.idFileName ? 'Uploaded' : 'Not uploaded'}
-                                            </span>
-                                            {selectedLoan.idFileName && <button type="button" className="ld-doc-view-btn">View</button>}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* ── System Note ── */}
-                        <div className="ld-system-note">
-                            <p className="ld-system-note-title">System note</p>
-                            <p className="ld-system-note-text">
-                                Application will be reviewed within 2–3 business days. A late payment penalty of 3% per month applies after a 3-day grace period.
-                            </p>
-                        </div>
+                        </div>{/* end dm-body */}
 
                         {/* ── Footer ── */}
-                        <div className="ld-footer">
-                            <span className="ld-footer-meta">
-                                Applied {fmtDate(selectedLoan.appliedDate)} · {selectedLoan.status === 'pending' ? 'Pending review' : selectedLoan.status === 'awaiting_member_approval' ? 'Awaiting member response' : selectedLoan.status.charAt(0).toUpperCase() + selectedLoan.status.slice(1)}
+                        <div className="dm-footer">
+                            <span className="dm-footer-meta">
+                                Applied {fmtDate(selectedLoan.appliedDate)} ·{' '}
+                                {selectedLoan.status === 'pending'
+                                    ? 'Pending review'
+                                    : selectedLoan.status === 'awaiting_member_approval'
+                                        ? 'Awaiting member response'
+                                        : detailStatusLabel}
                             </span>
-                            <div className="ld-footer-actions">
-                                <button
-                                    className="ld-footer-btn ld-footer-btn--close"
-                                    onClick={() => setShowDetailsModal(false)}
-                                >
+                            <div className="dm-footer-actions">
+                                <button className="dm-btn-close" onClick={() => setShowDetailsModal(false)}>
                                     Close
                                 </button>
+
                                 {selectedLoan.status === 'awaiting_member_approval' && (
-                                    <span style={{ fontSize: '12px', color: '#F59E0B', fontWeight: 500, alignSelf: 'center' }}>⏳ Waiting for member approval</span>
+                                    <span className="dm-awaiting-tag">⏳ Waiting for member approval</span>
                                 )}
+
                                 {selectedLoan.status === 'pending' && (
                                     <>
                                         <button
-                                            className="ld-footer-btn ld-footer-btn--reject"
-                                            onClick={() => {
-                                                setShowDetailsModal(false);
-                                                handleReject(selectedLoan);
-                                            }}
+                                            className="dm-btn-reject"
+                                            onClick={() => { setShowDetailsModal(false); handleReject(selectedLoan); }}
                                         >
                                             Reject Request
                                         </button>
                                         <button
-                                            className="ld-footer-btn ld-footer-btn--approve"
-                                            onClick={() => {
-                                                setShowDetailsModal(false);
-                                                handleApprove(selectedLoan);
-                                            }}
+                                            className="dm-btn-approve"
+                                            onClick={() => { setShowDetailsModal(false); handleApprove(selectedLoan); }}
                                             disabled={!!actionLoading}
                                         >
                                             Approve Loan
@@ -717,6 +730,7 @@ export default function LoanAdminLoanManagement() {
                                 )}
                             </div>
                         </div>
+
                     </div>
                 </div>
             )}
