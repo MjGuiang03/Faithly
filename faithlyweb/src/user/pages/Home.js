@@ -18,7 +18,6 @@ export default function Home() {
   const [monthlyDonationCount, setMonthlyDonationCount] = useState(0);
   const [attendanceStats, setAttendanceStats] = useState({ total: 0 });
   const [monthlyAttendanceCount, setMonthlyAttendanceCount] = useState(0);
-  const [announcementsCount, setAnnouncementsCount] = useState(0);
   const [recentActivity, setRecentActivity] = useState([]);
   const [savingsStats, setSavingsStats] = useState({ totalSavings: 0, thisMonth: 0 });
   const [savingsGoalsList, setSavingsGoalsList] = useState([]);
@@ -101,7 +100,6 @@ export default function Home() {
           };
         });
         setUpcomingEvents(list.slice(0, 4));
-        setAnnouncementsCount((annData.announcements || []).filter(a => !readIds.includes(a._id)).length);
       }
 
       const activities = [];

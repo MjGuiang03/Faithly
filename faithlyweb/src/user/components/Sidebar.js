@@ -157,7 +157,7 @@ export default function Sidebar() {
       window.removeEventListener('storage', calcUnread);
       clearInterval(intervalId);
     };
-  }, []);
+  }, [profile?.branch]);
 
   const navItems = [
     { path: '/home', icon: <LayoutGrid size={20} />, label: 'Home' },
