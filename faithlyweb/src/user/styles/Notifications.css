@@ -408,6 +408,210 @@
   border-left: 4px solid var(--primary);
 }
 
+/* ── Action Required Card ── */
+.user-notif-card-action {
+  border-left: 4px solid #F59E0B;
+  background: #FFFBEB;
+  animation: actionPulse 2s ease-in-out infinite;
+}
+
+@keyframes actionPulse {
+  0%, 100% { box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04); }
+  50%      { box-shadow: 0 2px 12px rgba(245, 158, 11, 0.15); }
+}
+
+.user-notif-card-action:hover {
+  background: #FEF3C7;
+}
+
+.user-notif-action-pill {
+  background: #F59E0B;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.user-notif-review-hint {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: #F59E0B;
+}
+
+/* ── Terms Review Modal ── */
+.user-terms-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  padding: 16px;
+}
+
+.user-terms-modal {
+  background: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 580px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  border: 1px solid #E5E7EB;
+}
+
+.user-terms-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.user-terms-modal-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #101828;
+  margin: 0;
+}
+
+.user-terms-modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #9CA3AF;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.user-terms-modal-desc {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: #6B7280;
+  line-height: 21px;
+  padding: 16px 24px 0;
+  margin: 0;
+}
+
+/* Comparison columns */
+.user-terms-compare {
+  display: flex;
+  gap: 12px;
+  padding: 20px 24px;
+  align-items: stretch;
+}
+
+.user-terms-column {
+  flex: 1;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.user-terms-column--original {
+  background: #F9FAFB;
+  border: 1px solid #E5E7EB;
+}
+
+.user-terms-column--proposed {
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+}
+
+.user-terms-column-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6B7280;
+  margin: 0 0 4px 0;
+}
+
+.user-terms-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-terms-row span {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: #9CA3AF;
+}
+
+.user-terms-row strong {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #101828;
+}
+
+.user-terms-column--proposed .user-terms-row strong {
+  color: #B45309;
+}
+
+.user-terms-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0 4px;
+}
+
+/* Actions */
+.user-terms-modal-actions {
+  display: flex;
+  gap: 10px;
+  padding: 0 24px 20px;
+  justify-content: flex-end;
+}
+
+.user-terms-btn {
+  padding: 10px 24px;
+  border-radius: 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: none;
+}
+
+.user-terms-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.user-terms-btn--decline {
+  background: #fff;
+  border: 1.5px solid #FF6467;
+  color: #DC2626;
+}
+
+.user-terms-btn--decline:hover:not(:disabled) {
+  background: #FEE2E2;
+}
+
+.user-terms-btn--agree {
+  background: #1E3A8A;
+  color: #fff;
+}
+
+.user-terms-btn--agree:hover:not(:disabled) {
+  background: #1D4ED8;
+}
+
 /* ── Responsive ── */
 @media (max-width: 1024px) {
   .user-notif-main {
@@ -446,5 +650,22 @@
 
   .user-notif-filters::-webkit-scrollbar {
     display: none;
+  }
+
+  .user-terms-compare {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .user-terms-arrow {
+    display: none;
+  }
+
+  .user-terms-modal {
+    max-width: 100%;
+  }
+
+  .user-terms-modal-actions {
+    flex-direction: column;
   }
 }

@@ -4,6 +4,9 @@ import svgPaths from '../../imports/svg-icons';
 import '../styles/Notifications.css';
 import API from '../../utils/api';
 
+const fmt = (n) =>
+  n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : '₱0.00';
+
 const fmtAgo = (date) => {
   if (!date) return '';
   const diff  = Date.now() - new Date(date).getTime();
@@ -29,6 +32,10 @@ export default function Notifications() {
   const [rawItems,       setRawItems]       = useState([]);
   const [readIds,        setReadIds]        = useState(getReadSet);
   const [loading,        setLoading]        = useState(true);
+
+  /* ── Terms review modal state ── */
+  const [termsModal, setTermsModal] = useState(null);  // the loan object
+  const [termsLoading, setTermsLoading] = useState(false);
 
   /* ── Fetch real data from all 3 endpoints ── */
   const fetchAll = useCallback(async () => {
@@ -56,6 +63,20 @@ export default function Notifications() {
       /* Loans → notifications */
       (lData.loans || []).forEach((l) => {
         const base = { id: `loan-${l._id}`, type: 'loan', timestamp: l.appliedDate || l.createdAt };
+
+        /* Special: awaiting member approval */
+        if (l.status === 'awaiting_member_approval' && l.modifiedTerms) {
+          items.push({
+            ...base,
+            id: `loan-terms-${l._id}`,
+            type: 'loan',
+            title: 'Loan Terms Modified — Review Required',
+            message: `The loan officer has proposed new terms for your loan ${l.loanId ? `#${l.loanId}` : ''}. Tap to review and respond.`,
+            timestamp: l.modifiedTerms.proposedDate || l.updatedAt,
+            actionRequired: true,
+            loanData: l,
+          });
+        }
 
         if (l.statusHistory && l.statusHistory.length > 0) {
           l.statusHistory.forEach((history) => {
@@ -230,9 +251,31 @@ export default function Notifications() {
   const badgeClass = (type) =>
     type === 'loan' ? 'user-notif-badge-loan' : (type === 'donation' || type === 'savings') ? 'user-notif-badge-donation' : 'user-notif-badge-attendance';
 
-  const cardClass = (type, isRead) => {
+  const cardClass = (type, isRead, actionRequired) => {
+    if (actionRequired) return 'user-notif-card user-notif-card-action';
     if (isRead) return 'user-notif-card user-notif-card-read';
     return `user-notif-card user-notif-card-${type}`;
+  };
+
+  const handleTermsResponse = async (accepted) => {
+    if (!termsModal) return;
+    setTermsLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API}/api/loans/${termsModal._id}/respond-terms`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accepted }),
+      });
+      const data = await res.json();
+      if (!res.ok) { alert(data.message || 'Failed'); return; }
+      setTermsModal(null);
+      fetchAll();
+    } catch {
+      alert('Network error. Please try again.');
+    } finally {
+      setTermsLoading(false);
+    }
   };
 
   const badgeLabel = (type) =>
@@ -294,21 +337,30 @@ export default function Notifications() {
         ) : (
           <div className="user-notif-list">
             {filtered.map((n) => (
-              <div key={n.id} className={cardClass(n.type, n.isRead)}>
+              <div
+                key={n.id}
+                className={cardClass(n.type, n.isRead, n.actionRequired)}
+                onClick={() => n.actionRequired && n.loanData ? setTermsModal(n.loanData) : null}
+                style={n.actionRequired ? { cursor: 'pointer' } : {}}
+              >
                 {getIcon(n.type)}
                 <div className="user-notif-body">
                   <div className="user-notif-body-header">
                     <p className={`user-notif-body-title${n.isRead ? ' read' : ''}`}>{n.title}</p>
                     <span className={`user-notif-type-badge ${badgeClass(n.type)}`}>{badgeLabel(n.type)}</span>
-                    {!n.isRead && <span className="user-notif-dot" />}
+                    {n.actionRequired && <span className="user-notif-action-pill">Action Required</span>}
+                    {!n.isRead && !n.actionRequired && <span className="user-notif-dot" />}
                   </div>
                   <p className="user-notif-msg">{n.message}</p>
                   <div className="user-notif-footer">
                     <span className="user-notif-time">{fmtAgo(n.timestamp)}</span>
-                    {!n.isRead && (
-                      <button className="user-notif-mark-btn" onClick={() => markAsRead(n.id)}>
+                    {!n.isRead && !n.actionRequired && (
+                      <button className="user-notif-mark-btn" onClick={(e) => { e.stopPropagation(); markAsRead(n.id); }}>
                         Mark as read
                       </button>
+                    )}
+                    {n.actionRequired && (
+                      <span className="user-notif-review-hint">Tap to review →</span>
                     )}
                   </div>
                 </div>
@@ -318,6 +370,67 @@ export default function Notifications() {
         )}
 
       </div>
+
+      {/* ── Terms Review Modal ── */}
+      {termsModal && (
+        <div className="user-terms-modal-overlay" onClick={() => !termsLoading && setTermsModal(null)}>
+          <div className="user-terms-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="user-terms-modal-header">
+              <h2 className="user-terms-modal-title">Loan Terms Modified</h2>
+              <button className="user-terms-modal-close" onClick={() => setTermsModal(null)}>×</button>
+            </div>
+
+            <p className="user-terms-modal-desc">
+              The loan officer has proposed new terms for your loan application
+              <strong> {termsModal.loanId}</strong>. Please review the changes below.
+            </p>
+
+            <div className="user-terms-compare">
+              {/* Original */}
+              <div className="user-terms-column user-terms-column--original">
+                <h4 className="user-terms-column-title">Original Terms</h4>
+                <div className="user-terms-row"><span>Amount</span><strong>{fmt(termsModal.amount)}</strong></div>
+                <div className="user-terms-row"><span>Term</span><strong>{termsModal.termMonths} months</strong></div>
+                <div className="user-terms-row"><span>Monthly Payment</span><strong>{fmt(termsModal.monthlyPayment)}</strong></div>
+                <div className="user-terms-row"><span>Total Interest</span><strong>{fmt(termsModal.totalInterest)}</strong></div>
+                <div className="user-terms-row"><span>Total Repayment</span><strong>{fmt(termsModal.totalRepayment)}</strong></div>
+              </div>
+
+              {/* Arrow */}
+              <div className="user-terms-arrow">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </div>
+
+              {/* Proposed */}
+              <div className="user-terms-column user-terms-column--proposed">
+                <h4 className="user-terms-column-title">Proposed Terms</h4>
+                <div className="user-terms-row"><span>Amount</span><strong>{fmt(termsModal.modifiedTerms?.approvedAmount)}</strong></div>
+                <div className="user-terms-row"><span>Term</span><strong>{termsModal.modifiedTerms?.repaymentTerm} months</strong></div>
+                <div className="user-terms-row"><span>Monthly Payment</span><strong>{fmt(termsModal.modifiedTerms?.monthlyPayment)}</strong></div>
+                <div className="user-terms-row"><span>Total Interest</span><strong>{fmt(termsModal.modifiedTerms?.totalInterest)}</strong></div>
+                <div className="user-terms-row"><span>Total Repayment</span><strong>{fmt(termsModal.modifiedTerms?.totalRepayment)}</strong></div>
+              </div>
+            </div>
+
+            <div className="user-terms-modal-actions">
+              <button
+                className="user-terms-btn user-terms-btn--decline"
+                onClick={() => handleTermsResponse(false)}
+                disabled={termsLoading}
+              >
+                Decline
+              </button>
+              <button
+                className="user-terms-btn user-terms-btn--agree"
+                onClick={() => handleTermsResponse(true)}
+                disabled={termsLoading}
+              >
+                {termsLoading ? 'Processing…' : 'Agree to Terms'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

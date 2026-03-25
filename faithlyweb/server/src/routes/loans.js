@@ -1,11 +1,25 @@
 import { Router } from 'express';
 import { ObjectId } from 'mongodb';
 
-import { users, loans } from '../config/db.js';
+import { users, loans, savingsGoals } from '../config/db.js';
 import { authenticateUser } from '../middleware/auth.js';
 import { authenticateAdmin } from '../middleware/auth.js';
 
 const router = Router();
+
+/* ================== ADMIN - GET MEMBER SAVINGS ================== */
+router.get('/admin/member-savings', authenticateAdmin, async (req, res) => {
+  try {
+    const { email } = req.query;
+    if (!email) return res.status(400).json({ success: false, message: 'Email is required' });
+    const goals = await savingsGoals.find({ email }).toArray();
+    const totalSavings = goals.reduce((sum, g) => sum + (g.savedAmount || 0), 0);
+    res.json({ success: true, totalSavings });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to fetch member savings' });
+  }
+});
 
 /* ── Helper: compute nextPaymentDate for an active loan ── */
 function enrichLoanWithNextPayment(loan) {
@@ -161,13 +175,56 @@ router.get('/admin/loans', authenticateAdmin, async (req, res) => {
   }
 });
 
+/* ================== ADMIN - PROPOSE MODIFIED TERMS ================== */
+router.put('/admin/loans/:id/propose-terms', authenticateAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { approvedAmount, repaymentTerm, monthlyPayment, totalInterest, totalRepayment } = req.body;
+
+    const loan = await loans.findOne({ _id: new ObjectId(id) });
+    if (!loan) return res.status(404).json({ success: false, message: 'Loan not found' });
+    if (loan.status !== 'pending') {
+      return res.status(400).json({ success: false, message: 'Only pending loans can have terms proposed' });
+    }
+
+    const modifiedTerms = {
+      approvedAmount: Number(approvedAmount),
+      repaymentTerm: Number(repaymentTerm),
+      monthlyPayment: Number(monthlyPayment),
+      totalInterest: Number(totalInterest),
+      totalRepayment: Number(totalRepayment),
+      proposedDate: new Date(),
+    };
+
+    await loans.updateOne(
+      { _id: new ObjectId(id) },
+      {
+        $set: {
+          modifiedTerms,
+          status: 'awaiting_member_approval',
+          updatedAt: new Date(),
+        },
+        $push: { statusHistory: { status: 'awaiting_member_approval', date: new Date() } }
+      }
+    );
+
+    res.status(200).json({ success: true, message: 'Modified terms sent to member for approval' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to propose terms' });
+  }
+});
+
 /* ================== ADMIN - APPROVE LOAN ================== */
 router.put('/admin/loans/:id/approve', authenticateAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const loan = await loans.findOne({ _id: new ObjectId(id) });
     if (!loan) return res.status(404).json({ success: false, message: 'Loan not found' });
-    if (loan.status !== 'pending') {
+
+    // Allow approve if pending, or if member approved the modified terms
+    const canApprove = loan.status === 'pending' || (loan.status === 'pending' && loan.memberApprovedTerms);
+    if (!canApprove) {
       return res.status(400).json({ success: false, message: 'Only pending loans can be approved' });
     }
 
@@ -209,6 +266,62 @@ router.put('/admin/loans/:id/reject', authenticateAdmin, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Failed to reject loan' });
+  }
+});
+
+/* ================== USER - RESPOND TO MODIFIED TERMS ================== */
+router.put('/loans/:id/respond-terms', authenticateUser, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { accepted } = req.body;
+    const email = req.user.email;
+
+    const loan = await loans.findOne({ _id: new ObjectId(id) });
+    if (!loan) return res.status(404).json({ success: false, message: 'Loan not found' });
+    if (loan.email !== email) return res.status(403).json({ success: false, message: 'Unauthorized' });
+    if (loan.status !== 'awaiting_member_approval') {
+      return res.status(400).json({ success: false, message: 'This loan is not awaiting your approval' });
+    }
+
+    if (accepted) {
+      // Apply the modified terms as the new loan values
+      const mt = loan.modifiedTerms;
+      await loans.updateOne(
+        { _id: new ObjectId(id) },
+        {
+          $set: {
+            amount: mt.approvedAmount,
+            termMonths: mt.repaymentTerm,
+            monthlyPayment: mt.monthlyPayment,
+            totalInterest: mt.totalInterest,
+            totalRepayment: mt.totalRepayment,
+            remainingBalance: mt.totalRepayment,
+            memberApprovedTerms: true,
+            status: 'pending',
+            updatedAt: new Date(),
+          },
+          $push: { statusHistory: { status: 'member_agreed', date: new Date() } }
+        }
+      );
+      res.json({ success: true, message: 'You have agreed to the modified terms' });
+    } else {
+      // Decline — revert to pending with original terms
+      await loans.updateOne(
+        { _id: new ObjectId(id) },
+        {
+          $set: {
+            status: 'pending',
+            updatedAt: new Date(),
+          },
+          $unset: { modifiedTerms: '', memberApprovedTerms: '' },
+          $push: { statusHistory: { status: 'member_declined', date: new Date() } }
+        }
+      );
+      res.json({ success: true, message: 'You have declined the modified terms' });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to process response' });
   }
 });
 
