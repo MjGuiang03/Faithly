@@ -156,10 +156,12 @@ export default function SecretaryAdminDashboard() {
                     <div className="sec-admin-dashboard-loading" style={{ padding: '40px', textAlign: 'center', color: '#6B7280' }}>Loading dashboard data...</div>
                 ) : (
                     <>
-                        {/* Stat Cards */}
-                        <div className="sec-admin-dashboard-stats">
+                        {/* BENTO GRID LAYOUT */}
+                        <div className="sec-bento-grid">
+                            
+                            {/* Row 1: 4 Main Stats */}
                             {statsCards.map(stat => (
-                                <div key={stat.id} className={`sec-admin-dashboard-stat-card ${stat.color}`}>
+                                <div key={stat.id} className={`sec-bento-card stat-card ${stat.color}`}>
                                     <div className="sec-admin-dashboard-stat-header">
                                         <p className="sec-admin-dashboard-stat-label">{stat.label}</p>
                                         <div className="sec-admin-dashboard-stat-icon">{stat.icon}</div>
@@ -167,56 +169,14 @@ export default function SecretaryAdminDashboard() {
                                     <p className="sec-admin-dashboard-stat-value">{stat.value}</p>
                                 </div>
                             ))}
-                        </div>
 
-                        {/* Report Summary Cards */}
-                        <div className="sec-admin-dashboard-section-header">
-                            <h2 className="sec-admin-dashboard-section-title">Processing Overview</h2>
-                        </div>
-                        <div className="sec-admin-reports-summary">
-                            <div className="sec-admin-reports-summary-card green">
-                                <div className="sec-admin-reports-summary-header">
-                                    <p className="sec-admin-reports-summary-label">Total Received</p>
-                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 14.6667V1.33334" stroke="#00A63E" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333"/><path d="M11.3333 3.99999L8 1.33333L4.66667 3.99999" stroke="#00A63E" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333"/></svg>
-                                </div>
-                                <p className="sec-admin-reports-summary-value">₱{reportStats.totalReceived.toLocaleString()}</p>
-                                <p className="sec-admin-reports-summary-period">Total fund inflows</p>
-                            </div>
-                            <div className="sec-admin-reports-summary-card red">
-                                <div className="sec-admin-reports-summary-header">
-                                    <p className="sec-admin-reports-summary-label">Total Released</p>
-                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.33334V14.6667" stroke="#FF6467" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333"/><path d="M4.66667 12L8 14.6667L11.3333 12" stroke="#FF6467" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333"/></svg>
-                                </div>
-                                <p className="sec-admin-reports-summary-value">₱{reportStats.totalReleased.toLocaleString()}</p>
-                                <p className="sec-admin-reports-summary-period">Loan disbursements</p>
-                            </div>
-                            <div className="sec-admin-reports-summary-card blue">
-                                <div className="sec-admin-reports-summary-header">
-                                    <p className="sec-admin-reports-summary-label">Total Processed</p>
-                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 14.6667C11.6819 14.6667 14.6667 11.6819 14.6667 8C14.6667 4.3181 11.6819 1.33333 8 1.33333C4.3181 1.33333 1.33333 4.3181 1.33333 8C1.33333 11.6819 4.3181 14.6667 8 14.6667Z" stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333"/><path d="M5.33333 8L7.33333 10L10.6667 6" stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333"/></svg>
-                                </div>
-                                <p className="sec-admin-reports-summary-value">₱{reportStats.totalProcessed.toLocaleString()}</p>
-                                <p className="sec-admin-reports-summary-period">By secretary</p>
-                            </div>
-                            <div className="sec-admin-reports-summary-card purple">
-                                <div className="sec-admin-reports-summary-header">
-                                    <p className="sec-admin-reports-summary-label">Processing Rate</p>
-                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.66667" stroke="#7C3AED" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333"/><path d="M8 5.33333V8L10 9.33333" stroke="#7C3AED" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333"/></svg>
-                                </div>
-                                <p className="sec-admin-reports-summary-value">{reportStats.processingRate}%</p>
-                                <p className="sec-admin-reports-summary-period">All approved processed</p>
-                            </div>
-                        </div>
-
-                        {/* Charts Row */}
-                        <div className="sec-admin-reports-chart-row" style={{ marginTop: '16px' }}>
-                            {/* Money Flow Bar Chart */}
-                            <div className="sec-admin-reports-chart-section half">
+                            {/* Row 2: Monthly Disbursements (Span 8) + Processing Overview (Span 4) */}
+                            <div className="sec-bento-card bento-bar-chart">
                                 <div className="sec-admin-reports-chart-header">
                                     <h3 className="sec-admin-reports-chart-title">Monthly Disbursements</h3>
                                     <p className="sec-admin-reports-chart-subtitle">Funds released per month this year</p>
                                 </div>
-                                <div className="sec-admin-reports-chart-container">
+                                <div className="sec-admin-reports-chart-container" style={{ marginTop: '16px' }}>
                                     <ResponsiveContainer width="100%" height={240}>
                                         <BarChart data={moneyFlowData}>
                                             <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
@@ -229,16 +189,49 @@ export default function SecretaryAdminDashboard() {
                                 </div>
                             </div>
 
-                            {/* Payment Method Distribution */}
-                            <div className="sec-admin-reports-chart-section half">
+                            <div className="sec-bento-card bento-processing-overview">
                                 <div className="sec-admin-reports-chart-header">
-                                    <h3 className="sec-admin-reports-chart-title">Payment Method Distribution</h3>
-                                    <p className="sec-admin-reports-chart-subtitle">Breakdown by disbursement method</p>
+                                    <h3 className="sec-admin-reports-chart-title">Processing Overview</h3>
+                                    <p className="sec-admin-reports-chart-subtitle">Key disbursement metrics</p>
                                 </div>
-                                <div className="sec-admin-reports-chart-container">
-                                    <ResponsiveContainer width="100%" height={200}>
+                                <div className="sec-admin-reports-summary bento-summary-grid">
+                                    <div className="sec-admin-reports-summary-card green">
+                                        <div className="sec-admin-reports-summary-header">
+                                            <p className="sec-admin-reports-summary-label">Total Received</p>
+                                        </div>
+                                        <p className="sec-admin-reports-summary-value" style={{ fontSize: '18px' }}>₱{reportStats.totalReceived.toLocaleString()}</p>
+                                    </div>
+                                    <div className="sec-admin-reports-summary-card red">
+                                        <div className="sec-admin-reports-summary-header">
+                                            <p className="sec-admin-reports-summary-label">Total Released</p>
+                                        </div>
+                                        <p className="sec-admin-reports-summary-value" style={{ fontSize: '18px' }}>₱{reportStats.totalReleased.toLocaleString()}</p>
+                                    </div>
+                                    <div className="sec-admin-reports-summary-card blue">
+                                        <div className="sec-admin-reports-summary-header">
+                                            <p className="sec-admin-reports-summary-label">Processed</p>
+                                        </div>
+                                        <p className="sec-admin-reports-summary-value" style={{ fontSize: '18px' }}>₱{reportStats.totalProcessed.toLocaleString()}</p>
+                                    </div>
+                                    <div className="sec-admin-reports-summary-card purple">
+                                        <div className="sec-admin-reports-summary-header">
+                                            <p className="sec-admin-reports-summary-label">Rate</p>
+                                        </div>
+                                        <p className="sec-admin-reports-summary-value" style={{ fontSize: '18px' }}>{reportStats.processingRate}%</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Row 3: Payment Method Pie (Span 4) + Quick Actions (Span 8) */}
+                            <div className="sec-bento-card bento-pie-chart">
+                                <div className="sec-admin-reports-chart-header">
+                                    <h3 className="sec-admin-reports-chart-title">Payment Method</h3>
+                                    <p className="sec-admin-reports-chart-subtitle">Disbursement distribution</p>
+                                </div>
+                                <div className="sec-admin-reports-chart-container" style={{ marginTop: '16px' }}>
+                                    <ResponsiveContainer width="100%" height={160}>
                                         <PieChart>
-                                            <Pie data={paymentMethodData} cx="50%" cy="50%" labelLine={false} label={({ name, percentage }) => `${name} ${percentage}%`} outerRadius={75} dataKey="value">
+                                            <Pie data={paymentMethodData} cx="50%" cy="50%" labelLine={false} label={({ name, percentage }) => `${percentage}%`} outerRadius={60} dataKey="value">
                                                 {paymentMethodData.map((entry, index) => (
                                                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                                 ))}
@@ -246,35 +239,35 @@ export default function SecretaryAdminDashboard() {
                                             <Tooltip formatter={(value) => '₱' + value.toLocaleString()} />
                                         </PieChart>
                                     </ResponsiveContainer>
-                                    <div className="sec-admin-reports-legend">
+                                    <div className="sec-admin-reports-legend" style={{ marginTop: '8px' }}>
                                         <div className="sec-admin-reports-legend-item">
                                             <div className="sec-admin-reports-legend-color blue"></div>
                                             <span className="sec-admin-reports-legend-label">GCash</span>
-                                            <span className="sec-admin-reports-legend-value">₱{paymentMethodData[0]?.value.toLocaleString() || '0'}</span>
                                         </div>
                                         <div className="sec-admin-reports-legend-item">
                                             <div className="sec-admin-reports-legend-color green"></div>
-                                            <span className="sec-admin-reports-legend-label">Bank Transfer</span>
-                                            <span className="sec-admin-reports-legend-value">₱{paymentMethodData[1]?.value.toLocaleString() || '0'}</span>
+                                            <span className="sec-admin-reports-legend-label">Bank</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Quick Actions */}
-                        <div className="sec-admin-dashboard-quick-actions" style={{ marginTop: '16px' }}>
-                            <h2 className="sec-admin-dashboard-section-title">Quick Actions</h2>
-                            <div className="sec-admin-dashboard-actions-grid">
-                                {quickActions.map(action => (
-                                    <div key={action.id} className={`sec-admin-dashboard-action-card ${action.color}`} onClick={() => navigate(action.link)} style={{ cursor: 'pointer' }}>
-                                        <div className="sec-admin-dashboard-action-icon">{action.icon}</div>
-                                        <div className="sec-admin-dashboard-action-content">
-                                            <h3 className="sec-admin-dashboard-action-title">{action.title}</h3>
-                                            <p className="sec-admin-dashboard-action-desc">{action.description}</p>
+                            <div className="sec-bento-card bento-quick-actions">
+                                <div className="sec-admin-reports-chart-header">
+                                    <h3 className="sec-admin-reports-chart-title">Quick Actions</h3>
+                                    <p className="sec-admin-reports-chart-subtitle">Manage loans and notifications</p>
+                                </div>
+                                <div className="sec-admin-dashboard-actions-grid" style={{ marginTop: '16px', height: '100%' }}>
+                                    {quickActions.map(action => (
+                                        <div key={action.id} className={`sec-admin-dashboard-action-card ${action.color}`} onClick={() => navigate(action.link)} style={{ cursor: 'pointer', height: '100%', alignItems: 'center' }}>
+                                            <div className="sec-admin-dashboard-action-icon">{action.icon}</div>
+                                            <div className="sec-admin-dashboard-action-content">
+                                                <h3 className="sec-admin-dashboard-action-title">{action.title}</h3>
+                                                <p className="sec-admin-dashboard-action-desc">{action.description}</p>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     </>
