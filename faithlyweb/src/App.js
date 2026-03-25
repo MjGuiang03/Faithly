@@ -48,7 +48,6 @@ import SecretaryAdminDashboard from './secretaryAdmin/pages/secretaryAdminDashbo
 import SecretaryAdminNotif from './secretaryAdmin/pages/secretaryAdminNotif';
 import SecretaryAdminLoanProcess from './secretaryAdmin/pages/secretaryAdminLoanProcess';
 import SecretaryAdminRecords from './secretaryAdmin/pages/secretaryAdminRecords';
-import SecretaryAdminReports from './secretaryAdmin/pages/secretaryAdminReports';
 import SecretaryAdminSettings from './secretaryAdmin/pages/secretaryAdminSettings';
 
 export default function App() {
