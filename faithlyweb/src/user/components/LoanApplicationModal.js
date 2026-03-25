@@ -140,7 +140,7 @@ export default function LoanApplicationModal({
       toast.error(`Please provide your ${disbursementMethod === 'gcash' ? 'GCash number' : 'bank account details'}.`);
       return;
     }
-    if (!agreedToTerms) { toast.error('Please agree to the Loan Terms and Conditions.'); return; }
+    if (!agreedToTerms) { toast.error('You must accept the Loan Terms and Conditions to continue'); return; }
 
     setLoading(true);
     try {
@@ -231,7 +231,7 @@ export default function LoanApplicationModal({
                     key={lt.key}
                     type="button"
                     className={`ula-type-card ula-type-card--${lt.color} ${isSelected ? 'ula-type-card--active' : ''}`}
-                    onClick={() => { setLoanType(lt.key); setTermMonths(''); }}
+                    onClick={() => { setLoanType(lt.key); setTermMonths(''); setAmount(ltMax > 0 ? String(ltMax) : ''); }}
                   >
                     <div className={`ula-type-icon ula-type-icon--${lt.color}`}>{lt.icon}</div>
                     <div className="ula-type-name">{lt.name}</div>
@@ -252,11 +252,11 @@ export default function LoanApplicationModal({
           {selectedType && (
             <div className="user-loan-application-row">
               <div className="user-loan-application-group-half">
-                <label className="user-loan-application-label">
-                  Loan Amount (₱)
-                  <span className="ula-max-tag">Max: {fmt(maxLoanable)}</span>
-                </label>
-                <div className="user-loan-application-input-wrapper">
+                <div className="ula-label-row">
+                  <label className="user-loan-application-label">Loan Amount (₱)</label>
+                  <span className="ula-max-pill">Max: {fmt(maxLoanable)}</span>
+                </div>
+                <div className="user-loan-application-input-wrapper ula-filled-input">
                   <span className="user-loan-application-input-icon">₱</span>
                   <input
                     type="number"
@@ -278,8 +278,10 @@ export default function LoanApplicationModal({
               </div>
 
               <div className="user-loan-application-group-half">
-                <label className="user-loan-application-label">Repayment Term</label>
-                <div className="user-loan-application-input-wrapper">
+                <div className="ula-label-row">
+                  <label className="user-loan-application-label">Repayment Term</label>
+                </div>
+                <div className="user-loan-application-input-wrapper ula-filled-input">
                   <svg className="user-loan-application-input-icon-svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
                     <path d="M6.66667 1.66667V5" stroke="#99A1AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
                     <path d="M13.3333 1.66667V5" stroke="#99A1AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />

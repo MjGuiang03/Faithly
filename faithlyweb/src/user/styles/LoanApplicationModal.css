@@ -357,20 +357,48 @@
   margin-top: 2px;
 }
 
-/* ── Max tag inline label ── */
-.ula-max-tag {
-  font-size: 11px;
+/* ── Label Row w/ Pill & Max tag ── */
+.ula-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: -4px;
+}
+
+.ula-max-pill {
+  font-family: 'Inter', sans-serif;
+  font-size: 11.5px;
   font-weight: 600;
   color: #185fa5;
   background: #e6f1fb;
-  padding: 2px 8px;
+  padding: 3px 10px;
   border-radius: 20px;
-  margin-left: auto;
 }
 
-.dark .ula-max-tag {
+.dark .ula-max-pill {
   background: rgba(30, 58, 138, 0.15);
   color: #7090d0;
+}
+
+/* ── Filled style for amounts ── */
+.ula-filled-input .user-loan-application-input,
+.ula-filled-input .user-loan-application-select {
+  background: var(--secondary);
+  border-color: transparent;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  height: 44px;
+}
+
+.ula-filled-input .user-loan-application-input:focus,
+.ula-filled-input .user-loan-application-select:focus {
+  background: var(--card);
+  border-color: #1E3A8A;
+}
+
+.dark .ula-filled-input .user-loan-application-input:focus,
+.dark .ula-filled-input .user-loan-application-select:focus {
+  border-color: #7090d0;
 }
 
 /* ── Field error ── */

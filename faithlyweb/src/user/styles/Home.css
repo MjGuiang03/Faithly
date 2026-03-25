@@ -147,7 +147,7 @@
 /* ── Stats grid ── */
 .user-stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 12px;
 }
 
@@ -171,6 +171,25 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+/* Savings stat — purple */
+.user-stat-purple {
+  background: var(--card);
+  border-radius: 12px;
+}
+
+.user-stat-purple .user-stat-icon-box {
+  background: #f3e8ff;
+}
+
+.user-stat-purple .user-stat-icon {
+  stroke: #9333ea;
+}
+
+.user-stat-purple .user-stat-label,
+.user-stat-purple .user-stat-value {
+  color: var(--foreground);
 }
 
 /* Loans stat — blue */

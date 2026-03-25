@@ -18,6 +18,8 @@ export default function Home() {
   const [attendanceStats, setAttendanceStats] = useState({ total: 0 });
   const [announcementsCount, setAnnouncementsCount] = useState(0);
   const [recentActivity, setRecentActivity] = useState([]);
+  const [savingsStats, setSavingsStats] = useState({ totalSavings: 0 });
+  const [savingsGoalsList, setSavingsGoalsList] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const token = localStorage.getItem('token');
@@ -28,18 +30,22 @@ export default function Home() {
       const headers = { Authorization: `Bearer ${token}` };
 
       const branch = profile?.branch || '';
-      const [loansRes, donationsRes, attendanceRes, annRes] = await Promise.all([
+      const [loansRes, donationsRes, attendanceRes, annRes, savingsRes, savingsGoalsRes] = await Promise.all([
         fetch(`${API}/api/loans/my-loans`, { headers }),
         fetch(`${API}/api/donations/my-donations`, { headers }),
         fetch(`${API}/api/attendance/my-attendance`, { headers }),
         fetch(`${API}/api/admin/announcements${branch ? `?branch=${encodeURIComponent(branch)}` : ''}`, { headers }),
+        fetch(`${API}/api/savings/stats`, { headers }),
+        fetch(`${API}/api/savings/goals`, { headers }),
       ]);
 
-      const [loansData, donationsData, attendanceData, annData] = await Promise.all([
+      const [loansData, donationsData, attendanceData, annData, savingsData, savingsGoalsData] = await Promise.all([
         loansRes.ok ? loansRes.json() : { success: false },
         donationsRes.ok ? donationsRes.json() : { success: false },
         attendanceRes.ok ? attendanceRes.json() : { success: false },
         annRes.ok ? annRes.json() : { success: false },
+        savingsRes.ok ? savingsRes.json() : { success: false },
+        savingsGoalsRes.ok ? savingsGoalsRes.json() : { success: false },
       ]);
 
       if (loansRes.ok && loansData.success) {
@@ -58,6 +64,14 @@ export default function Home() {
         const readIds = JSON.parse(localStorage.getItem('faithly_ann_read') || '[]');
         const unread = (annData.announcements || []).filter(a => !readIds.includes(a._id)).length;
         setAnnouncementsCount(unread);
+      }
+
+      if (savingsRes.ok && savingsData.success) {
+        setSavingsStats(savingsData.stats || { totalSavings: 0 });
+      }
+
+      if (savingsGoalsRes.ok && savingsGoalsData.success) {
+        setSavingsGoalsList((savingsGoalsData.goals || []).filter(g => g.status !== 'completed'));
       }
 
       const activities = [];
@@ -208,6 +222,37 @@ export default function Home() {
 
         {/* Stats Grid */}
         <div className="user-stats-grid">
+          
+          {/* Savings */}
+          <div className="user-stat-card user-stat-purple user-stat-card-clickable" onClick={() => navigate('/savings')} style={{ cursor: 'pointer', position: 'relative' }}>
+            <div className="user-stat-icon-box">
+              <svg className="user-stat-icon" fill="none" viewBox="0 0 24 24">
+                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+              </svg>
+            </div>
+            <div className="user-stat-content">
+              <p className="user-stat-label">Total Savings</p>
+              {loading ? <div className="user-skeleton" style={{ height: '24px', width: '80px', marginTop: '4px' }}></div> : <p className="user-stat-value user-fade-in">{`₱${(savingsStats.totalSavings || 0).toLocaleString()}`}</p>}
+            </div>
+
+            {/* Hover Tooltip */}
+            {!loading && savingsGoalsList.length > 0 && (
+              <div className="user-loan-hover-tooltip">
+                <p className="user-loan-hover-title">Active Goals</p>
+                {savingsGoalsList.slice(0, 3).map(goal => (
+                  <div key={goal._id} className="user-loan-hover-item">
+                    <span className="user-loan-hover-id">{goal.name}</span>
+                    <span className="user-loan-hover-amount">₱{(goal.savedAmount || 0).toLocaleString()}</span>
+                  </div>
+                ))}
+                {savingsGoalsList.length > 3 && (
+                  <p className="user-loan-hover-more">+{savingsGoalsList.length - 3} more</p>
+                )}
+                <p className="user-loan-hover-cta">Click to manage goals</p>
+              </div>
+            )}
+          </div>
+
           <div className="user-stat-card user-stat-blue user-stat-card-clickable" onClick={() => navigate('/loans')} style={{ cursor: 'pointer', position: 'relative' }}>
             <div className="user-stat-icon-box">
               <svg className="user-stat-icon" fill="none" viewBox="0 0 24 24">

@@ -5,7 +5,6 @@ import Sidebar from '../components/Sidebar';
 import { useState, useMemo, useEffect } from 'react';
 
 // ─── Branch data ordered North → South ───────────────────────────────────────
-// CAR (Cordillera) → Region II → Region I → Region III → NCR → Region IV-A → Region VII → Region XIII
 const branchData = [
   // ── CAR: Kalinga ──
   { region: 'CAR', province: 'Kalinga', name: 'Tabuk', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }, { day: 'Wednesday', time: '7:00 PM' }] },
@@ -91,8 +90,18 @@ const branchData = [
   { region: 'Region XIII', province: 'Surigao Del Sur', name: 'Kinabigtasan Tago', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
 ];
 
-// North-to-south region order
 const REGION_ORDER = ['CAR', 'Region II', 'Region I', 'Region III', 'NCR', 'Region IV-A', 'Region VII', 'Region XIII'];
+
+const REGION_LABELS = {
+  'CAR': 'Cordillera Administrative Region',
+  'Region II': 'Cagayan Valley',
+  'Region I': 'Ilocos Region',
+  'Region III': 'Central Luzon',
+  'NCR': 'National Capital Region',
+  'Region IV-A': 'CALABARZON',
+  'Region VII': 'Central Visayas',
+  'Region XIII': 'Caraga Region',
+};
 
 const DAY_COLORS = {
   Sunday: { background: '#eff4ff', color: '#155dfc' },
@@ -101,7 +110,6 @@ const DAY_COLORS = {
   Friday: { background: '#fefce8', color: '#a16207' },
 };
 
-// Maps signup community values → branch names (to match profile.branch)
 const COMMUNITY_MAP = {
   'Tabuk': 'Tabuk', 'Zapote': 'Zapote', 'Bliss': 'Bliss', 'Libanon': 'Libanon',
   'Batong Buhay': 'Batong Buhay', 'Balatoc': 'Balatoc', 'Lat-nog': 'Lat-nog',
@@ -111,8 +119,7 @@ const COMMUNITY_MAP = {
   'Villa Conchita': 'Villa Conchita', 'Ay-yeng Manabo': 'Ay-yeng Manabo', 'Dao-angan': 'Dao-angan',
   'Kilong-olao': 'Kilong-olao', 'Bao-yan': 'Bao-yan', 'Amti': 'Amti', 'Danac': 'Danac',
   'Bengued': 'Bengued', 'Sappaac': 'Sappaac', 'Saccaang': 'Saccaang',
-  'Baguio': 'Baguio',
-  'Montalban': 'Montalban',
+  'Baguio': 'Baguio', 'Montalban': 'Montalban',
   'Valenzuela City': 'Valenzuela City',
   'Tandang Sora, Quezon City': 'Tandang Sora, Quezon City',
   'COA, Quezon City': 'COA, Quezon City',
@@ -136,9 +143,8 @@ const COMMUNITY_MAP = {
 export default function Branches() {
   const { profile } = useAuth();
 
-  const [selectedRegion, setSelectedRegion] = useState('All');
-  const [selectedProvince, setSelectedProvince] = useState('All');
   const [search, setSearch] = useState('');
+  const [activeRegion, setActiveRegion] = useState(null); // key of expanded region
   const [drawerBranch, setDrawerBranch] = useState(null);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [drawerMounted, setDrawerMounted] = useState(false);
@@ -162,53 +168,59 @@ export default function Branches() {
     return () => window.removeEventListener('keydown', handler);
   }, []);
 
-  const regions = useMemo(() => {
-    const present = REGION_ORDER.filter(r => branchData.some(b => b.region === r));
-    return ['All', ...present];
-  }, []);
-
-  const provinces = useMemo(() => {
-    const source = selectedRegion === 'All' ? branchData : branchData.filter(b => b.region === selectedRegion);
-    // Keep north-to-south order within provinces
-    const seen = new Set();
-    const ordered = [];
-    source.forEach(b => { if (!seen.has(b.province)) { seen.add(b.province); ordered.push(b.province); } });
-    return ['All', ...ordered];
-  }, [selectedRegion]);
-
-  const filtered = useMemo(() => branchData.filter(b => {
-    const matchR = selectedRegion === 'All' || b.region === selectedRegion;
-    const matchP = selectedProvince === 'All' || b.province === selectedProvince;
-    const matchS = !search || b.name.toLowerCase().includes(search.toLowerCase()) || b.province.toLowerCase().includes(search.toLowerCase());
-    return matchR && matchP && matchS;
-  }), [selectedRegion, selectedProvince, search]);
-
-  // Group preserving north-to-south order
-  const grouped = useMemo(() => {
-    const map = {};
-    filtered.forEach(b => {
-      const key = `${b.region}||${b.province}`;
-      if (!map[key]) map[key] = { region: b.region, province: b.province, branches: [] };
-      map[key].branches.push(b);
-    });
-    return Object.values(map);
-  }, [filtered]);
-
-  // Accurate stats
+  // Stats
   const totalBranches = branchData.length;
   const totalRegions = [...new Set(branchData.map(b => b.region))].length;
   const totalProvinces = [...new Set(branchData.map(b => b.province))].length;
   const totalServices = branchData.reduce((s, b) => s + b.serviceTimes.length, 0);
+
+  // Region summary cards
+  const regionSummaries = useMemo(() => {
+    return REGION_ORDER.map(r => {
+      const branches = branchData.filter(b => b.region === r);
+      const provinces = [...new Set(branches.map(b => b.province))];
+      return { key: r, label: REGION_LABELS[r] || r, count: branches.length, provinces };
+    });
+  }, []);
+
+  // Search-filtered branches when a region is expanded
+  const expandedBranches = useMemo(() => {
+    if (!activeRegion) return [];
+    return branchData.filter(b => {
+      const matchR = b.region === activeRegion;
+      const matchS = !search || b.name.toLowerCase().includes(search.toLowerCase()) || b.province.toLowerCase().includes(search.toLowerCase());
+      return matchR && matchS;
+    });
+  }, [activeRegion, search]);
+
+  // Search across all branches (when search is active and no region selected)
+  const searchResults = useMemo(() => {
+    if (!search) return [];
+    return branchData.filter(b =>
+      b.name.toLowerCase().includes(search.toLowerCase()) ||
+      b.province.toLowerCase().includes(search.toLowerCase()) ||
+      b.region.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [search]);
+
+  const activeRegionData = activeRegion ? regionSummaries.find(r => r.key === activeRegion) : null;
+
+  const handleRegionClick = (key) => {
+    setActiveRegion(prev => prev === key ? null : key);
+    setSearch('');
+  };
+
+  const displayCount = search && !activeRegion
+    ? searchResults.length
+    : activeRegion
+      ? expandedBranches.length
+      : totalBranches;
 
   return (
     <div className="user-home-layout">
       <Sidebar />
 
       <div className="user-main-content">
-        <div className="user-branches-page-header">
-          <h1 className="user-branches-page-title">Our Branches</h1>
-          <p className="user-branches-page-subtitle">Find a church location near you</p>
-        </div>
 
         {/* ── My Community Banner ─────────────────────────────── */}
         {userBranch && (
@@ -256,75 +268,139 @@ export default function Branches() {
           ))}
         </div>
 
-        {/* ── Filter Bar ─────────────────────────────────────── */}
-        <div className="user-branches-filter-bar">
-          <div className="user-branches-search-wrap">
-            <svg className="user-branches-search-icon" fill="none" viewBox="0 0 20 20">
+        {/* ── Search Bar ─────────────────────────────────────── */}
+        <div className="ubr-search-row">
+          <div className="ubr-search-wrap">
+            <svg className="ubr-search-icon" fill="none" viewBox="0 0 20 20">
               <path d="M17.5 17.5 13.875 13.875M15.833 9.167a6.667 6.667 0 1 1-13.333 0 6.667 6.667 0 0 1 13.333 0Z" stroke="#99A1AF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.67" />
             </svg>
-            <input className="user-branches-search-input" placeholder="Search branches…" value={search} onChange={e => setSearch(e.target.value)} />
+            <input
+              className="ubr-search-input"
+              placeholder="Search branches…"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
           </div>
-          <div className="user-branches-filter-group">
-            <label className="user-branches-filter-label">Region</label>
-            <select className="user-branches-filter-select" value={selectedRegion} onChange={e => { setSelectedRegion(e.target.value); setSelectedProvince('All'); }}>
-              {regions.map(r => <option key={r}>{r}</option>)}
-            </select>
-          </div>
-          <div className="user-branches-filter-group">
-            <label className="user-branches-filter-label">Province</label>
-            <select className="user-branches-filter-select" value={selectedProvince} onChange={e => setSelectedProvince(e.target.value)}>
-              {provinces.map(p => <option key={p}>{p}</option>)}
-            </select>
-          </div>
-          <span className="user-branches-filter-count">{filtered.length} branch{filtered.length !== 1 ? 'es' : ''}</span>
+          <span className="ubr-branch-count">{displayCount} {displayCount === 1 ? 'branch' : 'branches'}</span>
         </div>
 
-        {/* ── Branch Groups ──────────────────────────────────── */}
-        {grouped.length === 0
-          ? <div className="user-no-results">No branches match your filters.</div>
-          : grouped.map(({ region, province, branches }) => (
-            <div key={`${region}-${province}`} className="user-branch-group">
-              <div className="user-branch-group-header">
-                <span className="user-group-region-badge">{region}</span>
-                <span className="user-group-province">{province}</span>
-                <span className="user-group-count">{branches.length}</span>
-              </div>
+        {/* ── Region Cards Grid ──────────────────────────────── */}
+        {(!search || activeRegion) && (
+          <>
+            <p className="ubr-select-hint">Select a region to browse branches</p>
+            <div className="ubr-region-grid">
+              {regionSummaries.map(r => (
+                <button
+                  key={r.key}
+                  className={`ubr-region-card${activeRegion === r.key ? ' ubr-region-card--active' : ''}`}
+                  onClick={() => handleRegionClick(r.key)}
+                >
+                  <span className="ubr-region-badge">{r.key}</span>
+                  <span className="ubr-region-name">{r.label}</span>
+                  <span className="ubr-region-count">{r.count} {r.count === 1 ? 'branch' : 'branches'}</span>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
 
-              <div className="user-branch-card-grid">
-                {branches.map((branch, idx) => {
+        {/* ── Expanded Region Branch List ────────────────────── */}
+        {activeRegion && (
+          <div className="ubr-expanded-region">
+            <div className="ubr-expanded-header">
+              <div className="ubr-expanded-title-wrap">
+                <span className="ubr-expanded-name">{REGION_LABELS[activeRegion]} ({activeRegion})</span>
+                <span className="ubr-expanded-meta">
+                  {activeRegionData?.count} branches · {activeRegionData?.provinces.join(', ')}
+                </span>
+              </div>
+              <button className="ubr-clear-btn" onClick={() => { setActiveRegion(null); setSearch(''); }}>
+                Clear ×
+              </button>
+            </div>
+
+            {expandedBranches.length === 0 ? (
+              <div className="ubr-no-results">No branches match your search.</div>
+            ) : (
+              <div className="ubr-branch-list-grid">
+                {expandedBranches.map((branch, idx) => {
                   const isMyBranch = userBranchName && branch.name === userBranchName;
                   return (
                     <button
                       key={idx}
-                      className={`user-branch-card-item${isMyBranch ? ' user-my-branch' : ''}`}
+                      className={`ubr-branch-row${isMyBranch ? ' ubr-branch-row--mine' : ''}`}
                       onClick={() => openDrawer(branch)}
                     >
-                      {isMyBranch && <span className="user-my-branch-badge">My Community</span>}
-                      <div className="user-bci-top">
-                        <div className={`user-bci-icon${isMyBranch ? ' user-my-branch-icon' : ''}`}>
-                          <svg width="15" height="15" fill="none" viewBox="0 0 24 24">
-                            <path d="M12 21s-8-7.5-8-12a8 8 0 1 1 16 0c0 4.5-8 12-8 12Z" stroke={isMyBranch ? '#fff' : '#155dfc'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                            <circle cx="12" cy="9" r="2.5" stroke={isMyBranch ? '#fff' : '#155dfc'} strokeWidth="1.8" />
-                          </svg>
-                        </div>
-                        <span className="user-bci-name">{branch.name}</span>
-                        <svg className="user-bci-arrow" fill="none" viewBox="0 0 16 16">
-                          <path d="m6 4 4 4-4 4" stroke={isMyBranch ? '#155dfc' : '#d1d5db'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      <div className="ubr-branch-row-left">
+                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" className="ubr-pin-icon">
+                          <path d="M12 21s-8-7.5-8-12a8 8 0 1 1 16 0c0 4.5-8 12-8 12Z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                          <circle cx="12" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.8" />
                         </svg>
+                        <div className="ubr-branch-info">
+                          <span className="ubr-branch-name">{branch.name}</span>
+                          <div className="ubr-branch-days">
+                            {branch.serviceTimes.map((s, i) => (
+                              <span key={i} className="ubr-day-pill" style={DAY_COLORS[s.day] || {}}>
+                                {s.day.slice(0, 3)}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
                       </div>
-                      <div className="user-bci-days">
-                        {branch.serviceTimes.map((s, i) => (
-                          <span key={i} className="user-bci-day-tag" style={DAY_COLORS[s.day] || {}}>
-                            {s.day.slice(0, 3)}
-                          </span>
-                        ))}
-                      </div>
+                      {isMyBranch && <span className="ubr-my-tag">My Community</span>}
                     </button>
                   );
                 })}
               </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Global Search Results (no region selected) ────── */}
+        {search && !activeRegion && (
+          <div className="ubr-expanded-region">
+            <div className="ubr-expanded-header">
+              <span className="ubr-expanded-name">Search results for "{search}"</span>
+              <button className="ubr-clear-btn" onClick={() => setSearch('')}>Clear ×</button>
             </div>
-          ))}
+            {searchResults.length === 0 ? (
+              <div className="ubr-no-results">No branches match your search.</div>
+            ) : (
+              <div className="ubr-branch-list-grid">
+                {searchResults.map((branch, idx) => {
+                  const isMyBranch = userBranchName && branch.name === userBranchName;
+                  return (
+                    <button
+                      key={idx}
+                      className={`ubr-branch-row${isMyBranch ? ' ubr-branch-row--mine' : ''}`}
+                      onClick={() => openDrawer(branch)}
+                    >
+                      <div className="ubr-branch-row-left">
+                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" className="ubr-pin-icon">
+                          <path d="M12 21s-8-7.5-8-12a8 8 0 1 1 16 0c0 4.5-8 12-8 12Z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                          <circle cx="12" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.8" />
+                        </svg>
+                        <div className="ubr-branch-info">
+                          <span className="ubr-branch-name">{branch.name}</span>
+                          <div className="ubr-branch-days">
+                            {branch.serviceTimes.map((s, i) => (
+                              <span key={i} className="ubr-day-pill" style={DAY_COLORS[s.day] || {}}>
+                                {s.day.slice(0, 3)}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      <span className="ubr-region-tag">{branch.region}</span>
+                      {isMyBranch && <span className="ubr-my-tag">My Community</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
       </div>
 
       {/* ── Drawer ─────────────────────────────────────────────── */}
