@@ -79,16 +79,18 @@ export default function Sidebar() {
       try {
         const readIds = new Set(JSON.parse(localStorage.getItem(READ_KEY) || '[]'));
 
-        const [lRes, dRes, aRes] = await Promise.all([
+        const [lRes, dRes, aRes, annRes] = await Promise.all([
           fetch(`${API}/api/loans/my-loans`, { headers: { Authorization: `Bearer ${token}` } }),
           fetch(`${API}/api/donations/my-donations`, { headers: { Authorization: `Bearer ${token}` } }),
           fetch(`${API}/api/attendance/my-attendance`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${API}/api/admin/announcements${profile?.branch ? `?branch=${encodeURIComponent(profile.branch)}` : ''}`, { headers: { Authorization: `Bearer ${token}` } }),
         ]);
 
-        const [lData, dData, aData] = await Promise.all([
+        const [lData, dData, aData, annData] = await Promise.all([
           lRes.ok ? lRes.json() : { loans: [] },
           dRes.ok ? dRes.json() : { donations: [] },
           aRes.ok ? aRes.json() : { attendance: [] },
+          annRes.ok ? annRes.json() : { announcements: [] },
         ]);
 
         let count = 0;
@@ -119,6 +121,12 @@ export default function Sidebar() {
         });
         (dData.donations || []).forEach((d) => { if (!readIds.has(`donation-${d._id}`)) count++; });
         (aData.attendance || []).forEach((a) => { if (!readIds.has(`attendance-${a._id}`)) count++; });
+
+        const annReadKey = 'faithly_ann_read';
+        const readAnnIds = new Set(JSON.parse(localStorage.getItem(annReadKey) || '[]'));
+        (annData.announcements || []).forEach((ann) => {
+          if (!readAnnIds.has(ann._id)) count++;
+        });
 
         setUnreadCount(count);
       } catch { /* silent */ }

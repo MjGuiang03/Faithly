@@ -20,9 +20,9 @@ export default function Home() {
   const [monthlyAttendanceCount, setMonthlyAttendanceCount] = useState(0);
   const [announcementsCount, setAnnouncementsCount] = useState(0);
   const [recentActivity, setRecentActivity] = useState([]);
-  const [savingsStats, setSavingsStats] = useState({ totalSavings: 0 });
-  const [monthlyDeposit, setMonthlyDeposit] = useState(0);
+  const [savingsStats, setSavingsStats] = useState({ totalSavings: 0, thisMonth: 0 });
   const [savingsGoalsList, setSavingsGoalsList] = useState([]);
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const token = localStorage.getItem('token');
@@ -79,32 +79,29 @@ export default function Home() {
         setMonthlyAttendanceCount(monthlyAtt.length);
       }
 
-      if (annRes.ok && annData.success) {
-        const readIds = JSON.parse(localStorage.getItem('faithly_ann_read') || '[]');
-        const unread = (annData.announcements || []).filter(a => !readIds.includes(a._id)).length;
-        setAnnouncementsCount(unread);
-      }
-
       if (savingsRes.ok && savingsData.success) {
-        setSavingsStats(savingsData.stats || { totalSavings: 0 });
+        setSavingsStats(savingsData.stats || { totalSavings: 0, thisMonth: 0 });
       }
 
       if (savingsGoalsRes.ok && savingsGoalsData.success) {
         setSavingsGoalsList((savingsGoalsData.goals || []).filter(g => g.status !== 'completed'));
-        // monthly deposit: sum transactions this month
-        const goals = savingsGoalsData.goals || [];
-        let monthDeposit = 0;
-        goals.forEach(g => {
-          (g.transactions || []).forEach(tx => {
-            if (tx.type === 'deposit') {
-              const dt = new Date(tx.date || tx.createdAt);
-              if (dt.getMonth() === thisMonth && dt.getFullYear() === thisYear) {
-                monthDeposit += tx.amount || 0;
-              }
-            }
-          });
+      }
+
+      if (annRes.ok && annData.success) {
+        const readIds = JSON.parse(localStorage.getItem('faithly_ann_read') || '[]');
+        const list = (annData.announcements || []).map(ann => {
+          const d = new Date(ann.createdAt);
+          return {
+            day: d.getDate().toString(),
+            month: d.toLocaleString('en-US', { month: 'short' }).toUpperCase(),
+            title: ann.title,
+            time: ann.content.length > 50 ? ann.content.substring(0, 50) + '...' : ann.content,
+            tag: ann.branch === 'All' ? 'Global' : 'Local',
+            tagColor: ann.branch === 'All' ? '#155dfc' : '#16a34a'
+          };
         });
-        setMonthlyDeposit(monthDeposit);
+        setUpcomingEvents(list.slice(0, 4));
+        setAnnouncementsCount((annData.announcements || []).filter(a => !readIds.includes(a._id)).length);
       }
 
       const activities = [];
@@ -171,13 +168,8 @@ export default function Home() {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
-  // Static upcoming events (can be replaced with API data later)
-  const upcomingEvents = [
-    { day: '27', month: 'MAR', title: 'Youth Worship Night', time: '6:00 PM · Main Hall', tag: 'Open', tagColor: '#00A63E' },
-    { day: '30', month: 'MAR', title: 'Sunday Service', time: '9:00 AM · Sanctuary', tag: null },
-    { day: '5', month: 'APR', title: 'Good Friday Service', time: '3:00 PM · Main Hall', tag: 'Reg. closes Apr 2', tagColor: '#c2410c' },
-    { day: '6', month: 'APR', title: 'Easter Sunrise Celebration', time: '5:30 AM · Outdoor Grounds', tag: null },
-  ];
+  // Remove static upcomingEvents
+
 
   const quickActions = [
     {
@@ -257,7 +249,7 @@ export default function Home() {
             <div className="user-stat-content">
               <p className="user-stat-label">Total Savings</p>
               {loading ? <div className="user-skeleton" style={{ height: '24px', width: '80px', marginTop: '4px' }}></div> : <p className="user-stat-value user-fade-in">{`₱${(savingsStats.totalSavings || 0).toLocaleString()}`}</p>}
-              {!loading && <p className="user-stat-subtext user-stat-subtext-green">+₱{monthlyDeposit.toLocaleString()} this month</p>}
+              {!loading && <p className="user-stat-subtext user-stat-subtext-green">+₱{(savingsStats.thisMonth || 0).toLocaleString()} this month</p>}
             </div>
 
             {/* Hover Tooltip */}
@@ -344,27 +336,8 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Announcements — kept as 5th card */}
-          <div
-            className={`user-stat-card user-stat-orange user-stat-card-clickable${false ? ' user-stat-ann-active' : ''}`}
-            style={{ cursor: 'pointer', position: 'relative' }}
-            onClick={() => navigate('/notifications')}
-          >
-            <div className="user-stat-icon-box">
-              <svg className="user-stat-icon" fill="none" viewBox="0 0 24 24">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-              </svg>
-            </div>
-            <div className="user-stat-content" style={{ flex: 1 }}>
-              <p className="user-stat-label">Announcements</p>
-              <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap', gap: '8px' }}>
-                <p className="user-stat-value user-fade-in" style={{ whiteSpace: 'nowrap', fontSize: '1.05rem' }}>Church Updates</p>
-                {!loading && announcementsCount > 0 && <span className="user-stat-badge">{announcementsCount} unread</span>}
-              </div>
-              {!loading && <p className="user-stat-subtext">View all updates</p>}
-            </div>
-          </div>
+          {/* Announcements Card Removed */}
+
         </div>
 
         {/* Dashboard Grid */}
@@ -397,10 +370,15 @@ export default function Home() {
 
           {/* Community Section */}
           <div className="user-home-card user-home-community-card">
-            <h2 className="user-home-card-title">Your Community</h2>
-            <div className="user-community-info-wrap">
-              <p className="user-community-branch-name">{profile?.branch || 'PUAC Main'}</p>
-            </div>
+            <h2 className="user-home-card-title">
+              Your Community
+              {profile?.branch && (
+                <span className="user-title-dot-wrap">
+                  <span className="user-title-dot">·</span>
+                  <span className="user-title-branch">{profile.branch.replace(/\s*Community\s*/gi, '')}</span>
+                </span>
+              )}
+            </h2>
 
             <div className="user-community-map-container">
               <iframe
@@ -425,7 +403,12 @@ export default function Home() {
           <div className="user-home-card user-home-events-card">
             <h2 className="user-home-card-title">
               Upcoming Events
-              {profile?.branch && <span className="user-events-branch-tag"> · {profile.branch}</span>}
+              {profile?.branch && (
+                <span className="user-title-dot-wrap">
+                  <span className="user-title-dot">·</span>
+                  <span className="user-title-branch">{profile.branch.replace(/\s*Community\s*/gi, '')}</span>
+                </span>
+              )}
             </h2>
             <div className="user-events-list">
               {upcomingEvents.map((evt, i) => (

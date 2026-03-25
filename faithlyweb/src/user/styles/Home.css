@@ -147,7 +147,7 @@
 /* ── Stats grid ── */
 .user-stats-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 12px;
 }
 
@@ -482,10 +482,19 @@
 }
 
 .user-community-branch-name {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--foreground);
-  margin: 0;
+  display: none;
+}
+
+.user-title-dot {
+  opacity: 0.5;
+  margin: 0 6px;
+  font-weight: 400;
+}
+
+.user-title-branch {
+  font-size: 0.85em;
+  font-weight: 400;
+  color: var(--text-muted);
   font-family: 'Inter', sans-serif;
 }
 
