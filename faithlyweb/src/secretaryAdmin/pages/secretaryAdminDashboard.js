@@ -194,7 +194,7 @@ export default function SecretaryAdminDashboard() {
                                     <h3 className="sec-admin-reports-chart-title">Processing Overview</h3>
                                     <p className="sec-admin-reports-chart-subtitle">Key disbursement metrics</p>
                                 </div>
-                                <div className="sec-admin-reports-summary bento-summary-grid">
+                                <div className="bento-summary-grid">
                                     <div className="sec-admin-reports-summary-card green">
                                         <div className="sec-admin-reports-summary-header">
                                             <p className="sec-admin-reports-summary-label">Total Received</p>
