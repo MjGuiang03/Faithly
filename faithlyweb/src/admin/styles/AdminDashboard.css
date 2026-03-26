@@ -426,11 +426,11 @@
 .adm-stat-card {
   background: white;
   border-radius: 12px;
-  padding: 16px;
+  padding: 18px 20px;
   border: 1px solid #E5E7EB;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 12px;
 }
 
 .adm-stat-card.blue  { border-top: 3px solid #155DFC; }
@@ -493,14 +493,14 @@
   background: white;
   border: 1px solid #E5E7EB;
   border-radius: 12px;
-  padding: 16px;
+  padding: 20px;
 }
 
 .adm-card-header {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: 16px;
 }
 
 .adm-card-title {

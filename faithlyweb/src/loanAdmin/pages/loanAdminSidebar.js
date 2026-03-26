@@ -2,7 +2,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import {
-  LayoutGrid, Bell, FileText, BarChart3, Settings, LogOut
+  LayoutGrid, Bell, FileText, Settings, LogOut
 } from 'lucide-react';
 import puacLogo from '../../assets/puaclogo.png';
 import '../styles/loanAdminSidebar.css';
@@ -110,14 +110,6 @@ export default function LoanAdminSidebar() {
         >
           <FileText size={20} />
           <span>Loan Management</span>
-        </button>
-
-        <button
-          onClick={() => navigate('/loan-admin/reports')}
-          className={`loan-admin-sidebar-nav-button ${isActive('/loan-admin/reports') ? 'active' : ''}`}
-        >
-          <BarChart3 size={20} />
-          <span>Reports</span>
         </button>
 
         <button

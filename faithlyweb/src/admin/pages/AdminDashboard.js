@@ -14,29 +14,12 @@ import API from '../../utils/api';
 const fmt    = (n) => `₱${Number(n).toLocaleString()}`;
 
 
-const donationCategories = [
-  { name: 'Tithes',        value: 1800000, color: '#155DFC' },
-  { name: 'Offerings',     value: 1300000, color: '#00A63E' },
-  { name: 'Special Gifts', value: 800000,  color: '#F59E0B' },
-  { name: 'Other',         value: 270000,  color: '#EF4444' },
-];
-
-const memberGrowthData = [
-  { month: 'Jan', totalMembers: 950,  newMembers: 25 },
-  { month: 'Feb', totalMembers: 980,  newMembers: 30 },
-  { month: 'Mar', totalMembers: 1050, newMembers: 70 },
-  { month: 'Apr', totalMembers: 1120, newMembers: 70 },
-  { month: 'May', totalMembers: 1180, newMembers: 60 },
-  { month: 'Jun', totalMembers: 1245, newMembers: 65 },
-];
-
-const attendanceVsDonations = [
-  { month: 'Jan', attendance: 850,  donations: 650 },
-  { month: 'Feb', attendance: 920,  donations: 590 },
-  { month: 'Mar', attendance: 1050, donations: 800 },
-  { month: 'Apr', attendance: 880,  donations: 810 },
-  { month: 'May', attendance: 950,  donations: 560 },
-  { month: 'Jun', attendance: 1100, donations: 900 },
+const INITIAL_DONATION_CATEGORIES = [
+  { name: 'General Fund',      value: 0, color: '#155DFC' },
+  { name: 'Children Ministry', value: 0, color: '#00A63E' },
+  { name: 'Building Fund',     value: 0, color: '#F59E0B' },
+  { name: 'Youth Ministry',    value: 0, color: '#E60076' },
+  { name: 'Mission Fund',      value: 0, color: '#8B5CF6' },
 ];
 
 export default function AdminDashboard() {
@@ -47,7 +30,10 @@ export default function AdminDashboard() {
   const [donationStats, setDonationStats] = useState({ thisMonth: 0, total: 0 });
   const [attendStats,   setAttendStats]   = useState({ thisWeek: 0, avgPerService: 0 });
   const [membersByBranch, setMembersByBranch] = useState([]);
-  const [loading,       setLoading]       = useState(true);
+  const [pieData, setPieData] = useState(INITIAL_DONATION_CATEGORIES);
+  const [growthData, setGrowthData] = useState([]);
+  const [attendVsDonData, setAttendVsDonData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -92,6 +78,85 @@ export default function AdminDashboard() {
         setMembersByBranch(Object.entries(branchMap).map(([branch, count]) => ({ branch, count })));
       }
 
+      // ── Process Donation Categories (Pie Chart) ──
+      if (donationsData.success && donationsData.donations) {
+        const catTotals = {
+          'General Fund': 0, 'Children Ministry': 0, 'Building Fund': 0, 'Youth Ministry': 0, 'Mission Fund': 0
+        };
+        donationsData.donations.forEach(d => {
+          const amt = Number(d.amount) || 0;
+          const cat = d.category || 'General Fund';
+          if (catTotals[cat] !== undefined) {
+            catTotals[cat] += amt;
+          } else {
+            catTotals['General Fund'] += amt; // fallback
+          }
+        });
+        
+        setPieData(INITIAL_DONATION_CATEGORIES.map(cat => ({
+          ...cat,
+          value: catTotals[cat.name]
+        })));
+      }
+
+      // ── Process Time Series Data (Jan-Dec current year) ──
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const currentYear = new Date().getFullYear();
+      const allMonths = monthNames.map((m, i) => ({
+        monthStr: m,
+        year: currentYear,
+        monthIndex: i
+      }));
+
+      // 1. Member Growth
+      if (membersData.success && membersData.members) {
+        const growth = allMonths.map(m => ({ month: m.monthStr, totalMembers: 0, newMembers: 0 }));
+        let runningTotal = 0;
+        
+        // sort members by date ascending
+        const sortedMembers = [...membersData.members].sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt));
+        
+        // Count base total before Jan 1 of the current year
+        const windowStartDate = new Date(currentYear, 0, 1);
+        sortedMembers.forEach(m => {
+          const date = new Date(m.createdAt);
+          if (date < windowStartDate) runningTotal++;
+        });
+
+        growth.forEach(g => {
+          let newThisMonth = 0;
+          sortedMembers.forEach(m => {
+            const date = new Date(m.createdAt);
+            if (date.getFullYear() === g.year && date.getMonth() === g.monthIndex) {
+              newThisMonth++;
+            }
+          });
+          runningTotal += newThisMonth;
+          g.totalMembers = runningTotal;
+          g.newMembers = newThisMonth;
+        });
+        setGrowthData(growth);
+      }
+
+      // 2. Attendance vs Donations
+      const attendDonData = allMonths.map(m => ({ month: m.monthStr, attendance: 0, donations: 0, year: m.year, monthIndex: m.monthIndex }));
+      
+      if (attendData.success && attendData.attendance) {
+        attendData.attendance.forEach(a => {
+          const d = new Date(a.date || a.createdAt);
+          const match = attendDonData.find(m => m.year === d.getFullYear() && m.monthIndex === d.getMonth());
+          if (match) match.attendance += (Number(a.adultsCount) || 0) + (Number(a.kidsCount) || 0);
+        });
+      }
+      
+      if (donationsData.success && donationsData.donations) {
+        donationsData.donations.forEach(d => {
+          const date = new Date(d.createdAt || d.date);
+          const match = attendDonData.find(m => m.year === date.getFullYear() && m.monthIndex === date.getMonth());
+          if (match) match.donations += Number(d.amount) || 0;
+        });
+      }
+      setAttendVsDonData(attendDonData);
 
     } catch (err) {
       console.error(err);
@@ -186,20 +251,20 @@ export default function AdminDashboard() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <ResponsiveContainer width="100%" height={160}>
               <PieChart>
-                <Pie data={donationCategories} cx="50%" cy="50%" innerRadius={45} outerRadius={72} paddingAngle={2} dataKey="value">
-                  {donationCategories.map((entry, index) => (
+                <Pie data={pieData} cx="50%" cy="50%" innerRadius={45} outerRadius={72} paddingAngle={2} dataKey="value">
+                  {pieData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value) => `₱${(value / 1000).toFixed(0)}k`} />
+                <Tooltip formatter={(value) => `₱${(value || 0).toLocaleString()}`} />
               </PieChart>
             </ResponsiveContainer>
             <div className="adm-pie-legend">
-              {donationCategories.map((cat, i) => (
+              {pieData.map((cat, i) => (
                 <div key={i} className="adm-pie-legend-item">
                   <div className="adm-pie-dot" style={{ background: cat.color }} />
                   <span className="adm-pie-label">{cat.name}</span>
-                  <span className="adm-pie-val">₱{(cat.value / 1000).toFixed(0)}k</span>
+                  <span className="adm-pie-val">₱{cat.value >= 1000 ? (cat.value / 1000).toFixed(0) + 'k' : cat.value}</span>
                 </div>
               ))}
             </div>
@@ -247,7 +312,7 @@ export default function AdminDashboard() {
           <span className="adm-card-sub">Total vs new registrations this year</span>
         </div>
         <ResponsiveContainer width="100%" height={220}>
-          <LineChart data={memberGrowthData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+          <LineChart data={growthData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
             <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
             <YAxis stroke="#9CA3AF" fontSize={12} />
@@ -266,7 +331,7 @@ export default function AdminDashboard() {
           <span className="adm-card-sub">Correlation by month</span>
         </div>
         <ResponsiveContainer width="100%" height={220}>
-          <BarChart data={attendanceVsDonations} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+          <BarChart data={attendVsDonData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
             <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
             <YAxis stroke="#9CA3AF" fontSize={12} />
