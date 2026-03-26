@@ -7,26 +7,26 @@
     align-items: center;
     justify-content: center;
     z-index: 1000;
-    padding: 20px;
+    padding: 16px;
 }
 
 /* Process Modal Container */
 .sec-process-modal-container {
     background: white;
-    border-radius: 10px;
-    padding: 32px;
-    max-width: 448px;
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 400px;
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 16px;
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 /* Icon */
 .sec-process-modal-icon {
-    width: 64px;
-    height: 64px;
+    width: 48px;
+    height: 48px;
     background: #dbeafe;
     border-radius: 100px;
     display: flex;
@@ -35,12 +35,16 @@
     margin: 0 auto;
 }
 
+.sec-process-modal-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
 /* Title */
 .sec-process-modal-title {
     font-family: 'Inter', sans-serif;
     font-weight: 700;
-    font-size: 24px;
-    line-height: 32px;
+    font-size: 20px;
     color: #101828;
     text-align: center;
     margin: 0;
@@ -50,8 +54,7 @@
 .sec-process-modal-subtitle {
     font-family: 'Inter', sans-serif;
     font-weight: 400;
-    font-size: 16px;
-    line-height: 24px;
+    font-size: 14px;
     color: #4a5565;
     text-align: center;
     margin: 0;
@@ -66,17 +69,16 @@
 .sec-process-modal-info {
     background: #f9fafb;
     border-radius: 10px;
-    padding: 16px;
+    padding: 12px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 2px;
 }
 
 .sec-process-modal-info-text {
     font-family: 'Inter', sans-serif;
     font-weight: 400;
-    font-size: 14px;
-    line-height: 20px;
+    font-size: 13px;
     color: #4a5565;
     margin: 0;
 }
@@ -94,14 +96,13 @@
 .sec-process-modal-payment-section {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
 }
 
 .sec-process-modal-label {
     font-family: 'Inter', sans-serif;
     font-weight: 500;
-    font-size: 14px;
-    line-height: 20px;
+    font-size: 13px;
     color: #4a5565;
     margin: 0;
 }
@@ -110,20 +111,25 @@
 .sec-process-modal-payment-options {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    gap: 8px;
 }
 
 .sec-process-payment-option {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
-    padding: 18px 8px;
+    gap: 4px;
+    padding: 12px 8px;
     background: white;
-    border: 2px solid #e5e7eb;
-    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s;
+}
+
+.sec-process-payment-option svg {
+    width: 24px;
+    height: 24px;
 }
 
 .sec-process-payment-option:hover {
@@ -138,8 +144,7 @@
 .sec-process-payment-option span {
     font-family: 'Inter', sans-serif;
     font-weight: 500;
-    font-size: 16px;
-    line-height: 24px;
+    font-size: 14px;
     color: #4a5565;
 }
 
@@ -150,22 +155,21 @@
 /* Action Buttons */
 .sec-process-modal-actions {
     display: flex;
-    gap: 12px;
+    gap: 10px;
 }
 
 .sec-process-btn-cancel,
 .sec-process-btn-confirm {
     flex: 1;
-    height: 64px;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 6px;
     font-family: 'Inter', sans-serif;
-    font-weight: 500;
-    font-size: 16px;
-    line-height: 24px;
-    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    border-radius: 8px;
     border: none;
     cursor: pointer;
     transition: all 0.2s;
@@ -193,7 +197,7 @@
 /* Responsive */
 @media (max-width: 480px) {
     .sec-process-modal-container {
-        padding: 24px;
+        padding: 20px;
     }
 
     .sec-process-modal-payment-options {

@@ -6,7 +6,7 @@ import '../styles/secretaryAdminDashboard.css';
 import API from '../../utils/api';
 
 const fmt = (n) => n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 0 })}` : '₱0';
-const COLORS = ['#155DFC', '#00A63E'];
+const COLORS = ['#155DFC', '#00A63E', '#F59E0B'];
 
 export default function SecretaryAdminDashboard() {
   const [loading, setLoading] = useState(true);
@@ -14,7 +14,8 @@ export default function SecretaryAdminDashboard() {
   const [reportStats, setReportStats] = useState({ totalReceived: 0, totalReleased: 0, totalProcessed: 0, processingRate: 0 });
   const [paymentMethodData, setPaymentMethodData] = useState([
     { name: 'GCash', value: 0, percentage: 0 },
-    { name: 'Bank Transfer', value: 0, percentage: 0 }
+    { name: 'Bank Transfer', value: 0, percentage: 0 },
+    { name: 'Cash', value: 0, percentage: 0 }
   ]);
   const [moneyFlowData, setMoneyFlowData] = useState([]);
 
@@ -58,10 +59,12 @@ export default function SecretaryAdminDashboard() {
 
           const gcashAmt = disbursedLoans.filter(l => l.paymentMethod === 'gcash').reduce((sum, l) => sum + Number(l.amount), 0);
           const bankAmt = disbursedLoans.filter(l => l.paymentMethod === 'bank').reduce((sum, l) => sum + Number(l.amount), 0);
-          const totalAmt = gcashAmt + bankAmt;
+          const cashAmt = disbursedLoans.filter(l => l.paymentMethod === 'cash').reduce((sum, l) => sum + Number(l.amount), 0);
+          const totalAmt = gcashAmt + bankAmt + cashAmt;
           setPaymentMethodData([
             { name: 'GCash', value: gcashAmt, percentage: totalAmt > 0 ? Math.round((gcashAmt / totalAmt) * 100) : 0 },
-            { name: 'Bank Transfer', value: bankAmt, percentage: totalAmt > 0 ? Math.round((bankAmt / totalAmt) * 100) : 0 }
+            { name: 'Bank Transfer', value: bankAmt, percentage: totalAmt > 0 ? Math.round((bankAmt / totalAmt) * 100) : 0 },
+            { name: 'Cash', value: cashAmt, percentage: totalAmt > 0 ? Math.round((cashAmt / totalAmt) * 100) : 0 }
           ]);
 
           const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
