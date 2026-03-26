@@ -89,7 +89,7 @@ export default function SecretaryAdminDashboard() {
   return (
     <div className="sec-admin-dashboard-page">
       <SecretaryAdminSidebar />
-      <div className="admin-dashboard-main">
+      <div className="sec-admin-dashboard-content">
 
         {/* Header */}
         <h1 className="admin-dashboard-title">Secretary Dashboard</h1>

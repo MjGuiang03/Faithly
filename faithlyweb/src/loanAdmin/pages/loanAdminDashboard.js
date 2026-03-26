@@ -78,7 +78,7 @@ export default function LoanAdminDashboard() {
   return (
     <div className="loan-admin-dashboard-page">
       <LoanAdminSidebar />
-      <div className="admin-dashboard-main">
+      <div className="loan-admin-dashboard-content">
         {/* Header */}
         <h1 className="admin-dashboard-title">Loan Dashboard</h1>
 
