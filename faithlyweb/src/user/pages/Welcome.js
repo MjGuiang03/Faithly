@@ -12,8 +12,11 @@ export default function Welcome() {
 
   const benefits = [
     'Instant loan application and tracking',
-    'Multiple donation options and recurring giving',
-    'Digital attendance with QR and RFID scanning',
+    'Set, track, and manage your personal savings goals with ease',
+    'Seamless donation tracking with multiple payment options (GCash, Bank, Cash)',
+    'Easily submit proofs of payment and track your loan repayment status in real-time',
+    'Real-time digital attendance tracking and history',
+    'Stay informed with real-time, branch-specific church announcements',
     'View all church branches and locations',
     'AI-powered chatbot assistance',
     'Comprehensive member profile management'

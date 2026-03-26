@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { ObjectId } from 'mongodb';
 
-import { users, loans, savingsGoals, loanPayments } from '../config/db.js';
+import { users, loans, savingsGoals, loanPayments, savingsTransactions } from '../config/db.js';
 import { authenticateUser } from '../middleware/auth.js';
 import { authenticateAdmin } from '../middleware/auth.js';
 
@@ -11,10 +11,19 @@ const router = Router();
 router.get('/admin/member-savings', authenticateAdmin, async (req, res) => {
   try {
     const { email } = req.query;
-    if (!email) return res.status(400).json({ success: false, message: 'Email is required' });
-    const goals = await savingsGoals.find({ email }).toArray();
+    let query = {};
+    if (email) {
+      query.email = email;
+    }
+    const goals = await savingsGoals.find(query).toArray();
     const totalSavings = goals.reduce((sum, g) => sum + (g.savedAmount || 0), 0);
-    res.json({ success: true, totalSavings });
+
+    let transactions = [];
+    if (!email) {
+      transactions = await savingsTransactions.find({ type: 'deposit' }).toArray();
+    }
+
+    res.json({ success: true, totalSavings, transactions });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Failed to fetch member savings' });
@@ -162,12 +171,16 @@ router.get('/admin/loans', authenticateAdmin, async (req, res) => {
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     
+    const disbursedLoans = await loans.find({ disbursed: true }).toArray();
+    const totalDisbursed = disbursedLoans.reduce((sum, l) => sum + (l.amount || 0), 0);
+
     const stats = {
       pending:        await loans.countDocuments({ status: 'pending' }),
       active:         await loans.countDocuments({ status: 'active' }),
       completed:      await loans.countDocuments({ status: 'completed' }),
       rejected:       await loans.countDocuments({ status: 'rejected' }),
-      totalThisMonth: await loans.countDocuments({ appliedDate: { $gte: monthStart } })
+      totalThisMonth: await loans.countDocuments({ appliedDate: { $gte: monthStart } }),
+      totalDisbursed
     };
 
     res.status(200).json({ 
