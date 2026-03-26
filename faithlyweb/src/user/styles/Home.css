@@ -994,7 +994,7 @@
   }
 
   .user-stats-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
     gap: 12px;
   }
 
@@ -1021,6 +1021,17 @@
 
   .user-home-card {
     padding: 16px;
+  }
+
+  .user-activity-hscroll {
+    flex-direction: column;
+    overflow-x: visible;
+  }
+
+  .user-activity-hcard {
+    flex: none;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .user-activity-item-horizontal {
