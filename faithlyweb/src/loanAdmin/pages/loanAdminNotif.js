@@ -97,7 +97,7 @@ export default function LoanAdminNotif() {
                                 <span className="loan-admin-notif-badge">{getUnreadCount()} New</span>
                             )}
                         </h1>
-                        <p className="loan-admin-notif-subtitle">View all loan-related notifications and updates</p>
+
                     </div>
                     <button className="loan-admin-notif-mark-all" onClick={markAllAsRead}>
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">

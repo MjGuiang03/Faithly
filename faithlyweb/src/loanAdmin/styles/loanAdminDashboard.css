@@ -33,22 +33,46 @@
     margin: 0;
 }
 
-/* Stats Grid */
-.loan-admin-dashboard-stats {
+/* =========================================
+   BENTO GRID SYSTEM
+   ========================================= */
+.loan-admin-bento-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 24px;
-    margin-bottom: 40px;
+    grid-template-columns: repeat(12, 1fr);
+    grid-auto-rows: auto;
+    gap: 16px;
+    margin-bottom: 24px;
 }
 
-.loan-admin-dashboard-stat-card {
+.loan-admin-bento-card {
     background: #ffffff;
-    border: 0.8px solid #e5e7eb;
-    border-radius: 14px;
-    padding: 24.8px;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
+}
+
+/* Row 1 cards */
+.loan-admin-bento-card.stat-card {
+    grid-column: span 3;
     gap: 8px;
+}
+
+/* Row 2: Charts */
+.loan-admin-bento-card.bento-bar-chart {
+    grid-column: span 8;
+    grid-row: span 2;
+}
+
+.loan-admin-bento-card.bento-side-chart {
+    grid-column: span 4;
+    grid-row: span 2;
+}
+
+/* Row 3: Recent Loans */
+.loan-admin-bento-card.bento-recent-loans {
+    grid-column: span 12;
 }
 
 .loan-admin-dashboard-stat-header {
@@ -226,8 +250,9 @@
 
 /* Responsive Design */
 @media (max-width: 1200px) {
-    .loan-admin-dashboard-stats {
-        grid-template-columns: repeat(2, 1fr);
+    .loan-admin-bento-grid {
+        display: flex;
+        flex-direction: column;
     }
 }
 
@@ -237,7 +262,8 @@
         padding: 24px;
     }
 
-    .loan-admin-dashboard-stats {
-        grid-template-columns: 1fr;
+    .loan-admin-bento-grid {
+        display: flex;
+        flex-direction: column;
     }
 }

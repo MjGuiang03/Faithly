@@ -94,7 +94,7 @@ export default function SecretaryAdminNotif() {
                     )}
                 </div>
 
-                <p className="sec-admin-notif-subtitle">View approved loans ready for processing</p>
+
 
                 {/* Filter Tabs */}
                 <div className="sec-admin-notif-filters">

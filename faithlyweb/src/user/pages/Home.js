@@ -424,7 +424,7 @@ export default function Home() {
 
         {/* Recent Activity — horizontal scroll feed */}
         <div className="user-home-card user-home-full-width-section" style={{ marginBottom: '16px', overflow: 'hidden' }}>
-          <h2 className="user-home-card-title" style={{ marginBottom: '12px' }}>Recent Activity</h2>
+          <h2 className="user-home-card-title" style={{ marginBottom: '12px' }}>Activities</h2>
           {loading ? (
             <div className="user-activity-hscroll">
               {[1,2,3,4,5].map(i => (
@@ -443,24 +443,26 @@ export default function Home() {
             <div className="user-activity-hscroll user-fade-in">
               {recentActivity.map((activity, index) => (
                 <div key={index} className={`user-activity-hcard user-activity-hcard-${activity.type}`}>
-                  <div className={`user-activity-hcard-icon user-activity-hcard-icon-${activity.status || activity.type}`}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16">
-                      {activity.type === 'loan' ? (
-                        activity.status === 'rejected'
-                          ? <path d="M18 6 6 18M6 6l12 12" />
-                          : <rect x="2" y="6" width="20" height="12" rx="2" ry="2"></rect>
-                      ) : activity.type === 'donation' ? (
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                      ) : (
-                        <path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                      )}
-                    </svg>
+                  <div className="user-activity-hcard-header">
+                    <div className={`user-activity-hcard-icon user-activity-hcard-icon-${activity.status || activity.type}`}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16">
+                        {activity.type === 'loan' ? (
+                          activity.status === 'rejected'
+                            ? <path d="M18 6 6 18M6 6l12 12" />
+                            : <rect x="2" y="6" width="20" height="12" rx="2" ry="2"></rect>
+                        ) : activity.type === 'donation' ? (
+                          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                        ) : (
+                          <path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                        )}
+                      </svg>
+                    </div>
+                    <span className="user-activity-hcard-title">{activity.title}</span>
                   </div>
                   <div className="user-activity-hcard-body">
-                    <span className="user-activity-hcard-title">{activity.title}</span>
                     <span className="user-activity-hcard-sub">{activity.loanId || activity.category || ''}</span>
+                    {activity.amount && <span className="user-activity-hcard-amount">{activity.amount}</span>}
                   </div>
-                  {activity.amount && <span className="user-activity-hcard-amount">{activity.amount}</span>}
                   <span className="user-activity-hcard-time">{formatTimeAgo(activity.date)}</span>
                 </div>
               ))}
