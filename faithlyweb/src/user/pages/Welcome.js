@@ -88,7 +88,7 @@ export default function Welcome() {
       <nav className="fl-nav">
         <div className="fl-nav-brand">
           <div className="fl-nav-logo">
-            <svg viewBox="0 0 18 18"><rect x="7" y="1" width="4" height="16" rx="1" /><rect x="1" y="5.5" width="16" height="4" rx="1" /></svg>
+            <img src={puacLogo} alt="PUAC Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
           <span className="fl-nav-brand-name">FaithLy</span>
         </div>
@@ -252,7 +252,7 @@ export default function Welcome() {
       <footer className="fl-footer">
         <div className="fl-footer-left">
           <div className="fl-footer-logo">
-            <svg viewBox="0 0 18 18"><rect x="6.5" y="1" width="5" height="16" rx="1" /><rect x="1" y="5.5" width="16" height="5" rx="1" /></svg>
+            <img src={puacLogo} alt="PUAC Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
           <span className="fl-footer-name">FaithLy</span>
         </div>

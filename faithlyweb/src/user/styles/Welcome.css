@@ -71,10 +71,9 @@
 }
 
 .fl-nav-logo {
-  width: 34px;
-  height: 34px;
-  background: var(--fl-navy);
-  border-radius: 8px;
+  width: 38px;
+  height: 38px;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -692,10 +691,9 @@
 }
 
 .fl-footer-logo {
-  width: 28px;
-  height: 28px;
-  background: var(--fl-navy);
-  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
