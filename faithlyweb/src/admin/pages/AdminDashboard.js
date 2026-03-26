@@ -12,18 +12,7 @@ import svgPaths from '../../imports/svg-icons';
 import API from '../../utils/api';
 
 const fmt    = (n) => `₱${Number(n).toLocaleString()}`;
-const fmtAgo = (date) => {
-  const diff  = Date.now() - new Date(date).getTime();
-  const mins  = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days  = Math.floor(diff / 86400000);
-  if (mins  < 1)  return 'just now';
-  if (mins  < 60) return `${mins}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  return `${days}d ago`;
-};
 
-const PIE_COLORS = ['#155DFC', '#00A63E', '#F59E0B', '#EF4444'];
 
 const donationCategories = [
   { name: 'Tithes',        value: 1800000, color: '#155DFC' },
@@ -58,7 +47,6 @@ export default function AdminDashboard() {
   const [donationStats, setDonationStats] = useState({ thisMonth: 0, total: 0 });
   const [attendStats,   setAttendStats]   = useState({ thisWeek: 0, avgPerService: 0 });
   const [membersByBranch, setMembersByBranch] = useState([]);
-  const [recentActivities, setRecentActivities] = useState([]);
   const [loading,       setLoading]       = useState(true);
 
   const fetchAll = useCallback(async () => {
@@ -104,25 +92,6 @@ export default function AdminDashboard() {
         setMembersByBranch(Object.entries(branchMap).map(([branch, count]) => ({ branch, count })));
       }
 
-      // Recent activities
-      const activities = [];
-      if (donationsData.success && donationsData.donations?.length) {
-        donationsData.donations.slice(0, 3).forEach(d => {
-          activities.push({ id: d._id, type: 'donation', title: 'Donation received', member: `${d.member} • ${fmt(d.amount)}`, date: new Date(d.createdAt || d.date) });
-        });
-      }
-      if (membersData.success && membersData.members?.length) {
-        membersData.members.slice(0, 3).forEach(m => {
-          activities.push({ id: m._id, type: 'member', title: 'New member registered', member: m.fullName, date: new Date(m.createdAt) });
-        });
-      }
-      if (attendData.success && attendData.attendance?.length) {
-        attendData.attendance.slice(0, 2).forEach(a => {
-          activities.push({ id: a._id, type: 'attendance', title: 'Service attendance recorded', member: `${a.service} • ${a.branch}`, date: new Date(a.createdAt) });
-        });
-      }
-      activities.sort((a, b) => b.date - a.date);
-      setRecentActivities(activities.slice(0, 5).map(a => ({ ...a, time: fmtAgo(a.date) })));
 
     } catch (err) {
       console.error(err);
@@ -139,9 +108,6 @@ export default function AdminDashboard() {
   }, [navigate, fetchAll]);
 
   const dash = (v) => loading ? '—' : v;
-
-  const activityIconBg = (type) =>
-    type === 'donation' ? '#fdf2f8' : type === 'member' ? '#faf5ff' : '#eff6ff';
 
   return (
     <div className="admin-dashboard-main">
