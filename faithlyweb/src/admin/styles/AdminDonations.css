@@ -78,6 +78,43 @@
   margin: 0;
 }
 
+/* Search Box */
+.history-search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f9fafb;
+  border: 0.8px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 7px 12px;
+  min-width: 220px;
+  transition: border-color 0.2s;
+}
+
+.history-search-box:focus-within {
+  border-color: #1E3A8A;
+  background: white;
+}
+
+.search-icon-inner {
+  flex-shrink: 0;
+}
+
+.history-search-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: 'Inter', 'Arial', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #101828;
+  width: 100%;
+}
+
+.history-search-input::placeholder {
+  color: #9ca3af;
+}
+
 /* Section */
 .admin-don-new-section {
   background: white;
@@ -96,6 +133,13 @@
 }
 
 /* Table */
+.admin-don-new-table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
 .admin-don-new-table-container {
   overflow-x: auto;
   margin-bottom: 24px;

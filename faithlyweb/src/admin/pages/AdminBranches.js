@@ -10,13 +10,6 @@ import API from '../../utils/api';
 export default function AdminBranches() {
   const navigate = useNavigate();
 
-  const [stats] = useState({
-    totalBranches: 4,
-    totalMembers: 4347,
-    totalServices: 164,
-    growthRate: '+12%'
-  });
-
   const [branches, setBranches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -62,6 +55,10 @@ export default function AdminBranches() {
     setPage(1);
   }, [debouncedSearch]);
 
+  // Compute stats from fetched branches
+  const totalMembers = branches.reduce((s, b) => s + (b.members || 0), 0);
+
+
   return (
     <div className="admin-branch-main">
       {/* Header */}
@@ -92,7 +89,7 @@ export default function AdminBranches() {
               <path d={svgPaths.p35ba4680} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-          <p className="admin-branch-stat-value">{stats.totalBranches}</p>
+          <p className="admin-branch-stat-value">{loading ? '—' : totalCount}</p>
         </div>
 
         <div className="admin-branch-stat-card">
@@ -105,7 +102,7 @@ export default function AdminBranches() {
               <path d={svgPaths.pae3c380} stroke="#00A63E" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-          <p className="admin-branch-stat-value">{stats.totalMembers}</p>
+          <p className="admin-branch-stat-value">{loading ? '—' : totalMembers.toLocaleString()}</p>
         </div>
 
         <div className="admin-branch-stat-card">
@@ -118,7 +115,7 @@ export default function AdminBranches() {
               <path d="M2.5 8.33333H17.5" stroke="#9810FA" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-          <p className="admin-branch-stat-value">{stats.totalServices}</p>
+          <p className="admin-branch-stat-value">—</p>
         </div>
 
         <div className="admin-branch-stat-card">
@@ -129,7 +126,7 @@ export default function AdminBranches() {
               <path d={svgPaths.p3ac0b600} stroke="#E60076" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-          <p className="admin-branch-stat-value">{stats.growthRate}</p>
+          <p className="admin-branch-stat-value">—</p>
         </div>
       </div>
 

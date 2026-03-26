@@ -776,10 +776,24 @@
     }
 
     .sv-goal-row {
-        gap: 10px;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: flex-start;
+    }
+
+    .sv-goal-info {
+        min-width: 0;
+        flex: 1 1 80px;
+    }
+
+    .sv-goal-right {
+        margin-left: auto;
+        flex-shrink: 0;
+        text-align: right;
     }
 
     .sv-deposit-strip {
+
         flex-wrap: wrap;
     }
 

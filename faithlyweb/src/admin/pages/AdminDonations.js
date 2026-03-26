@@ -161,7 +161,7 @@ export default function AdminDonationsNew() {
 
       {/* Recent Donations Section */}
       <div className="admin-don-new-section">
-        <div className="admin-don-new-table-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+        <div className="admin-don-new-table-header">
           <h2 className="admin-don-new-section-title">Recent Donations</h2>
           <div className="history-search-box">
             <svg fill="none" viewBox="0 0 16 16" width="14" height="14" className="search-icon-inner">

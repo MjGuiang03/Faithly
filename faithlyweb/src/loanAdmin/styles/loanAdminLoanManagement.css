@@ -14,7 +14,7 @@
 
 .loan-admin-mgmt-content {
     margin-left: 256px;
-    padding: 32px;
+    padding: 40px 48px;
     flex: 1;
 }
 
@@ -550,7 +550,8 @@
     border-bottom: 0.8px solid #e5e7eb;
 }
 
-.dm-header-left {}
+
+
 
 .dm-title {
     font-size: 20px;

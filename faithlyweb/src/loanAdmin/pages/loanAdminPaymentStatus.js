@@ -33,6 +33,7 @@ export default function LoanAdminPaymentStatus() {
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [viewingImage, setViewingImage] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [paymentMethodFilter, setPaymentMethodFilter] = useState('all');
 
   const token = localStorage.getItem('adminToken');
 
@@ -103,8 +104,9 @@ export default function LoanAdminPaymentStatus() {
   );
 
   const pendingFiltered = pendingPayments.filter(p =>
-    (p.memberName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (p.loanId || '').toLowerCase().includes(searchQuery.toLowerCase())
+    ((p.memberName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (p.loanId || '').toLowerCase().includes(searchQuery.toLowerCase())) &&
+    (paymentMethodFilter === 'all' || (p.paymentMethod || '').toLowerCase() === paymentMethodFilter)
   );
 
   const counts = {
@@ -233,6 +235,31 @@ export default function LoanAdminPaymentStatus() {
 
         {/* Pending Payments Tab */}
         {activeTab === 'payments' && (
+          <div>
+            {/* Payment Method Filter Pills */}
+            <div style={{ display: 'flex', gap: '6px', marginBottom: '12px', flexWrap: 'wrap' }}>
+              {['all', 'cash', 'gcash', 'bank'].map(method => (
+                <button
+                  key={method}
+                  onClick={() => setPaymentMethodFilter(method)}
+                  style={{
+                    padding: '5px 14px',
+                    borderRadius: '6px',
+                    border: paymentMethodFilter === method ? 'none' : '1px solid #E5E7EB',
+                    fontFamily: 'Inter',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    background: paymentMethodFilter === method ? '#1E3A8A' : '#fff',
+                    color: paymentMethodFilter === method ? '#fff' : '#6B7280',
+                    transition: 'all 0.15s',
+                    textTransform: method === 'all' ? 'none' : 'capitalize',
+                  }}
+                >
+                  {method === 'all' ? 'All Methods' : method === 'gcash' ? 'GCash' : method.charAt(0).toUpperCase() + method.slice(1)}
+                </button>
+              ))}
+            </div>
           <div className="loan-admin-mgmt-table-container">
             <table className="loan-admin-mgmt-table">
               <thead>
@@ -299,6 +326,7 @@ export default function LoanAdminPaymentStatus() {
                 )}
               </tbody>
             </table>
+          </div>
           </div>
         )}
 

@@ -194,8 +194,37 @@ router.delete('/delete-member-permanent', authenticateAdmin, async (req, res) =>
 /* ================== GET BRANCHES ================== */
 router.get('/branches', authenticateAdmin, async (req, res) => {
   try {
-    const branches = await users.distinct('branch');
-    res.status(200).json({ success: true, branches: branches.filter(b => b) });
+    const { search } = req.query;
+    const page  = Math.max(1, parseInt(req.query.page)  || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 10));
+    const skip  = (page - 1) * limit;
+
+    // Aggregate member counts per branch
+    const allUsers = await users.find({}).toArray();
+
+    // Build branch map
+    const branchMap = {};
+    allUsers.forEach(u => {
+      const b = (u.branch || '').trim();
+      if (!b) return;
+      if (!branchMap[b]) {
+        branchMap[b] = { name: b, members: 0, address: u.branchAddress || '', pastor: u.branchPastor || '', status: 'Active', services: 0 };
+      }
+      branchMap[b].members++;
+    });
+
+    let branchList = Object.values(branchMap);
+
+    // Search filter
+    if (search && search.trim()) {
+      const q = search.trim().toLowerCase();
+      branchList = branchList.filter(b => b.name.toLowerCase().includes(q));
+    }
+
+    const totalCount = branchList.length;
+    const paged = branchList.slice(skip, skip + limit);
+
+    res.status(200).json({ success: true, branches: paged, totalCount });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Failed to fetch branches' });

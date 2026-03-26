@@ -107,9 +107,29 @@ router.get('/admin/donations', authenticateAdmin, async (req, res) => {
       .limit(limit)
       .toArray();
 
+    // Compute stats from ALL donations (no filter for search/status on stats)
+    const allForStats = await donations.find({}).toArray();
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfWeek  = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay()); // Sunday
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    const thisMonthDons = allForStats.filter(d => new Date(d.createdAt) >= startOfMonth);
+    const thisWeekDons  = allForStats.filter(d => new Date(d.createdAt) >= startOfWeek);
+    const thisMonth     = thisMonthDons.reduce((s, d) => s + (Number(d.amount) || 0), 0);
+    const thisWeek      = thisWeekDons.reduce((s, d) => s + (Number(d.amount) || 0), 0);
+    const totalAmount   = allForStats.reduce((s, d) => s + (Number(d.amount) || 0), 0);
+    const uniqueEmails  = new Set(allForStats.map(d => d.email)).size;
+    const avgDonation   = allForStats.length > 0 ? Math.round(totalAmount / allForStats.length) : 0;
+
     const stats = {
       totalCount,
-      // Aggregation for totals if needed, but for now simple count
+      total: totalAmount,
+      thisMonth,
+      thisWeek,
+      totalDonors: uniqueEmails,
+      avgDonation,
     };
 
     res.status(200).json({

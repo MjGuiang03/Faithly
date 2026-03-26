@@ -461,6 +461,13 @@
 .user-home-full-width-section {
   grid-column: 1 / -1;
   width: 100%;
+  /* Override card's overflow:hidden so horizontal scroll works */
+  overflow: visible !important;
+}
+
+/* The activity card specifically needs overflow visible on the card wrapper */
+.user-home-full-width-section.user-home-card {
+  overflow: visible !important;
 }
 
 /* ── Community card ── */
@@ -987,8 +994,12 @@
   }
 
   .user-stats-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
     gap: 12px;
+  }
+
+  .user-home-info-pill {
+    display: none;
   }
 
   .user-home-page-title {

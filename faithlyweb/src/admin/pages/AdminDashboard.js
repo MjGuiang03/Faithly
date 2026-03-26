@@ -41,7 +41,7 @@ export default function AdminDashboard() {
     const headers = { Authorization: `Bearer ${token}` };
     try {
       const [membersRes, loansRes, donationsRes, attendRes] = await Promise.all([
-        fetch(`${API}/api/admin/members?limit=100`,      { headers }),
+        fetch(`${API}/api/admin/members?limit=1000`,      { headers }),
         fetch(`${API}/api/admin/loans`,                  { headers }),
         fetch(`${API}/api/admin/donations`,              { headers }),
         fetch(`${API}/api/admin/attendance`,             { headers }),
@@ -62,7 +62,10 @@ export default function AdminDashboard() {
         setLoanStats({ active: loansData.stats.active || 0, pending: loansData.stats.pending || 0, totalDisbursed: loansData.stats.totalDisbursed || 0 });
       }
       if (donationsData.success && donationsData.stats) {
-        setDonationStats({ thisMonth: donationsData.stats.thisMonth || 0, total: donationsData.stats.total || 0 });
+        setDonationStats({
+          thisMonth: donationsData.stats.thisMonth || 0,
+          total: donationsData.stats.total || donationsData.stats.totalAmount || 0
+        });
       }
       if (attendData.success && attendData.stats) {
         setAttendStats({ thisWeek: attendData.stats.thisWeek || 0, avgPerService: attendData.stats.avgPerService || 0 });
@@ -297,10 +300,6 @@ export default function AdminDashboard() {
             <span className="adm-summary-label">Member Growth</span>
             <span className="adm-summary-value blue">+{dash(memberStats.newThisMonth)}</span>
             <span className="adm-summary-sub">new this month</span>
-          </div>
-          <div className="adm-summary-card">
-            <span className="adm-summary-label">Total Disbursed</span>
-            <span className="adm-summary-value">{dash(fmt(loanStats.totalDisbursed))}</span>
           </div>
         </div>
       </div>
