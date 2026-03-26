@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { ObjectId } from 'mongodb';
 
-import { users, loans, savingsGoals } from '../config/db.js';
+import { users, loans, savingsGoals, loanPayments } from '../config/db.js';
 import { authenticateUser } from '../middleware/auth.js';
 import { authenticateAdmin } from '../middleware/auth.js';
 
@@ -41,7 +41,8 @@ router.post('/loans/apply', authenticateUser, async (req, res) => {
       amount, loanType, purpose, termMonths,
       interestRate, totalInterest, totalRepayment, monthlyPayment,
       disbursementMethod, disbursementAccount,
-      selfieFileName, idFileName
+      selfieFileName, idFileName,
+      selfieData, idData
     } = req.body;
 
     if (!amount || (!loanType && !purpose)) {
@@ -70,6 +71,8 @@ router.post('/loans/apply', authenticateUser, async (req, res) => {
       disbursementAccount: disbursementAccount || null,
       selfieFileName: selfieFileName || null,
       idFileName: idFileName || null,
+      selfieData: selfieData || null,
+      idData: idData || null,
       appliedDate: new Date(), updatedAt: new Date(),
       statusHistory: [{ status: 'pending', date: new Date() }]
     };
@@ -335,7 +338,7 @@ router.put('/loans/:id/respond-terms', authenticateUser, async (req, res) => {
 router.put('/admin/loans/:id/process', authenticateAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { paymentMethod, processReason } = req.body;
+    const { paymentMethod, processReason, proofData, proofFileName } = req.body;
 
     if (!paymentMethod) {
       return res.status(400).json({ success: false, message: 'Payment method is required' });
@@ -360,6 +363,8 @@ router.put('/admin/loans/:id/process', authenticateAdmin, async (req, res) => {
           disbursementDate: new Date(), 
           paymentMethod,
           processReason: processReason || null,
+          proofData: proofData || null,
+          proofFileName: proofFileName || null,
           updatedAt: new Date() 
         },
         $push: { statusHistory: { status: 'processed', date: new Date() } }
@@ -452,7 +457,7 @@ router.get('/loans/:id/schedule', authenticateUser, async (req, res) => {
 router.post('/loans/:id/pay', authenticateUser, async (req, res) => {
     try {
         const { id } = req.params;
-        const { paymentMethod } = req.body;
+        const { paymentMethod, proofData, proofFileName } = req.body;
         const email = req.user.email;
 
         let query = { loanId: id, email };
@@ -462,16 +467,110 @@ router.post('/loans/:id/pay', authenticateUser, async (req, res) => {
 
         const loan = await loans.findOne(query);
         if (!loan) return res.status(404).json({ success: false, message: 'Loan not found' });
+        if (loan.status !== 'active') return res.status(400).json({ success: false, message: 'Only active loans can receive payments' });
 
-        // In a real app, this would create a payment record
-        // For now, we'll just mock it and perhaps update paidMonths if it's an instant payment
-        // But usually, it needs admin verification.
-        
-        // Simulating a success response
-        res.status(200).json({ success: true, message: 'Payment submitted for verification' });
+        const payment = {
+            loanId: loan.loanId,
+            loanObjectId: loan._id,
+            email,
+            memberName: loan.memberName,
+            amount: loan.monthlyPayment || 0,
+            paymentMethod: paymentMethod || 'cash',
+            proofData: proofData || null,
+            proofFileName: proofFileName || null,
+            status: 'pending',
+            submittedAt: new Date(),
+            monthNumber: (loan.paidMonths || 0) + 1,
+        };
+
+        await loanPayments.insertOne(payment);
+        res.status(201).json({ success: true, message: 'Payment submitted for verification' });
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, message: 'Failed to submit payment' });
+    }
+});
+
+/* ================== ADMIN - GET PENDING PAYMENTS ================== */
+router.get('/admin/loan-payments', authenticateAdmin, async (req, res) => {
+    try {
+        const { status: qStatus } = req.query;
+        const filter = {};
+        if (qStatus && qStatus !== 'all') filter.status = qStatus;
+        const payments = await loanPayments.find(filter).sort({ submittedAt: -1 }).toArray();
+        res.json({ success: true, payments });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Failed to fetch payments' });
+    }
+});
+
+/* ================== ADMIN - CONFIRM PAYMENT ================== */
+router.put('/admin/loan-payments/:id/confirm', authenticateAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const payment = await loanPayments.findOne({ _id: new ObjectId(id) });
+        if (!payment) return res.status(404).json({ success: false, message: 'Payment not found' });
+        if (payment.status !== 'pending') return res.status(400).json({ success: false, message: 'Payment already processed' });
+
+        const loan = await loans.findOne({ _id: payment.loanObjectId });
+        if (!loan) return res.status(404).json({ success: false, message: 'Loan not found' });
+
+        const newPaidMonths = (loan.paidMonths || 0) + 1;
+        const paymentAmount = payment.amount || loan.monthlyPayment || 0;
+        const newBalance = Math.max(0, (loan.remainingBalance || loan.totalRepayment || loan.amount) - paymentAmount);
+        const isComplete = newPaidMonths >= (loan.termMonths || 12);
+
+        await loans.updateOne(
+            { _id: payment.loanObjectId },
+            {
+                $set: {
+                    paidMonths: newPaidMonths,
+                    remainingBalance: newBalance,
+                    status: isComplete ? 'completed' : 'active',
+                    updatedAt: new Date(),
+                },
+                $push: {
+                    statusHistory: {
+                        status: 'payment_confirmed',
+                        date: new Date(),
+                        monthNumber: newPaidMonths,
+                        amount: paymentAmount,
+                    }
+                }
+            }
+        );
+
+        await loanPayments.updateOne(
+            { _id: new ObjectId(id) },
+            { $set: { status: 'confirmed', confirmedAt: new Date() } }
+        );
+
+        res.json({ success: true, message: 'Payment confirmed', newBalance, newPaidMonths });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Failed to confirm payment' });
+    }
+});
+
+/* ================== ADMIN - REJECT PAYMENT ================== */
+router.put('/admin/loan-payments/:id/reject', authenticateAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { reason } = req.body;
+        const payment = await loanPayments.findOne({ _id: new ObjectId(id) });
+        if (!payment) return res.status(404).json({ success: false, message: 'Payment not found' });
+        if (payment.status !== 'pending') return res.status(400).json({ success: false, message: 'Payment already processed' });
+
+        await loanPayments.updateOne(
+            { _id: new ObjectId(id) },
+            { $set: { status: 'rejected', rejectedAt: new Date(), rejectionReason: reason || '' } }
+        );
+
+        res.json({ success: true, message: 'Payment rejected' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Failed to reject payment' });
     }
 });
 

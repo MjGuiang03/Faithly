@@ -5,6 +5,14 @@ import Sidebar from '../components/Sidebar';
 import '../styles/Loandetail.css';
 import API from '../../utils/api';
 
+const fileToBase64 = (file) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+
 const fmt = (n) =>
     n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : '₱0.00';
 
@@ -110,15 +118,16 @@ function PayNowModal({ loan, onClose, onSuccess }) {
         setUploading(true);
         try {
             const token = localStorage.getItem('token');
-            const formData = new FormData();
-            formData.append('loanId', loan.loanId);
-            formData.append('paymentMethod', method);
-            if (receipt) formData.append('receipt', receipt);
+            const proofData = receipt ? await fileToBase64(receipt) : null;
 
             const res = await fetch(`${API}/api/loans/${loan.loanId}/pay`, {
                 method: 'POST',
-                headers: { Authorization: `Bearer ${token}` },
-                body: formData,
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({
+                    paymentMethod: method,
+                    proofData,
+                    proofFileName: receipt?.name || null,
+                }),
             });
             const data = await res.json();
             if (res.ok && data.success) {

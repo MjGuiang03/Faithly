@@ -3,6 +3,15 @@ import { toast } from 'sonner';
 import '../styles/LoanApplicationModal.css';
 import API from '../../utils/api';
 
+/* ── File → base64 helper ── */
+const fileToBase64 = (file) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+
 /* ── Loan-type config ── */
 const LOAN_TYPES = [
   {
@@ -146,6 +155,9 @@ export default function LoanApplicationModal({
     try {
       const token = localStorage.getItem('token');
 
+      const selfieData = selfieFile ? await fileToBase64(selfieFile) : null;
+      const idData = idFile ? await fileToBase64(idFile) : null;
+
       const res = await fetch(`${API}/api/loans/apply`, {
         method: 'POST',
         headers: {
@@ -165,6 +177,8 @@ export default function LoanApplicationModal({
           disbursementAccount,
           selfieFileName: selfieFile?.name || null,
           idFileName: idFile?.name || null,
+          selfieData,
+          idData,
         }),
       });
 

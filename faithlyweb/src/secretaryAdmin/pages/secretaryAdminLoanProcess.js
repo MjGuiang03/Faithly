@@ -125,7 +125,7 @@ export default function SecretaryLoanProcess() {
         setShowReceiptModal(true);
     };
 
-    const handleProcessLoan = async (paymentMethod, processReason) => {
+    const handleProcessLoan = async (paymentMethod, processReason, proofData, proofFileName) => {
         if (!selectedLoan || !selectedLoan._id) return;
 
         try {
@@ -135,6 +135,10 @@ export default function SecretaryLoanProcess() {
             const payload = { paymentMethod };
             if (paymentMethod !== selectedLoan.disbursementMethod && processReason) {
                 payload.processReason = processReason;
+            }
+            if (proofData) {
+                payload.proofData = proofData;
+                payload.proofFileName = proofFileName || null;
             }
 
             const res = await fetch(`${API}/api/admin/loans/${selectedLoan._id}/process`, {

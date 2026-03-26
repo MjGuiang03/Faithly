@@ -70,6 +70,7 @@ export default function LoanAdminLoanManagement() {
     const [memberSavings, setMemberSavings] = useState(0);
     const [approvedAmount, setApprovedAmount] = useState('');
     const [repaymentTerm, setRepaymentTerm] = useState('');
+    const [viewingImage, setViewingImage] = useState(null);
 
     /* ── Fetch loans from API ── */
     const fetchLoans = useCallback(async () => {
@@ -634,23 +635,28 @@ export default function LoanAdminLoanManagement() {
                                 <div className="dm-docs-grid">
                                     {/* Selfie with ID */}
                                     <div className="dm-doc-card">
-                                        <div className="dm-doc-placeholder">
-                                            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                                                <rect x="3" y="5" width="22" height="18" rx="3" stroke="currentColor" strokeWidth="1.4" />
-                                                <circle cx="9.5" cy="11.5" r="2.5" stroke="currentColor" strokeWidth="1.4" />
-                                                <path d="M3 20l6-5 4 4 3-3 6 5" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
-                                            </svg>
-                                            <span>{selectedLoan.selfieFileName || 'selfie_with_id.jpg'}</span>
-                                            <small>Click to view full image</small>
+                                        <div className="dm-doc-placeholder" onClick={() => selectedLoan.selfieData && setViewingImage(selectedLoan.selfieData)} style={selectedLoan.selfieData ? { cursor: 'pointer' } : {}}>
+                                            {selectedLoan.selfieData ? (
+                                                <img src={selectedLoan.selfieData} alt="Selfie with ID" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} />
+                                            ) : (
+                                                <>
+                                                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                                                        <rect x="3" y="5" width="22" height="18" rx="3" stroke="currentColor" strokeWidth="1.4" />
+                                                        <circle cx="9.5" cy="11.5" r="2.5" stroke="currentColor" strokeWidth="1.4" />
+                                                        <path d="M3 20l6-5 4 4 3-3 6 5" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+                                                    </svg>
+                                                    <span>{selectedLoan.selfieFileName || 'No file uploaded'}</span>
+                                                </>
+                                            )}
                                         </div>
                                         <div className="dm-doc-footer">
                                             <span className="dm-doc-name">Selfie with ID & Date</span>
                                             <div className="dm-doc-actions">
-                                                <span className={`dm-doc-badge ${selectedLoan.selfieFileName ? 'ok' : 'missing'}`}>
-                                                    {selectedLoan.selfieFileName ? 'Uploaded' : 'Not uploaded'}
+                                                <span className={`dm-doc-badge ${selectedLoan.selfieData ? 'ok' : 'missing'}`}>
+                                                    {selectedLoan.selfieData ? 'Uploaded' : 'Not uploaded'}
                                                 </span>
-                                                {selectedLoan.selfieFileName && (
-                                                    <button type="button" className="dm-doc-view">View</button>
+                                                {selectedLoan.selfieData && (
+                                                    <button type="button" className="dm-doc-view" onClick={() => setViewingImage(selectedLoan.selfieData)}>View</button>
                                                 )}
                                             </div>
                                         </div>
@@ -658,23 +664,28 @@ export default function LoanAdminLoanManagement() {
 
                                     {/* Government ID */}
                                     <div className="dm-doc-card">
-                                        <div className="dm-doc-placeholder">
-                                            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                                                <rect x="3" y="5" width="22" height="18" rx="3" stroke="currentColor" strokeWidth="1.4" />
-                                                <circle cx="9.5" cy="11.5" r="2.5" stroke="currentColor" strokeWidth="1.4" />
-                                                <path d="M3 20l6-5 4 4 3-3 6 5" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
-                                            </svg>
-                                            <span>{selectedLoan.idFileName || 'government_id.jpg'}</span>
-                                            <small>Click to view full image</small>
+                                        <div className="dm-doc-placeholder" onClick={() => selectedLoan.idData && setViewingImage(selectedLoan.idData)} style={selectedLoan.idData ? { cursor: 'pointer' } : {}}>
+                                            {selectedLoan.idData ? (
+                                                <img src={selectedLoan.idData} alt="Government ID" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} />
+                                            ) : (
+                                                <>
+                                                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                                                        <rect x="3" y="5" width="22" height="18" rx="3" stroke="currentColor" strokeWidth="1.4" />
+                                                        <circle cx="9.5" cy="11.5" r="2.5" stroke="currentColor" strokeWidth="1.4" />
+                                                        <path d="M3 20l6-5 4 4 3-3 6 5" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+                                                    </svg>
+                                                    <span>{selectedLoan.idFileName || 'No file uploaded'}</span>
+                                                </>
+                                            )}
                                         </div>
                                         <div className="dm-doc-footer">
                                             <span className="dm-doc-name">Valid Government ID</span>
                                             <div className="dm-doc-actions">
-                                                <span className={`dm-doc-badge ${selectedLoan.idFileName ? 'ok' : 'missing'}`}>
-                                                    {selectedLoan.idFileName ? 'Uploaded' : 'Not uploaded'}
+                                                <span className={`dm-doc-badge ${selectedLoan.idData ? 'ok' : 'missing'}`}>
+                                                    {selectedLoan.idData ? 'Uploaded' : 'Not uploaded'}
                                                 </span>
-                                                {selectedLoan.idFileName && (
-                                                    <button type="button" className="dm-doc-view">View</button>
+                                                {selectedLoan.idData && (
+                                                    <button type="button" className="dm-doc-view" onClick={() => setViewingImage(selectedLoan.idData)}>View</button>
                                                 )}
                                             </div>
                                         </div>
@@ -731,6 +742,32 @@ export default function LoanAdminLoanManagement() {
                             </div>
                         </div>
 
+                    </div>
+                </div>
+            )}
+
+            {/* ══ Image Lightbox ══ */}
+            {viewingImage && (
+                <div className="loan-admin-mgmt-modal-overlay" onClick={() => setViewingImage(null)} style={{ zIndex: 1100 }}>
+                    <div style={{ position: 'relative', maxWidth: '90vw', maxHeight: '90vh' }} onClick={(e) => e.stopPropagation()}>
+                        <button
+                            onClick={() => setViewingImage(null)}
+                            style={{
+                                position: 'absolute', top: -12, right: -12, width: 32, height: 32,
+                                borderRadius: '50%', background: '#fff', border: '1px solid #e5e7eb',
+                                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                zIndex: 1101, boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+                            }}
+                        >
+                            <svg width="14" height="14" viewBox="0 0 12 12" fill="none">
+                                <path d="M1 1l10 10M11 1L1 11" stroke="#374151" strokeWidth="1.5" strokeLinecap="round" />
+                            </svg>
+                        </button>
+                        <img
+                            src={viewingImage}
+                            alt="Document"
+                            style={{ maxWidth: '90vw', maxHeight: '90vh', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}
+                        />
                     </div>
                 </div>
             )}

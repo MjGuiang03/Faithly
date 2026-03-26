@@ -38,6 +38,7 @@ export const pendingRegistrations = db.collection('pending_registrations');
 export const announcements      = db.collection('announcements');
 export const savingsGoals       = db.collection('savings_goals');
 export const savingsTransactions = db.collection('savings_transactions');
+export const loanPayments        = db.collection('loan_payments');
 
 
 /* ================== DATABASE INDEXES ================== */

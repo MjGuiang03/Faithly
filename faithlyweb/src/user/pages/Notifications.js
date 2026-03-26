@@ -99,8 +99,9 @@ export default function Notifications() {
               });
             } else if (history.status === 'processed') {
               items.push({ ...hBase, id: `loan-processed-${l._id}`,
-                title:   'Loan Processed',
-                message: `Your loan ${l.loanId ? `#${l.loanId}` : ''} for ₱${Number(l.amount).toLocaleString()} has been processed and disbursed by the secretary.`,
+                title:   'Loan Disbursed',
+                message: `Your loan ${l.loanId ? `#${l.loanId}` : ''} for ₱${Number(l.amount).toLocaleString()} has been disbursed via ${(l.paymentMethod || 'cash').toUpperCase()}.`,
+                proofData: l.proofData || null,
               });
             }
           });
@@ -458,6 +459,17 @@ export default function Notifications() {
               <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', color: '#374151', lineHeight: '22px', margin: 0 }}>
                 {detailModal.message}
               </p>
+              {detailModal.proofData && (
+                <div style={{ marginTop: '16px' }}>
+                  <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '12px', fontWeight: 600, color: '#6B7280', marginBottom: '8px' }}>Disbursement Proof</p>
+                  <img
+                    src={detailModal.proofData}
+                    alt="Disbursement proof"
+                    style={{ width: '100%', maxHeight: '300px', objectFit: 'contain', borderRadius: '8px', border: '1px solid #E5E7EB', cursor: 'pointer' }}
+                    onClick={() => window.open(detailModal.proofData, '_blank')}
+                  />
+                </div>
+              )}
             </div>
             <div style={{ padding: '0 24px 20px', display: 'flex', justifyContent: 'flex-end' }}>
               <button

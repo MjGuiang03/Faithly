@@ -36,3 +36,8 @@
     color: #7f1d1d;
     border: 0.8px solid #f87171;
 }
+
+.loan-admin-mgmt-table-row-hover:hover {
+    background: #F9FAFB;
+    transition: background 0.15s;
+}

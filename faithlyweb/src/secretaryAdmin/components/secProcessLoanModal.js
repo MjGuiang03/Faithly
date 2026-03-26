@@ -1,16 +1,40 @@
 import { useState } from 'react';
 import '../styles/secProcessLoanModal.css';
 
+/* ── File → base64 helper ── */
+const fileToBase64 = (file) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+
 export default function SecProcessLoanModal({ loan, onClose, onProcess }) {
     const [paymentMethod, setPaymentMethod] = useState(loan.disbursementMethod || 'gcash');
     const [reason, setReason] = useState('');
+    const [proofFile, setProofFile] = useState(null);
+    const [processing, setProcessing] = useState(false);
 
-    const handleProcess = () => {
+    const handleProcess = async () => {
         if (paymentMethod !== (loan.disbursementMethod || 'cash') && !reason.trim()) {
             alert('Please provide a reason for changing the payment method.');
             return;
         }
-        onProcess(paymentMethod, reason);
+        if (!proofFile) {
+            alert('Please upload proof of disbursement.');
+            return;
+        }
+
+        setProcessing(true);
+        try {
+            const proofData = await fileToBase64(proofFile);
+            onProcess(paymentMethod, reason, proofData, proofFile.name);
+        } catch {
+            alert('Failed to process proof file.');
+        } finally {
+            setProcessing(false);
+        }
     };
 
     return (
@@ -46,6 +70,11 @@ export default function SecProcessLoanModal({ loan, onClose, onProcess }) {
                     <p className="sec-process-modal-info-text" style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #E5E7EB' }}>
                         <span className="label">User Preference:</span> <strong style={{ textTransform: 'capitalize', color: '#155DFC' }}>{loan.disbursementMethod || 'N/A'}</strong>
                     </p>
+                    {loan.disbursementAccount && (
+                        <p className="sec-process-modal-info-text">
+                            <span className="label">Account Info:</span> <strong style={{ color: '#111827' }}>{loan.disbursementAccount}</strong>
+                        </p>
+                    )}
                 </div>
 
                 {/* Payment Method Selection */}
@@ -119,16 +148,81 @@ export default function SecProcessLoanModal({ loan, onClose, onProcess }) {
                     )}
                 </div>
 
+                {/* Proof of Disbursement Upload */}
+                <div className="sec-process-modal-payment-section">
+                    <label className="sec-process-modal-label">
+                        Upload Proof of Disbursement <span style={{ color: 'red' }}>*</span>
+                    </label>
+                    <p style={{ fontSize: '12px', color: '#6B7280', margin: '0 0 8px 0', fontFamily: 'Inter' }}>
+                        Upload a screenshot or photo of the transaction (receipt, GCash confirmation, bank transfer proof)
+                    </p>
+                    <label
+                        htmlFor="proof-upload"
+                        style={{
+                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                            padding: proofFile ? '8px' : '20px',
+                            border: `1.5px dashed ${proofFile ? '#16A34A' : '#D1D5DB'}`,
+                            borderRadius: '10px',
+                            cursor: 'pointer',
+                            background: proofFile ? '#F0FDF4' : '#F9FAFB',
+                            transition: 'all 0.15s',
+                            overflow: 'hidden',
+                        }}
+                    >
+                        {proofFile ? (
+                            <>
+                                {proofFile.type.startsWith('image/') && (
+                                    <img
+                                        src={URL.createObjectURL(proofFile)}
+                                        alt="Proof preview"
+                                        style={{
+                                            maxWidth: '100%', maxHeight: '120px',
+                                            borderRadius: '6px', objectFit: 'contain', marginBottom: '6px',
+                                        }}
+                                    />
+                                )}
+                                <p style={{ margin: 0, fontSize: '12px', color: '#16A34A', fontWeight: 600, fontFamily: 'Inter' }}>
+                                    ✓ {proofFile.name}
+                                </p>
+                                <p style={{ margin: '2px 0 0 0', fontSize: '11px', color: '#6B7280', fontFamily: 'Inter' }}>
+                                    Click to change
+                                </p>
+                            </>
+                        ) : (
+                            <>
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ marginBottom: '6px' }}>
+                                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                                    <polyline points="17 8 12 3 7 8" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                                    <line x1="12" y1="3" x2="12" y2="15" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                                <p style={{ margin: 0, fontSize: '13px', color: '#6B7280', fontFamily: 'Inter' }}>
+                                    Click to upload proof
+                                </p>
+                                <p style={{ margin: '2px 0 0 0', fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>
+                                    PNG, JPG
+                                </p>
+                            </>
+                        )}
+                        <input
+                            type="file"
+                            id="proof-upload"
+                            accept="image/png, image/jpeg"
+                            onChange={(e) => setProofFile(e.target.files[0] || null)}
+                            hidden
+                        />
+                    </label>
+                </div>
+
                 {/* Action Buttons */}
                 <div className="sec-process-modal-actions">
                     <button className="sec-process-btn-cancel" onClick={onClose}>
                         Cancel
                     </button>
-                    <button className="sec-process-btn-confirm" onClick={handleProcess}>
+                    <button className="sec-process-btn-confirm" onClick={handleProcess} disabled={processing}>
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                             <path d="M13.3333 4L6 11.3333L2.66667 8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
-                        Process Payment
+                        {processing ? 'Processing…' : 'Process Payment'}
                     </button>
                 </div>
             </div>
