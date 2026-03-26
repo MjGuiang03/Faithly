@@ -88,15 +88,22 @@ export default function Home() {
 
       if (annRes.ok && annData.success) {
         const list = (annData.announcements || []).map(ann => {
-          const d = new Date(ann.createdAt);
+          const d = ann.eventDate ? new Date(ann.eventDate) : new Date(ann.createdAt);
           const text = ann.content || ann.body || '';
+          const vis = ann.visibility;
+          const branches = ann.targetBranches;
+          const branchLabel = (!vis || vis === 'all') ? 'All Branches'
+            : (vis === 'branches' && Array.isArray(branches) && branches.length > 0)
+              ? branches.join(', ')
+              : vis;
           return {
             day: d.getDate().toString(),
             month: d.toLocaleString('en-US', { month: 'short' }).toUpperCase(),
             title: ann.title,
-            time: text.length > 50 ? text.substring(0, 50) + '...' : text,
-            tag: ann.branch === 'All' ? 'Global' : 'Local',
-            tagColor: ann.branch === 'All' ? '#155dfc' : '#16a34a'
+            body: text.length > 80 ? text.substring(0, 80) + '...' : text,
+            category: ann.category || 'General',
+            branch: branchLabel,
+            tag: ann.category || 'General',
           };
         });
         setUpcomingEvents(list.slice(0, 4));
@@ -397,27 +404,46 @@ export default function Home() {
           </div>
 
           <div className="user-home-card user-home-events-card">
-            <h2 className="user-home-card-title">Upcoming Events</h2>
+            <div className="user-events-header">
+              <h2 className="user-home-card-title" style={{ margin: 0 }}>Upcoming Events</h2>
+              <button className="user-events-see-all" onClick={() => {}}>See all</button>
+            </div>
             <div className="user-events-list">
-              {upcomingEvents.map((evt, i) => (
-                <div key={i} className="user-event-row">
-                  <div className="user-event-date-block">
-                    <span className="user-event-day">{evt.day}</span>
-                    <span className="user-event-month">{evt.month}</span>
-                  </div>
-                  <div className="user-event-info">
-                    <div className="user-event-title-row">
-                      <span className="user-event-title">{evt.title}</span>
-                      {evt.tag && (
-                        <span className="user-event-tag" style={{ color: evt.tagColor || '#155dfc', background: evt.tagColor ? `${evt.tagColor}18` : '#eff4ff' }}>
-                          {evt.tag}
-                        </span>
-                      )}
+              {upcomingEvents.length === 0 ? (
+                <p style={{ fontSize: '13px', color: '#9CA3AF', padding: '20px 0' }}>No upcoming events yet.</p>
+              ) : upcomingEvents.map((evt, i) => {
+                const catColors = {
+                  Events: { bg: '#FFF7ED', color: '#C2410C' },
+                  General: { bg: '#EFF6FF', color: '#1E40AF' },
+                  Prayer: { bg: '#F5F3FF', color: '#6D28D9' },
+                  Services: { bg: '#F0FDF4', color: '#15803D' },
+                  Donations: { bg: '#FDF2F8', color: '#9D174D' },
+                  Urgent: { bg: '#FFF1F2', color: '#BE123C' },
+                };
+                const c = catColors[evt.category] || catColors.General;
+                return (
+                  <div key={i} className="user-event-row">
+                    <div className="user-event-accent-bar" style={{ background: c.color }} />
+                    <div className="user-event-date-block">
+                      <span className="user-event-day">{evt.day}</span>
+                      <span className="user-event-month">{evt.month}</span>
                     </div>
-                    <span className="user-event-time">{evt.time}</span>
+                    <div className="user-event-info">
+                      <div className="user-event-title-row">
+                        <span className="user-event-title">{evt.title}</span>
+                        <span className="user-event-tag" style={{ color: c.color, background: c.bg }}>{evt.category}</span>
+                      </div>
+                      <span className="user-event-time">{evt.body}</span>
+                      <div className="user-event-meta-row">
+                        <span className="user-event-branch">
+                          <svg width="12" height="12" viewBox="0 0 20 20" fill="none"><path d="M10 10.833a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M10 18.333S3.333 13.333 3.333 8.333a6.667 6.667 0 1 1 13.334 0c0 5-6.667 10-6.667 10z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                          {evt.branch}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

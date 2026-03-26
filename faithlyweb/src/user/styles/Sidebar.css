@@ -170,15 +170,13 @@
 }
 
 .user-sidebar-nav-button.active {
-  background: rgba(245, 200, 0, 0.18);
-  color: var(--gold, #F5C800);
-  font-weight: 700;
-  border-left: 3px solid var(--gold, #F5C800);
+  background: var(--sidebar-accent);
+  color: white;
+  font-weight: 600;
 }
 
 .user-sidebar-collapsed .user-sidebar-nav-button.active {
-  border-left: none;
-  background: rgba(245, 200, 0, 0.18);
+  background: var(--sidebar-accent);
 }
 
 .user-sidebar-nav-icon {

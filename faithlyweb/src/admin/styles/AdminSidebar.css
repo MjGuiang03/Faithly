@@ -122,9 +122,9 @@
 }
 
 .admin-sidebar-nav-button.active {
-  background: rgba(245, 200, 0, 0.12);
+  background: rgba(255, 255, 255, 0.12);
   color: white;
-  border-left: 4px solid #F5C800;
+  font-weight: 600;
 }
 
 .admin-sidebar-nav-button svg {
@@ -472,7 +472,6 @@
 
 .dark .sidebar-nav-button.active {
   background: #363940;
-  border-left: 4px solid #F5C800;
   color: white;
 }
 

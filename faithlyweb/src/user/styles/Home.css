@@ -1310,3 +1310,54 @@
 .dark .user-event-date-block {
   background: rgba(30, 58, 138, 0.7);
 }
+
+/* ── Upcoming Events Upgraded ── */
+.user-events-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.user-events-see-all {
+  font-size: 13px;
+  font-weight: 500;
+  color: #6B7280;
+  background: #F1F5F9;
+  border: none;
+  border-radius: 20px;
+  padding: 4px 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: 'Inter', sans-serif;
+}
+
+.user-events-see-all:hover {
+  background: #E2E8F0;
+}
+
+.user-event-accent-bar {
+  width: 3px;
+  min-height: 100%;
+  border-radius: 4px;
+  flex-shrink: 0;
+  align-self: stretch;
+  min-height: 70px;
+}
+
+.user-event-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.user-event-branch {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #6B7280;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+}

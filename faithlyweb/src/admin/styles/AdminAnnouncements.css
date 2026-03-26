@@ -326,3 +326,82 @@
   color: #94a3b8;
   font-size: 14px;
 }
+
+/* ── Stats Bar ── */
+.admin-announce-stats-bar {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.admin-announce-stat-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0;
+  gap: 4px;
+}
+
+.admin-announce-stat-number {
+  font-size: 26px;
+  font-weight: 700;
+  color: #0f172a;
+  font-family: 'Inter', sans-serif;
+  line-height: 1;
+}
+
+.admin-announce-stat-label {
+  font-size: 13px;
+  color: #94a3b8;
+  font-family: 'Inter', sans-serif;
+}
+
+.admin-announce-stat-divider {
+  width: 1px;
+  height: 48px;
+  background: #f1f5f9;
+}
+
+/* ── Active Badge ── */
+.admin-announce-active-badge {
+  background: #EFF6FF;
+  color: #1E3A8A;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+/* ── Filter Tabs ── */
+.admin-announce-filter-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 12px 24px 0;
+}
+
+.admin-announce-filter-tab {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1.5px solid #e2e8f0;
+  background: #fcfcfd;
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.admin-announce-filter-tab:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+.admin-announce-filter-tab.active {
+  background: #EFF6FF;
+  color: #1E3A8A;
+  border-color: #1E3A8A;
+  font-weight: 600;
+}

@@ -29,7 +29,6 @@ export default function AdminSidebar() {
     location.pathname.startsWith('/admin/announcements')
   );
   const [isAdminOpen,    setIsAdminOpen]    = useState(() =>
-    location.pathname.startsWith('/admin/reports') ||
     location.pathname.startsWith('/admin/users') ||
     location.pathname.startsWith('/admin/settings')
   );
@@ -241,12 +240,6 @@ export default function AdminSidebar() {
           </button>
           {isAdminOpen && (
             <div className="admin-sidebar-dropdown-content">
-              <button
-                onClick={() => navigate('/admin/reports')}
-                className={`admin-sidebar-sub-button ${isActive('/admin/reports') ? 'active' : ''}`}
-              >
-                <span>Reports</span>
-              </button>
               {localStorage.getItem('adminRole') === 'admin' && (
                 <button
                   onClick={() => navigate('/admin/users')}

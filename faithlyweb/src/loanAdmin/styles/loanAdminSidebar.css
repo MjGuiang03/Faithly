@@ -104,8 +104,9 @@
 }
 
 .loan-admin-sidebar-nav-button.active {
-  background: #1E3A8A;
+  background: rgba(255, 255, 255, 0.12);
   color: white;
+  font-weight: 600;
 }
 
 .loan-admin-sidebar-nav-button svg {
@@ -389,7 +390,6 @@
 
 .dark .loan-admin-sidebar-nav-button.active {
   background: #363940;
-  border-left: 4px solid #F5C800;
   color: white;
 }
 

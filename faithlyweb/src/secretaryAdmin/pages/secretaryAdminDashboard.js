@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router';
+
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import SecretaryAdminSidebar from '../components/secretaryAdminSidebar';
 import '../styles/secretaryAdminDashboard.css';
@@ -10,7 +10,7 @@ const fmt = (n) => n != null ? `₱${Number(n).toLocaleString('en-PH', { minimum
 const COLORS = ['#155DFC', '#00A63E'];
 
 export default function SecretaryAdminDashboard() {
-    const navigate = useNavigate();
+
     const [loading, setLoading] = useState(true);
 
     // Dashboard stat cards

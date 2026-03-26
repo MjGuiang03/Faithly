@@ -1,9 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import {
+  PieChart, Pie, Cell,
+  BarChart, Bar,
+  LineChart, Line,
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
+} from 'recharts';
 import '../styles/AdminDashboard.css';
-import svgPaths from "../../imports/svg-icons";
-
+import svgPaths from '../../imports/svg-icons';
 import API from '../../utils/api';
 
 const fmt    = (n) => `₱${Number(n).toLocaleString()}`;
@@ -13,10 +18,37 @@ const fmtAgo = (date) => {
   const hours = Math.floor(diff / 3600000);
   const days  = Math.floor(diff / 86400000);
   if (mins  < 1)  return 'just now';
-  if (mins  < 60) return `${mins} minute${mins > 1 ? 's' : ''} ago`;
-  if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-  return `${days} day${days > 1 ? 's' : ''} ago`;
+  if (mins  < 60) return `${mins}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  return `${days}d ago`;
 };
+
+const PIE_COLORS = ['#155DFC', '#00A63E', '#F59E0B', '#EF4444'];
+
+const donationCategories = [
+  { name: 'Tithes',        value: 1800000, color: '#155DFC' },
+  { name: 'Offerings',     value: 1300000, color: '#00A63E' },
+  { name: 'Special Gifts', value: 800000,  color: '#F59E0B' },
+  { name: 'Other',         value: 270000,  color: '#EF4444' },
+];
+
+const memberGrowthData = [
+  { month: 'Jan', totalMembers: 950,  newMembers: 25 },
+  { month: 'Feb', totalMembers: 980,  newMembers: 30 },
+  { month: 'Mar', totalMembers: 1050, newMembers: 70 },
+  { month: 'Apr', totalMembers: 1120, newMembers: 70 },
+  { month: 'May', totalMembers: 1180, newMembers: 60 },
+  { month: 'Jun', totalMembers: 1245, newMembers: 65 },
+];
+
+const attendanceVsDonations = [
+  { month: 'Jan', attendance: 850,  donations: 650 },
+  { month: 'Feb', attendance: 920,  donations: 590 },
+  { month: 'Mar', attendance: 1050, donations: 800 },
+  { month: 'Apr', attendance: 880,  donations: 810 },
+  { month: 'May', attendance: 950,  donations: 560 },
+  { month: 'Jun', attendance: 1100, donations: 900 },
+];
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -25,16 +57,13 @@ export default function AdminDashboard() {
   const [loanStats,     setLoanStats]     = useState({ active: 0, pending: 0, totalDisbursed: 0 });
   const [donationStats, setDonationStats] = useState({ thisMonth: 0, total: 0 });
   const [attendStats,   setAttendStats]   = useState({ thisWeek: 0, avgPerService: 0 });
+  const [membersByBranch, setMembersByBranch] = useState([]);
   const [recentActivities, setRecentActivities] = useState([]);
-  const [allActivities,    setAllActivities]    = useState([]);
-  const [showModal,        setShowModal]        = useState(false);
-  const [modalPage,        setModalPage]        = useState(1);
-  const MODAL_PER_PAGE = 10;
   const [loading,       setLoading]       = useState(true);
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
-    const token = localStorage.getItem('adminToken'); // Moved token retrieval inside fetchAll
+    const token = localStorage.getItem('adminToken');
     const headers = { Authorization: `Bearer ${token}` };
     try {
       const [membersRes, loansRes, donationsRes, attendRes] = await Promise.all([
@@ -51,89 +80,49 @@ export default function AdminDashboard() {
         attendRes.json(),
       ]);
 
-      // ── Member stats ──────────────────────────────────────────
       if (membersData.success && membersData.stats) {
         const s = membersData.stats;
-        setMemberStats({
-          total:        s.total        || 0,
-          active:       s.active       || 0,
-          inactive:     s.inactive     || 0,
-          newThisMonth: s.newThisMonth || 0,
-        });
+        setMemberStats({ total: s.total || 0, active: s.active || 0, inactive: s.inactive || 0, newThisMonth: s.newThisMonth || 0 });
       }
-
-      // ── Loan stats ────────────────────────────────────────────
       if (loansData.success && loansData.stats) {
-        setLoanStats({
-          active:         loansData.stats.active         || 0,
-          pending:        loansData.stats.pending        || 0,
-          totalDisbursed: loansData.stats.totalDisbursed || 0,
-        });
+        setLoanStats({ active: loansData.stats.active || 0, pending: loansData.stats.pending || 0, totalDisbursed: loansData.stats.totalDisbursed || 0 });
       }
-
-      // ── Donation stats ────────────────────────────────────────
       if (donationsData.success && donationsData.stats) {
-        setDonationStats({
-          thisMonth: donationsData.stats.thisMonth || 0,
-          total:     donationsData.stats.total     || 0,
-        });
+        setDonationStats({ thisMonth: donationsData.stats.thisMonth || 0, total: donationsData.stats.total || 0 });
       }
-
-      // ── Attendance stats ──────────────────────────────────────
       if (attendData.success && attendData.stats) {
-        setAttendStats({
-          thisWeek:      attendData.stats.thisWeek      || 0,
-          avgPerService: attendData.stats.avgPerService || 0,
-        });
+        setAttendStats({ thisWeek: attendData.stats.thisWeek || 0, avgPerService: attendData.stats.avgPerService || 0 });
       }
 
-      // ── Build recent activities from real data ─────────────────
-      const activities = [];
+      // Members by branch
+      if (membersData.success && membersData.members) {
+        const branchMap = {};
+        membersData.members.forEach(m => {
+          const b = m.branch || 'Unknown';
+          branchMap[b] = (branchMap[b] || 0) + 1;
+        });
+        setMembersByBranch(Object.entries(branchMap).map(([branch, count]) => ({ branch, count })));
+      }
 
-      // Latest donations
+      // Recent activities
+      const activities = [];
       if (donationsData.success && donationsData.donations?.length) {
         donationsData.donations.slice(0, 3).forEach(d => {
-          activities.push({
-            id:     d._id || d.donationId,
-            type:   'donation',
-            title:  'Donation received',
-            member: `${d.member} • ${fmt(d.amount)}`,
-            date:   new Date(d.createdAt || d.date),
-          });
+          activities.push({ id: d._id, type: 'donation', title: 'Donation received', member: `${d.member} • ${fmt(d.amount)}`, date: new Date(d.createdAt || d.date) });
         });
       }
-
-      // Latest members
       if (membersData.success && membersData.members?.length) {
         membersData.members.slice(0, 3).forEach(m => {
-          activities.push({
-            id:     m._id,
-            type:   'member',
-            title:  'New member registered',
-            member: m.fullName,
-            date:   new Date(m.createdAt),
-          });
+          activities.push({ id: m._id, type: 'member', title: 'New member registered', member: m.fullName, date: new Date(m.createdAt) });
         });
       }
-
-      // Latest attendance
       if (attendData.success && attendData.attendance?.length) {
         attendData.attendance.slice(0, 2).forEach(a => {
-          activities.push({
-            id:     a._id || a.recordId,
-            type:   'attendance',
-            title:  'Service attendance recorded',
-            member: `${a.service} • ${a.branch}`,
-            date:   new Date(a.createdAt),
-          });
+          activities.push({ id: a._id, type: 'attendance', title: 'Service attendance recorded', member: `${a.service} • ${a.branch}`, date: new Date(a.createdAt) });
         });
       }
-
-      // Sort by most recent
       activities.sort((a, b) => b.date - a.date);
-      const withTime = activities.map(a => ({ ...a, time: fmtAgo(a.date) }));
-      setAllActivities(withTime);
-      setRecentActivities(withTime.slice(0, 5));
+      setRecentActivities(activities.slice(0, 5).map(a => ({ ...a, time: fmtAgo(a.date) })));
 
     } catch (err) {
       console.error(err);
@@ -141,269 +130,186 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false);
     }
-  }, []); // fixed dependency array
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
-    if (!token) {
-      navigate('/');
-      return;
-    }
+    if (!token) { navigate('/'); return; }
     fetchAll();
   }, [navigate, fetchAll]);
 
   const dash = (v) => loading ? '—' : v;
 
+  const activityIconBg = (type) =>
+    type === 'donation' ? '#fdf2f8' : type === 'member' ? '#faf5ff' : '#eff6ff';
+
   return (
     <div className="admin-dashboard-main">
       {/* Header */}
       <div className="admin-dashboard-header">
-        <h1 className="admin-dashboard-title">Admin Dashboard</h1>
-        <p className="admin-dashboard-subtitle">Welcome back! Here's what's happening today.</p>
+        <h1 className="admin-dashboard-title">Dashboard</h1>
       </div>
 
-      {/* Stats Grid */}
-      <div className="admin-dashboard-stats-grid">
-        {/* Total Members */}
-        <div className="admin-dashboard-stat-card" style={{ background: '#eff6ff' }}>
-          <div className="admin-dashboard-stat-icon-row">
-            <div className="admin-dashboard-stat-icon admin-bg-blue">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      {/* ── Row 1: 4 Stat Cards ── */}
+      <div className="adm-stats-grid">
+        <div className="adm-stat-card blue">
+          <div className="adm-stat-top">
+            <span className="adm-stat-label">Total Members</span>
+            <div className="adm-stat-icon adm-icon-blue">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                 <path d={svgPaths.p1d820380} stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 <path d={svgPaths.p161d4800} stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d={svgPaths.p2981fe00} stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d={svgPaths.p13e20900} stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
-            <div className="admin-dashboard-stat-badge">+{dash(memberStats.newThisMonth)} new</div>
           </div>
-          <div className="admin-dashboard-stat-label">Total Members</div>
-          <div className="admin-dashboard-stat-value">{dash(memberStats.total.toLocaleString())}</div>
+          <div className="adm-stat-value">{dash(memberStats.total.toLocaleString())}</div>
+          <div className="adm-stat-sub">+{dash(memberStats.newThisMonth)} new this month</div>
         </div>
 
-        {/* Active Loans */}
-        <div className="admin-dashboard-stat-card" style={{ background: '#f0fdf4' }}>
-          <div className="admin-dashboard-stat-icon-row">
-            <div className="admin-dashboard-stat-icon admin-bg-green">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <div className="adm-stat-card green">
+          <div className="adm-stat-top">
+            <span className="adm-stat-label">Active Loans</span>
+            <div className="adm-stat-icon adm-icon-green">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                 <path d={svgPaths.pb47f400}  stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 <path d={svgPaths.p17a13100} stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M10 9H8"  stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M16 13H8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M16 17H8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
-            <div className="admin-dashboard-stat-badge">{dash(loanStats.pending)} pending</div>
           </div>
-          <div className="admin-dashboard-stat-label">Active Loans</div>
-          <div className="admin-dashboard-stat-value">{dash(loanStats.active)}</div>
+          <div className="adm-stat-value">{dash(loanStats.active)}</div>
+          <div className="adm-stat-sub">{dash(loanStats.pending)} pending</div>
         </div>
 
-        {/* This Month Donations */}
-        <div className="admin-dashboard-stat-card" style={{ background: '#fdf2f8' }}>
-          <div className="admin-dashboard-stat-icon-row">
-            <div className="admin-dashboard-stat-icon admin-bg-pink">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <div className="adm-stat-card pink">
+          <div className="adm-stat-top">
+            <span className="adm-stat-label">This Month Donations</span>
+            <div className="adm-stat-icon adm-icon-pink">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                 <path d={svgPaths.p1dff4600} stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
-            <div className="admin-dashboard-stat-badge">this month</div>
           </div>
-          <div className="admin-dashboard-stat-label">This Month Donations</div>
-          <div className="admin-dashboard-stat-value">{dash(fmt(donationStats.thisMonth))}</div>
+          <div className="adm-stat-value">{dash(fmt(donationStats.thisMonth))}</div>
+          <div className="adm-stat-sub">Total: {dash(fmt(donationStats.total))}</div>
         </div>
 
-        {/* Avg. Attendance */}
-        <div className="admin-dashboard-stat-card" style={{ background: '#f3f4f6' }}>
-          <div className="admin-dashboard-stat-icon-row">
-            <div className="admin-dashboard-stat-icon admin-bg-darkblue">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M8 2V6"              stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M16 2V6"             stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d={svgPaths.p32f12c00}  stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M3 10H21"            stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <div className="adm-stat-card gray">
+          <div className="adm-stat-top">
+            <span className="adm-stat-label">Avg. Per Service</span>
+            <div className="adm-stat-icon adm-icon-navy">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M8 2V6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M16 2V6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d={svgPaths.p32f12c00} stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M3 10H21" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
-            <div className="admin-dashboard-stat-badge">{dash(attendStats.thisWeek)} this week</div>
           </div>
-          <div className="admin-dashboard-stat-label">Avg. Per Service</div>
-          <div className="admin-dashboard-stat-value">{dash(attendStats.avgPerService.toLocaleString())}</div>
+          <div className="adm-stat-value">{dash(attendStats.avgPerService.toLocaleString())}</div>
+          <div className="adm-stat-sub">{dash(attendStats.thisWeek)} attended this week</div>
         </div>
       </div>
 
-      {/* Recent Activities */}
-      <div className="admin-dashboard-activity-section-single">
-        <div className="admin-dashboard-activity-card">
-          <div className="admin-dashboard-activity-header">
-            <h2 className="admin-dashboard-section-title" style={{ marginBottom: 0 }}>Recent Activities</h2>
-            <button className="admin-dashboard-view-all-btn" onClick={() => { setModalPage(1); setShowModal(true); }}>View All</button>
+      {/* ── Row 2: Analytics Row ── */}
+      <div className="adm-analytics-row">
+        {/* Donation Categories Pie */}
+        <div className="adm-card adm-card-pie">
+          <div className="adm-card-header">
+            <h3 className="adm-card-title">Donation Categories</h3>
           </div>
-
-          <div>
-            {loading ? (
-              <p style={{ fontSize: 14, color: '#9ca3af', margin: 0 }}>Loading…</p>
-            ) : recentActivities.length === 0 ? (
-              <p style={{ fontSize: 14, color: '#9ca3af', margin: 0 }}>No recent activity yet.</p>
-            ) : (
-              recentActivities.map((activity, idx) => (
-                <div key={activity.id} className={`admin-dashboard-activity-item${idx === 0 ? ' first-item' : ''}`}>
-                  <div className="admin-dashboard-activity-icon-container" style={{
-                    background: activity.type === 'donation' ? '#fdf2f8'
-                              : activity.type === 'member'   ? '#faf5ff'
-                              : '#eff6ff'
-                  }}>
-                    {activity.type === 'donation' && (
-                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                        <path d={svgPaths.p2f84f400} stroke="#F6339A" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    )}
-                    {activity.type === 'member' && (
-                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                        <path d={svgPaths.p25397b80} stroke="#AD46FF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d={svgPaths.p2c4f400}   stroke="#AD46FF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d={svgPaths.p2241fff0}  stroke="#AD46FF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d={svgPaths.pae3c380}   stroke="#AD46FF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    )}
-                    {activity.type === 'attendance' && (
-                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                        <path d="M6.66667 1.66667V5"   stroke="#2B7FFF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M13.3333 1.66667V5"   stroke="#2B7FFF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d={svgPaths.p1da67b80}   stroke="#2B7FFF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M2.5 8.33333H17.5"    stroke="#2B7FFF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    )}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div className="admin-dashboard-activity-title">{activity.title}</div>
-                    <div className="admin-dashboard-activity-name">{activity.member}</div>
-                  </div>
-                  <div className="admin-dashboard-activity-time">{activity.time}</div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* View All Modal */}
-      {showModal && (
-        <div className="activity-modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="activity-modal" onClick={e => e.stopPropagation()}>
-            <div className="activity-modal-header">
-              <h2 className="activity-modal-title">All Recent Activities</h2>
-              <button className="activity-modal-close" onClick={() => setShowModal(false)}>
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M15 5L5 15M5 5L15 15" stroke="#6a7282" strokeWidth="1.8" strokeLinecap="round" />
-                </svg>
-              </button>
-            </div>
-
-            <div className="activity-modal-body">
-              {allActivities.length === 0 ? (
-                <p style={{ fontSize: 14, color: '#9ca3af', margin: 0 }}>No activities found.</p>
-              ) : (
-                allActivities
-                  .slice((modalPage - 1) * MODAL_PER_PAGE, modalPage * MODAL_PER_PAGE)
-                  .map((activity, idx) => (
-                    <div key={activity.id} className={`admin-dashboard-activity-item${idx === 0 ? ' first-item' : ''}`}>
-                      <div className="admin-dashboard-activity-icon-container" style={{
-                        background: activity.type === 'donation' ? '#fdf2f8'
-                                  : activity.type === 'member'   ? '#faf5ff'
-                                  : '#eff6ff'
-                      }}>
-                        {activity.type === 'donation' && (
-                          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                            <path d={svgPaths.p2f84f400} stroke="#F6339A" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        )}
-                        {activity.type === 'member' && (
-                          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                            <path d={svgPaths.p25397b80} stroke="#AD46FF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-                            <path d={svgPaths.p2c4f400}   stroke="#AD46FF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-                            <path d={svgPaths.p2241fff0}  stroke="#AD46FF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-                            <path d={svgPaths.pae3c380}   stroke="#AD46FF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        )}
-                        {activity.type === 'attendance' && (
-                          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                            <path d="M6.66667 1.66667V5"   stroke="#2B7FFF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-                            <path d="M13.3333 1.66667V5"   stroke="#2B7FFF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-                            <path d={svgPaths.p1da67b80}   stroke="#2B7FFF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-                            <path d="M2.5 8.33333H17.5"    stroke="#2B7FFF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        )}
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <div className="admin-dashboard-activity-title">{activity.title}</div>
-                        <div className="admin-dashboard-activity-name">{activity.member}</div>
-                      </div>
-                      <div className="admin-dashboard-activity-time">{activity.time}</div>
-                    </div>
-                  ))
-              )}
-            </div>
-
-            {/* Modal Pagination */}
-            {allActivities.length > MODAL_PER_PAGE && (
-              <div className="activity-modal-pagination">
-                <span className="activity-modal-page-info">
-                  Showing {(modalPage - 1) * MODAL_PER_PAGE + 1}–{Math.min(modalPage * MODAL_PER_PAGE, allActivities.length)} of {allActivities.length}
-                </span>
-                <div className="activity-modal-page-controls">
-                  <button className="activity-page-btn" onClick={() => setModalPage(p => p - 1)} disabled={modalPage === 1}>‹</button>
-                  {Array.from({ length: Math.ceil(allActivities.length / MODAL_PER_PAGE) }, (_, i) => i + 1).map(p => (
-                    <button key={p} className={`activity-page-btn${p === modalPage ? ' active' : ''}`} onClick={() => setModalPage(p)}>{p}</button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <ResponsiveContainer width="100%" height={160}>
+              <PieChart>
+                <Pie data={donationCategories} cx="50%" cy="50%" innerRadius={45} outerRadius={72} paddingAngle={2} dataKey="value">
+                  {donationCategories.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
-                  <button className="activity-page-btn" onClick={() => setModalPage(p => p + 1)} disabled={modalPage === Math.ceil(allActivities.length / MODAL_PER_PAGE)}>›</button>
+                </Pie>
+                <Tooltip formatter={(value) => `₱${(value / 1000).toFixed(0)}k`} />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="adm-pie-legend">
+              {donationCategories.map((cat, i) => (
+                <div key={i} className="adm-pie-legend-item">
+                  <div className="adm-pie-dot" style={{ background: cat.color }} />
+                  <span className="adm-pie-label">{cat.name}</span>
+                  <span className="adm-pie-val">₱{(cat.value / 1000).toFixed(0)}k</span>
                 </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Bottom Stats */}
-      <div className="admin-dashboard-bottom-stats">
-        <div className="admin-dashboard-bottom-stat-card">
-          <div className="admin-dashboard-bottom-stat-header">
-            <div className="admin-dashboard-bottom-stat-label">Total Loans Disbursed</div>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d={svgPaths.p3e47bd00} stroke="#00A63E" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d={svgPaths.p3610fb80} stroke="#00A63E" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-          <div className="admin-dashboard-bottom-stat-value">{dash(fmt(loanStats.totalDisbursed))}</div>
-          <div className="admin-dashboard-bottom-stat-subtext" style={{ color: '#00a63e' }}>
-            {dash(loanStats.active)} active · {dash(loanStats.pending)} pending
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="admin-dashboard-bottom-stat-card">
-          <div className="admin-dashboard-bottom-stat-header">
-            <div className="admin-dashboard-bottom-stat-label">Total Donations Collected</div>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d={svgPaths.p17cc7980} stroke="#00A63E" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d={svgPaths.p3fe63d80} stroke="#00A63E" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+        {/* Members by Branch Bar */}
+        <div className="adm-card adm-card-bar">
+          <div className="adm-card-header">
+            <h3 className="adm-card-title">Members by Branch</h3>
           </div>
-          <div className="admin-dashboard-bottom-stat-value">{dash(fmt(donationStats.total))}</div>
-          <div className="admin-dashboard-bottom-stat-subtext">All time total</div>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={membersByBranch.length > 0 ? membersByBranch : [{ branch: 'No data', count: 0 }]} margin={{ top: 0, right: 8, left: -20, bottom: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+              <XAxis dataKey="branch" stroke="#9CA3AF" fontSize={11} angle={-15} textAnchor="end" height={50} />
+              <YAxis stroke="#9CA3AF" fontSize={11} />
+              <Tooltip />
+              <Bar dataKey="count" fill="#155DFC" radius={[6, 6, 0, 0]} name="Members" />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
 
-        <div className="admin-dashboard-bottom-stat-card">
-          <div className="admin-dashboard-bottom-stat-header">
-            <div className="admin-dashboard-bottom-stat-label">Member Growth</div>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d={svgPaths.p25397b80} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d={svgPaths.p2c4f400}  stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d={svgPaths.p2241fff0} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d={svgPaths.pae3c380}  stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+        {/* Vertical summary column */}
+        <div className="adm-summary-col">
+          <div className="adm-summary-card">
+            <span className="adm-summary-label">Total Donations</span>
+            <span className="adm-summary-value green">{dash(fmt(donationStats.total))}</span>
           </div>
-          <div className="admin-dashboard-bottom-stat-value">+{dash(memberStats.newThisMonth)}</div>
-          <div className="admin-dashboard-bottom-stat-subtext">New members this month</div>
+          <div className="adm-summary-card">
+            <span className="adm-summary-label">Member Growth</span>
+            <span className="adm-summary-value blue">+{dash(memberStats.newThisMonth)}</span>
+            <span className="adm-summary-sub">new this month</span>
+          </div>
+          <div className="adm-summary-card">
+            <span className="adm-summary-label">Total Disbursed</span>
+            <span className="adm-summary-value">{dash(fmt(loanStats.totalDisbursed))}</span>
+          </div>
         </div>
+      </div>
+
+      {/* ── Row 3: Member Growth Trends ── */}
+      <div className="adm-card adm-chart-full">
+        <div className="adm-card-header">
+          <h3 className="adm-card-title">Member Growth Trends</h3>
+          <span className="adm-card-sub">Total vs new registrations this year</span>
+        </div>
+        <ResponsiveContainer width="100%" height={220}>
+          <LineChart data={memberGrowthData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+            <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
+            <YAxis stroke="#9CA3AF" fontSize={12} />
+            <Tooltip />
+            <Legend iconType="circle" wrapperStyle={{ paddingTop: '12px', fontSize: '12px' }} />
+            <Line type="monotone" dataKey="totalMembers" stroke="#155DFC" strokeWidth={2} dot={{ r: 3 }} name="Total Members" />
+            <Line type="monotone" dataKey="newMembers"   stroke="#00A63E" strokeWidth={2} dot={{ r: 3 }} name="New Members" />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* ── Row 4: Attendance vs Donations ── */}
+      <div className="adm-card adm-chart-full">
+        <div className="adm-card-header">
+          <h3 className="adm-card-title">Attendance vs Donations</h3>
+          <span className="adm-card-sub">Correlation by month</span>
+        </div>
+        <ResponsiveContainer width="100%" height={220}>
+          <BarChart data={attendanceVsDonations} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+            <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
+            <YAxis stroke="#9CA3AF" fontSize={12} />
+            <Tooltip />
+            <Legend iconType="square" wrapperStyle={{ paddingTop: '12px', fontSize: '12px' }} />
+            <Bar dataKey="attendance" fill="#00A63E" radius={[6, 6, 0, 0]} name="Attendance" />
+            <Bar dataKey="donations"  fill="#155DFC" radius={[6, 6, 0, 0]} name="Donations" />
+          </BarChart>
+        </ResponsiveContainer>
       </div>
     </div>
   );

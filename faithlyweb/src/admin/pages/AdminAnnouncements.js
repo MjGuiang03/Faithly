@@ -19,6 +19,7 @@ export default function AdminAnnouncements() {
   const [submitting, setSubmitting] = useState(false);
   const [items, setItems] = useState([]);
   const [branches, setBranches] = useState([]);
+  const [categoryFilter, setCategoryFilter] = useState('All');
   const [form, setForm] = useState({
     title: '', body: '', category: 'General',
     eventDate: '', expiresAt: '',
@@ -282,9 +283,45 @@ export default function AdminAnnouncements() {
 
         {/* List */}
         <div className="admin-announce-card">
-          <div className="admin-announce-card-header">
-            <p className="admin-announce-card-title">Posted Announcements ({items.length})</p>
+          {/* Stats Bar */}
+          <div className="admin-announce-stats-bar">
+            <div className="admin-announce-stat-item">
+              <span className="admin-announce-stat-number">{items.length}</span>
+              <span className="admin-announce-stat-label">Total</span>
+            </div>
+            <div className="admin-announce-stat-divider" />
+            <div className="admin-announce-stat-item">
+              <span className="admin-announce-stat-number">{items.filter(a => !isExpired(a.expiresAt)).length}</span>
+              <span className="admin-announce-stat-label">Active</span>
+            </div>
+            <div className="admin-announce-stat-divider" />
+            <div className="admin-announce-stat-item">
+              <span className="admin-announce-stat-number">{items.filter(a => isExpired(a.expiresAt)).length}</span>
+              <span className="admin-announce-stat-label">Expired</span>
+            </div>
           </div>
+
+          <div className="admin-announce-card-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div>
+              <p className="admin-announce-card-title">Posted Announcements</p>
+              <p style={{ fontSize: '13px', color: '#94a3b8', marginTop: '2px' }}>Manage active announcements</p>
+            </div>
+            <span className="admin-announce-active-badge">{items.filter(a => !isExpired(a.expiresAt)).length} active</span>
+          </div>
+
+          {/* Category Filter Tabs */}
+          <div className="admin-announce-filter-tabs">
+            {['All', 'General', 'Events', 'Prayer', 'Services', 'Donations', 'Urgent'].map(cat => (
+              <button
+                key={cat}
+                className={`admin-announce-filter-tab${categoryFilter === cat ? ' active' : ''}`}
+                onClick={() => setCategoryFilter(cat)}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
           <div className="admin-announce-list">
             {loading ? (
               [1, 2, 3].map(i => (
@@ -295,13 +332,15 @@ export default function AdminAnnouncements() {
                   </div>
                 </div>
               ))
-            ) : items.length === 0 ? (
+            ) : items.filter(a => categoryFilter === 'All' || a.category === categoryFilter).length === 0 ? (
               <div className="admin-announce-empty">
                 <p style={{ fontSize: '32px' }}>📢</p>
-                <p>No announcements yet. Post one!</p>
+                <p>{items.length === 0 ? 'No announcements yet. Post one!' : `No ${categoryFilter} announcements.`}</p>
               </div>
             ) : (
-              items.map(a => (
+              items
+                .filter(a => categoryFilter === 'All' || a.category === categoryFilter)
+                .map(a => (
                 <div key={a._id} className={`admin-announce-item${isExpired(a.expiresAt) ? ' expired' : ''}`}>
                   <div className="admin-announce-item-content">
                     <p className="admin-announce-item-title">{a.title}</p>
