@@ -342,6 +342,45 @@
     color: #111827;
 }
 
+/* ─────────────────────────────────────────
+   MODAL CONTAINER (used by Payment Status modals)
+───────────────────────────────────────── */
+.loan-admin-mgmt-modal-container {
+    background: #ffffff;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 520px;
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+    overflow: hidden;
+}
+
+.loan-admin-mgmt-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 24px 14px;
+    border-bottom: 1px solid #F3F4F6;
+}
+
+.loan-admin-mgmt-modal-header .loan-admin-mgmt-modal-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+    text-align: left;
+}
+
+/* ─────────────────────────────────────────
+   5-column stat grid (Loan Dashboard)
+───────────────────────────────────────── */
+.adm-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
 .loan-admin-mgmt-modal-icon {
     width: 60px;
     height: 60px;

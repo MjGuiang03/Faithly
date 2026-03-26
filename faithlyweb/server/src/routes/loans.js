@@ -536,6 +536,7 @@ router.put('/admin/loan-payments/:id/confirm', authenticateAdmin, async (req, re
                         date: new Date(),
                         monthNumber: newPaidMonths,
                         amount: paymentAmount,
+                        paymentMethod: payment.paymentMethod || 'cash',
                     }
                 }
             }
@@ -571,6 +572,31 @@ router.put('/admin/loan-payments/:id/reject', authenticateAdmin, async (req, res
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, message: 'Failed to reject payment' });
+    }
+});
+
+/* ================== USER - PAYMENT HISTORY ================== */
+router.get('/loans/:id/payment-history', authenticateUser, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const email = req.user.email;
+
+        // Resolve loanId for the filter
+        let loanIdStr = id;
+        if (ObjectId.isValid(id)) {
+            const loan = await loans.findOne({ _id: new ObjectId(id), email });
+            if (loan) loanIdStr = loan.loanId;
+        }
+
+        const payments = await loanPayments
+            .find({ loanId: loanIdStr, email, status: 'confirmed' })
+            .sort({ confirmedAt: -1 })
+            .toArray();
+
+        res.json({ success: true, payments });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Failed to fetch payment history' });
     }
 });
 

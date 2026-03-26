@@ -354,10 +354,12 @@ export default function LoanDetail() {
 
     const [loan, setLoan] = useState(null);
     const [schedule, setSchedule] = useState([]);
+    const [paymentHistory, setPaymentHistory] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [showSchedule, setShowSchedule] = useState(false);
     const [showPayNow, setShowPayNow] = useState(false);
+    const [historyDetail, setHistoryDetail] = useState(null);
 
     /* Auto-open modals via query param */
     useEffect(() => {
@@ -377,6 +379,13 @@ export default function LoanDetail() {
                 fetch(`${API}/api/loans/${encodedId}`, { headers }),
                 fetch(`${API}/api/loans/${encodedId}/schedule`, { headers }),
             ]);
+
+            // Fetch confirmed payments for this loan (from payment history endpoint)
+            try {
+                const histRes = await fetch(`${API}/api/loans/${encodedId}/payment-history`, { headers });
+                const histData = histRes.ok ? await histRes.json() : {};
+                setPaymentHistory(histData.payments || []);
+            } catch { /* silent */ }
             
             if (loanRes.status === 401) { localStorage.removeItem('token'); navigate('/'); return; }
             
@@ -557,44 +566,73 @@ export default function LoanDetail() {
                             </div>
                         </div>
 
-                        {/* ── Upcoming payments preview ── */}
-                        {schedule.length > 0 && (
-                            <div className="ld-section">
-                                <div className="ld-section-head">
-                                    <div className="ld-section-title">Upcoming payments</div>
-                                    <button className="ld-view-link" onClick={() => setShowSchedule(true)}>
-                                        View full schedule
-                                    </button>
-                                </div>
-                                <div className="ld-preview-list">
-                                    {schedule.filter(r => r.status !== 'paid').slice(0, 3).map((row, i) => {
-                                        const isNext = row.isNext;
-                                        const absIdx = schedule.indexOf(row);
-                                        return (
-                                            <div key={i} className="ld-preview-row">
-                                                <div className={`ld-sched-num ${isNext ? 'ld-sched-num--due' : ''}`}>
-                                                    {absIdx + 1}
+                        {/* ── Upcoming payments + Payment History (side by side) ── */}
+                        <div style={{ display: 'grid', gridTemplateColumns: schedule.filter(r => r.status !== 'paid').length > 0 && paymentHistory.length > 0 ? '1fr 1fr' : '1fr', gap: '16px' }}>
+                            {/* Upcoming payments */}
+                            {schedule.filter(r => r.status !== 'paid').length > 0 && (
+                                <div className="ld-section" style={{ margin: 0 }}>
+                                    <div className="ld-section-head">
+                                        <div className="ld-section-title">Upcoming payments</div>
+                                        <button className="ld-view-link" onClick={() => setShowSchedule(true)}>
+                                            View full schedule
+                                        </button>
+                                    </div>
+                                    <div className="ld-preview-list">
+                                        {schedule.filter(r => r.status !== 'paid').slice(0, 3).map((row, i) => {
+                                            const isNext = row.isNext;
+                                            const absIdx = schedule.indexOf(row);
+                                            return (
+                                                <div key={i} className="ld-preview-row">
+                                                    <div className={`ld-sched-num ${isNext ? 'ld-sched-num--due' : ''}`}>
+                                                        {absIdx + 1}
+                                                    </div>
+                                                    <div className="ld-preview-info">
+                                                        <div className="ld-preview-date">{fmtDate(row.dueDate)}</div>
+                                                        <div className="ld-preview-breakdown">
+                                                            Principal {fmt(row.principal)} · Interest {fmt(row.interest)}
+                                                        </div>
+                                                    </div>
+                                                    <div style={{ textAlign: 'right' }}>
+                                                        <div className={`ld-preview-amount ${isNext ? 'ld-preview-amount--warn' : ''}`}>
+                                                            {fmt(row.payment)}
+                                                        </div>
+                                                        <div className={`ld-preview-status ${isNext ? 'ld-preview-status--due' : 'ld-preview-status--upcoming'}`}>
+                                                            {isNext ? 'Due soon' : 'Upcoming'}
+                                                        </div>
+                                                    </div>
                                                 </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Payment History */}
+                            {paymentHistory.length > 0 && (
+                                <div className="ld-section" style={{ margin: 0 }}>
+                                    <div className="ld-section-head">
+                                        <div className="ld-section-title">Payment history</div>
+                                    </div>
+                                    <div className="ld-preview-list">
+                                        {paymentHistory.slice(0, 4).map((p, i) => (
+                                            <div key={i} className="ld-preview-row" onClick={() => setHistoryDetail(p)} style={{ cursor: 'pointer' }}>
+                                                <div className="ld-sched-num ld-sched-num--paid">✓</div>
                                                 <div className="ld-preview-info">
-                                                    <div className="ld-preview-date">{fmtDate(row.dueDate)}</div>
-                                                    <div className="ld-preview-breakdown">
-                                                        Principal {fmt(row.principal)} · Interest {fmt(row.interest)}
+                                                    <div className="ld-preview-date">{fmtDate(p.confirmedAt || p.submittedAt)}</div>
+                                                    <div className="ld-preview-breakdown" style={{ textTransform: 'capitalize' }}>
+                                                        Month #{p.monthNumber} · {p.paymentMethod}
                                                     </div>
                                                 </div>
                                                 <div style={{ textAlign: 'right' }}>
-                                                    <div className={`ld-preview-amount ${isNext ? 'ld-preview-amount--warn' : ''}`}>
-                                                        {fmt(row.payment)}
-                                                    </div>
-                                                    <div className={`ld-preview-status ${isNext ? 'ld-preview-status--due' : 'ld-preview-status--upcoming'}`}>
-                                                        {isNext ? 'Due soon' : 'Upcoming'}
-                                                    </div>
+                                                    <div className="ld-preview-amount" style={{ color: '#16A34A' }}>{fmt(p.amount)}</div>
+                                                    <div className="ld-preview-status" style={{ color: '#16A34A', fontSize: '11px' }}>Confirmed</div>
                                                 </div>
                                             </div>
-                                        );
-                                    })}
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
+                        </div>
 
                     </>
                 )}
@@ -616,6 +654,50 @@ export default function LoanDetail() {
                     onClose={() => setShowPayNow(false)}
                     onSuccess={fetchLoan}
                 />
+            )}
+
+            {/* Payment History Detail Modal */}
+            {historyDetail && (
+                <div className="ld-overlay" onClick={() => setHistoryDetail(null)}>
+                    <div className="ld-modal ld-modal--pay" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px' }}>
+                        <div className="ld-modal-header">
+                            <div>
+                                <div className="ld-modal-title">Payment Receipt</div>
+                                <div className="ld-modal-sub">Month #{historyDetail.monthNumber} — {historyDetail.loanId}</div>
+                            </div>
+                            <button className="ld-modal-close" onClick={() => setHistoryDetail(null)}><CloseIcon /></button>
+                        </div>
+                        <div className="ld-modal-body">
+                            <div className="ld-pay-amount-box">
+                                <div>
+                                    <div className="ld-pay-amount-label">Amount Paid</div>
+                                    <div className="ld-pay-amount-value" style={{ color: '#16A34A' }}>{fmt(historyDetail.amount)}</div>
+                                </div>
+                                <span style={{ background: '#DCFCE7', color: '#166534', fontSize: '11px', fontWeight: 700, padding: '3px 10px', borderRadius: '20px', fontFamily: 'Inter' }}>Confirmed</span>
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '12px' }}>
+                                <div><div className="ld-pay-section-label" style={{ marginBottom: '2px' }}>Method</div><div style={{ fontFamily: 'Inter', fontSize: '14px', fontWeight: 600, color: '#111827', textTransform: 'capitalize' }}>{historyDetail.paymentMethod}</div></div>
+                                <div><div className="ld-pay-section-label" style={{ marginBottom: '2px' }}>Submitted</div><div style={{ fontFamily: 'Inter', fontSize: '13px', color: '#374151' }}>{fmtDate(historyDetail.submittedAt)}</div></div>
+                                <div><div className="ld-pay-section-label" style={{ marginBottom: '2px' }}>Confirmed</div><div style={{ fontFamily: 'Inter', fontSize: '13px', color: '#374151' }}>{fmtDate(historyDetail.confirmedAt)}</div></div>
+                                <div><div className="ld-pay-section-label" style={{ marginBottom: '2px' }}>Month #</div><div style={{ fontFamily: 'Inter', fontSize: '14px', fontWeight: 600, color: '#111827' }}>{historyDetail.monthNumber}</div></div>
+                            </div>
+                            {historyDetail.proofData && (
+                                <div style={{ marginTop: '16px' }}>
+                                    <div className="ld-pay-section-label" style={{ marginBottom: '8px' }}>Proof of Payment</div>
+                                    <img
+                                        src={historyDetail.proofData}
+                                        alt="Payment proof"
+                                        onClick={() => window.open(historyDetail.proofData, '_blank')}
+                                        style={{ width: '100%', maxHeight: '200px', objectFit: 'contain', borderRadius: '8px', border: '1px solid #E5E7EB', cursor: 'pointer' }}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                        <div className="ld-modal-footer">
+                            <button className="ld-footer-btn-confirm" onClick={() => setHistoryDetail(null)}>Close</button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

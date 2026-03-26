@@ -103,6 +103,11 @@ export default function Notifications() {
                 message: `Your loan ${l.loanId ? `#${l.loanId}` : ''} for ₱${Number(l.amount).toLocaleString()} has been disbursed via ${(l.paymentMethod || 'cash').toUpperCase()}.`,
                 proofData: l.proofData || null,
               });
+            } else if (history.status === 'payment_confirmed') {
+              items.push({ ...hBase, id: `loan-payment-${l._id}-${history.monthNumber || hBase.timestamp}`,
+                title:   'Payment Confirmed',
+                message: `Your Month #${history.monthNumber || ''} payment of ₱${Number(history.amount || l.monthlyPayment || 0).toLocaleString()} via ${(history.paymentMethod || 'cash').toUpperCase()} has been confirmed by the loan admin.`,
+              });
             }
           });
         } else {
