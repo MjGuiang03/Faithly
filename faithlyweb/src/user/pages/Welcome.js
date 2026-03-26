@@ -1,171 +1,275 @@
 import { useState } from 'react';
-import { CheckCircle } from 'lucide-react';
 import puacLogo from '../../assets/puaclogo.png';
 import LoginModal from '../components/LoginModal';
 import SignupModal from '../components/SignupModal';
 import ResetPassword from '../components/ResetPassword';
 import '../styles/Welcome.css';
 
+const features = [
+  {
+    icon: (
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
+    ),
+    title: 'Loan Management',
+    desc: 'Apply for loans instantly and monitor status, due dates, and repayment milestones in real-time.',
+  },
+  {
+    icon: (
+      <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
+    ),
+    title: 'Savings Goals',
+    desc: 'Set, track, and achieve your personal savings goals with a clear visual progress tracker.',
+  },
+  {
+    icon: (
+      <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" /></svg>
+    ),
+    title: 'Donations & Payments',
+    desc: 'Seamless giving with multiple payment channels. Submit proof and track every donation effortlessly.',
+    badges: ['GCash', 'Bank', 'Cash'],
+  },
+  {
+    icon: (
+      <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" /></svg>
+    ),
+    title: 'Attendance Tracking',
+    desc: 'Real-time digital attendance recording. View your full history anytime, from anywhere.',
+  },
+  {
+    icon: (
+      <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 01-3.46 0" /></svg>
+    ),
+    title: 'Branch Announcements',
+    desc: 'Stay updated with real-time, branch-specific church announcements and upcoming events.',
+  },
+  {
+    icon: (
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" /></svg>
+    ),
+    title: 'Member Profiles',
+    desc: 'Comprehensive personal profiles with church records, account details, and full history.',
+  },
+  {
+    icon: (
+      <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" /></svg>
+    ),
+    title: 'Church Branches',
+    desc: 'View all branches and locations with maps, contact details, and service schedules.',
+  },
+  {
+    icon: (
+      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>
+    ),
+    title: 'AI Chatbot Assistant',
+    desc: 'Get instant answers about loans, donations, and services — available around the clock.',
+  },
+  {
+    icon: (
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" /></svg>
+    ),
+    title: 'Repayment Tracking',
+    desc: 'Submit payment proofs and track loan repayment status in real-time with a clean dashboard.',
+  },
+];
+
 export default function Welcome() {
   const [showSignupModal, setShowSignupModal] = useState(false);
-  const [authView, setAuthView] = useState('login'); // 'login' or 'reset'
+  const [authView, setAuthView] = useState('login'); // 'login' | 'reset'
 
-  const benefits = [
-    'Instant loan application and tracking',
-    'Set, track, and manage your personal savings goals with ease',
-    'Seamless donation tracking with multiple payment options (GCash, Bank, Cash)',
-    'Easily submit proofs of payment and track your loan repayment status in real-time',
-    'Real-time digital attendance tracking and history',
-    'Stay informed with real-time, branch-specific church announcements',
-    'View all church branches and locations',
-    'AI-powered chatbot assistance',
-    'Comprehensive member profile management'
-  ];
-
-  const handleOpenSignup = () => {
-    setShowSignupModal(true);
-  };
-
-  const handleCloseSignup = () => {
-    setShowSignupModal(false);
-  };
-
-  const handleSwitchToReset = () => {
-    setAuthView('reset');
-  };
-
-  const handleBackToLogin = () => {
-    setAuthView('login');
-  };
+  const handleOpenSignup = () => setShowSignupModal(true);
+  const handleCloseSignup = () => setShowSignupModal(false);
+  const handleSwitchToReset = () => setAuthView('reset');
+  const handleBackToLogin = () => setAuthView('login');
 
   return (
-    <div className="user-welcome-container-new">
-      {/* Header */}
-      <header className="user-welcome-header-new">
-        <div className="user-welcome-header-content-new">
-          <div className="user-welcome-logo-section-new">
-            <img src={puacLogo} alt="PUAC Logo" className="user-welcome-logo-image-new" />
-            <div>
-              <h1 className="user-welcome-logo-title-new">FaithLy</h1>
-              <p className="user-welcome-logo-subtitle-new">Loan Management Portal</p>
+    <div className="fl-page">
+
+      {/* ── NAV ── */}
+      <nav className="fl-nav">
+        <div className="fl-nav-brand">
+          <div className="fl-nav-logo">
+            <svg viewBox="0 0 18 18"><rect x="7" y="1" width="4" height="16" rx="1" /><rect x="1" y="5.5" width="16" height="4" rx="1" /></svg>
+          </div>
+          <span className="fl-nav-brand-name">FaithLy</span>
+        </div>
+        <ul className="fl-nav-links">
+          <li><a href="#features">Features</a></li>
+          <li><a href="#about">About</a></li>
+          <li>
+            <button className="fl-nav-btn" onClick={handleOpenSignup}>Sign Up</button>
+          </li>
+        </ul>
+      </nav>
+
+      {/* ── HERO ── */}
+      <section className="fl-hero">
+        <div className="fl-hero-pill">
+          <span className="fl-live-dot" />
+          Philippine United Apostolic Church
+        </div>
+        <h1 className="fl-hero-title">
+          Your Church,&nbsp;<br /><em>Closer</em> Than Ever
+        </h1>
+        <p className="fl-hero-church">Church Portal &amp; Community Platform</p>
+        <p className="fl-hero-desc">
+          Access loans, make donations, track attendance, and stay connected with your church community — all in one secure platform built for faith.
+        </p>
+
+        {/* ── HERO LOGIN CARD ── */}
+        <div className="fl-hero-card-wrap">
+          <div className="fl-hero-split">
+
+            {/* Left copy */}
+            <div className="fl-hero-left">
+              <p className="fl-eyebrow">Member Access</p>
+              <h2 className="fl-section-heading">Welcome<br /><em>Back</em></h2>
+              <p className="fl-section-body">
+                Sign in to your personalized church portal. Everything you need — loans, donations, attendance, and announcements — is just one login away.
+              </p>
+              <div className="fl-perks">
+                <div className="fl-perk">
+                  <div className="fl-perk-icon">
+                    <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" /></svg>
+                  </div>
+                  Real-time loan tracking &amp; repayment status
+                </div>
+                <div className="fl-perk">
+                  <div className="fl-perk-icon">
+                    <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" /></svg>
+                  </div>
+                  GCash, bank transfer &amp; cash donations
+                </div>
+                <div className="fl-perk">
+                  <div className="fl-perk-icon">
+                    <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 01-3.46 0" /></svg>
+                  </div>
+                  Branch-specific announcements &amp; updates
+                </div>
+              </div>
+
+              {/* Stats */}
+              <div className="fl-stats">
+                <div className="fl-stat">
+                  <span className="fl-stat-num">2,340+</span>
+                  <span className="fl-stat-label">Active Members</span>
+                </div>
+                <div className="fl-stat">
+                  <span className="fl-stat-num">₱2.5M+</span>
+                  <span className="fl-stat-label">Loans Processed</span>
+                </div>
+                <div className="fl-stat">
+                  <span className="fl-stat-num">25</span>
+                  <span className="fl-stat-label">Branch Locations</span>
+                </div>
+              </div>
             </div>
+
+            {/* Right — embedded form */}
+            <div className="fl-login-right">
+              {authView === 'login' ? (
+                <LoginModal
+                  embedded={true}
+                  onSwitchToSignup={handleOpenSignup}
+                  onSwitchToReset={handleSwitchToReset}
+                />
+              ) : (
+                <ResetPassword
+                  embedded={true}
+                  onBackToLogin={handleBackToLogin}
+                />
+              )}
+            </div>
+
           </div>
         </div>
-      </header>
 
-      {/* Hero Section */}
-      <div className="user-hero-section-new">
-        <div className="user-hero-grid-new">
-          {/* Left Content */}
-          <div className="user-hero-left-new">
-            <div className="user-trust-badge-new">
-              <span className="user-pulse-dot-new"></span>
-              <span className="user-trust-text-new">Trusted by 2,340+ members</span>
-            </div>
-
-            <h1 className="user-hero-title-new">
-              Philippine United Apostolic Church
-              <span className="user-hero-title-gradient-new">
-                Church Portal
-              </span>
-            </h1>
-
-            <p className="user-hero-description-new">
-              Access loans, make donations, track attendance, and stay connected with your church community—all in one secure platform.
-            </p>
-
-            <div className="user-hero-buttons-new">
-              <button onClick={handleOpenSignup} className="user-btn-primary-new">
-                Get Started 
-              </button>
-            </div>
-
-            {/* Stats */}
-            <div className="user-stats-grid-new">
-              <div className="user-stat-item-new">
-                <p className="user-stat-number-new">2,340+</p>
-                <p className="user-stat-label-new">Active Members</p>
-              </div>
-              <div className="user-stat-item-new">
-                <p className="user-stat-number-new">₱2.5M+</p>
-                <p className="user-stat-label-new">Loans Processed</p>
-              </div>
-              <div className="user-stat-item-new">
-                <p className="user-stat-number-new">25</p>
-                <p className="user-stat-label-new">Branch Locations</p>
-              </div>
-            </div>
+        {/* cross ornament */}
+        <div className="fl-ornament">
+          <div className="fl-ornament-line" />
+          <div className="fl-ornament-cross">
+            <svg viewBox="0 0 18 18"><rect x="6.5" y="1" width="5" height="16" rx="1" /><rect x="1" y="5.5" width="16" height="5" rx="1" /></svg>
           </div>
+          <div className="fl-ornament-line" />
+        </div>
+      </section>
 
-          {/* Right Content - Embedded Login/Reset Form */}
-          <div className="user-login-card-container">
-            {authView === 'login' ? (
-              <LoginModal 
-                embedded={true} 
-                onSwitchToSignup={handleOpenSignup}
-                onSwitchToReset={handleSwitchToReset}
-              />
-            ) : (
-              <ResetPassword
-                embedded={true}
-                onBackToLogin={handleBackToLogin}
-              />
-            )}
-          </div>
+      {/* ── STATS BAND ── */}
+      <div className="fl-stats-band">
+        <div className="fl-stat-item">
+          <span className="fl-stat-band-num">2,340+</span>
+          <span className="fl-stat-band-label">Active Members</span>
+        </div>
+        <div className="fl-stat-item">
+          <span className="fl-stat-band-num">9</span>
+          <span className="fl-stat-band-label">Church Branches</span>
+        </div>
+        <div className="fl-stat-item">
+          <span className="fl-stat-band-num">100%</span>
+          <span className="fl-stat-band-label">Secure &amp; Encrypted</span>
+        </div>
+        <div className="fl-stat-item">
+          <span className="fl-stat-band-num">24/7</span>
+          <span className="fl-stat-band-label">AI Support</span>
         </div>
       </div>
 
-      {/* Benefits Section */}
-      <div className="user-benefits-section-new">
-        <div className="user-benefits-content-new">
-          <div className="user-benefits-header-new">
-            <h2 className="user-benefits-title-new">Everything You Need in One Place</h2>
-            <p className="user-benefits-description-new">
-              Our comprehensive platform provides all the tools you need to manage your church finances and stay connected.
-            </p>
-          </div>
-
-          <div className="user-benefits-grid-new">
-            {benefits.map((benefit, index) => (
-              <div key={index} className="user-benefit-item-new">
-                <CheckCircle className="user-benefit-icon-new" />
-                <p className="user-benefit-text-new">{benefit}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* CTA Section */}
-      <div className="user-cta-section-new">
-        <div className="user-cta-card-new">
-          <h2 className="user-cta-title-new">Ready to Get Started?</h2>
-          <p className="user-cta-description-new">
-            Join thousands of members already using our platform to manage their church finances and stay connected.
+      {/* ── FEATURES ── */}
+      <section className="fl-features" id="features">
+        <div className="fl-section-center">
+          <p className="fl-eyebrow fl-eyebrow-center">Everything You Need</p>
+          <h2 className="fl-section-heading fl-text-center">All in <em>One Place</em></h2>
+          <p className="fl-section-body fl-text-center fl-mx-auto">
+            Our platform gives every church member the tools to manage finances and stay connected — designed to be simple for all ages.
           </p>
-          <button onClick={handleOpenSignup} className="user-cta-button-new">
-            Create Your Account
-          </button>
         </div>
-      </div>
+        <div className="fl-features-grid">
+          {features.map((f, i) => (
+            <div className="fl-feature-card" key={i}>
+              <div className="fl-feat-icon-wrap">{f.icon}</div>
+              <h4>{f.title}</h4>
+              <p>{f.desc}</p>
+              {f.badges && (
+                <div className="fl-payment-badges">
+                  {f.badges.map(b => <span className="fl-badge" key={b}>{b}</span>)}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
 
-      {/* Footer */}
-      <footer className="user-welcome-footer-new">
-        <div className="user-footer-content-new">
-          <p className="user-footer-text-new">
-            © 2026 FaithLy. All rights reserved. | Secure & Trusted Church Management Platform
-          </p>
+      {/* ── CTA ── */}
+      <section className="fl-cta">
+        <p className="fl-cta-eyebrow">Get Started Today</p>
+        <h2 className="fl-cta-title">Join <em>Thousands</em> of Members Already Connected</h2>
+        <p className="fl-cta-body">
+          Create your account and access everything your church community has to offer — all in one secure place.
+        </p>
+        <button className="fl-btn-gold" onClick={handleOpenSignup}>Create Your Account</button>
+      </section>
+
+      {/* ── FOOTER ── */}
+      <footer className="fl-footer">
+        <div className="fl-footer-left">
+          <div className="fl-footer-logo">
+            <svg viewBox="0 0 18 18"><rect x="6.5" y="1" width="5" height="16" rx="1" /><rect x="1" y="5.5" width="16" height="5" rx="1" /></svg>
+          </div>
+          <span className="fl-footer-name">FaithLy</span>
+        </div>
+        <p className="fl-footer-copy">
+          © 2026 FaithLy. All rights reserved.<br />Philippine United Apostolic Church Portal
+        </p>
+        <div className="fl-footer-secure">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+          Secure &amp; Trusted Platform
         </div>
       </footer>
 
-      {/* Signup Modal */}
+      {/* ── SIGNUP MODAL ── */}
       <SignupModal
         isOpen={showSignupModal}
         onClose={handleCloseSignup}
-        onSwitchToLogin={() => {
-          // Close signup modal - login is already visible on page
-          handleCloseSignup();
-        }}
+        onSwitchToLogin={handleCloseSignup}
       />
     </div>
   );
