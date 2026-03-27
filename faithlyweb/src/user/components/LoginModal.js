@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 import { Mail, Lock, Eye, EyeOff, X, AlertTriangle } from 'lucide-react';
+import puacLogo from '../../assets/puaclogo.png';
 import '../styles/LoginModal.css';
 
 // Valid email domains list
@@ -50,23 +51,8 @@ const validateEmailAdvanced = (email) => {
 // ── FaithLy brand mark (cross SVG) ───────────────────────────────────────────
 const BrandMark = () => (
   <div className="user-login-brand">
-    <div className="user-login-brand-mark">
-      <svg viewBox="0 0 18 18">
-        <rect x="6.5" y="1" width="5" height="16" rx="1" />
-        <rect x="1" y="5.5" width="16" height="5" rx="1" />
-      </svg>
-    </div>
+    <img src={puacLogo} alt="PUAC Logo" className="user-login-brand-mark-img" />
     <span className="user-login-brand-name">FaithLy</span>
-  </div>
-);
-
-// ── Shield trust badge ────────────────────────────────────────────────────────
-const TrustBadge = () => (
-  <div className="user-login-trust">
-    <svg viewBox="0 0 24 24">
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-    </svg>
-    Secured &amp; encrypted platform
   </div>
 );
 

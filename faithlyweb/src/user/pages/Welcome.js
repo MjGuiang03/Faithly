@@ -60,8 +60,8 @@ const features = [
     icon: (
       <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>
     ),
-    title: 'AI Chatbot Assistant',
-    desc: 'Get instant answers about loans, donations, and services — available around the clock.',
+    title: 'Chatbot Assistant',
+    desc: 'Our built-in chatbot provides instant support for questions about loans, donations, and services — anytime, day or night.',
   },
   {
     icon: (
@@ -141,7 +141,7 @@ export default function Welcome() {
             {/* Left copy */}
             <div className="fl-hero-left">
               <p className="fl-eyebrow">Member Access</p>
-              <h2 className="fl-section-heading">Welcome<br /><em>Back</em></h2>
+              <h2 className="fl-section-heading">Welcome to<em>FaithLy</em></h2>
               <p className="fl-section-body">
                 Sign in to your personalized church portal. Everything you need — loans, donations, attendance, and announcements — is just one login away.
               </p>
@@ -186,14 +186,6 @@ export default function Welcome() {
           </div>
         </div>
 
-        {/* cross ornament */}
-        <div className="fl-ornament">
-          <div className="fl-ornament-line" />
-          <div className="fl-ornament-cross">
-            <svg viewBox="0 0 18 18"><rect x="6.5" y="1" width="5" height="16" rx="1" /><rect x="1" y="5.5" width="16" height="5" rx="1" /></svg>
-          </div>
-          <div className="fl-ornament-line" />
-        </div>
       </section>
 
       {/* ── STATS BAND ── */}
@@ -209,10 +201,6 @@ export default function Welcome() {
         <div className="fl-stat-item">
           <span className="fl-stat-band-num">100%</span>
           <span className="fl-stat-band-label">Secure &amp; Encrypted</span>
-        </div>
-        <div className="fl-stat-item">
-          <span className="fl-stat-band-num">24/7</span>
-          <span className="fl-stat-band-label">AI Support</span>
         </div>
       </div>
 
@@ -244,7 +232,7 @@ export default function Welcome() {
       {/* ── CTA ── */}
       <section className="fl-cta">
         <p className="fl-cta-eyebrow">Get Started Today</p>
-        <h2 className="fl-cta-title">Join <em>Thousands</em> of Members Already Connected</h2>
+        <h2 className="fl-cta-title">Join Our <em>Growing Community</em> Today</h2>
         <p className="fl-cta-body">
           Create your account and access everything your church community has to offer — all in one secure place.
         </p>

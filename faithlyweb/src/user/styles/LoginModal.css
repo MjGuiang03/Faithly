@@ -111,21 +111,12 @@
   margin-bottom: 20px;
 }
 
-.user-login-brand-mark {
+.user-login-brand-mark-img {
   width: 30px;
   height: 30px;
-  background: #1e3a8a;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  object-fit: contain;
   flex-shrink: 0;
-}
-
-.user-login-brand-mark svg {
-  width: 15px;
-  height: 15px;
-  fill: #f5c800;
+  border-radius: 6px;
 }
 
 .user-login-brand-name {
