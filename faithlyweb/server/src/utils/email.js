@@ -15,7 +15,7 @@ export const sendOTP = async (email, otp, subject = 'Your Email Verification Cod
 
   try {
     const data = await resend.emails.send({
-      from: 'Faithly <onboarding@resend.dev>', // Use this test email until you buy a custom domain
+      from: 'FaithLy <no-reply@puacfaithly.com>', // Official verified domain
       to: email,
       subject: subject,
       html: `<h2>${title}</h2><h1>${otp}</h1><p>Expires in 15 minutes</p>`
