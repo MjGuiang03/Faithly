@@ -371,7 +371,7 @@ export default function Loans() {
                         : '—'}
                     </div>
                   </div>
-                  <div className={`ul-stat-card ${nextDueLoan ? 'ul-stat-card--warn' : ''}`}>
+                  <div className={`ul-stat-card ${nextDueLoan && nextDueLoan.nextPaymentDate && new Date(nextDueLoan.nextPaymentDate) < new Date() ? 'ul-stat-card--warn' : ''}`}>
                     {nextDueLoan ? (
                       <>
                         <label className="ul-stat-label">Next Payment</label>
@@ -454,9 +454,9 @@ export default function Loans() {
                                     {loan.status === 'active' && loan.remainingBalance != null ? fmt(loan.remainingBalance) : '—'}
                                   </div>
                                 </div>
-                                <div className={`ul-meta-item ${loan.nextPaymentDate ? 'ul-meta-item--warn' : ''}`}>
+                                <div className={`ul-meta-item ${loan.nextPaymentDate && new Date(loan.nextPaymentDate) < new Date() ? 'ul-meta-item--warn' : ''}`}>
                                   <div className="ul-meta-label">Next due date</div>
-                                  <div className={`ul-meta-value ${loan.nextPaymentDate ? 'ul-meta-value--warn' : ''}`}>
+                                  <div className={`ul-meta-value ${loan.nextPaymentDate && new Date(loan.nextPaymentDate) < new Date() ? 'ul-meta-value--warn' : ''}`}>
                                     {loan.nextPaymentDate ? fmtDate(loan.nextPaymentDate) : '—'}
                                   </div>
                                 </div>

@@ -36,11 +36,19 @@ function enrichLoanWithNextPayment(loan) {
   const term = loan.termMonths || 12;
   const paidMonths = loan.paidMonths || 0;
   if (paidMonths >= term) return loan; // fully paid
+
+  // Use disbursementDate as the definitive start.
+  // approvedDate is when the loan was approved — disbursement may happen the same day,
+  // so using it would make the next due date appear to be the same day.
+  // We ONLY fall back if disbursementDate is truly not set.
   const startDate = new Date(loan.disbursementDate || loan.approvedDate || loan.appliedDate);
+
+  // Next payment is due (paidMonths + 1) months after disbursement
   const nextDue = new Date(startDate);
   nextDue.setMonth(startDate.getMonth() + paidMonths + 1);
   return { ...loan, nextPaymentDate: nextDue };
 }
+
 
 /* ================== USER - APPLY FOR LOAN ================== */
 router.post('/loans/apply', authenticateUser, async (req, res) => {
@@ -612,6 +620,22 @@ router.get('/loans/:id/payment-history', authenticateUser, async (req, res) => {
         res.status(500).json({ success: false, message: 'Failed to fetch payment history' });
     }
 });
+
+/* ================== USER - MY PENDING PAYMENTS ================== */
+router.get('/loans/my-pending-payments', authenticateUser, async (req, res) => {
+    try {
+        const email = req.user.email;
+        const payments = await loanPayments
+            .find({ email, status: 'pending' })
+            .sort({ submittedAt: -1 })
+            .toArray();
+        res.json({ success: true, payments });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Failed to fetch pending payments' });
+    }
+});
+
 
 /* ================== ADMIN - LOAN REPORTS ================== */
 router.get('/admin/loan-reports', authenticateAdmin, async (req, res) => {

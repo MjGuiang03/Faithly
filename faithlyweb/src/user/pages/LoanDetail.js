@@ -491,7 +491,7 @@ export default function LoanDetail() {
                                 <div className="ld-stat-value">{fmt(loan.monthlyPayment)}</div>
                                 <div className="ld-stat-sub">Over {loan.termMonths} months</div>
                             </div>
-                            <div className={`ld-stat-card ${loan.nextPaymentDate ? 'ld-stat-card--warn' : ''}`}>
+                            <div className={`ld-stat-card ${loan.nextPaymentDate && new Date(loan.nextPaymentDate) < new Date() ? 'ld-stat-card--warn' : ''}`}>
                                 <label className="ld-stat-label">Next due date</label>
                                 <div className="ld-stat-value">
                                     {loan.nextPaymentDate

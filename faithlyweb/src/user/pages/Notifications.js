@@ -45,18 +45,20 @@ export default function Notifications() {
     const hdrs  = { Authorization: `Bearer ${token}` };
 
     try {
-      const [lRes, dRes, aRes, sRes] = await Promise.all([
-        fetch(`${API}/api/loans/my-loans`,           { headers: hdrs }),
-        fetch(`${API}/api/donations/my-donations`,   { headers: hdrs }),
-        fetch(`${API}/api/attendance/my-attendance`, { headers: hdrs }),
-        fetch(`${API}/api/savings/transactions`,     { headers: hdrs }),
+      const [lRes, dRes, aRes, sRes, ppRes] = await Promise.all([
+        fetch(`${API}/api/loans/my-loans`,                 { headers: hdrs }),
+        fetch(`${API}/api/donations/my-donations`,         { headers: hdrs }),
+        fetch(`${API}/api/attendance/my-attendance`,       { headers: hdrs }),
+        fetch(`${API}/api/savings/transactions`,           { headers: hdrs }),
+        fetch(`${API}/api/loans/my-pending-payments`,      { headers: hdrs }),
       ]);
 
-      const [lData, dData, aData, sData] = await Promise.all([
+      const [lData, dData, aData, sData, ppData] = await Promise.all([
         lRes.ok ? lRes.json() : { loans: [] },
         dRes.ok ? dRes.json() : { donations: [] },
         aRes.ok ? aRes.json() : { attendance: [] },
         sRes.ok ? sRes.json() : { transactions: [] },
+        ppRes.ok ? ppRes.json() : { payments: [] },
       ]);
 
       const items = [];
@@ -146,6 +148,18 @@ export default function Notifications() {
         }
       });
 
+      /* Pending Payments → notifications */
+      (ppData.payments || []).forEach((p) => {
+        items.push({
+          id:          `payment-pending-${p._id}`,
+          type:        'payment_pending',
+          timestamp:   p.submittedAt,
+          title:       'Payment Submitted — Awaiting Confirmation',
+          message:     `Your Month #${p.monthNumber} payment of ₱${Number(p.amount).toLocaleString()} via ${(p.paymentMethod || 'cash').toUpperCase()} has been submitted and is pending admin confirmation.`,
+          paymentData: p,
+        });
+      });
+
       /* Donations → notifications */
       (dData.donations || []).forEach((d) => {
         items.push({
@@ -225,6 +239,14 @@ export default function Notifications() {
 
   /* ── UI helpers ── */
   const getIcon = (type) => {
+    if (type === 'payment_pending') return (
+      <div className="user-notif-icon" style={{ background: '#FFF7ED', border: '1px solid #FED7AA', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <circle cx="9" cy="9" r="7.5" stroke="#EA580C" strokeWidth="1.4"/>
+          <path d="M9 5.5v4l2.5 1.5" stroke="#EA580C" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </div>
+    );
     if (type === 'loan') return (
       <div className="user-notif-icon user-notif-icon-loan">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -256,7 +278,10 @@ export default function Notifications() {
   };
 
   const badgeClass = (type) =>
-    type === 'loan' ? 'user-notif-badge-loan' : (type === 'donation' || type === 'savings') ? 'user-notif-badge-donation' : 'user-notif-badge-attendance';
+    type === 'loan' ? 'user-notif-badge-loan'
+    : (type === 'donation' || type === 'savings') ? 'user-notif-badge-donation'
+    : type === 'payment_pending' ? 'user-notif-badge-loan'
+    : 'user-notif-badge-attendance';
 
   const cardClass = (type, isRead, actionRequired) => {
     if (actionRequired) return 'user-notif-card user-notif-card-action';
@@ -286,7 +311,11 @@ export default function Notifications() {
   };
 
   const badgeLabel = (type) =>
-    type === 'loan' ? 'Loan' : type === 'donation' ? 'Donation' : type === 'savings' ? 'Savings' : 'Attendance';
+    type === 'loan' ? 'Loan'
+    : type === 'donation' ? 'Donation'
+    : type === 'savings' ? 'Savings'
+    : type === 'payment_pending' ? 'Payment'
+    : 'Attendance';
 
   return (
     <div className="user-notif-page">
@@ -311,11 +340,12 @@ export default function Notifications() {
         {/* Filter Tabs */}
         <div className="user-notif-filters">
           {[
-            { key: 'all',        label: 'All'              },
-            { key: 'attendance', label: 'Attendance'       },
-            { key: 'loan',       label: 'Loan Transaction' },
-            { key: 'donation',   label: 'Donations'        },
-            { key: 'savings',    label: 'Savings'          },
+            { key: 'all',             label: 'All'              },
+            { key: 'attendance',     label: 'Attendance'       },
+            { key: 'loan',           label: 'Loan Transaction' },
+            { key: 'payment_pending',label: 'Pending Payments' },
+            { key: 'donation',       label: 'Donations'        },
+            { key: 'savings',        label: 'Savings'          },
           ].map(({ key, label }) => (
             <button
               key={key}
@@ -464,6 +494,34 @@ export default function Notifications() {
               <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', color: '#374151', lineHeight: '22px', margin: 0 }}>
                 {detailModal.message}
               </p>
+              {/* Payment pending detail view */}
+              {detailModal.type === 'payment_pending' && detailModal.paymentData && (
+                <div style={{ marginTop: '16px', background: '#FFF7ED', border: '1px solid #FED7AA', borderRadius: '10px', padding: '14px 16px' }}>
+                  <p style={{ fontFamily: 'Inter', fontSize: '12px', fontWeight: 700, color: '#C2410C', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Payment Details</p>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                    <div><div style={{ fontFamily: 'Inter', fontSize: '11px', color: '#9CA3AF' }}>Loan ID</div><div style={{ fontFamily: 'Inter', fontSize: '13px', fontWeight: 600, color: '#111827' }}>{detailModal.paymentData.loanId}</div></div>
+                    <div><div style={{ fontFamily: 'Inter', fontSize: '11px', color: '#9CA3AF' }}>Month #</div><div style={{ fontFamily: 'Inter', fontSize: '13px', fontWeight: 600, color: '#111827' }}>{detailModal.paymentData.monthNumber}</div></div>
+                    <div><div style={{ fontFamily: 'Inter', fontSize: '11px', color: '#9CA3AF' }}>Amount</div><div style={{ fontFamily: 'Inter', fontSize: '14px', fontWeight: 700, color: '#EA580C' }}>₱{Number(detailModal.paymentData.amount).toLocaleString()}</div></div>
+                    <div><div style={{ fontFamily: 'Inter', fontSize: '11px', color: '#9CA3AF' }}>Method</div><div style={{ fontFamily: 'Inter', fontSize: '13px', fontWeight: 600, color: '#111827', textTransform: 'capitalize' }}>{detailModal.paymentData.paymentMethod}</div></div>
+                    <div style={{ gridColumn: '1 / -1' }}><div style={{ fontFamily: 'Inter', fontSize: '11px', color: '#9CA3AF' }}>Submitted</div><div style={{ fontFamily: 'Inter', fontSize: '13px', color: '#374151' }}>{detailModal.paymentData.submittedAt ? new Date(detailModal.paymentData.submittedAt).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}</div></div>
+                  </div>
+                  <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#EA580C" strokeWidth="1.2"/><path d="M6 4v2.5l1.5 1" stroke="#EA580C" strokeWidth="1.2" strokeLinecap="round"/></svg>
+                    <span style={{ fontFamily: 'Inter', fontSize: '11px', color: '#EA580C', fontWeight: 600 }}>Pending admin confirmation</span>
+                  </div>
+                  {detailModal.paymentData.proofData && (
+                    <div style={{ marginTop: '12px' }}>
+                      <div style={{ fontFamily: 'Inter', fontSize: '11px', color: '#9CA3AF', marginBottom: '6px' }}>Proof of Payment</div>
+                      <img
+                        src={detailModal.paymentData.proofData}
+                        alt="Payment proof"
+                        onClick={() => window.open(detailModal.paymentData.proofData, '_blank')}
+                        style={{ width: '100%', maxHeight: '200px', objectFit: 'contain', borderRadius: '8px', border: '1px solid #FED7AA', cursor: 'pointer' }}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
               {detailModal.proofData && (
                 <div style={{ marginTop: '16px' }}>
                   <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '12px', fontWeight: 600, color: '#6B7280', marginBottom: '8px' }}>Disbursement Proof</p>
