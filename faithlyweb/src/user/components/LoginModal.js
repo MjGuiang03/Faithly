@@ -315,9 +315,6 @@ export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, o
           Sign Up
         </button>
       </p>
-
-      {/* TRUST BADGE */}
-      <TrustBadge />
     </form>
   );
 
