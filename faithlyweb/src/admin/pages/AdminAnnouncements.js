@@ -23,7 +23,8 @@ export default function AdminAnnouncements() {
   const [form, setForm] = useState({
     title: '', body: '', category: 'General',
     eventDate: '', expiresAt: '',
-    visibility: 'all', targetBranches: []
+    visibility: 'all', targetBranches: [],
+    imageBase64: ''
   });
 
   const fetchAnnouncements = useCallback(async () => {
@@ -100,7 +101,7 @@ export default function AdminAnnouncements() {
         setForm({
           title: '', body: '', category: 'General',
           eventDate: '', expiresAt: '',
-          visibility: 'all', targetBranches: []
+          visibility: 'all', targetBranches: [], imageBase64: ''
         });
         fetchAnnouncements();
       } else {
@@ -111,6 +112,25 @@ export default function AdminAnnouncements() {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) {
+      setForm(prev => ({ ...prev, imageBase64: '' }));
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Image must be less than 2MB');
+      e.target.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setForm(prev => ({ ...prev, imageBase64: reader.result }));
+    };
+    reader.onerror = () => toast.error('Failed to read image');
+    reader.readAsDataURL(file);
   };
 
   const handleDelete = async (id) => {
@@ -177,6 +197,22 @@ export default function AdminAnnouncements() {
                 onChange={handleChange}
                 required
               />
+            </div>
+
+            {/* Optional Image */}
+            <div className="admin-announce-form-group">
+              <label className="admin-announce-label">Event Banner / Image (Optional)</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="admin-announce-input"
+              />
+              {form.imageBase64 && (
+                <div style={{ marginTop: 10, borderRadius: 8, overflow: 'hidden', maxWidth: 200 }}>
+                  <img src={form.imageBase64} alt="Preview" style={{ width: '100%', display: 'block' }} />
+                </div>
+              )}
             </div>
             <div className="admin-announce-form-group">
               <label className="admin-announce-label">Category</label>

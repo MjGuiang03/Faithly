@@ -141,7 +141,7 @@ export default function Welcome() {
             {/* Left copy */}
             <div className="fl-hero-left">
               <p className="fl-eyebrow">Member Access</p>
-              <h2 className="fl-section-heading">Welcome to<em>FaithLy</em></h2>
+              <h2 className="fl-section-heading">Welcome to <em>FaithLy</em></h2>
               <p className="fl-section-body">
                 Sign in to your personalized church portal. Everything you need — loans, donations, attendance, and announcements — is just one login away.
               </p>

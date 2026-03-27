@@ -80,6 +80,11 @@ export default function AnnouncementModal({ isOpen, onClose }) {
                   <h3 className="ann-item-title">{a.title}</h3>
                   <span className="ann-item-category">{a.category}</span>
                 </div>
+                {a.image && (
+                  <div className="ann-item-image-wrapper" style={{ marginTop: '12px', marginBottom: '12px', borderRadius: '8px', overflow: 'hidden' }}>
+                    <img src={a.image} alt="Announcement Banner" style={{ width: '100%', display: 'block', objectFit: 'cover' }} />
+                  </div>
+                )}
                 <p className="ann-item-body">{a.body}</p>
                 {a.eventDate && (
                   <div className="ann-item-event">

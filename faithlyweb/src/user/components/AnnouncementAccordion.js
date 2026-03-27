@@ -38,6 +38,11 @@ function AccordionItem({ item, isOpen, onToggle }) {
         style={{ height: isOpen ? contentRef.current?.scrollHeight + 'px' : '0px' }}
       >
         <div className="aa-item-content" ref={contentRef}>
+          {item.image && (
+            <div className="aa-item-image-wrapper" style={{ marginBottom: '12px', borderRadius: '8px', overflow: 'hidden' }}>
+              <img src={item.image} alt="Announcement Banner" style={{ width: '100%', display: 'block', objectFit: 'cover' }} />
+            </div>
+          )}
           <p className="aa-item-body">{item.body}</p>
           
           {item.eventDate && (

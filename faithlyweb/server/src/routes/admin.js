@@ -459,7 +459,7 @@ router.get('/announcements', async (req, res) => {
 /* ================== ANNOUNCEMENTS - CREATE (ADMIN) ================== */
 router.post('/announcements', authenticateAdmin, async (req, res) => {
   try {
-    const { title, body, category, eventDate, expiresAt, visibility, targetBranches } = req.body;
+    const { title, body, category, eventDate, expiresAt, visibility, targetBranches, imageBase64 } = req.body;
     if (!title || !body) {
       return res.status(400).json({ success: false, message: 'Title and body are required' });
     }
@@ -471,6 +471,7 @@ router.post('/announcements', authenticateAdmin, async (req, res) => {
       expiresAt: expiresAt ? new Date(expiresAt) : null,
       visibility: visibility || 'all',
       targetBranches: Array.isArray(targetBranches) ? targetBranches : [],
+      image: imageBase64 || null,
       createdBy: req.admin.email,
       createdAt: new Date(),
     };
