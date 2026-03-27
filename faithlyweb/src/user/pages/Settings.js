@@ -177,9 +177,10 @@ export default function Settings() {
   // const displayCommunity = profile?.branch   || profile?.community || '';
   const avatarSrc        = photoPreview || profile?.photoUrl || null;
 
-  const accountCreated = user?.createdAt
-    ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-    : 'February 1, 2026';
+  const accountCreatedRaw = user?.created_at || user?.createdAt;
+  const accountCreated = accountCreatedRaw
+    ? new Date(accountCreatedRaw).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+    : 'Not set';
 
   const dateOfBirthRaw = profile?.birthday || profile?.dateOfBirth;
   const dateOfBirth    = dateOfBirthRaw
