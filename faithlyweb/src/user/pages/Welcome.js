@@ -81,6 +81,11 @@ export default function Welcome() {
   const handleSwitchToReset = () => setAuthView('reset');
   const handleBackToLogin = () => setAuthView('login');
 
+  const scrollToLogin = () => {
+    setAuthView('login');
+    document.getElementById('login-section')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
     <div className="fl-page">
 
@@ -96,17 +101,13 @@ export default function Welcome() {
           <li><a href="#features">Features</a></li>
           <li><a href="#about">About</a></li>
           <li>
-            <button className="fl-nav-btn" onClick={handleOpenSignup}>Sign Up</button>
+            <button className="fl-nav-btn" onClick={scrollToLogin}>Sign In</button>
           </li>
         </ul>
       </nav>
 
       {/* ── HERO ── */}
       <section className="fl-hero">
-        <div className="fl-hero-pill">
-          <span className="fl-live-dot" />
-          Philippine United Apostolic Church
-        </div>
         <h1 className="fl-hero-title">
           Your Church,&nbsp;<br /><em>Closer</em> Than Ever
         </h1>
@@ -115,8 +116,17 @@ export default function Welcome() {
           Access loans, make donations, track attendance, and stay connected with your church community — all in one secure platform built for faith.
         </p>
 
+        <div className="fl-hero-btns">
+          <button className="fl-hero-btn-primary" onClick={scrollToLogin}>
+            Sign In to Portal
+          </button>
+          <a href="#features" className="fl-hero-btn-outline">
+            Explore Features
+          </a>
+        </div>
+
         {/* ── HERO LOGIN CARD ── */}
-        <div className="fl-hero-card-wrap">
+        <div className="fl-hero-card-wrap" id="login-section">
           <div className="fl-hero-split">
 
             {/* Left copy */}
@@ -144,22 +154,6 @@ export default function Welcome() {
                     <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 01-3.46 0" /></svg>
                   </div>
                   Branch-specific announcements &amp; updates
-                </div>
-              </div>
-
-              {/* Stats */}
-              <div className="fl-stats">
-                <div className="fl-stat">
-                  <span className="fl-stat-num">2,340+</span>
-                  <span className="fl-stat-label">Active Members</span>
-                </div>
-                <div className="fl-stat">
-                  <span className="fl-stat-num">₱2.5M+</span>
-                  <span className="fl-stat-label">Loans Processed</span>
-                </div>
-                <div className="fl-stat">
-                  <span className="fl-stat-num">25</span>
-                  <span className="fl-stat-label">Branch Locations</span>
                 </div>
               </div>
             </div>

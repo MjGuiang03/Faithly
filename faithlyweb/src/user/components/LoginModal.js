@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 import { Mail, Lock, Eye, EyeOff, X, AlertTriangle } from 'lucide-react';
-import puacLogo from '../../assets/puaclogo.png';
 import '../styles/LoginModal.css';
 
 // Valid email domains list
@@ -48,23 +47,45 @@ const validateEmailAdvanced = (email) => {
   return '';
 };
 
+// ── FaithLy brand mark (cross SVG) ───────────────────────────────────────────
+const BrandMark = () => (
+  <div className="user-login-brand">
+    <div className="user-login-brand-mark">
+      <svg viewBox="0 0 18 18">
+        <rect x="6.5" y="1" width="5" height="16" rx="1" />
+        <rect x="1" y="5.5" width="16" height="5" rx="1" />
+      </svg>
+    </div>
+    <span className="user-login-brand-name">FaithLy</span>
+  </div>
+);
+
+// ── Shield trust badge ────────────────────────────────────────────────────────
+const TrustBadge = () => (
+  <div className="user-login-trust">
+    <svg viewBox="0 0 24 24">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    </svg>
+    Secured &amp; encrypted platform
+  </div>
+);
 
 export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, onSwitchToReset, embedded = false }) {
   const { signIn } = useAuth();
   const navigate = useNavigate();
 
-  const [email, setEmail]               = useState('');
-  const [password, setPassword]         = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading]           = useState(false);
-  const [error, setError]               = useState('');
-  const [emailError, setEmailError]     = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [emailError, setEmailError] = useState('');
 
   // Lock state — driven entirely by server responses
-  const [isLocked, setIsLocked]                       = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
   const [isPermanentlyLocked, setIsPermanentlyLocked] = useState(false);
-  const [recommendReset, setRecommendReset]           = useState(false);
-  const [lockTimeRemaining, setLockTimeRemaining]     = useState(0);
+  const [recommendReset, setRecommendReset] = useState(false);
+  const [lockTimeRemaining, setLockTimeRemaining] = useState(0);
 
   const timerRef = useRef(null);
 
@@ -112,10 +133,8 @@ export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, o
     e.preventDefault();
     setError('');
 
-    // Prevent submission while locked
     if (isLocked || isPermanentlyLocked) return;
 
-    // Client-side email validation
     const emailValidationError = validateEmailAdvanced(email);
     if (emailValidationError) {
       setEmailError(emailValidationError);
@@ -127,7 +146,6 @@ export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, o
     const result = await signIn(email, password);
 
     if (result.success) {
-      // Successful login — clear everything
       setIsLocked(false);
       setIsPermanentlyLocked(false);
       setRecommendReset(false);
@@ -136,7 +154,6 @@ export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, o
 
       if (onClose) onClose();
 
-      // Role-based redirection
       const role = result.role || 'user';
       if (role === 'admin') {
         navigate('/admin/dashboard');
@@ -148,7 +165,6 @@ export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, o
         navigate('/home');
       }
     } else {
-      // ── Parse server response ────────────────────────────────────────────
       const data = result.data || {};
 
       if (data.permanent) {
@@ -181,19 +197,18 @@ export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, o
 
   // ── Derive button label ────────────────────────────────────────────────────
   const getButtonLabel = () => {
-    if (loading)             return 'Signing in...';
+    if (loading) return 'Signing in...';
     if (isPermanentlyLocked) return 'Account Locked';
-    if (isLocked)            return `Locked (${formatTime(lockTimeRemaining)})`;
+    if (isLocked) return `Locked (${formatTime(lockTimeRemaining)})`;
     return 'Login';
   };
 
-  const inputDisabled  = loading || isLocked || isPermanentlyLocked;
+  const inputDisabled = loading || isLocked || isPermanentlyLocked;
   const buttonDisabled = inputDisabled || !!emailError;
 
-  // ── Derive alert heading label ─────────────────────────────────────────────
   const getAlertHeading = () => {
     if (isPermanentlyLocked) return 'Account Permanently Locked';
-    if (isLocked)            return 'Account Temporarily Locked';
+    if (isLocked) return 'Account Temporarily Locked';
     return 'Sign-in Failed';
   };
 
@@ -211,7 +226,7 @@ export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, o
             value={email}
             onChange={handleEmailChange}
             className={`user-login-input ${emailError ? 'user-login-input-error' : ''}`}
-            placeholder="Enter your email"
+            placeholder="yourname@email.com"
             required
             disabled={inputDisabled}
           />
@@ -229,7 +244,7 @@ export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, o
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="user-login-input user-login-password-input"
-            placeholder="Enter your password"
+            placeholder="••••••••"
             required
             disabled={inputDisabled}
           />
@@ -246,21 +261,17 @@ export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, o
         </div>
       </div>
 
-      {/* ── REDESIGNED ALERT BANNER ── */}
+      {/* ALERT BANNER */}
       {error && (
         <div className="user-login-alert-banner">
           <div className="user-login-alert-body">
-            {/* Icon */}
             <div className="user-login-alert-icon">
               <AlertTriangle />
             </div>
-
-            {/* Content */}
             <div className="user-login-alert-content">
               <span className="user-login-alert-heading">{getAlertHeading()}</span>
               <span className="user-login-alert-message">{error}</span>
 
-              {/* Live countdown badge */}
               {isLocked && lockTimeRemaining > 0 && (
                 <div className="user-login-alert-timer">
                   <span className="user-login-alert-timer-dot" />
@@ -268,7 +279,6 @@ export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, o
                 </div>
               )}
 
-              {/* Reset CTA */}
               {(isPermanentlyLocked || recommendReset) && (
                 <button
                   type="button"
@@ -303,6 +313,12 @@ export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, o
         {getButtonLabel()}
       </button>
 
+      {/* DIVIDER */}
+      <div className="user-login-divider">
+        <span /><p>or</p><span />
+      </div>
+
+      {/* SWITCH TO SIGN UP */}
       <p className="user-login-switch-text">
         Don't have an account?{' '}
         <button
@@ -313,6 +329,9 @@ export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, o
           Sign Up
         </button>
       </p>
+
+      {/* TRUST BADGE */}
+      <TrustBadge />
     </form>
   );
 
@@ -321,7 +340,7 @@ export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, o
     return (
       <div className="user-login-card-embedded">
         <div className="user-login-header">
-          <img src={puacLogo} alt="PUAC Logo" className="user-login-logo" />
+          <BrandMark />
           <h1 className="user-login-title">Welcome Back</h1>
           <p className="user-login-subtitle">Sign in to access your account</p>
         </div>
@@ -341,7 +360,7 @@ export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, o
         </button>
 
         <div className="user-login-header">
-          <img src={puacLogo} alt="PUAC Logo" className="user-login-logo" />
+          <BrandMark />
           <h1 className="user-login-title">Welcome Back</h1>
           <p className="user-login-subtitle">Sign in to access your account</p>
         </div>

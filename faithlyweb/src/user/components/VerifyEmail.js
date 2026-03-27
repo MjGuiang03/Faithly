@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
-import { CheckCircle, AlertCircle, Loader } from 'lucide-react';
+import { CheckCircle, AlertCircle, Loader, X } from 'lucide-react';
 import { toast } from 'sonner';
 import puacLogo from '../../assets/puaclogo.png';
 import '../styles/Verify.css';
@@ -167,6 +167,11 @@ export default function VerifyEmailModal({ isOpen, onClose, email, onVerify, onR
     <div className="user-verify-container">
       <div className="user-verify-wrapper">
         <div className="user-verify-card">
+          {onClose && (
+            <button onClick={onClose} className="user-verify-close-btn" type="button" aria-label="Close">
+              <X size={20} />
+            </button>
+          )}
           
           <div className="user-verify-header">
             <div className="user-verify-icon-wrapper">

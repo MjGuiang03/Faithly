@@ -204,7 +204,7 @@
   font-family: 'Cormorant Garamond', serif;
   font-size: clamp(3rem, 7.5vw, 6.8rem);
   font-weight: 300;
-  line-height: 1.04;
+  line-height: 0.92;
   color: var(--fl-navy);
   max-width: 860px;
   margin-bottom: 14px;
@@ -246,9 +246,63 @@
   color: var(--fl-muted);
   max-width: 490px;
   line-height: 1.8;
-  margin: 0 auto 48px;
+  margin: 0 auto 32px;
   opacity: 0;
   animation: fl-fadeUp 0.8s 0.5s forwards;
+}
+
+.fl-hero-btns {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 48px;
+  opacity: 0;
+  animation: fl-fadeUp 0.8s 0.55s forwards;
+}
+
+.fl-hero-btn-primary {
+  background: var(--fl-navy);
+  color: var(--fl-white);
+  border: 1px solid var(--fl-navy);
+  padding: 13px 28px;
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.fl-hero-btn-primary:hover {
+  background: var(--fl-navy-dark);
+  border-color: var(--fl-navy-dark);
+  transform: translateY(-2px);
+}
+
+.fl-hero-btn-outline {
+  background: transparent;
+  color: var(--fl-navy);
+  border: 1px solid var(--fl-border-mid);
+  padding: 13px 28px;
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.fl-hero-btn-outline:hover {
+  background: var(--fl-surface);
+  border-color: var(--fl-navy-light);
+  transform: translateY(-2px);
 }
 
 /* ── HERO SPLIT (perks + login card) ── */
