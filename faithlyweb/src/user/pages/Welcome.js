@@ -86,6 +86,11 @@ export default function Welcome() {
     document.getElementById('login-section')?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const scrollToFeatures = (e) => {
+    e.preventDefault();
+    document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
     <div className="fl-page">
 
@@ -98,7 +103,7 @@ export default function Welcome() {
           <span className="fl-nav-brand-name">FaithLy</span>
         </div>
         <ul className="fl-nav-links">
-          <li><a href="#features">Features</a></li>
+          <li><a href="#features" onClick={scrollToFeatures}>Features</a></li>
           <li><a href="#about">About</a></li>
           <li>
             <button className="fl-nav-btn" onClick={scrollToLogin}>Sign In</button>
@@ -108,6 +113,10 @@ export default function Welcome() {
 
       {/* ── HERO ── */}
       <section className="fl-hero">
+        <div className="fl-hero-pill">
+          <span className="fl-live-dot"></span>
+          PHILIPPINE UNITED APOSTOLIC CHURCH
+        </div>
         <h1 className="fl-hero-title">
           Your Church,&nbsp;<br /><em>Closer</em> Than Ever
         </h1>
@@ -120,7 +129,7 @@ export default function Welcome() {
           <button className="fl-hero-btn-primary" onClick={scrollToLogin}>
             Sign In to Portal
           </button>
-          <a href="#features" className="fl-hero-btn-outline">
+          <a href="#features" className="fl-hero-btn-outline" onClick={scrollToFeatures}>
             Explore Features
           </a>
         </div>
@@ -194,7 +203,7 @@ export default function Welcome() {
           <span className="fl-stat-band-label">Active Members</span>
         </div>
         <div className="fl-stat-item">
-          <span className="fl-stat-band-num">9</span>
+          <span className="fl-stat-band-num">68</span>
           <span className="fl-stat-band-label">Church Branches</span>
         </div>
         <div className="fl-stat-item">
