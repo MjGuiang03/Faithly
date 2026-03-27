@@ -14,7 +14,6 @@ export default function VerifyEmailModal({ isOpen, onClose, email, onVerify, onR
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
-  const [resendMethod, setResendMethod] = useState('email'); // 'email' or 'sms'
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   
@@ -132,10 +131,10 @@ export default function VerifyEmailModal({ isOpen, onClose, email, onVerify, onR
   setOtp(['', '', '', '', '', '']);
 
   // If a custom onResend is passed (e.g. from Settings), use it
-  const result = onResend ? await onResend() : await resendOTP(email, resendMethod);
+  const result = onResend ? await onResend() : await resendOTP(email, 'email');
 
   if (result?.success) {
-    toast.success(`New OTP sent via ${resendMethod.toUpperCase()}`);
+    toast.success('New OTP sent to your email');
   } else {
     toast.error(result?.message || 'Failed to resend OTP. Please try again.');
   }
@@ -229,34 +228,8 @@ export default function VerifyEmailModal({ isOpen, onClose, email, onVerify, onR
           <div className="user-verify-footer">
             <p className="user-verify-footer-text">Didn't receive the code?</p>
             
-            <div className="resend-methods-pill">
-              <button 
-                type="button"
-                className={`resend-method-btn ${resendMethod === 'sms' ? 'active' : ''}`}
-                onClick={() => setResendMethod('sms')}
-                disabled={resendLoading || loading}
-              >
-                <div className={`check-circle ${resendMethod === 'sms' ? 'active' : ''}`}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                </div>
-                <span>Phone</span>
-              </button>
-
-              <button 
-                type="button"
-                className={`resend-method-btn ${resendMethod === 'email' ? 'active' : ''}`}
-                onClick={() => setResendMethod('email')}
-                disabled={resendLoading || loading}
-              >
-                <div className={`check-circle ${resendMethod === 'email' ? 'active' : ''}`}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                </div>
-                <span>Email</span>
-              </button>
+            <div className="resend-methods-pill" style={{ display: 'none' }}>
+              {/* SMS Option Removed */}
             </div>
 
             <button 
