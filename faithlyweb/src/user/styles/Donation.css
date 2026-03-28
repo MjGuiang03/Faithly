@@ -100,10 +100,18 @@
   font-size: 11.5px;
   font-weight: 600;
   color: #000000;
-  margin: 0 0 12px 0;
+  margin: 0;
   font-family: 'Inter', sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.12em;
+}
+
+.user-card-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  min-height: 30px;
 }
 
 .user-donation-form {
@@ -591,6 +599,34 @@
 
 .user-donation-history-item.user-clickable {
   cursor: pointer;
+}
+
+/* Status Badges */
+.user-donation-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.user-donation-status-pending {
+  background: #FEF9C3;
+  color: #854D0E;
+}
+
+.user-donation-status-confirmed {
+  background: #DCFCE7;
+  color: #166534;
+}
+
+.user-donation-status-rejected {
+  background: #FEE2E2;
+  color: #991B1B;
 }
 
 .user-donation-history-main {

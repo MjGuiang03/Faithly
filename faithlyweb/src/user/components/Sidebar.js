@@ -103,22 +103,33 @@ export default function Sidebar() {
       try {
         const readIds = new Set(JSON.parse(localStorage.getItem(READ_KEY) || '[]'));
 
-        const [lRes, dRes, aRes, annRes] = await Promise.all([
+        const [lRes, dRes, aRes, sRes, ppRes] = await Promise.all([
           fetch(`${API}/api/loans/my-loans`, { headers: { Authorization: `Bearer ${token}` } }),
           fetch(`${API}/api/donations/my-donations`, { headers: { Authorization: `Bearer ${token}` } }),
           fetch(`${API}/api/attendance/my-attendance`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${API}/api/admin/announcements${profile?.branch ? `?branch=${encodeURIComponent(profile.branch)}` : ''}`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${API}/api/savings/transactions`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${API}/api/loans/my-pending-payments`, { headers: { Authorization: `Bearer ${token}` } }),
         ]);
 
-        const [lData, dData, aData, annData] = await Promise.all([
+        const [lData, dData, aData, sData, ppData] = await Promise.all([
           lRes.ok ? lRes.json() : { loans: [] },
           dRes.ok ? dRes.json() : { donations: [] },
           aRes.ok ? aRes.json() : { attendance: [] },
-          annRes.ok ? annRes.json() : { announcements: [] },
+          sRes.ok ? sRes.json() : { transactions: [] },
+          ppRes.ok ? ppRes.json() : { payments: [] },
         ]);
 
         let count = 0;
+
+        /* Loans → notifications */
         (lData.loans || []).forEach((l) => {
+          const baseId = `loan-${l._id}`;
+
+          /* Special: awaiting member approval */
+          if (l.status === 'awaiting_member_approval' && l.modifiedTerms) {
+            if (!readIds.has(`loan-terms-${l._id}`)) count++;
+          }
+
           if (l.statusHistory && l.statusHistory.length > 0) {
             l.statusHistory.forEach((history) => {
               let idStr = '';
@@ -126,7 +137,8 @@ export default function Sidebar() {
               else if (history.status === 'approved') idStr = `loan-approved-${l._id}`;
               else if (history.status === 'rejected') idStr = `loan-rejected-${l._id}`;
               else if (history.status === 'processed') idStr = `loan-processed-${l._id}`;
-              
+              else if (history.status === 'payment_confirmed') idStr = `loan-payment-${l._id}-${history.monthNumber || history.date}`;
+
               if (idStr && !readIds.has(idStr)) count++;
             });
           } else {
@@ -139,17 +151,30 @@ export default function Sidebar() {
             if (idStr && !readIds.has(idStr)) count++;
           }
 
-          if (l.status === 'active' && l.nextPaymentDate) {
+          /* Payment reminder */
+          if ((l.status === 'active') && l.nextPaymentDate) {
             if (!readIds.has(`loan-reminder-${l._id}`)) count++;
           }
         });
-        (dData.donations || []).forEach((d) => { if (!readIds.has(`donation-${d._id}`)) count++; });
-        (aData.attendance || []).forEach((a) => { if (!readIds.has(`attendance-${a._id}`)) count++; });
 
-        const annReadKey = 'faithly_ann_read';
-        const readAnnIds = new Set(JSON.parse(localStorage.getItem(annReadKey) || '[]'));
-        (annData.announcements || []).forEach((ann) => {
-          if (!readAnnIds.has(ann._id)) count++;
+        /* Pending Payments  */
+        (ppData.payments || []).forEach((p) => {
+          if (!readIds.has(`payment-pending-${p._id}`)) count++;
+        });
+
+        /* Donations  */
+        (dData.donations || []).forEach((d) => {
+          if (!readIds.has(`donation-${d._id}`)) count++;
+        });
+
+        /* Savings  */
+        (sData.transactions || []).filter(t => t.type === 'deposit').forEach((s) => {
+          if (!readIds.has(`savings-${s._id}`)) count++;
+        });
+
+        /* Attendance  */
+        (aData.attendance || []).forEach((a) => {
+          if (!readIds.has(`attendance-${a._id}`)) count++;
         });
 
         setUnreadCount(count);

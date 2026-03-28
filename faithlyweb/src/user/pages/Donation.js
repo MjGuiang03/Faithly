@@ -119,21 +119,32 @@ export default function Donation() {
     const num = Number(donationAmount);
     if (!num || num <= 0) { setFormError('Please enter a valid donation amount.'); return; }
     if (!donationCategory) { setFormError('Please select a donation category.'); return; }
+    if (!paymentMethod) { setFormError('Please select a payment method.'); return; }
+    if (!proofFile) { setFormError('Please upload proof of payment.'); return; }
 
     setSubmitting(true);
     try {
-      await mockProcessPayment();
+      // Convert proof image to base64
+      const proofImage = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(proofFile);
+      });
+
       const token = localStorage.getItem('token');
       const res = await fetch(`${API}/api/donations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ amount: num, category: donationCategory, paymentMethod, isRecurring }),
+        body: JSON.stringify({ amount: num, category: donationCategory, paymentMethod, isRecurring, proofImage }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Failed to record donation');
       setSuccessModal({ amount: num, category: donationCategory });
       setDonationAmount('');
       setDonationCategory('');
+      setPaymentMethod('');
+      setProofFile(null);
       setIsRecurring(false);
       setHistoryPage(1);
       fetchHistory();
@@ -207,7 +218,9 @@ export default function Donation() {
 
             {/* Left: Make a Donation */}
             <div className="user-donation-form-card">
-              <h2 className="user-donation-section-title">Make a Donation</h2>
+              <div className="user-card-header-row">
+                <h2 className="user-donation-section-title">Make a Donation</h2>
+              </div>
               <div className="user-donation-form">
 
                 {/* Amount */}
@@ -279,104 +292,105 @@ export default function Donation() {
                     </button>
                   </div>
 
-                  {/* ── Payment Account Info ── */}
-                  <div className={`user-payment-info-wrapper ${paymentMethod === 'GCash' ? 'expanded' : ''}`}>
-                    <div className="user-payment-info-box">
-                      <div className="user-payment-info-header">
-                        <img src={gcashLogo} alt="GCash" style={{ width: 50, height: 25, objectFit: 'contain' }} />
-                        <span className="user-payment-info-title">GCash Account Details</span>
-                      </div>
-                      <div className="user-payment-info-content">
-                        <div className="user-payment-info-details">
-                          <div className="user-payment-info-row">
-                            <span className="user-payment-info-label">Account Name</span>
-                            <span className="user-payment-info-value">Faithly Church Ministry</span>
-                          </div>
-                          <div className="user-payment-info-row">
-                            <span className="user-payment-info-label">GCash Number</span>
-                            <span className="user-payment-info-value user-payment-info-value--mono">0917 123 4567</span>
-                          </div>
+                  {/* ── Payment Account & Proof Wrapper ── */}
+                  <div className={`user-payment-info-wrapper ${paymentMethod !== '' ? 'expanded' : ''}`}>
+                    {paymentMethod === 'GCash' && (
+                      <div className="user-payment-info-box">
+                        <div className="user-payment-info-header">
+                          <img src={gcashLogo} alt="GCash" style={{ width: 50, height: 25, objectFit: 'contain' }} />
+                          <span className="user-payment-info-title">GCash Account Details</span>
                         </div>
-                        <div className="user-payment-qr-wrap">
-                          <img src={gcashQr} alt="GCash QR Code" className="user-payment-qr-img" />
-                          <span className="user-payment-qr-label">Scan to pay</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className={`user-payment-info-wrapper ${paymentMethod === 'Bank' ? 'expanded' : ''}`}>
-                    <div className="user-payment-info-box">
-                      <div className="user-payment-info-header">
-                        <img src={bank} alt="Bank" style={{ width: 28, height: 28, objectFit: 'contain' }} />
-                        <span className="user-payment-info-title">Bank Transfer Details</span>
-                      </div>
-                      <div className="user-payment-info-content">
-                        <div className="user-payment-info-details">
-                          <div className="user-payment-info-row">
-                            <span className="user-payment-info-label">Bank Name</span>
-                            <span className="user-payment-info-value">BDO Unibank</span>
+                        <div className="user-payment-info-content">
+                          <div className="user-payment-info-details">
+                            <div className="user-payment-info-row">
+                              <span className="user-payment-info-label">Account Name</span>
+                              <span className="user-payment-info-value">Faithly Church Ministry</span>
+                            </div>
+                            <div className="user-payment-info-row">
+                              <span className="user-payment-info-label">GCash Number</span>
+                              <span className="user-payment-info-value user-payment-info-value--mono">0917 123 4567</span>
+                            </div>
                           </div>
-                          <div className="user-payment-info-row">
-                            <span className="user-payment-info-label">Account Name</span>
-                            <span className="user-payment-info-value">Faithly Church Ministry Inc.</span>
-                          </div>
-                          <div className="user-payment-info-row">
-                            <span className="user-payment-info-label">Account Number</span>
-                            <span className="user-payment-info-value user-payment-info-value--mono">0012 3456 7890</span>
-                          </div>
-                          <div className="user-payment-info-row">
-                            <span className="user-payment-info-label">Branch</span>
-                            <span className="user-payment-info-value">BDO Main Branch</span>
+                          <div className="user-payment-qr-wrap">
+                            <img src={gcashQr} alt="GCash QR Code" className="user-payment-qr-img" />
+                            <span className="user-payment-qr-label">Scan to pay</span>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
-
-                </div>
-
-                {/* ── Proof of Payment ── */}
-                <div className="user-donation-form-group">
-                  <label className="user-donation-form-label">Proof of Payment</label>
-                  <label
-                    htmlFor="donation-proof-upload"
-                    className={`user-proof-upload-box ${proofFile ? 'user-proof-upload-box--done' : ''}`}
-                  >
-                    {proofFile ? (
-                      <>
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="user-proof-upload-icon">
-                          <path d="M20 6L9 17l-5-5" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                        <p className="user-proof-upload-text user-proof-upload-text--done">File selected</p>
-                        <p className="user-proof-upload-subtext">{proofFile.name}</p>
-                        <button
-                          type="button"
-                          className="user-proof-remove-btn"
-                          onClick={(e) => { e.preventDefault(); setProofFile(null); }}
-                        >
-                          Remove
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="user-proof-upload-icon">
-                          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                          <polyline points="17 8 12 3 7 8" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                          <line x1="12" y1="3" x2="12" y2="15" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                        <p className="user-proof-upload-text">Click to upload proof of payment</p>
-                        <p className="user-proof-upload-subtext">Screenshot or photo of payment confirmation · PNG, JPG</p>
-                      </>
                     )}
-                    <input
-                      type="file"
-                      id="donation-proof-upload"
-                      accept="image/png, image/jpeg"
-                      onChange={(e) => setProofFile(e.target.files[0] || null)}
-                      hidden
-                    />
-                  </label>
+
+                    {paymentMethod === 'Bank' && (
+                      <div className="user-payment-info-box">
+                        <div className="user-payment-info-header">
+                          <img src={bank} alt="Bank" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+                          <span className="user-payment-info-title">Bank Transfer Details</span>
+                        </div>
+                        <div className="user-payment-info-content">
+                          <div className="user-payment-info-details">
+                            <div className="user-payment-info-row">
+                              <span className="user-payment-info-label">Bank Name</span>
+                              <span className="user-payment-info-value">BDO Unibank</span>
+                            </div>
+                            <div className="user-payment-info-row">
+                              <span className="user-payment-info-label">Account Name</span>
+                              <span className="user-payment-info-value">Faithly Church Ministry Inc.</span>
+                            </div>
+                            <div className="user-payment-info-row">
+                              <span className="user-payment-info-label">Account Number</span>
+                              <span className="user-payment-info-value user-payment-info-value--mono">0012 3456 7890</span>
+                            </div>
+                            <div className="user-payment-info-row">
+                              <span className="user-payment-info-label">Branch</span>
+                              <span className="user-payment-info-value">BDO Main Branch</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ── Proof of Payment ── */}
+                    <div className="user-donation-form-group" style={{ marginTop: '16px' }}>
+                      <label className="user-donation-form-label">Proof of Payment</label>
+                      <label
+                        htmlFor="donation-proof-upload"
+                        className={`user-proof-upload-box ${proofFile ? 'user-proof-upload-box--done' : ''}`}
+                      >
+                        {proofFile ? (
+                          <>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="user-proof-upload-icon">
+                              <path d="M20 6L9 17l-5-5" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                            <p className="user-proof-upload-text user-proof-upload-text--done">File selected</p>
+                            <p className="user-proof-upload-subtext">{proofFile.name}</p>
+                            <button
+                              type="button"
+                              className="user-proof-remove-btn"
+                              onClick={(e) => { e.preventDefault(); setProofFile(null); }}
+                            >
+                              Remove
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="user-proof-upload-icon">
+                              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                              <polyline points="17 8 12 3 7 8" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                              <line x1="12" y1="3" x2="12" y2="15" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                            <p className="user-proof-upload-text">Click to upload proof of payment</p>
+                            <p className="user-proof-upload-subtext">Screenshot or photo of payment confirmation · PNG, JPG</p>
+                          </>
+                        )}
+                        <input
+                          type="file"
+                          id="donation-proof-upload"
+                          accept="image/png, image/jpeg"
+                          onChange={(e) => setProofFile(e.target.files[0] || null)}
+                          hidden
+                        />
+                      </label>
+                    </div>
+                  </div>
                 </div>
 
                 {formError && <p className="user-donation-form-error">{formError}</p>}
@@ -396,8 +410,8 @@ export default function Donation() {
 
             {/* Right: Donation History (Preview) */}
             <div className="user-donation-history-card">
-              <div className="user-history-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <h2 className="user-donation-section-title" style={{ marginBottom: 0 }}>Donation History</h2>
+              <div className="user-card-header-row">
+                <h2 className="user-donation-section-title">Donation History</h2>
                 <button className="user-view-history-btn" onClick={handleOpenHistory}>View History</button>
               </div>
 
@@ -422,7 +436,7 @@ export default function Donation() {
                 <p className="user-donations-empty-text">No donations yet.</p>
               )}
 
-              {!loading && donationHistory.length > 0 && (
+                {!loading && donationHistory.length > 0 && (
                 <div className="user-donation-history-list user-fade-in">
                   {donationHistory.slice(0, 5).map((d) => (
                     <div
@@ -445,7 +459,12 @@ export default function Donation() {
                           )}
                         </div>
                       </div>
-                      <p className="user-donation-history-amount">{fmt(d.amount)}</p>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                        <p className="user-donation-history-amount">{fmt(d.amount)}</p>
+                        <span className={`user-donation-status-badge user-donation-status-${d.status || 'pending'}`}>
+                          {d.status === 'confirmed' ? 'Confirmed' : d.status === 'rejected' ? 'Rejected' : 'Pending'}
+                        </span>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -540,7 +559,12 @@ export default function Donation() {
                           <p className="user-donation-details">{d.method || d.paymentMethod}</p>
                         </div>
                       </div>
-                      <p className="user-donation-history-amount">{fmt(d.amount)}</p>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                        <p className="user-donation-history-amount">{fmt(d.amount)}</p>
+                        <span className={`user-donation-status-badge user-donation-status-${d.status || 'pending'}`}>
+                          {d.status === 'confirmed' ? 'Confirmed' : d.status === 'rejected' ? 'Rejected' : 'Pending'}
+                        </span>
+                      </div>
                     </div>
                   ))}
                 </div>

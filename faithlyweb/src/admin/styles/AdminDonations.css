@@ -348,7 +348,7 @@
   }
 
   .admin-don-new-table {
-    min-width: 600px;
+    min-width: 700px;
   }
 
   .admin-don-new-pagination {
@@ -361,3 +361,267 @@
     justify-content: center;
   }
 }
+
+/* ── Status Badges ── */
+.admin-don-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.admin-don-status-pending {
+  background: #FEF9C3;
+  color: #854D0E;
+}
+
+.admin-don-status-confirmed {
+  background: #DCFCE7;
+  color: #166534;
+}
+
+.admin-don-status-rejected {
+  background: #FEE2E2;
+  color: #991B1B;
+}
+
+/* ── Action Buttons ── */
+.admin-don-action-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
+.admin-don-action-btn {
+  padding: 5px 12px;
+  border: none;
+  border-radius: 7px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.admin-don-action-confirm {
+  background: #16a34a;
+  color: white;
+}
+
+.admin-don-action-confirm:hover:not(:disabled) {
+  background: #15803d;
+}
+
+.admin-don-action-reject {
+  background: #dc2626;
+  color: white;
+}
+
+.admin-don-action-reject:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.admin-don-action-view {
+  background: #f1f5f9;
+  color: #1E3A8A;
+  border: 0.8px solid #e2e8f0;
+}
+
+.admin-don-action-view:hover {
+  background: #e2e8f0;
+}
+
+.admin-don-action-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ── Status Filter ── */
+.admin-don-status-filter {
+  padding: 7px 12px;
+  border: 0.8px solid #e5e7eb;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: #374151;
+  background: #f9fafb;
+  cursor: pointer;
+  outline: none;
+}
+
+.admin-don-status-filter:focus {
+  border-color: #1E3A8A;
+  background: white;
+}
+
+/* ── Detail Modal ── */
+.admin-don-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.admin-don-modal-content {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-don-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px 16px;
+  border-bottom: 0.8px solid #f1f5f9;
+}
+
+.admin-don-modal-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #101828;
+  margin: 0;
+}
+
+.admin-don-modal-close {
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: #6B7280;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.admin-don-modal-close:hover {
+  background: #f3f4f6;
+}
+
+.admin-don-modal-body {
+  padding: 20px 24px;
+  flex: 1;
+}
+
+.admin-don-modal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.admin-don-modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.admin-don-modal-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: #9CA3AF;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.admin-don-modal-value {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: #111827;
+  font-weight: 500;
+}
+
+.admin-don-modal-amount {
+  font-size: 18px;
+  font-weight: 700;
+  color: #e60076;
+}
+
+/* Proof of payment */
+.admin-don-modal-proof-section {
+  border-top: 0.8px solid #f1f5f9;
+  padding-top: 16px;
+}
+
+.admin-don-modal-proof-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: #9CA3AF;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 10px 0;
+}
+
+.admin-don-modal-proof-img {
+  width: 100%;
+  max-height: 280px;
+  object-fit: contain;
+  border-radius: 10px;
+  border: 0.8px solid #e5e7eb;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.admin-don-modal-proof-img:hover {
+  opacity: 0.9;
+}
+
+.admin-don-modal-no-proof {
+  background: #f9fafb;
+  border: 0.8px dashed #d1d5db;
+  border-radius: 10px;
+  padding: 24px;
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: #9CA3AF;
+}
+
+.admin-don-modal-reject-reason {
+  margin-top: 16px;
+  background: #FEF2F2;
+  border: 0.8px solid #FECACA;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.admin-don-modal-reject-reason p {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: #991B1B;
+  margin: 4px 0 0;
+}
+
+.admin-don-modal-footer {
+  padding: 16px 24px;
+  border-top: 0.8px solid #f1f5f9;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+

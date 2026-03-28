@@ -1,8 +1,8 @@
 import { Router } from 'express';
+import { ObjectId } from 'mongodb';
 
 import { users, donations } from '../config/db.js';
-import { authenticateUser } from '../middleware/auth.js';
-import { authenticateAdmin } from '../middleware/auth.js';
+import { authenticateUser, authenticateAdmin } from '../middleware/auth.js';
 
 const router = Router();
 
@@ -10,7 +10,7 @@ const router = Router();
 router.post('/donations', authenticateUser, async (req, res) => {
   try {
     const email = req.user.email;
-    const { amount, category, paymentMethod, isRecurring } = req.body;
+    const { amount, category, paymentMethod, isRecurring, proofImage } = req.body;
 
     if (!amount || !category) {
       return res.status(400).json({ success: false, message: 'Amount and category are required' });
@@ -23,15 +23,21 @@ router.post('/donations', authenticateUser, async (req, res) => {
     const donationId = `D-${new Date().getFullYear()}-${String(count + 1).padStart(3, '0')}`;
 
     const newDonation = {
-      donationId, email, member: user.fullName,
-      amount: Number(amount), category,
-      method: paymentMethod || 'Credit Card',
+      donationId,
+      email,
+      member: user.fullName,
+      amount: Number(amount),
+      category,
+      method: paymentMethod || 'GCash',
       type: isRecurring ? 'Recurring' : 'One-time',
-      date: new Date(), createdAt: new Date()
+      status: 'pending',          // requires admin confirmation
+      proofImage: proofImage || null,
+      date: new Date(),
+      createdAt: new Date(),
     };
 
     await donations.insertOne(newDonation);
-    res.status(201).json({ success: true, message: 'Donation recorded successfully', donationId });
+    res.status(201).json({ success: true, message: 'Donation submitted and pending confirmation', donationId });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Failed to record donation' });
@@ -50,19 +56,22 @@ router.get('/donations/my-donations', authenticateUser, async (req, res) => {
     const findQuery = { email };
     if (category) findQuery.category = category;
 
-    const totalCount = await donations.countDocuments(findQuery);
+    const totalCount    = await donations.countDocuments(findQuery);
     const userDonations = await donations.find(findQuery)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
       .toArray();
 
-    // Stats need full set or aggregation
+    // Stats: only count confirmed donations in totalDonated
     const allUserDonations = await donations.find(findQuery).toArray();
-    const totalDonated = allUserDonations.reduce((sum, d) => sum + d.amount, 0);
+    const totalDonated = allUserDonations
+      .filter(d => d.status === 'confirmed')
+      .reduce((sum, d) => sum + d.amount, 0);
+
     const now = new Date();
     const thisYearTotal = allUserDonations
-      .filter(d => new Date(d.createdAt).getFullYear() === now.getFullYear())
+      .filter(d => d.status === 'confirmed' && new Date(d.createdAt).getFullYear() === now.getFullYear())
       .reduce((sum, d) => sum + d.amount, 0);
 
     res.status(200).json({
@@ -89,7 +98,7 @@ router.get('/admin/donations', authenticateAdmin, async (req, res) => {
 
     const query = {};
     if (status && status !== 'all') {
-      query.type = status === 'recurring' ? 'Recurring' : 'One-time';
+      query.status = status; // 'pending' | 'confirmed' | 'rejected'
     }
 
     if (search) {
@@ -100,36 +109,40 @@ router.get('/admin/donations', authenticateAdmin, async (req, res) => {
       ];
     }
 
-    const totalCount = await donations.countDocuments(query);
+    const totalCount   = await donations.countDocuments(query);
     const allDonations = await donations.find(query)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
       .toArray();
 
-    // Compute stats from ALL donations (no filter for search/status on stats)
+    // Stats from ALL confirmed donations (for totals)
     const allForStats = await donations.find({}).toArray();
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const startOfWeek  = new Date(now);
-    startOfWeek.setDate(now.getDate() - now.getDay()); // Sunday
+    startOfWeek.setDate(now.getDate() - now.getDay());
     startOfWeek.setHours(0, 0, 0, 0);
 
-    const thisMonthDons = allForStats.filter(d => new Date(d.createdAt) >= startOfMonth);
-    const thisWeekDons  = allForStats.filter(d => new Date(d.createdAt) >= startOfWeek);
-    const thisMonth     = thisMonthDons.reduce((s, d) => s + (Number(d.amount) || 0), 0);
-    const thisWeek      = thisWeekDons.reduce((s, d) => s + (Number(d.amount) || 0), 0);
-    const totalAmount   = allForStats.reduce((s, d) => s + (Number(d.amount) || 0), 0);
-    const uniqueEmails  = new Set(allForStats.map(d => d.email)).size;
-    const avgDonation   = allForStats.length > 0 ? Math.round(totalAmount / allForStats.length) : 0;
+    const confirmedAll = allForStats.filter(d => d.status === 'confirmed');
+    const thisMonthDons = confirmedAll.filter(d => new Date(d.createdAt) >= startOfMonth);
+    const thisWeekDons  = confirmedAll.filter(d => new Date(d.createdAt) >= startOfWeek);
+
+    const thisMonth   = thisMonthDons.reduce((s, d) => s + (Number(d.amount) || 0), 0);
+    const thisWeek    = thisWeekDons.reduce((s, d) => s + (Number(d.amount) || 0), 0);
+    const totalAmount = confirmedAll.reduce((s, d) => s + (Number(d.amount) || 0), 0);
+    const uniqueEmails = new Set(confirmedAll.map(d => d.email)).size;
+    const avgDonation  = confirmedAll.length > 0 ? Math.round(totalAmount / confirmedAll.length) : 0;
+    const pendingCount = allForStats.filter(d => !d.status || d.status === 'pending').length;
 
     const stats = {
-      totalCount,
+      totalCount: confirmedAll.length,
       total: totalAmount,
       thisMonth,
       thisWeek,
       totalDonors: uniqueEmails,
       avgDonation,
+      pendingCount,
     };
 
     res.status(200).json({
@@ -143,6 +156,43 @@ router.get('/admin/donations', authenticateAdmin, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Failed to fetch donations' });
+  }
+});
+
+/* ================== ADMIN - CONFIRM DONATION ================== */
+router.put('/admin/donations/:id/confirm', authenticateAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await donations.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { status: 'confirmed', confirmedAt: new Date() } }
+    );
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ success: false, message: 'Donation not found' });
+    }
+    res.status(200).json({ success: true, message: 'Donation confirmed successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to confirm donation' });
+  }
+});
+
+/* ================== ADMIN - REJECT DONATION ================== */
+router.put('/admin/donations/:id/reject', authenticateAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+    const result = await donations.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { status: 'rejected', rejectReason: reason || '', rejectedAt: new Date() } }
+    );
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ success: false, message: 'Donation not found' });
+    }
+    res.status(200).json({ success: true, message: 'Donation rejected' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to reject donation' });
   }
 });
 

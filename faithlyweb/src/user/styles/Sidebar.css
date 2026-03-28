@@ -423,10 +423,7 @@
   padding: 0 3px;
 }
 
-.user-sidebar-nav-button.active .user-sidebar-notif-badge {
-  background: var(--gold, #F5C800);
-  color: var(--sidebar);
-}
+
 
 @keyframes badge-pop {
   from {

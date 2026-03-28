@@ -23,7 +23,12 @@ export default function Home() {
   const [savingsStats, setSavingsStats] = useState({ totalSavings: 0, thisMonth: 0 });
   const [savingsGoalsList, setSavingsGoalsList] = useState([]);
   const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [allAnnouncements, setAllAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  /* User interaction modals */
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [showAllEvents, setShowAllEvents] = useState(false);
 
   /* Officer verification */
   const [verificationStatus, setVerificationStatus] = useState(null);
@@ -116,15 +121,21 @@ export default function Home() {
               ? branches.join(', ')
               : vis;
           return {
+            ...ann,
             day: d.getDate().toString(),
             month: d.toLocaleString('en-US', { month: 'short' }).toUpperCase(),
             title: ann.title,
             body: text.length > 80 ? text.substring(0, 80) + '...' : text,
+            fullBody: text,
+            dateObj: d,
             category: ann.category || 'General',
             branch: branchLabel,
             tag: ann.category || 'General',
           };
         });
+        // Sort events so latest ones appear first
+        list.sort((a, b) => b.dateObj - a.dateObj);
+        setAllAnnouncements(list);
         setUpcomingEvents(list.slice(0, 4));
       }
 
@@ -490,7 +501,7 @@ export default function Home() {
           <div className="user-home-card user-home-events-card">
             <div className="user-events-header">
               <h2 className="user-home-card-title" style={{ margin: 0 }}>Upcoming Events</h2>
-              <button className="user-events-see-all" onClick={() => {}}>See all</button>
+              <button className="user-events-see-all" onClick={() => setShowAllEvents(true)}>See all</button>
             </div>
             <div className="user-events-list">
               {upcomingEvents.length === 0 ? (
@@ -506,7 +517,7 @@ export default function Home() {
                 };
                 const c = catColors[evt.category] || catColors.General;
                 return (
-                  <div key={i} className="user-event-row">
+                  <div key={i} className="user-event-row user-clickable" onClick={() => setSelectedEvent(evt)}>
                     <div className="user-event-accent-bar" style={{ background: c.color }} />
                     <div className="user-event-date-block">
                       <span className="user-event-day">{evt.day}</span>
@@ -613,6 +624,83 @@ export default function Home() {
 
       {/* Officer Verification Modal */}
       <VerificationModal isOpen={showVerifyModal} onClose={handleVerifyModalClose} />
+
+      {/* ── Event Detail Modal ── */}
+      {selectedEvent && (
+        <div className="user-event-detail-overlay" onClick={() => setSelectedEvent(null)}>
+          <div className="user-event-detail-content" onClick={e => e.stopPropagation()}>
+            <div className="user-event-detail-header">
+              <span className="user-event-detail-tag">{selectedEvent.category}</span>
+              <button className="user-event-close-btn" onClick={() => setSelectedEvent(null)}>×</button>
+            </div>
+            <h2 className="user-event-detail-title">{selectedEvent.title}</h2>
+            <div className="user-event-detail-meta">
+              <div className="user-event-meta-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                {selectedEvent.dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+              </div>
+              <div className="user-event-meta-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                {selectedEvent.branch}
+              </div>
+            </div>
+            <div className="user-event-detail-body">
+              <p>{selectedEvent.fullBody}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── All Events Modal ── */}
+      {showAllEvents && (
+        <div className="user-event-all-overlay" onClick={() => setShowAllEvents(false)}>
+          <div className="user-event-all-content" onClick={e => e.stopPropagation()}>
+            <div className="user-event-all-header">
+              <h2 className="user-event-all-title">All Upcoming Events</h2>
+              <button className="user-event-close-btn" onClick={() => setShowAllEvents(false)}>×</button>
+            </div>
+            <div className="user-event-all-list">
+              {allAnnouncements.length === 0 ? (
+                <p className="user-event-empty-msg">No upcoming events are currently scheduled.</p>
+              ) : (
+                allAnnouncements.map((evt, i) => {
+                  const catColors = {
+                    Events: { bg: '#FFF7ED', color: '#C2410C' },
+                    General: { bg: '#EFF6FF', color: '#1E40AF' },
+                    Prayer: { bg: '#F5F3FF', color: '#6D28D9' },
+                    Services: { bg: '#F0FDF4', color: '#15803D' },
+                    Donations: { bg: '#FDF2F8', color: '#9D174D' },
+                    Urgent: { bg: '#FFF1F2', color: '#BE123C' },
+                  };
+                  const c = catColors[evt.category] || catColors.General;
+                  return (
+                    <div key={i} className="user-event-row user-clickable" onClick={() => { setShowAllEvents(false); setSelectedEvent(evt); }}>
+                      <div className="user-event-accent-bar" style={{ background: c.color }} />
+                      <div className="user-event-date-block">
+                        <span className="user-event-day">{evt.day}</span>
+                        <span className="user-event-month">{evt.month}</span>
+                      </div>
+                      <div className="user-event-info">
+                        <div className="user-event-title-row">
+                          <span className="user-event-title">{evt.title}</span>
+                          <span className="user-event-tag" style={{ color: c.color, background: c.bg }}>{evt.category}</span>
+                        </div>
+                        <span className="user-event-time">{evt.body}</span>
+                        <div className="user-event-meta-row">
+                          <span className="user-event-branch">
+                            <svg width="12" height="12" viewBox="0 0 20 20" fill="none"><path d="M10 10.833a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M10 18.333S3.333 13.333 3.333 8.333a6.667 6.667 0 1 1 13.334 0c0 5-6.667 10-6.667 10z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                            {evt.branch}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
