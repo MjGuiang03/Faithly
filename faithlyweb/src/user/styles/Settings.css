@@ -446,6 +446,19 @@
   padding: 18px 20px;
 }
 
+/* Icon box inside the blue card */
+.user-pi-card-icon-box {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
 /* Avatar wrapper with upload functionality */
 .user-pi-card-avatar-wrapper {
   position: relative;

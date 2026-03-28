@@ -27,7 +27,9 @@ export default function Home() {
 
   /* Officer verification */
   const [verificationStatus, setVerificationStatus] = useState(null);
-  const [officerCardDismissed, setOfficerCardDismissed] = useState(false);
+  const [officerCardDismissed, setOfficerCardDismissed] = useState(
+    () => localStorage.getItem('officer_card_dismissed') === 'true'
+  );
   const [showVerifyModal, setShowVerifyModal] = useState(false);
   const [showAskOfficerModal, setShowAskOfficerModal] = useState(false);
 
@@ -287,7 +289,7 @@ export default function Home() {
             <div className="user-stat-card user-officer-prompt-card" style={{ gridColumn: 'span 2' }}>
               <button
                 className="user-officer-prompt-close"
-                onClick={(e) => { e.stopPropagation(); setOfficerCardDismissed(true); }}
+                onClick={(e) => { e.stopPropagation(); localStorage.setItem('officer_card_dismissed', 'true'); setOfficerCardDismissed(true); }}
                 title="Dismiss"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

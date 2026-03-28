@@ -271,11 +271,6 @@ export default function Settings() {
           {/* ── Personal Information ──────────────────────────────────── */}
           <div className="user-settings-section user-pi-section">
             <div className="user-settings-section-header">
-              <div className="user-settings-icon-box user-pi-icon-box">
-                <svg width="20" height="20" fill="none" viewBox="0 0 20 20">
-                  <path d="M10 10a3.333 3.333 0 1 0 0-6.667A3.333 3.333 0 0 0 10 10Zm0 1.667c-3.683 0-6.667 1.492-6.667 3.333v.833h13.334V15c0-1.841-2.984-3.333-6.667-3.333Z" fill="#155DFC" />
-                </svg>
-              </div>
               <div className="user-settings-header-text">
                 <h2 className="user-settings-section-title">Personal Information</h2>
                 <p className="user-settings-section-subtitle">View and manage your profile details</p>
@@ -296,6 +291,13 @@ export default function Settings() {
 
             {/* Blue profile card */}
             <div className="user-pi-card">
+              {/* Person icon box */}
+              <div className="user-pi-card-icon-box">
+                <svg width="26" height="26" fill="none" viewBox="0 0 24 24">
+                  <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 2c-5.33 0-8 2.686-8 4v1h16v-1c0-1.314-2.67-4-8-4Z" fill="white" />
+                </svg>
+              </div>
+
               {/* Avatar */}
               <div
                 className="user-pi-card-avatar-wrapper"

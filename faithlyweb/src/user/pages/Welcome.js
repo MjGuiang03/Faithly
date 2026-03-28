@@ -156,7 +156,7 @@ export default function Welcome() {
                   <div className="fl-perk-icon">
                     <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" /></svg>
                   </div>
-                  GCash, bank transfer &amp; cash donations
+                  GCash &amp; bank transfer donations
                 </div>
                 <div className="fl-perk">
                   <div className="fl-perk-icon">
