@@ -87,7 +87,7 @@ router.post('/register',
       res.json({ message: 'Signup successful. Processing email...' });
     } catch (err) {
       console.error('❌ SIGNUP ERROR:', err);
-      res.status(500).json({ 
+      res.status(500).json({
         message: 'Server error during signup',
         details: err.message
       });
@@ -146,7 +146,7 @@ router.post('/resend-otp',
   async (req, res) => {
     try {
       const { email } = req.body;
-      
+
       const user = await users.findOne({ email });
       if (user && user.isVerified) return res.status(400).json({ message: 'Email already verified' });
 
@@ -231,10 +231,10 @@ router.post('/login',
       }
 
       if (user.lockUntil && user.lockUntil > now) {
-        const remainingMs      = user.lockUntil - now;
+        const remainingMs = user.lockUntil - now;
         const remainingMinutes = Math.ceil(remainingMs / 60000);
         const remainingSeconds = Math.ceil(remainingMs / 1000);
-        const attempts         = user.failedLoginAttempts || 0;
+        const attempts = user.failedLoginAttempts || 0;
 
         if (attempts >= 6) {
           return res.status(403).json({
@@ -252,7 +252,7 @@ router.post('/login',
       const match = await bcrypt.compare(password, user.passwordHash);
 
       if (!match) {
-        const attempts   = (user.failedLoginAttempts || 0) + 1;
+        const attempts = (user.failedLoginAttempts || 0) + 1;
         const updateData = { failedLoginAttempts: attempts };
 
         if (attempts >= 7) {
