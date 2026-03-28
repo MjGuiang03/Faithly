@@ -190,6 +190,7 @@ router.post('/login',
         users.findOne({ email })
       ]);
       const account = admin || user;
+      const isAdminType = !!admin;
 
       /* ---- 2. Timing-Safe Password Check ---- */
       const targetHash = account ? account.passwordHash : DUMMY_HASH;
@@ -197,7 +198,7 @@ router.post('/login',
 
       /* ---- 3. Normalize Failure Responses ---- */
       if (!account || !match || account.isDeleted) {
-        if (account && account.role !== 'admin') {
+        if (account && !isAdminType) {
           const now = new Date();
           // Only increment/lock if not actively locked
           if (!account.lockUntil || account.lockUntil < now) {
@@ -217,7 +218,7 @@ router.post('/login',
 
       /* ---- 4. Check Statuses for Valid Authenticated Users ---- */
       const now = new Date();
-      if (account.role !== 'admin') {
+      if (!isAdminType) {
         if (account.lockUntil && account.lockUntil > now) {
           const remainingMinutes = Math.ceil((account.lockUntil - now) / 60000);
           return res.status(401).json({
@@ -235,19 +236,19 @@ router.post('/login',
       }
 
       /* ---- 5. Issue Token ---- */
-      const role = account.role === 'admin' ? account.role : 'user';
-      const audience = account.role === 'admin' ? 'faithly-admin' : 'faithly-users';
+      const role = isAdminType ? account.role : 'user';
+      const audience = isAdminType ? 'faithly-admin' : 'faithly-users';
 
       const token = jwt.sign(
         { email: account.email, role },
         JWT_SECRET,
-        { expiresIn: role === 'admin' ? '2h' : '1h', issuer: 'faithly-api', audience }
+        { expiresIn: isAdminType ? '2h' : '1h', issuer: 'faithly-api', audience }
       );
 
       res.status(200).json({
         message: 'Login successful',
         token,
-        user: role === 'admin'
+        user: isAdminType
           ? {
               email: account.email, role: account.role,
               fullName: account.fullName || account.email.split('@')[0]
