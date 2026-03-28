@@ -25,8 +25,7 @@ const CATEGORIES = [
   { name: 'Mission Fund', description: 'Missionary work and outreach programs' },
 ];
 
-const mockProcessPayment = () =>
-  new Promise((resolve) => setTimeout(() => resolve({ success: true }), 1200));
+
 
 /* ── Payment method icons ── */
 const GCashIcon = () => (

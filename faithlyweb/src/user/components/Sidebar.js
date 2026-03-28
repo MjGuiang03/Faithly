@@ -123,8 +123,6 @@ export default function Sidebar() {
 
         /* Loans → notifications */
         (lData.loans || []).forEach((l) => {
-          const baseId = `loan-${l._id}`;
-
           /* Special: awaiting member approval */
           if (l.status === 'awaiting_member_approval' && l.modifiedTerms) {
             if (!readIds.has(`loan-terms-${l._id}`)) count++;
