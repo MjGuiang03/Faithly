@@ -87,12 +87,12 @@
 }
 
 .user-home-page-title {
-  font-family: 'Inter', sans-serif;
-  font-size: 26px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 32px;
   font-weight: 700;
   color: var(--foreground);
   margin: 0;
-  line-height: 34px;
+  line-height: 1.2;
 }
 
 .user-home-page-subtitle {
@@ -175,6 +175,12 @@
 .user-officer-prompt-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(37, 99, 235, 0.25);
+}
+
+.user-officer-prompt-card-dismissing {
+  opacity: 0;
+  transform: scale(0.95);
+  pointer-events: none;
 }
 
 .user-officer-prompt-close {
@@ -262,6 +268,7 @@
   width: 44px;
   height: 44px;
   border-radius: 10px;
+  background: rgba(255, 255, 255, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -275,11 +282,11 @@
 }
 
 .user-stat-purple .user-stat-icon-box {
-  background: #f3e8ff;
+  background: #7c3aed;
 }
 
 .user-stat-purple .user-stat-icon {
-  stroke: #9333ea;
+  stroke: white;
 }
 
 .user-stat-purple .user-stat-label,
@@ -294,11 +301,11 @@
 }
 
 .user-stat-blue .user-stat-icon-box {
-  background: var(--blue-tint);
+  background: #1d4ed8;
 }
 
 .user-stat-blue .user-stat-icon {
-  stroke: var(--primary);
+  stroke: white;
 }
 
 .user-stat-blue .user-stat-label,
@@ -313,11 +320,11 @@
 }
 
 .user-stat-green .user-stat-icon-box {
-  background: #dcfce7;
+  background: #16a34a;
 }
 
 .user-stat-green .user-stat-icon {
-  stroke: #16a34a;
+  stroke: white;
 }
 
 .user-stat-green .user-stat-label,
@@ -332,11 +339,11 @@
 }
 
 .user-stat-navy .user-stat-icon-box {
-  background: #dbeafe;
+  background: #1e3a8a;
 }
 
 .user-stat-navy .user-stat-icon {
-  stroke: #0f2854;
+  stroke: white;
 }
 
 .user-stat-navy .user-stat-label,
@@ -663,11 +670,13 @@
 }
 
 .user-home-card-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--foreground);
-  margin: 0 0 10px 0;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #64748b;
+  margin: 0 0 12px 0;
   font-family: 'Inter', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
 }
 
 .user-home-card-header-icon {
@@ -747,7 +756,7 @@
 }
 
 .user-action-btn-donate .user-action-icon-wrapper {
-  background: rgba(255, 255, 255, 0.15);
+  background: transparent;
   color: var(--gold);
 }
 
@@ -772,7 +781,7 @@
 }
 
 .user-action-btn-attendance .user-action-icon-wrapper {
-  background: rgba(245, 200, 0, 0.25);
+  background: transparent;
   color: var(--gold-text);
 }
 

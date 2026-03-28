@@ -148,6 +148,7 @@ export default function Branches() {
   const [drawerBranch, setDrawerBranch] = useState(null);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [drawerMounted, setDrawerMounted] = useState(false);
+  const [isClosingRegion, setIsClosingRegion] = useState(false);
 
   // Resolve user's community branch name
   const userBranchName = profile?.branch ? (COMMUNITY_MAP[profile.branch] ?? profile.branch) : null;
@@ -206,8 +207,21 @@ export default function Branches() {
   const activeRegionData = activeRegion ? regionSummaries.find(r => r.key === activeRegion) : null;
 
   const handleRegionClick = (key) => {
-    setActiveRegion(prev => prev === key ? null : key);
-    setSearch('');
+    if (activeRegion === key) {
+      handleClearRegion();
+    } else {
+      setActiveRegion(key);
+      setSearch('');
+    }
+  };
+
+  const handleClearRegion = () => {
+    setIsClosingRegion(true);
+    setTimeout(() => {
+      setActiveRegion(null);
+      setSearch('');
+      setIsClosingRegion(false);
+    }, 220); // Sync with CSS animation duration
   };
 
   const displayCount = search && !activeRegion
@@ -235,7 +249,9 @@ export default function Branches() {
               <div className="user-mcb-text">
                 <span className="user-mcb-eyebrow">Your Community</span>
                 <span className="user-mcb-name">{userBranch.name}</span>
-                <span className="user-mcb-province">{userBranch.province} · {userBranch.region}</span>
+                <span className="user-mcb-province">
+                  {userBranch.province === userBranch.region ? userBranch.region : `${userBranch.province} · ${userBranch.region}`}
+                </span>
               </div>
             </div>
             <div className="user-mcb-right">
@@ -306,7 +322,7 @@ export default function Branches() {
 
         {/* ── Expanded Region Branch List ────────────────────── */}
         {activeRegion && (
-          <div className="ubr-expanded-region">
+          <div className={`ubr-expanded-region ${isClosingRegion ? 'ubr-expanded-region--closing' : ''}`}>
             <div className="ubr-expanded-header">
               <div className="ubr-expanded-title-wrap">
                 <span className="ubr-expanded-name">{REGION_LABELS[activeRegion]} ({activeRegion})</span>
@@ -314,7 +330,7 @@ export default function Branches() {
                   {activeRegionData?.count} branches · {activeRegionData?.provinces.join(', ')}
                 </span>
               </div>
-              <button className="ubr-clear-btn" onClick={() => { setActiveRegion(null); setSearch(''); }}>
+              <button className="ubr-clear-btn" onClick={handleClearRegion}>
                 Clear ×
               </button>
             </div>
@@ -358,7 +374,7 @@ export default function Branches() {
 
         {/* ── Global Search Results (no region selected) ────── */}
         {search && !activeRegion && (
-          <div className="ubr-expanded-region">
+          <div className={`ubr-expanded-region ${isClosingRegion ? 'ubr-expanded-region--closing' : ''}`}>
             <div className="ubr-expanded-header">
               <span className="ubr-expanded-name">Search results for "{search}"</span>
               <button className="ubr-clear-btn" onClick={() => setSearch('')}>Clear ×</button>
@@ -424,7 +440,9 @@ export default function Branches() {
                 </div>
                 <div className="user-drawer-branch-meta">
                   <span className="user-detail-region-badge">{drawerBranch?.region}</span>
-                  <span className="user-drawer-province">{drawerBranch?.province}</span>
+                  {drawerBranch?.province !== drawerBranch?.region && (
+                    <span className="user-drawer-province">{drawerBranch?.province}</span>
+                  )}
                 </div>
               </div>
               <button className="user-drawer-close" onClick={closeDrawer}>

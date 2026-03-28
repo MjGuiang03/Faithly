@@ -228,7 +228,6 @@ export default function Sidebar() {
             {!collapsed && (
               <div className="user-sidebar-logo-text">
                 <h1>FaithLy</h1>
-                <p>Member Portal</p>
               </div>
             )}
           </div>

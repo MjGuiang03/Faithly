@@ -106,13 +106,14 @@ function DepositModal({ goals, onClose }) {
         <div className="svm-overlay" onClick={onClose}>
             <div className="svm-modal" onClick={e => e.stopPropagation()}>
                 <div className="svm-modal-head">
-                    <div className="svm-modal-title">Deposit to savings</div>
+                    <div>
+                        <div className="svm-modal-title">Deposit to savings</div>
+                        <div className="svm-modal-sub">Choose a goal and enter the amount you'd like to add.</div>
+                    </div>
                     <button className="svm-close-btn" onClick={onClose}><CloseIcon /></button>
                 </div>
 
                 <div className="svm-modal-body">
-                    <p className="svm-modal-sub">Choose a goal and enter the amount you'd like to add.</p>
-
                     {error && <div className="svm-error">{error}</div>}
 
                     <div className="svm-field">
@@ -500,6 +501,7 @@ function QuickDepositModal({ goal, goals, onClose }) {
                 <div className="svm-modal-head">
                     <div>
                         <div className="svm-modal-title">Quick deposit</div>
+                        <div className="svm-modal-sub">Add funds to your goal instantly</div>
                         <div className="svm-modal-goal-tag">{goal?.name}</div>
                     </div>
                     <button className="svm-close-btn" onClick={onClose}><CloseIcon /></button>

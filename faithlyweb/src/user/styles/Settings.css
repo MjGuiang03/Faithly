@@ -709,11 +709,11 @@
   background: var(--muted);
 }
 
-/* ── Expand / Collapse Button ──────────────────────────────────────── */
-.user-pi-expand-btn {
+/* ── Expand / Collapse Button (in blue card) ──────────────────────────────────────── */
+.user-pi-card-chevron-btn {
   margin-left: auto;
-  background: var(--secondary);
-  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 8px;
   width: 34px;
   height: 34px;
@@ -721,26 +721,13 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: var(--text-muted);
+  color: white;
   transition: all 0.2s;
   flex-shrink: 0;
 }
 
-.user-pi-expand-btn:hover {
-  background: var(--muted);
-  color: var(--foreground);
-  border-color: var(--primary);
-}
-
-.dark .user-pi-expand-btn {
-  background: var(--input-background);
-  border-color: var(--border);
-  color: var(--text-muted);
-}
-
-.dark .user-pi-expand-btn:hover {
-  background: var(--muted);
-  color: var(--foreground);
+.user-pi-card-chevron-btn:hover {
+  background: rgba(255, 255, 255, 0.28);
 }
 
 /* ── Collapsible Wrapper ──────────────────────────────────────────── */

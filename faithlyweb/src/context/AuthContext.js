@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import API from '../utils/api';
 import { toast } from 'sonner';
 
@@ -19,9 +19,55 @@ const safeJSON = async (res) => {
 };
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser]       = useState(null);
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [user, setUser]       = useState(() => {
+    try {
+      const savedUser = localStorage.getItem('user');
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [profile, setProfile] = useState(() => {
+    try {
+      const savedUser = localStorage.getItem('user');
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [loading, setLoading] = useState(true);
+
+  /* ---------- REHYDRATION & VERIFICATION ---------- */
+  useEffect(() => {
+    const verifySession = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        // Try to fetch something that requires auth to verify the token
+        const res = await fetch(`${API}/api/verification/status`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) {
+          if (res.status === 401) {
+            // Token expired or invalid
+            signOut();
+          }
+        }
+      } catch (err) {
+        console.error('Session verification failed:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    verifySession();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /* ---------- LOGIN ---------- */
   const signIn = async (email, password) => {
@@ -43,6 +89,7 @@ export const AuthProvider = ({ children }) => {
 
       // Store token under the unified key
       localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
 
       // For admin roles, also populate legacy admin keys so existing
       // admin dashboard pages (which read localStorage directly) keep working
@@ -210,6 +257,7 @@ export const AuthProvider = ({ children }) => {
   /* ---------- SIGN OUT ---------- */
   const signOut = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     localStorage.removeItem('adminToken');
     localStorage.removeItem('adminEmail');
     localStorage.removeItem('adminRole');
@@ -292,6 +340,7 @@ export const AuthProvider = ({ children }) => {
 
       setProfile(updatedProfile);
       setUser(updatedProfile);
+      localStorage.setItem('user', JSON.stringify(updatedProfile));
       toast.success('Profile updated successfully');
       return { success: true };
     } catch (err) {
@@ -351,8 +400,12 @@ export const AuthProvider = ({ children }) => {
 
       // Update local user / profile state with the new email
       const updatedEmail = data.newEmail || newEmail;
-      setUser(prev    => prev    ? { ...prev,    email: updatedEmail } : prev);
-      setProfile(prev => prev    ? { ...prev,    email: updatedEmail } : prev);
+      setUser(prev    => {
+        const next = prev ? { ...prev, email: updatedEmail } : prev;
+        if (next) localStorage.setItem('user', JSON.stringify(next));
+        return next;
+      });
+      setProfile(prev => prev ? { ...prev, email: updatedEmail } : prev);
 
       toast.success('Email updated successfully');
       return { success: true };

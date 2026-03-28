@@ -275,29 +275,10 @@ export default function Settings() {
                 <h2 className="user-settings-section-title">Personal Information</h2>
                 <p className="user-settings-section-subtitle">View and manage your profile details</p>
               </div>
-              <button
-                className="user-pi-expand-btn"
-                onClick={() => setInfoExpanded(prev => !prev)}
-                title={infoExpanded ? 'Collapse' : 'Expand'}
-              >
-                <svg
-                  width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                  style={{ transition: 'transform 0.3s ease', transform: infoExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
-                >
-                  <polyline points="6 9 12 15 18 9" />
-                </svg>
-              </button>
             </div>
 
             {/* Blue profile card */}
             <div className="user-pi-card">
-              {/* Person icon box */}
-              <div className="user-pi-card-icon-box">
-                <svg width="26" height="26" fill="none" viewBox="0 0 24 24">
-                  <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 2c-5.33 0-8 2.686-8 4v1h16v-1c0-1.314-2.67-4-8-4Z" fill="white" />
-                </svg>
-              </div>
-
               {/* Avatar */}
               <div
                 className="user-pi-card-avatar-wrapper"
@@ -324,7 +305,7 @@ export default function Settings() {
                 <input id="user-pi-photo-input-header" type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhotoSelect} />
               </div>
 
-              {/* Name / email / badges */}
+              {/* Name / badges */}
               <div className="user-pi-card-info">
                 <span className="user-pi-card-name">{displayName}</span>
                 <div className="user-pi-card-badges">
@@ -334,10 +315,23 @@ export default function Settings() {
                   <span className="user-pi-badge user-pi-badge-level">
                     {verificationStatus === 'verified' ? 'Level 2' : 'Level 1'}
                   </span>
-                  {/* ── Verification badge lives here ── */}
                   {renderVerificationBadge()}
                 </div>
               </div>
+
+              {/* Expand/Collapse chevron — right side of blue card */}
+              <button
+                className="user-pi-card-chevron-btn"
+                onClick={() => setInfoExpanded(prev => !prev)}
+                title={infoExpanded ? 'Collapse' : 'Expand'}
+              >
+                <svg
+                  width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                  style={{ transition: 'transform 0.3s ease', transform: infoExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
 
             </div>
 

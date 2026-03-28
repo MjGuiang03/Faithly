@@ -30,8 +30,18 @@ export default function Home() {
   const [officerCardDismissed, setOfficerCardDismissed] = useState(
     () => localStorage.getItem('officer_card_dismissed') === 'true'
   );
+  const [isDismissing, setIsDismissing] = useState(false);
   const [showVerifyModal, setShowVerifyModal] = useState(false);
   const [showAskOfficerModal, setShowAskOfficerModal] = useState(false);
+
+  const handleDismissOfficerCard = (e) => {
+    e.stopPropagation();
+    setIsDismissing(true);
+    setTimeout(() => {
+      localStorage.setItem('officer_card_dismissed', 'true');
+      setOfficerCardDismissed(true);
+    }, 300); // Wait for the 300ms CSS slide-out animation to finish
+  };
 
   const token = localStorage.getItem('token');
 
@@ -286,10 +296,10 @@ export default function Home() {
           
           {/* Officer Prompt Card — shown for non-officers when not dismissed */}
           {!isOfficer && !officerCardDismissed && (
-            <div className="user-stat-card user-officer-prompt-card" style={{ gridColumn: 'span 2' }}>
+            <div className={`user-stat-card user-officer-prompt-card ${isDismissing ? 'user-officer-prompt-card-dismissing' : ''}`} style={{ gridColumn: 'span 2' }}>
               <button
                 className="user-officer-prompt-close"
-                onClick={(e) => { e.stopPropagation(); localStorage.setItem('officer_card_dismissed', 'true'); setOfficerCardDismissed(true); }}
+                onClick={handleDismissOfficerCard}
                 title="Dismiss"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -524,7 +534,7 @@ export default function Home() {
 
         {/* Recent Activity — horizontal scroll feed */}
         <div className="user-home-card user-home-full-width-section" style={{ marginBottom: '16px', overflow: 'hidden' }}>
-          <h2 className="user-home-card-title" style={{ marginBottom: '12px' }}>Activities</h2>
+          <h2 className="user-home-card-title" style={{ marginBottom: '12px' }}>Recent Activities</h2>
           {loading ? (
             <div className="user-activity-hscroll">
               {[1,2,3,4,5].map(i => (

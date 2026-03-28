@@ -901,6 +901,13 @@
   margin-bottom: 16px;
   /* Animate on mount */
   animation: ubr-slide-down 0.22s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.ubr-expanded-region--closing {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.99);
+  pointer-events: none;
 }
 
 .ubr-expanded-header {

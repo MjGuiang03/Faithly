@@ -97,12 +97,13 @@
 }
 
 .user-donation-section-title {
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--foreground);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #64748b;
   margin: 0 0 12px 0;
-  line-height: 24px;
   font-family: 'Inter', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
 }
 
 .user-donation-form {
@@ -1310,11 +1311,14 @@
   border-color: var(--border);
 }
 
-.dark .user-donation-section-title,
 .dark .user-donation-page-title,
 .dark .user-donation-page-subtitle,
 .dark .user-donation-form-label {
   color: var(--foreground);
+}
+
+.dark .user-donation-section-title {
+  color: var(--text-muted);
 }
 
 .dark .user-amount-input,
