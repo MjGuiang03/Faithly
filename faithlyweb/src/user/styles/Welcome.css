@@ -174,7 +174,7 @@
   color: var(--fl-navy);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  margin-bottom: 5px;
+  margin-bottom: -10px;
   opacity: 0;
   animation: fl-fadeUp 0.8s 0.1s forwards;
 }
@@ -305,6 +305,16 @@
   background: var(--fl-surface);
   border-color: var(--fl-navy-light);
   transform: translateY(-2px);
+}
+
+/* ── HERO BOTTOM (wrap for login card below stats) ── */
+.fl-hero-bottom {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 80px 24px 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 /* ── HERO SPLIT (perks + login card) ── */

@@ -134,7 +134,30 @@ export default function Welcome() {
           </a>
         </div>
 
-        {/* ── HERO LOGIN CARD ── */}
+      </section>
+
+      {/* ── STATS BAND ── */}
+      <div className="fl-stats-band">
+        <div className="fl-stat-item">
+          <span className="fl-stat-band-num">2,340+</span>
+          <span className="fl-stat-band-label">Active Members</span>
+        </div>
+        <div className="fl-stat-item">
+          <span className="fl-stat-band-num">9</span>
+          <span className="fl-stat-band-label">Church Branches</span>
+        </div>
+        <div className="fl-stat-item">
+          <span className="fl-stat-band-num">100%</span>
+          <span className="fl-stat-band-label">Secure &amp; Encrypted</span>
+        </div>
+        <div className="fl-stat-item">
+          <span className="fl-stat-band-num">24/7</span>
+          <span className="fl-stat-band-label">AI Support</span>
+        </div>
+      </div>
+
+      {/* ── HERO LOGIN CARD ── */}
+      <section className="fl-hero-bottom">
         <div className="fl-hero-card-wrap" id="login-section">
           <div className="fl-hero-split">
 
@@ -185,24 +208,7 @@ export default function Welcome() {
 
           </div>
         </div>
-
       </section>
-
-      {/* ── STATS BAND ── */}
-      <div className="fl-stats-band">
-        <div className="fl-stat-item">
-          <span className="fl-stat-band-num">2,340+</span>
-          <span className="fl-stat-band-label">Active Members</span>
-        </div>
-        <div className="fl-stat-item">
-          <span className="fl-stat-band-num">68</span>
-          <span className="fl-stat-band-label">Church Branches</span>
-        </div>
-        <div className="fl-stat-item">
-          <span className="fl-stat-band-num">100%</span>
-          <span className="fl-stat-band-label">Secure &amp; Encrypted</span>
-        </div>
-      </div>
 
       {/* ── FEATURES ── */}
       <section className="fl-features" id="features">
