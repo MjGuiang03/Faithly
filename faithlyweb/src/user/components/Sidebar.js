@@ -15,7 +15,7 @@ export default function Sidebar() {
   const { user, profile, signOut } = useAuth();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [verificationStatus, setVerificationStatus] = useState(null);
+  const [verificationStatus, setVerificationStatus] = useState(() => localStorage.getItem('verificationStatus') || null);
   const [collapsed, setCollapsed] = useState(() => {
     return localStorage.getItem('sidebar_collapsed') === 'true';
   });
@@ -82,8 +82,13 @@ export default function Sidebar() {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
-        if (res.ok && data.success) setVerificationStatus(data.verificationStatus);
-        else setVerificationStatus('unverified');
+        if (res.ok && data.success) {
+          setVerificationStatus(data.verificationStatus);
+          localStorage.setItem('verificationStatus', data.verificationStatus);
+        } else {
+          setVerificationStatus('unverified');
+          localStorage.setItem('verificationStatus', 'unverified');
+        }
       } catch {
         setVerificationStatus('unverified');
       }

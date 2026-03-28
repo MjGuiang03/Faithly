@@ -93,11 +93,11 @@ export default function Savings() {
     const [txnTotal, setTxnTotal] = useState(0);
     const TXN_LIMIT = 5;
 
-    const fetchAll = useCallback(async () => {
-        setDataLoading(true);
+    const fetchAll = useCallback(async (showLoader = true) => {
+        if (showLoader) setDataLoading(true);
         setError('');
         const token = localStorage.getItem('token');
-        if (!token) { setDataLoading(false); return; }
+        if (!token) { if (showLoader) setDataLoading(false); return; }
         const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
         try {
             const [goalsRes, txnRes, statsRes] = await Promise.all([
@@ -126,14 +126,14 @@ export default function Savings() {
         }
     }, [txnPage]);
 
-    useEffect(() => { fetchAll(); }, [fetchAll]);
+    useEffect(() => { fetchAll(true); }, [fetchAll]);
 
     const openDeposit = () => setModal('deposit');
     const openNewGoal = () => setModal('newGoal');
     const openQuickDep = (goal) => { setModalData(goal); setModal('quickDeposit'); };
     const openEditGoal = (goal) => { setModalData(goal); setModal('editGoal'); };
     const openTransfer = (goal) => { setModalData(goal); setModal('transfer'); };
-    const closeModal = () => { setModal(null); setModalData(null); fetchAll(); };
+    const closeModal = () => { setModal(null); setModalData(null); fetchAll(false); };
 
     const hasGoals = goals.length > 0;
 

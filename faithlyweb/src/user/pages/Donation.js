@@ -49,7 +49,7 @@ export default function Donation() {
   const { user } = useAuth();
   const [donationAmount, setDonationAmount] = useState('');
   const [donationCategory, setDonationCategory] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('GCash');
+  const [paymentMethod, setPaymentMethod] = useState('');
   const [isRecurring, setIsRecurring] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
@@ -263,7 +263,7 @@ export default function Donation() {
                   <div className="user-payment-methods">
                     <button
                       className={`user-payment-method-btn${paymentMethod === 'GCash' ? ' active' : ''}`}
-                      onClick={() => setPaymentMethod('GCash')}
+                      onClick={() => setPaymentMethod(paymentMethod === 'GCash' ? '' : 'GCash')}
                       disabled={submitting}
                     >
                       <GCashIcon />
@@ -271,7 +271,7 @@ export default function Donation() {
                     </button>
                     <button
                       className={`user-payment-method-btn${paymentMethod === 'Bank' ? ' active' : ''}`}
-                      onClick={() => setPaymentMethod('Bank')}
+                      onClick={() => setPaymentMethod(paymentMethod === 'Bank' ? '' : 'Bank')}
                       disabled={submitting}
                     >
                       <BankIcon />
@@ -280,7 +280,7 @@ export default function Donation() {
                   </div>
 
                   {/* ── Payment Account Info ── */}
-                  {paymentMethod === 'GCash' && (
+                  <div className={`user-payment-info-wrapper ${paymentMethod === 'GCash' ? 'expanded' : ''}`}>
                     <div className="user-payment-info-box">
                       <div className="user-payment-info-header">
                         <img src={gcashLogo} alt="GCash" style={{ width: 50, height: 25, objectFit: 'contain' }} />
@@ -303,9 +303,9 @@ export default function Donation() {
                         </div>
                       </div>
                     </div>
-                  )}
+                  </div>
 
-                  {paymentMethod === 'Bank' && (
+                  <div className={`user-payment-info-wrapper ${paymentMethod === 'Bank' ? 'expanded' : ''}`}>
                     <div className="user-payment-info-box">
                       <div className="user-payment-info-header">
                         <img src={bank} alt="Bank" style={{ width: 28, height: 28, objectFit: 'contain' }} />
@@ -332,7 +332,8 @@ export default function Donation() {
                         </div>
                       </div>
                     </div>
-                  )}
+                  </div>
+
                 </div>
 
                 {/* ── Proof of Payment ── */}

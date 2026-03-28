@@ -99,7 +99,7 @@
 .user-donation-section-title {
   font-size: 11.5px;
   font-weight: 600;
-  color: #64748b;
+  color: #000000;
   margin: 0 0 12px 0;
   font-family: 'Inter', sans-serif;
   text-transform: uppercase;
@@ -298,6 +298,19 @@
   font-family: 'Inter', sans-serif;
 }
 
+/* ── Payment Account Info Wrapper ── */
+.user-payment-info-wrapper {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease-in-out, opacity 0.4s ease-in-out;
+  opacity: 0;
+}
+
+.user-payment-info-wrapper.expanded {
+  max-height: 300px;
+  opacity: 1;
+}
+
 /* ── Payment Account Info Box ── */
 .user-payment-info-box {
   margin-top: 12px;
@@ -305,12 +318,6 @@
   border: 1px solid #E5E7EB;
   border-radius: 10px;
   overflow: hidden;
-  animation: paymentInfoSlide 0.25s ease;
-}
-
-@keyframes paymentInfoSlide {
-  from { opacity: 0; transform: translateY(-8px); }
-  to   { opacity: 1; transform: translateY(0); }
 }
 
 .user-payment-info-header {
