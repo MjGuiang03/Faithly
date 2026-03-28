@@ -696,12 +696,60 @@
   background: var(--muted);
 }
 
+/* ── Expand / Collapse Button ──────────────────────────────────────── */
+.user-pi-expand-btn {
+  margin-left: auto;
+  background: var(--secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.user-pi-expand-btn:hover {
+  background: var(--muted);
+  color: var(--foreground);
+  border-color: var(--primary);
+}
+
+.dark .user-pi-expand-btn {
+  background: var(--input-background);
+  border-color: var(--border);
+  color: var(--text-muted);
+}
+
+.dark .user-pi-expand-btn:hover {
+  background: var(--muted);
+  color: var(--foreground);
+}
+
+/* ── Collapsible Wrapper ──────────────────────────────────────────── */
+.user-pi-collapsible {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
+  opacity: 0;
+}
+
+.user-pi-collapsible--open {
+  max-height: 800px;
+  opacity: 1;
+}
+
 /* ── Edit Form ─────────────────────────────────────────── */
 .user-pi-edit-form {
   display: flex;
   flex-direction: column;
   gap: 20px;
   animation: user-pi-form-in 0.2s ease;
+  padding-top: 4px;
 }
 
 @keyframes user-pi-form-in {

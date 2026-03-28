@@ -15,6 +15,7 @@ export default function Sidebar() {
   const { user, profile, signOut } = useAuth();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [verificationStatus, setVerificationStatus] = useState(null);
   const [collapsed, setCollapsed] = useState(() => {
     return localStorage.getItem('sidebar_collapsed') === 'true';
   });
@@ -70,6 +71,24 @@ export default function Sidebar() {
   };
 
   const isActive = (path) => location.pathname === path;
+
+  /* ── Fetch officer verification status ── */
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    (async () => {
+      try {
+        const res = await fetch(`${API}/api/verification/status`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (res.ok && data.success) setVerificationStatus(data.verificationStatus);
+        else setVerificationStatus('unverified');
+      } catch {
+        setVerificationStatus('unverified');
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -159,16 +178,20 @@ export default function Sidebar() {
     };
   }, [profile?.branch]);
 
-  const navItems = [
+  const isOfficer = verificationStatus === 'verified';
+
+  const allNavItems = [
     { path: '/home', icon: <LayoutGrid size={20} />, label: 'Home' },
     { path: '/notifications', icon: <Bell size={20} />, label: 'Notifications', badge: unreadCount },
-    { path: '/savings', icon: <Wallet size={20} />, label: 'Savings' },
-    { path: '/loans', icon: <FileText size={20} />, label: 'Loans' },
+    { path: '/savings', icon: <Wallet size={20} />, label: 'Savings', officerOnly: true },
+    { path: '/loans', icon: <FileText size={20} />, label: 'Loans', officerOnly: true },
     { path: '/donation', icon: <Heart size={20} />, label: 'Donations' },
     { path: '/attendance', icon: <Calendar size={20} />, label: 'Attendance' },
     { path: '/branches', icon: <Building2 size={20} />, label: 'Branches' },
     { path: '/settings', icon: <Settings size={20} />, label: 'Settings' },
   ];
+
+  const navItems = allNavItems.filter(item => !item.officerOnly || isOfficer);
 
   return (
     <>

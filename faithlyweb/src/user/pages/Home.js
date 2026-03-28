@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 import svgPaths from '../../imports/svg-icons';
 import Sidebar from '../components/Sidebar';
+import VerificationModal from '../components/OfficerVerification';
 import API from '../../utils/api';
 import '../styles/Home.css';
 
@@ -23,6 +24,12 @@ export default function Home() {
   const [savingsGoalsList, setSavingsGoalsList] = useState([]);
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  /* Officer verification */
+  const [verificationStatus, setVerificationStatus] = useState(null);
+  const [officerCardDismissed, setOfficerCardDismissed] = useState(false);
+  const [showVerifyModal, setShowVerifyModal] = useState(false);
+  const [showAskOfficerModal, setShowAskOfficerModal] = useState(false);
 
   const token = localStorage.getItem('token');
 
@@ -162,6 +169,38 @@ export default function Home() {
     fetchAllData();
   }, [token, fetchAllData]);
 
+  /* Fetch officer verification status */
+  useEffect(() => {
+    const t = localStorage.getItem('token');
+    if (!t) return;
+    (async () => {
+      try {
+        const res = await fetch(`${API}/api/verification/status`, {
+          headers: { Authorization: `Bearer ${t}` },
+        });
+        const data = await res.json();
+        if (res.ok && data.success) setVerificationStatus(data.verificationStatus);
+        else setVerificationStatus('unverified');
+      } catch {
+        setVerificationStatus('unverified');
+      }
+    })();
+  }, []);
+
+  const isOfficer = verificationStatus === 'verified';
+
+  const handleVerifyModalClose = async () => {
+    setShowVerifyModal(false);
+    try {
+      const t = localStorage.getItem('token');
+      const res = await fetch(`${API}/api/verification/status`, {
+        headers: { Authorization: `Bearer ${t}` },
+      });
+      const data = await res.json();
+      if (res.ok && data.success) setVerificationStatus(data.verificationStatus);
+    } catch {}
+  };
+
   const formatTimeAgo = (date) => {
     const diff = Date.now() - date.getTime();
     const mins = Math.floor(diff / 60000);
@@ -241,9 +280,39 @@ export default function Home() {
         </div>
 
         {/* Stats Grid */}
-        <div className="user-stats-grid">
+        <div className={`user-stats-grid ${!isOfficer && officerCardDismissed ? 'user-stats-grid--half' : ''}`}>
           
-          {/* Savings */}
+          {/* Officer Prompt Card — shown for non-officers when not dismissed */}
+          {!isOfficer && !officerCardDismissed && (
+            <div className="user-stat-card user-officer-prompt-card" style={{ gridColumn: 'span 2' }}>
+              <button
+                className="user-officer-prompt-close"
+                onClick={(e) => { e.stopPropagation(); setOfficerCardDismissed(true); }}
+                title="Dismiss"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+              <div className="user-officer-prompt-body" onClick={() => setShowAskOfficerModal(true)} style={{ cursor: 'pointer' }}>
+                <div className="user-stat-icon-box user-officer-prompt-icon-box">
+                  <svg className="user-stat-icon" fill="none" viewBox="0 0 24 24">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                    <path d="M9 12l2 2 4-4" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                  </svg>
+                </div>
+                <div className="user-stat-content">
+                  <p className="user-stat-label">Are you an officer?</p>
+                  <p className="user-officer-prompt-text">Verify your officer status to unlock Savings & Loans features</p>
+                  <span className="user-officer-prompt-link">Get Verified →</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Savings — only for verified officers */}
+          {isOfficer && (
           <div className="user-stat-card user-stat-purple user-stat-card-clickable" onClick={() => navigate('/savings')} style={{ cursor: 'pointer', position: 'relative' }}>
             <div className="user-stat-icon-box">
               <svg className="user-stat-icon" fill="none" viewBox="0 0 24 24">
@@ -273,8 +342,10 @@ export default function Home() {
               </div>
             )}
           </div>
+          )}
 
-          {/* Active Loans */}
+          {/* Active Loans — only for verified officers */}
+          {isOfficer && (
           <div className="user-stat-card user-stat-blue user-stat-card-clickable" onClick={() => navigate('/loans')} style={{ cursor: 'pointer', position: 'relative' }}>
             <div className="user-stat-icon-box">
               <svg className="user-stat-icon" fill="none" viewBox="0 0 24 24">
@@ -308,6 +379,7 @@ export default function Home() {
               </div>
             )}
           </div>
+          )}
 
           {/* Total Donated */}
           <div className="user-stat-card user-stat-green user-stat-card-clickable" onClick={() => navigate('/donation')} style={{ cursor: 'pointer' }}>
@@ -504,6 +576,31 @@ export default function Home() {
           <path d={svgPaths.p261dfb00} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
         </svg>
       </button>
+
+      {/* "Are you an officer?" Confirmation Modal */}
+      {showAskOfficerModal && (
+        <div className="user-logout-modal-overlay" style={{ zIndex: 1100 }}>
+          <div className="user-logout-modal-content" style={{ maxWidth: 380, textAlign: 'center' }}>
+            <div style={{ width: 48, height: 48, borderRadius: 12, background: '#dbeafe', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
+              <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M9 12l2 2 4-4" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <h2 className="user-logout-modal-title" style={{ marginBottom: 8 }}>Are you an officer?</h2>
+            <p className="user-logout-modal-message" style={{ marginBottom: 20 }}>
+              Officer verification unlocks access to Savings &amp; Loans features. Only verified church officers may proceed.
+            </p>
+            <div className="user-logout-modal-actions">
+              <button className="user-logout-modal-cancel" onClick={() => setShowAskOfficerModal(false)}>No, I'm a member</button>
+              <button className="user-logout-modal-confirm" onClick={() => { setShowAskOfficerModal(false); setShowVerifyModal(true); }}>Yes, verify me</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Officer Verification Modal */}
+      <VerificationModal isOpen={showVerifyModal} onClose={handleVerifyModalClose} />
 
     </div>
   );

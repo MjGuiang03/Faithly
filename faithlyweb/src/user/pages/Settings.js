@@ -54,10 +54,14 @@ export default function Settings() {
   /* ── Officer Verification ────────────────────────────────────────────── */
   const [verificationStatus,  setVerificationStatus]  = useState(null);
   const [showVerifyModal,     setShowVerifyModal]      = useState(false);
+  const [showAskOfficerModal, setShowAskOfficerModal]  = useState(false);
 
   /* ── Other settings ──────────────────────────────────────────────────── */
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [smsNotifications,   setSmsNotifications]   = useState(false);
+
+  /* ── Collapsible info ────────────────────────────────────────────────── */
+  const [infoExpanded, setInfoExpanded] = useState(false);
 
   /* ── Fetch verification status on mount ──────────────────────────────── */
   useEffect(() => {
@@ -194,7 +198,7 @@ export default function Settings() {
       verified:   { cls: 'user-pi-verify-pill--verified',   label: 'Officer Verified',       actionLabel: null },
       pending:    { cls: 'user-pi-verify-pill--pending',     label: 'Verification Pending',   actionLabel: null },
       rejected:   { cls: 'user-pi-verify-pill--rejected',    label: 'Verification Rejected',  actionLabel: 'Resubmit' },
-      unverified: { cls: 'user-pi-verify-pill--unverified',  label: 'Verification Required',  actionLabel: 'Get verified' },
+      unverified: { cls: 'user-pi-verify-pill--unverified',  label: 'Are you an officer?',    actionLabel: 'Get verified' },
     };
     const { cls, label, actionLabel } = STATUS[verificationStatus] || STATUS.unverified;
     return (
@@ -203,7 +207,7 @@ export default function Settings() {
         {actionLabel && (
           <>
             <span className="user-pi-verify-pill__sep" aria-hidden="true" />
-            <button className="user-pi-verify-pill__action" onClick={() => navigate('/loans')}>
+            <button className="user-pi-verify-pill__action" onClick={() => setShowAskOfficerModal(true)}>
               {actionLabel}
             </button>
           </>
@@ -228,6 +232,28 @@ export default function Settings() {
           onVerify={handleVerifyEmailOtp}
           onResend={handleResendEmailOtp}
         />
+      )}
+
+      {/* "Are you an officer?" Confirmation Modal */}
+      {showAskOfficerModal && (
+        <div className="user-logout-modal-overlay" style={{ zIndex: 1100 }}>
+          <div className="user-logout-modal-content" style={{ maxWidth: 380, textAlign: 'center' }}>
+            <div style={{ width: 48, height: 48, borderRadius: 12, background: '#dbeafe', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
+              <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M9 12l2 2 4-4" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <h2 className="user-logout-modal-title" style={{ marginBottom: 8 }}>Are you an officer?</h2>
+            <p className="user-logout-modal-message" style={{ marginBottom: 20 }}>
+              Officer verification unlocks access to Savings &amp; Loans features. Only verified church officers may proceed.
+            </p>
+            <div className="user-logout-modal-actions">
+              <button className="user-logout-modal-cancel" onClick={() => setShowAskOfficerModal(false)}>No, I'm a member</button>
+              <button className="user-logout-modal-confirm" onClick={() => { setShowAskOfficerModal(false); setShowVerifyModal(true); }}>Yes, verify me</button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Officer Verification Modal */}
@@ -257,6 +283,18 @@ export default function Settings() {
                 <h2 className="user-settings-section-title">Personal Information</h2>
                 <p className="user-settings-section-subtitle">View and manage your profile details</p>
               </div>
+              <button
+                className="user-pi-expand-btn"
+                onClick={() => setInfoExpanded(prev => !prev)}
+                title={infoExpanded ? 'Collapse' : 'Expand'}
+              >
+                <svg
+                  width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                  style={{ transition: 'transform 0.3s ease', transform: infoExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
             </div>
 
             {/* Blue profile card */}
@@ -290,7 +328,6 @@ export default function Settings() {
               {/* Name / email / badges */}
               <div className="user-pi-card-info">
                 <span className="user-pi-card-name">{displayName}</span>
-                <span className="user-pi-card-email">{displayEmail}</span>
                 <div className="user-pi-card-badges">
                   <span className="user-pi-badge user-pi-badge-member">
                     {verificationStatus === 'verified' ? 'Officer' : 'Member'}
@@ -306,6 +343,7 @@ export default function Settings() {
             </div>
 
             {/* ── Edit Form ─────────────────────────────────────────── */}
+            <div className={`user-pi-collapsible ${infoExpanded ? 'user-pi-collapsible--open' : ''}`}>
             <div className="user-pi-edit-form">
               {isEditing && (
                 <p className="user-pi-edit-notice">
@@ -413,6 +451,7 @@ export default function Settings() {
                     )}
                   </div>
                 </div>
+              </div>
             </div>
           </div>
 
