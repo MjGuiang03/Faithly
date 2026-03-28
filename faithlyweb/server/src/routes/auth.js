@@ -12,7 +12,12 @@ import { authenticateUser } from '../middleware/auth.js';
 import { generateOTP, sendOTP } from '../utils/email.js';
 
 const router = Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  console.error('FATAL ERROR: JWT_SECRET is not defined in environment variables.');
+  process.exit(1);
+}
+const DUMMY_HASH = bcrypt.hashSync('dummy_secure_password_salt_xyz', 10);
 
 /* ================== REGISTER ================== */
 router.post('/register',
@@ -46,14 +51,8 @@ router.post('/register',
 
       const existingUser = await users.findOne({ email });
       if (existingUser) {
-        if (existingUser.isDeleted) {
-          return res.status(400).json({
-            message: 'This email was previously registered and deleted. Please use a different email.'
-          });
-        }
-        return res.status(400).json({
-          message: 'Unable to complete registration. This email is already registered.'
-        });
+        console.log('ℹ️ Registration attempted on existing email. Returning generic success message.');
+        return res.json({ message: 'Registration received. If your email is valid, you will receive an OTP shortly.' });
       }
 
       console.log('✅ Duplicate check passed.');
@@ -84,12 +83,11 @@ router.post('/register',
         console.error('❌ BACKGROUND EMAIL ERROR:', err.message);
       });
 
-      res.json({ message: 'Signup successful. Processing email...' });
+      res.json({ message: 'Registration received. If your email is valid, you will receive an OTP shortly.' });
     } catch (err) {
-      console.error('❌ SIGNUP ERROR:', err);
+      console.error('❌ SIGNUP ERROR:', err.message);
       res.status(500).json({
-        message: 'Server error during signup',
-        details: err.message
+        message: 'Server error during signup'
       });
     }
   }
@@ -131,7 +129,7 @@ router.post('/verify-otp',
 
       res.json({ message: 'Email verified successfully' });
     } catch (err) {
-      console.error(err);
+      console.error('[AUTH_ERROR] Verify OTP:', err.message);
       res.status(500).json({ message: 'Verification failed' });
     }
   }
@@ -169,7 +167,7 @@ router.post('/resend-otp',
 
       res.json({ message: 'OTP resent successfully. Check your email.' });
     } catch (err) {
-      console.error(err);
+      console.error('[AUTH_ERROR] Resend OTP:', err.message);
       res.status(500).json({ message: 'Failed to resend OTP' });
     }
   }
@@ -186,133 +184,83 @@ router.post('/login',
     try {
       const { email, password } = req.body;
 
-      /* ---- 1. Check admins collection first ---- */
-      const admin = await admins.findOne({ email });
-      if (admin) {
-        const match = await bcrypt.compare(password, admin.passwordHash);
-        if (!match) return res.status(400).json({ message: 'Invalid credentials' });
+      /* ---- 1. Fetch Concurrently (Timing Mitigation) ---- */
+      const [admin, user] = await Promise.all([
+        admins.findOne({ email }),
+        users.findOne({ email })
+      ]);
+      const account = admin || user;
 
-        const token = jwt.sign(
-          { email: admin.email, role: admin.role },
-          JWT_SECRET,
-          { expiresIn: '2h', issuer: 'faithly-api', audience: 'faithly-admin' }
-        );
+      /* ---- 2. Timing-Safe Password Check ---- */
+      const targetHash = account ? account.passwordHash : DUMMY_HASH;
+      const match = await bcrypt.compare(password, targetHash);
 
-        return res.status(200).json({
-          message: 'Login successful',
-          token,
-          user: {
-            email: admin.email,
-            role: admin.role,
-            fullName: admin.fullName || admin.email.split('@')[0],
+      /* ---- 3. Normalize Failure Responses ---- */
+      if (!account || !match || account.isDeleted) {
+        if (account && account.role !== 'admin') {
+          const now = new Date();
+          // Only increment/lock if not actively locked
+          if (!account.lockUntil || account.lockUntil < now) {
+            const attempts = (account.failedLoginAttempts || 0) + 1;
+            const updateData = { failedLoginAttempts: attempts };
+
+            if (attempts >= 8) updateData.lockUntil = new Date(now.getTime() + 5 * 60 * 60 * 1000); // 5h
+            else if (attempts === 7) updateData.lockUntil = new Date(now.getTime() + 2 * 60 * 60 * 1000); // 2h
+            else if (attempts === 6) updateData.lockUntil = new Date(now.getTime() + 30 * 60 * 1000); // 30m
+            else if (attempts === 3) updateData.lockUntil = new Date(now.getTime() + 5 * 60 * 1000); // 5m
+
+            await users.updateOne({ email }, { $set: updateData });
           }
-        });
+        }
+        return res.status(401).json({ message: 'Invalid email or password' });
       }
 
-      /* ---- 2. Fall through to regular users collection ---- */
-      const user = await users.findOne({ email });
-      if (!user) return res.status(400).json({ message: 'Invalid credentials' });
-
-      if (user.isDeleted) {
-        return res.status(403).json({
-          message: 'This account has been deleted. Please sign up again using a different email address.'
-        });
-      }
-
-      if (!user.isVerified) return res.status(403).json({ message: 'Email not verified' });
-
+      /* ---- 4. Check Statuses for Valid Authenticated Users ---- */
       const now = new Date();
+      if (account.role !== 'admin') {
+        if (account.lockUntil && account.lockUntil > now) {
+          const remainingMinutes = Math.ceil((account.lockUntil - now) / 60000);
+          return res.status(401).json({
+            message: `Account is temporarily locked due to previous failed attempts. Try again in ${remainingMinutes} minute(s). We strongly recommend resetting your password.`
+          });
+        }
+        if (!account.isVerified) {
+          return res.status(401).json({ message: 'Email not verified. Please check your inbox.' });
+        }
 
-      if (user.isPermanentlyLocked) {
-        return res.status(403).json({
-          message: 'Your account has been permanently locked due to too many failed login attempts. Please reset your password to regain access.',
-          locked: true, permanent: true
+        // Reset tracking on successful clean login
+        await users.updateOne({ email }, {
+          $set: { lastLoginAt: now, failedLoginAttempts: 0, lockUntil: null, isPermanentlyLocked: false }
         });
       }
 
-      if (user.lockUntil && user.lockUntil > now) {
-        const remainingMs = user.lockUntil - now;
-        const remainingMinutes = Math.ceil(remainingMs / 60000);
-        const remainingSeconds = Math.ceil(remainingMs / 1000);
-        const attempts = user.failedLoginAttempts || 0;
-
-        if (attempts >= 6) {
-          return res.status(403).json({
-            message: `Your account is locked for ${remainingMinutes} more minute(s) due to too many failed attempts. We strongly recommend resetting your password.`,
-            locked: true, lockUntil: user.lockUntil, remainingSeconds, recommendReset: true
-          });
-        }
-
-        return res.status(403).json({
-          message: `Account locked due to multiple failed attempts. Try again in ${remainingMinutes} minute(s).`,
-          locked: true, lockUntil: user.lockUntil, remainingSeconds
-        });
-      }
-
-      const match = await bcrypt.compare(password, user.passwordHash);
-
-      if (!match) {
-        const attempts = (user.failedLoginAttempts || 0) + 1;
-        const updateData = { failedLoginAttempts: attempts };
-
-        if (attempts >= 7) {
-          updateData.isPermanentlyLocked = true;
-          updateData.lockUntil = null;
-          await users.updateOne({ email }, { $set: updateData });
-          return res.status(403).json({
-            message: 'Your account has been permanently locked. Please reset your password to regain access.',
-            locked: true, permanent: true
-          });
-        }
-
-        if (attempts === 6) {
-          updateData.lockUntil = new Date(now.getTime() + 30 * 60 * 1000);
-          await users.updateOne({ email }, { $set: updateData });
-          return res.status(403).json({
-            message: 'Too many failed login attempts. Your account has been locked for 30 minutes. We strongly recommend resetting your password.',
-            locked: true, lockUntil: updateData.lockUntil, remainingSeconds: 30 * 60, recommendReset: true
-          });
-        }
-
-        if (attempts === 3) {
-          updateData.lockUntil = new Date(now.getTime() + 5 * 60 * 1000);
-          await users.updateOne({ email }, { $set: updateData });
-          return res.status(403).json({
-            message: 'Too many failed login attempts. Your account has been locked for 5 minutes.',
-            locked: true, lockUntil: updateData.lockUntil, remainingSeconds: 5 * 60
-          });
-        }
-
-        await users.updateOne({ email }, { $set: updateData });
-        const attemptsInCurrentTier = attempts <= 3 ? attempts : attempts - 3;
-        const remaining = 3 - attemptsInCurrentTier;
-        return res.status(400).json({
-          message: `Invalid credentials. ${remaining} attempt(s) remaining before your account is locked.`
-        });
-      }
-
-      await users.updateOne({ email }, {
-        $set: { lastLoginAt: now, failedLoginAttempts: 0, lockUntil: null, isPermanentlyLocked: false }
-      });
+      /* ---- 5. Issue Token ---- */
+      const role = account.role === 'admin' ? account.role : 'user';
+      const audience = account.role === 'admin' ? 'faithly-admin' : 'faithly-users';
 
       const token = jwt.sign(
-        { email: user.email, role: 'user' },
+        { email: account.email, role },
         JWT_SECRET,
-        { expiresIn: '1h', issuer: 'faithly-api', audience: 'faithly-users' }
+        { expiresIn: role === 'admin' ? '2h' : '1h', issuer: 'faithly-api', audience }
       );
 
       res.status(200).json({
         message: 'Login successful',
         token,
-        user: {
-          email: user.email, fullName: user.fullName, full_name: user.fullName,
-          phone: user.phone, branch: user.branch, position: user.position,
-          gender: user.gender, birthday: user.birthday, created_at: user.createdAt,
-          role: 'user'
-        }
+        user: role === 'admin'
+          ? {
+              email: account.email, role: account.role,
+              fullName: account.fullName || account.email.split('@')[0]
+            }
+          : {
+              email: account.email, fullName: account.fullName, full_name: account.fullName,
+              phone: account.phone, branch: account.branch, position: account.position,
+              gender: account.gender, birthday: account.birthday, created_at: account.createdAt,
+              role: 'user'
+            }
       });
     } catch (err) {
-      console.error(err);
+      console.error('[AUTH_ERROR] Login:', err.message);
       res.status(500).json({ message: 'Login failed' });
     }
   }
@@ -325,25 +273,21 @@ router.delete('/delete-account', authenticateUser, async (req, res) => {
     const { password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ success: false, message: 'Email and password are required' });
+      return res.status(400).json({ success: false, message: 'Invalid request' });
     }
 
     const user = await users.findOne({ email });
-    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    const targetHash = user ? user.passwordHash : DUMMY_HASH;
+    const isPasswordValid = await bcrypt.compare(password, targetHash);
 
-    if (user.isDeleted) {
-      return res.status(400).json({ success: false, message: 'Account is already deactivated' });
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-    if (!isPasswordValid) {
-      return res.status(401).json({ success: false, message: 'Password is incorrect' });
+    if (!user || user.isDeleted || !isPasswordValid) {
+      return res.status(401).json({ success: false, message: 'Invalid request or credentials' });
     }
 
     await users.updateOne({ email }, { $set: { isDeleted: true, deletedAt: new Date() } });
     res.status(200).json({ success: true, message: 'Account deactivated successfully' });
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.error('[AUTH_ERROR] Delete Account:', err.message);
     res.status(500).json({ success: false, message: 'Server error. Please try again later.' });
   }
 });
