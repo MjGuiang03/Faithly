@@ -55,7 +55,7 @@ export const AuthProvider = ({ children }) => {
         if (!res.ok) {
           if (res.status === 401) {
             // Token expired or invalid
-            signOut();
+            signOut(true);
           }
         }
       } catch (err) {
@@ -255,7 +255,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   /* ---------- SIGN OUT ---------- */
-  const signOut = () => {
+  const signOut = (silent = false) => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     localStorage.removeItem('adminToken');
@@ -263,7 +263,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('adminRole');
     setUser(null);
     setProfile(null);
-    toast.success('Signed out successfully');
+    if (!silent) toast.success('Signed out successfully');
     return { success: true };
   };
 

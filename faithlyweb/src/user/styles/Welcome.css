@@ -174,7 +174,7 @@
   color: var(--fl-navy);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  margin-bottom: 16px;
+  margin-bottom: 5px;
   opacity: 0;
   animation: fl-fadeUp 0.8s 0.1s forwards;
 }
@@ -256,7 +256,7 @@
   align-items: center;
   justify-content: center;
   gap: 16px;
-  margin-bottom: 48px;
+  margin-bottom: 55px;
   opacity: 0;
   animation: fl-fadeUp 0.8s 0.55s forwards;
 }
@@ -277,6 +277,7 @@
   align-items: center;
   justify-content: center;
 }
+
 .fl-hero-btn-primary:hover {
   background: var(--fl-navy-dark);
   border-color: var(--fl-navy-dark);
@@ -299,6 +300,7 @@
   align-items: center;
   justify-content: center;
 }
+
 .fl-hero-btn-outline:hover {
   background: var(--fl-surface);
   border-color: var(--fl-navy-light);
