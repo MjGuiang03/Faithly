@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import svgPaths from '../../imports/svg-icons';
@@ -29,7 +28,6 @@ const COMMUNITIES = {
 };
 
 export default function Settings() {
-  const navigate = useNavigate();
   const { user, profile, updateProfile, requestEmailChange, verifyEmailChange } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
@@ -177,7 +175,6 @@ export default function Settings() {
 
   /* ── Derived display values ──────────────────────────────────────────── */
   const displayName      = profile?.fullName || 'Member';
-  const displayEmail     = user?.email       || 'member@puac.org';
   // const displayCommunity = profile?.branch   || profile?.community || '';
   const avatarSrc        = photoPreview || profile?.photoUrl || null;
 
