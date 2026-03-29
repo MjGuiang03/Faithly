@@ -670,11 +670,9 @@
   }
 }
 
- @ m e d i a   ( m a x - w i d t h :   7 6 8 p x )   { 
-     . u s e r - n o t i f i c a t i o n s - p a g e - h e a d e r   { 
-         f l e x - d i r e c t i o n :   c o l u m n ; 
-         a l i g n - i t e m s :   f l e x - s t a r t ; 
-     } 
- } 
-  
- 
+@media (max-width: 768px) {
+  .user-notifications-page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
