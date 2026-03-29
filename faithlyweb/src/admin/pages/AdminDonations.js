@@ -48,7 +48,7 @@ export default function AdminDonationsNew() {
   const [rejectedLoading, setRejectedLoading] = useState(false);
   const [rejectedList, setRejectedList] = useState([]);
   const debouncedSearch = useDebounce(search, 400);
-  const ITEMS_PER_PAGE = 10;
+  const ITEMS_PER_PAGE = 5;
 
   /* ── Detail modal ── */
   const [detailModal, setDetailModal] = useState(null);

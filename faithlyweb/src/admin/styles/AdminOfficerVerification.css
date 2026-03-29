@@ -141,11 +141,9 @@
 
 /* Table */
 .admin-offver-table-section {
-  background: white;
-  border: 0.8px solid #e5e7eb;
-  border-radius: 12px;
-  overflow: hidden;
-  padding: 0 20px 20px 20px;
+  background: transparent;
+  border: none;
+  padding: 0;
 }
 
 .admin-offver-table {

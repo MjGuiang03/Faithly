@@ -102,7 +102,7 @@ export default function SecretaryAdminDashboard() {
         ) : (
           <>
             {/* Row 1 — 4 Stat Cards */}
-            <div className="adm-stats-grid">
+            <div className="adm-stats-grid" style={{ width: '100%', gridTemplateColumns: 'repeat(4, 1fr)' }}>
               <div className="adm-stat-card" style={{ borderTop: '3px solid #F59E0B' }}>
                 <div className="adm-stat-top">
                   <span className="adm-stat-label">Awaiting Processing</span>
@@ -203,7 +203,7 @@ export default function SecretaryAdminDashboard() {
                   <span className="adm-card-sub">Key disbursement metrics</span>
                 </div>
               </div>
-              <div className="adm-stats-grid" style={{ gap: '10px' }}>
+              <div className="adm-stats-grid" style={{ gap: '10px', width: '100%', gridTemplateColumns: 'repeat(4, 1fr)' }}>
                 <div className="adm-summary-card" style={{ borderLeft: '3px solid #00A63E' }}>
                   <span className="adm-summary-label">Total Received</span>
                   <span className="adm-summary-value green">₱{reportStats.totalReceived.toLocaleString()}</span>

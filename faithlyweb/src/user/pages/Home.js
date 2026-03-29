@@ -315,13 +315,13 @@ export default function Home() {
               <div className="user-officer-prompt-body" onClick={() => setShowAskOfficerModal(true)} style={{ cursor: 'pointer' }}>
                 <div className="user-stat-icon-box user-officer-prompt-icon-box">
                   <svg className="user-stat-icon" fill="none" viewBox="0 0 24 24">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                    <path d="M9 12l2 2 4-4" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#2563EB" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                    <path d="M9 12l2 2 4-4" stroke="#2563EB" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
                   </svg>
                 </div>
                 <div className="user-stat-content">
-                  <p className="user-stat-label">Are you an officer?</p>
-                  <p className="user-officer-prompt-text">Verify your officer status to unlock Savings & Loans features</p>
+                  <p className="user-stat-label" style={{ color: '#111827', fontWeight: 600 }}>Are you an officer?</p>
+                  <p className="user-officer-prompt-text" style={{ color: '#4B5563' }}>Verify your officer status to unlock Savings & Loans features</p>
                   <span className="user-officer-prompt-link">Get Verified →</span>
                 </div>
               </div>
