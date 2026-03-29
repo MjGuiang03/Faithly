@@ -313,9 +313,9 @@ export default function AdminAttendance() {
         </div>
       </div>
 
-      {/* Recent Services Table */}
+      {/* Services Table */}
       <div className="admin-att-table-header">
-        <h2 className="admin-att-section-title">Recent Services</h2>
+        <h2 className="admin-att-section-title">Services</h2>
         <div className="history-search-box">
           <svg fill="none" viewBox="0 0 16 16" width="14" height="14" className="search-icon-inner">
             <circle cx="7" cy="7" r="5" stroke="#9ca3af" strokeWidth="1.5" />

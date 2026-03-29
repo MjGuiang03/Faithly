@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Search, UserPlus, Users as UsersIcon, ShieldCheck, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, UserPlus, Users as UsersIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import useDebounce from '../../hooks/useDebounce';
 import '../styles/AdminMembers.css';
 import svgPaths from "../../imports/svg-icons";
@@ -328,8 +328,6 @@ export default function AdminMembers() {
 
   useEffect(() => { setCurrentPage(1); }, [debouncedSearchMembers, roleFilter]);
 
-  const formatDate = d =>
-    d ? new Date(d).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' }) : 'N/A';
 
   const buildPageNumbers = (p) => {
     const { totalPages } = p;

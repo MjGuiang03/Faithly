@@ -330,7 +330,7 @@ export default function AdminOfficerVerification() {
   const totalPages      = Math.ceil(totalCount / PER_PAGE);
   const paginated       = requests;
 
-  const getStatusBadgeClass = (s) => `admin-offver-status-${s}`;
+
 
   return (
     <div className="admin-offver-main">

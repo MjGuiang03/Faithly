@@ -539,7 +539,7 @@ export default function Home() {
 
         {/* Recent Activity — horizontal scroll feed */}
         <div className="user-home-card user-home-full-width-section" style={{ marginBottom: '16px', overflow: 'hidden' }}>
-          <h2 className="user-home-card-title" style={{ marginBottom: '12px' }}>Activities</h2>
+          <h2 className="user-home-card-title" style={{ marginBottom: '12px' }}>Recent Activity</h2>
           {loading ? (
             <div className="user-activity-hscroll">
               {[1,2,3,4,5].map(i => (
