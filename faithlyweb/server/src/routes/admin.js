@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { users, admins, otps, announcements } from '../config/db.js';
+import { users, admins, otps, announcements, savingsTransactions, savingsGoals } from '../config/db.js';
 import { validate } from '../middleware/validate.js';
 import { loginLimiter } from '../middleware/rateLimiter.js';
 import { authenticateAdmin } from '../middleware/auth.js';
@@ -496,6 +496,77 @@ router.delete('/announcements/:id', authenticateAdmin, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Failed to delete announcement' });
+  }
+});
+
+/* ================== SAVINGS DEPOSITS (ADMIN) ================== */
+router.get('/savings/deposits', authenticateAdmin, async (req, res) => {
+  try {
+    const { status, search } = req.query;
+    const query = { type: 'deposit' };
+
+    if (status) query.status = status;
+
+    if (search) {
+      query.$or = [
+        { memberName: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+        { referenceNumber: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const deposits = await savingsTransactions.find(query).sort({ date: -1 }).toArray();
+    res.json({ success: true, deposits });
+  } catch (err) {
+    console.error('Failed to fetch savings deposits:', err);
+    res.status(500).json({ success: false, message: 'Failed to fetch savings deposits' });
+  }
+});
+
+router.put('/savings/deposits/:id/confirm', authenticateAdmin, async (req, res) => {
+  try {
+    const { ObjectId } = await import('mongodb');
+    const { id } = req.params;
+
+    const txn = await savingsTransactions.findOne({ _id: new ObjectId(id) });
+    if (!txn) return res.status(404).json({ success: false, message: 'Transaction not found' });
+    if (txn.status === 'confirmed') return res.status(400).json({ success: false, message: 'Already confirmed' });
+
+    // Update Transaction
+    await savingsTransactions.updateOne({ _id: new ObjectId(id) }, { $set: { status: 'confirmed', confirmedAt: new Date(), confirmedBy: req.admin.email } });
+
+    // Update Goal
+    const goal = await savingsGoals.findOne({ _id: txn.goalId });
+    if (goal) {
+      const newSaved = (goal.savedAmount || 0) + txn.amount;
+      const updates = { savedAmount: newSaved, updatedAt: new Date() };
+      if (newSaved >= goal.targetAmount) updates.status = 'completed';
+      await savingsGoals.updateOne({ _id: txn.goalId }, { $set: updates });
+    }
+
+    res.json({ success: true, message: 'Savings deposit confirmed!' });
+  } catch (err) {
+    console.error('Failed to confirm deposit:', err);
+    res.status(500).json({ success: false, message: 'Failed to confirm deposit' });
+  }
+});
+
+router.put('/savings/deposits/:id/reject', authenticateAdmin, async (req, res) => {
+  try {
+    const { ObjectId } = await import('mongodb');
+    const { id } = req.params;
+    const { reason } = req.body;
+
+    const txn = await savingsTransactions.findOne({ _id: new ObjectId(id) });
+    if (!txn) return res.status(404).json({ success: false, message: 'Transaction not found' });
+    if (txn.status === 'confirmed') return res.status(400).json({ success: false, message: 'Cannot reject confirmed deposit' });
+
+    await savingsTransactions.updateOne({ _id: new ObjectId(id) }, { $set: { status: 'rejected', rejectReason: reason || '', rejectedAt: new Date(), rejectedBy: req.admin.email } });
+
+    res.json({ success: true, message: 'Savings deposit rejected.' });
+  } catch (err) {
+    console.error('Failed to reject deposit:', err);
+    res.status(500).json({ success: false, message: 'Failed to reject deposit' });
   }
 });
 

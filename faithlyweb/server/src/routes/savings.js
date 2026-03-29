@@ -155,16 +155,13 @@ router.post('/savings/deposit', authenticateUser, async (req, res) => {
 
     const depositAmount = Number(amount);
 
-    // Update goal saved amount
-    const newSaved = (goal.savedAmount || 0) + depositAmount;
-    const goalUpdates = { savedAmount: newSaved, updatedAt: new Date() };
-    if (newSaved >= goal.targetAmount) goalUpdates.status = 'completed';
-
-    await savingsGoals.updateOne({ _id: new ObjectId(goalId) }, { $set: goalUpdates });
+    // Fetch user to get memberName for the admin views
+    const user = await users.findOne({ email });
 
     // Create transaction record
     const txn = {
       email,
+      memberName: user?.fullName || 'Unknown Member',
       goalId: new ObjectId(goalId),
       goalName: goal.name,
       type: 'deposit',
@@ -174,14 +171,15 @@ router.post('/savings/deposit', authenticateUser, async (req, res) => {
       paymentMethod: paymentMethod || 'cash',
       referenceNumber: referenceNumber || '',
       proofOfPayment: proofOfPayment || null,
+      status: 'pending',
       date: new Date(),
     };
     await savingsTransactions.insertOne(txn);
 
     res.json({
       success: true,
-      message: `₱${depositAmount.toLocaleString()} deposited to ${goal.name}`,
-      newSavedAmount: newSaved,
+      message: `₱${depositAmount.toLocaleString()} deposit submitted for ${goal.name} (Pending Admin Approval)`,
+      newSavedAmount: goal.savedAmount || 0,
     });
   } catch (err) {
     console.error('Deposit error:', err);

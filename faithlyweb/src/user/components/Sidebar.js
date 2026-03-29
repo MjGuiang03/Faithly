@@ -318,20 +318,21 @@ export default function Sidebar() {
           </button>
         </div>
 
-        {/* Logout Modal */}
-        {showLogoutModal && (
-          <div className="user-logout-modal-overlay" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 99999 }}>
-            <div className="user-logout-modal-content">
-              <h2 className="user-logout-modal-title">Confirm Logout</h2>
-              <p className="user-logout-modal-message">Are you sure you want to log out?</p>
-              <div className="user-logout-modal-actions">
-                <button className="user-logout-modal-cancel" onClick={() => setShowLogoutModal(false)}>Cancel</button>
-                <button className="user-logout-modal-confirm" onClick={handleSignOut}>Sign Out</button>
-              </div>
+      </div>
+
+      {/* Logout Modal */}
+      {showLogoutModal && (
+        <div className="user-logout-modal-overlay" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 99999 }}>
+          <div className="user-logout-modal-content">
+            <h2 className="user-logout-modal-title">Confirm Logout</h2>
+            <p className="user-logout-modal-message">Are you sure you want to log out?</p>
+            <div className="user-logout-modal-actions">
+              <button className="user-logout-modal-cancel" onClick={() => setShowLogoutModal(false)}>Cancel</button>
+              <button className="user-logout-modal-confirm" onClick={handleSignOut}>Sign Out</button>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </>
   );
 }

@@ -155,14 +155,17 @@ export default function Home() {
       }
 
       if (donationsData.success && donationsData.donations?.length) {
-        donationsData.donations.slice(0, 5).forEach(donation => {
-          activities.push({
-            type: 'donation',
-            title: 'Donation Made',
-            category: donation.category,
-            amount: `₱${donation.amount.toLocaleString()}`,
-            date: new Date(donation.createdAt),
-          });
+        donationsData.donations
+          .filter(donation => donation.status === 'confirmed')
+          .slice(0, 5)
+          .forEach(donation => {
+            activities.push({
+              type: 'donation',
+              title: 'Donation Made',
+              category: donation.category,
+              amount: `₱${donation.amount.toLocaleString()}`,
+              date: new Date(donation.createdAt),
+            });
         });
       }
 
