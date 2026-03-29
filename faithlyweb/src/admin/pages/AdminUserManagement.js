@@ -251,11 +251,11 @@ export default function AdminUserManagement() {
       </div>
 
       {/* Table */}
-      <div className="admin-users-table-section">
+      <div className="loan-admin-mgmt-table-container">
         {loading ? (
           <div className="admin-users-loading"><Loader2 className="animate-spin" size={20} /> Loading...</div>
         ) : (
-          <table className="admin-users-table">
+          <table className="loan-admin-mgmt-table">
             <thead>
               <tr>
                 <th>Email</th>

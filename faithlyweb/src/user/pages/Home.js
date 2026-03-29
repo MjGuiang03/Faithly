@@ -290,13 +290,7 @@ export default function Home() {
           </div>
 
           <div className="user-home-header-right">
-            <div className="user-home-info-pill" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" width="18" height="18">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                <line x1="16" y1="2" x2="16" y2="6" />
-                <line x1="8" y1="2" x2="8" y2="6" />
-                <line x1="3" y1="10" x2="21" y2="10" />
-              </svg>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontFamily: '"Inter", sans-serif', color: '#111827', fontSize: '22px', fontWeight: '700' }}>
               <span>{formatTimePill(currentTime)}</span>
             </div>
           </div>
@@ -519,7 +513,7 @@ export default function Home() {
                 return (
                   <div key={i} className="user-event-row user-clickable" onClick={() => setSelectedEvent(evt)}>
                     <div className="user-event-accent-bar" style={{ background: c.color }} />
-                    <div className="user-event-date-block">
+                    <div className="user-event-date-block" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                       <span className="user-event-day">{evt.day}</span>
                       <span className="user-event-month">{evt.month}</span>
                     </div>
@@ -545,7 +539,7 @@ export default function Home() {
 
         {/* Recent Activity — horizontal scroll feed */}
         <div className="user-home-card user-home-full-width-section" style={{ marginBottom: '16px', overflow: 'hidden' }}>
-          <h2 className="user-home-card-title" style={{ marginBottom: '12px' }}>Recent Activities</h2>
+          <h2 className="user-home-card-title" style={{ marginBottom: '12px' }}>Activities</h2>
           {loading ? (
             <div className="user-activity-hscroll">
               {[1,2,3,4,5].map(i => (
@@ -603,7 +597,7 @@ export default function Home() {
       {/* "Are you an officer?" Confirmation Modal */}
       {showAskOfficerModal && (
         <div className="user-logout-modal-overlay" style={{ zIndex: 1100 }}>
-          <div className="user-logout-modal-content" style={{ maxWidth: 380, textAlign: 'center' }}>
+          <div className="user-logout-modal-content" style={{ maxWidth: 420, textAlign: 'center' }}>
             <div style={{ width: 48, height: 48, borderRadius: 12, background: '#dbeafe', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
               <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -615,8 +609,8 @@ export default function Home() {
               Officer verification unlocks access to Savings &amp; Loans features. Only verified church officers may proceed.
             </p>
             <div className="user-logout-modal-actions">
-              <button className="user-logout-modal-cancel" onClick={() => setShowAskOfficerModal(false)}>No, I'm a member</button>
-              <button className="user-logout-modal-confirm" onClick={() => { setShowAskOfficerModal(false); setShowVerifyModal(true); }}>Yes, verify me</button>
+              <button className="user-logout-modal-cancel" onClick={() => setShowAskOfficerModal(false)} style={{ whiteSpace: 'nowrap' }}>No, I'm a member</button>
+              <button className="user-logout-modal-confirm" onClick={() => { setShowAskOfficerModal(false); setShowVerifyModal(true); }} style={{ whiteSpace: 'nowrap', minWidth: '150px' }}>Yes, verify me</button>
             </div>
           </div>
         </div>
@@ -676,7 +670,7 @@ export default function Home() {
                   return (
                     <div key={i} className="user-event-row user-clickable" onClick={() => { setShowAllEvents(false); setSelectedEvent(evt); }}>
                       <div className="user-event-accent-bar" style={{ background: c.color }} />
-                      <div className="user-event-date-block">
+                      <div className="user-event-date-block" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                         <span className="user-event-day">{evt.day}</span>
                         <span className="user-event-month">{evt.month}</span>
                       </div>

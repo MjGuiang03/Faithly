@@ -242,7 +242,7 @@ export default function Attendance() {
         {/* Attendance History (Preview) */}
         <div className="user-attendance-history-section">
           <div className="user-history-header-row">
-            <h2 className="user-attendance-section-title">Recent Attendance History</h2>
+            <h2 className="user-attendance-section-title">Attendance History</h2>
             <button className="user-view-history-btn" onClick={handleOpenHistory}>View History</button>
           </div>
 

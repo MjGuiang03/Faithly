@@ -12,8 +12,8 @@ router.post('/donations', authenticateUser, async (req, res) => {
     const email = req.user.email;
     const { amount, category, paymentMethod, isRecurring, proofImage } = req.body;
 
-    if (!amount || !category) {
-      return res.status(400).json({ success: false, message: 'Amount and category are required' });
+    if (!amount || !category || !proofImage) {
+      return res.status(400).json({ success: false, message: 'Amount, category, and proof of payment are required' });
     }
 
     const user = await users.findOne({ email });
@@ -55,6 +55,7 @@ router.get('/donations/my-donations', authenticateUser, async (req, res) => {
 
     const findQuery = { email };
     if (category) findQuery.category = category;
+    if (req.query.paymentMethod) findQuery.method = req.query.paymentMethod;
 
     const totalCount    = await donations.countDocuments(findQuery);
     const userDonations = await donations.find(findQuery)
@@ -70,8 +71,9 @@ router.get('/donations/my-donations', authenticateUser, async (req, res) => {
       .reduce((sum, d) => sum + d.amount, 0);
 
     const now = new Date();
-    const thisYearTotal = allUserDonations
-      .filter(d => d.status === 'confirmed' && new Date(d.createdAt).getFullYear() === now.getFullYear())
+    const confirmedDonations = allUserDonations.filter(d => d.status === 'confirmed');
+    const thisYearTotal = confirmedDonations
+      .filter(d => new Date(d.createdAt).getFullYear() === now.getFullYear())
       .reduce((sum, d) => sum + d.amount, 0);
 
     res.status(200).json({
@@ -80,7 +82,7 @@ router.get('/donations/my-donations', authenticateUser, async (req, res) => {
       totalCount,
       totalPages: Math.ceil(totalCount / limit),
       currentPage: page,
-      stats: { totalDonated, thisYearTotal, totalCount: allUserDonations.length }
+      stats: { totalDonated, thisYearTotal, totalCount: confirmedDonations.length }
     });
   } catch (err) {
     console.error(err);
@@ -98,7 +100,11 @@ router.get('/admin/donations', authenticateAdmin, async (req, res) => {
 
     const query = {};
     if (status && status !== 'all') {
-      query.status = status; // 'pending' | 'confirmed' | 'rejected'
+      if (status === 'active') {
+        query.status = { $ne: 'rejected' };
+      } else {
+        query.status = status; // 'pending' | 'confirmed' | 'rejected'
+      }
     }
 
     if (search) {
@@ -134,6 +140,7 @@ router.get('/admin/donations', authenticateAdmin, async (req, res) => {
     const uniqueEmails = new Set(confirmedAll.map(d => d.email)).size;
     const avgDonation  = confirmedAll.length > 0 ? Math.round(totalAmount / confirmedAll.length) : 0;
     const pendingCount = allForStats.filter(d => !d.status || d.status === 'pending').length;
+    const rejectedCount = allForStats.filter(d => d.status === 'rejected').length;
 
     const stats = {
       totalCount: confirmedAll.length,
@@ -143,6 +150,7 @@ router.get('/admin/donations', authenticateAdmin, async (req, res) => {
       totalDonors: uniqueEmails,
       avgDonation,
       pendingCount,
+      rejectedCount,
     };
 
     res.status(200).json({

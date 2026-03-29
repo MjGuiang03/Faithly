@@ -69,9 +69,10 @@ router.get('/verification/status', authenticateUser, async (req, res) => {
 /* ================== ADMIN - GET ALL VERIFICATIONS ================== */
 router.get('/admin/verifications', authenticateAdmin, async (req, res) => {
   try {
-    const { status } = req.query;
+    const { status, position } = req.query;
     const query = {};
     if (status && status !== 'all') query.status = status;
+    if (position && position !== 'all') query.position = position;
 
     const allVerifications = await verifications.find(query).sort({ submittedAt: -1 }).toArray();
     const stats = {

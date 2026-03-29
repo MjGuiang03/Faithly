@@ -42,7 +42,11 @@ export default function AdminDonationsNew() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('active'); // Changed default to 'active'
+  const [showRejectedModal, setShowRejectedModal] = useState(false);
+  const [rejectReason, setRejectReason] = useState('Incomplete or unreadable proof of payment');
+  const [rejectedLoading, setRejectedLoading] = useState(false);
+  const [rejectedList, setRejectedList] = useState([]);
   const debouncedSearch = useDebounce(search, 400);
   const ITEMS_PER_PAGE = 10;
 
@@ -86,6 +90,7 @@ export default function AdminDonationsNew() {
         avgDonation:    data.stats?.avgDonation || 0,
         thisWeek:       data.stats?.thisWeek || 0,
         pendingCount:   data.stats?.pendingCount || 0,
+        rejectedCount:  data.stats?.rejectedCount || 0,
       });
     } catch {
       toast.error('Network error. Could not load donations.');
@@ -131,7 +136,7 @@ export default function AdminDonationsNew() {
       const res = await fetch(`${API}/api/admin/donations/${id}/reject`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reason: 'Admin review' }),
+        body: JSON.stringify({ reason: rejectReason }), // Uses the drafted reason
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
@@ -191,15 +196,21 @@ export default function AdminDonationsNew() {
           <p className="admin-don-new-stat-value">{fmt(stats.avgDonation)}</p>
         </div>
 
-        <div className="admin-don-new-stat-card">
+        <div className="admin-don-new-stat-card" style={{ cursor: 'pointer' }} onClick={async () => {
+          setShowRejectedModal(true);
+          setRejectedLoading(true);
+          const res = await fetch(`${API}/api/admin/donations?status=rejected&limit=100`, { headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }});
+          const data = await res.json();
+          setRejectedList(data.donations || []);
+          setRejectedLoading(false);
+        }}>
           <div className="admin-don-new-stat-header">
-            <span className="admin-don-new-stat-label">Pending Approval</span>
+            <span className="admin-don-new-stat-label">Total Rejected</span>
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <circle cx="10" cy="10" r="7.5" stroke="#EAB308" strokeWidth="1.66667"/>
-              <path d="M10 6.5v4l2.5 1.5" stroke="#EAB308" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d={svgPaths.p14d24500} stroke="#EF4444" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-          <p className="admin-don-new-stat-value">{stats.pendingCount}</p>
+          <p className="admin-don-new-stat-value" style={{ color: '#EF4444' }}>{stats.rejectedCount}</p>
         </div>
       </div>
 
@@ -214,10 +225,9 @@ export default function AdminDonationsNew() {
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
-              <option value="all">All Status</option>
+              <option value="active">All Forms</option>
               <option value="pending">Pending</option>
               <option value="confirmed">Confirmed</option>
-              <option value="rejected">Rejected</option>
             </select>
             {/* Search */}
             <div className="history-search-box">
@@ -294,26 +304,6 @@ export default function AdminDonationsNew() {
                     </td>
                     <td className="admin-don-new-td">
                       <div className="admin-don-action-group">
-                        {(!donation.status || donation.status === 'pending') && (
-                          <>
-                            <button
-                              className="admin-don-action-btn admin-don-action-confirm"
-                              onClick={() => handleConfirm(donation._id)}
-                              disabled={actionLoading}
-                              title="Confirm"
-                            >
-                              Confirm
-                            </button>
-                            <button
-                              className="admin-don-action-btn admin-don-action-reject"
-                              onClick={() => handleReject(donation._id)}
-                              disabled={actionLoading}
-                              title="Reject"
-                            >
-                              Reject
-                            </button>
-                          </>
-                        )}
                         <button
                           className="admin-don-action-btn admin-don-action-view"
                           onClick={() => setDetailModal(donation)}
@@ -423,34 +413,97 @@ export default function AdminDonationsNew() {
             </div>
 
             {/* Footer Actions */}
-            <div className="admin-don-modal-footer">
+            <div className="admin-don-modal-footer" style={{ flexDirection: 'column', gap: '12px', alignItems: 'stretch' }}>
               {(!detailModal.status || detailModal.status === 'pending') && (
-                <>
-                  <button
-                    className="admin-don-action-btn admin-don-action-reject"
-                    style={{ padding: '10px 20px', fontSize: '14px' }}
-                    onClick={() => handleReject(detailModal._id)}
-                    disabled={actionLoading}
+                <div style={{ padding: '12px', background: '#FEF2F2', border: '1px solid #FCA5A5', borderRadius: '8px' }}>
+                  <p style={{ margin: '0 0 8px 0', fontSize: '13px', color: '#991B1B', fontWeight: '500' }}>Rejection Reason</p>
+                  <select 
+                    style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #FCA5A5', marginBottom: '12px', fontSize: '14px' }}
+                    value={rejectReason}
+                    onChange={(e) => setRejectReason(e.target.value)}
                   >
-                    {actionLoading ? 'Processing…' : 'Reject'}
-                  </button>
-                  <button
-                    className="admin-don-action-btn admin-don-action-confirm"
-                    style={{ padding: '10px 24px', fontSize: '14px' }}
-                    onClick={() => handleConfirm(detailModal._id)}
-                    disabled={actionLoading}
-                  >
-                    {actionLoading ? 'Processing…' : 'Confirm Donation'}
-                  </button>
-                </>
+                    <option value="Incomplete or unreadable proof of payment">Incomplete or unreadable proof of payment</option>
+                    <option value="Amount deposited does not match the entered amount">Amount deposited does not match the entered amount</option>
+                    <option value="Duplicate payment proof uploaded">Duplicate payment proof uploaded</option>
+                    <option value="Invalid transaction reference number">Invalid transaction reference number</option>
+                    <option value="Other / Suspected fraudulent submission">Other / Suspected fraudulent submission</option>
+                  </select>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button
+                      className="admin-don-action-btn admin-don-action-reject"
+                      style={{ padding: '10px 20px', fontSize: '14px', flex: 1 }}
+                      onClick={() => handleReject(detailModal._id)}
+                      disabled={actionLoading}
+                    >
+                      {actionLoading ? 'Processing…' : 'Reject'}
+                    </button>
+                    <button
+                      className="admin-don-action-btn admin-don-action-confirm"
+                      style={{ padding: '10px 24px', fontSize: '14px', flex: 2 }}
+                      onClick={() => handleConfirm(detailModal._id)}
+                      disabled={actionLoading}
+                    >
+                      {actionLoading ? 'Processing…' : 'Confirm Donation'}
+                    </button>
+                  </div>
+                </div>
               )}
-              <button
-                className="admin-don-action-btn admin-don-action-view"
-                style={{ padding: '10px 20px', fontSize: '14px' }}
-                onClick={() => setDetailModal(null)}
-              >
-                Close
-              </button>
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <button
+                  className="admin-don-action-btn admin-don-action-view"
+                  style={{ padding: '10px 20px', fontSize: '14px' }}
+                  onClick={() => setDetailModal(null)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Rejected List Modal ── */}
+      {showRejectedModal && (
+        <div className="admin-don-modal-overlay" onClick={() => setShowRejectedModal(false)}>
+          <div className="admin-don-modal-content" style={{ maxWidth: '800px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="admin-don-modal-header">
+              <h2 className="admin-don-modal-title">Rejected Donations</h2>
+              <button className="admin-don-modal-close" onClick={() => setShowRejectedModal(false)}>×</button>
+            </div>
+            <div className="admin-don-modal-body" style={{ maxHeight: '60vh', overflowY: 'auto', padding: '16px' }}>
+              {rejectedLoading ? (
+                <p>Loading...</p>
+              ) : rejectedList.length === 0 ? (
+                <p>No rejected donations found.</p>
+              ) : (
+                <div className="loan-admin-mgmt-table-container">
+                  <table className="loan-admin-mgmt-table">
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Member</th>
+                        <th>Amount</th>
+                        <th>Reason</th>
+                        <th>Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rejectedList.map(r => (
+                        <tr key={r._id} className="loan-admin-mgmt-table-row-hover">
+                          <td style={{ fontWeight: 600 }}>{r.donationId}</td>
+                          <td>{r.member}</td>
+                          <td>{fmt(r.amount)}</td>
+                          <td style={{ color: '#EF4444' }}>{r.rejectReason || 'Admin review'}</td>
+                          <td>{fmtDate(r.createdAt)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+            <div className="admin-don-modal-footer">
+               <button className="admin-don-action-btn admin-don-action-view" onClick={() => setShowRejectedModal(false)}>Close</button>
             </div>
           </div>
         </div>

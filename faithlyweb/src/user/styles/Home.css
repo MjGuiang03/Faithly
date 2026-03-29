@@ -1092,8 +1092,8 @@
 
   .user-main-content {
     margin-left: 0 !important;
-    padding: 20px 16px;
-    gap: 16px;
+    padding: 12px 10px;
+    gap: 12px;
   }
 
   .user-sidebar-collapsed~.user-main-content {
@@ -1102,7 +1102,7 @@
 
   .user-stats-grid {
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 8px;
   }
 
   .user-stats-grid--half {
@@ -1131,11 +1131,11 @@
   }
 
   .user-dashboard-grid {
-    gap: 16px;
+    gap: 10px;
   }
 
   .user-home-card {
-    padding: 16px;
+    padding: 12px;
   }
 
   .user-activity-hscroll {
@@ -1360,7 +1360,7 @@
 
 .user-event-row {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 14px;
   padding: 11px 0;
   border-bottom: 0.8px solid var(--border);

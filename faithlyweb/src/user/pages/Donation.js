@@ -65,6 +65,7 @@ export default function Donation() {
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [modalPage, setModalPage] = useState(1);
   const [modalCategory, setModalCategory] = useState('');
+  const [modalPaymentMethod, setModalPaymentMethod] = useState('');
   const [modalHistory, setModalHistory] = useState([]);
   const [modalTotalPages, setModalTotalPages] = useState(1);
   const [modalLoading, setModalLoading] = useState(false);
@@ -92,7 +93,8 @@ export default function Donation() {
     const token = localStorage.getItem('token');
     try {
       const catParam = modalCategory ? `&category=${modalCategory}` : '';
-      const res = await fetch(`${API}/api/donations/my-donations?page=${modalPage}&limit=${MODAL_LIMIT}${catParam}`, {
+      const pmParam = modalPaymentMethod ? `&paymentMethod=${modalPaymentMethod}` : '';
+      const res = await fetch(`${API}/api/donations/my-donations?page=${modalPage}&limit=${MODAL_LIMIT}${catParam}${pmParam}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -102,7 +104,7 @@ export default function Donation() {
       }
     } catch { /* silent */ }
     finally { setModalLoading(false); }
-  }, [modalPage, modalCategory]);
+  }, [modalPage, modalCategory, modalPaymentMethod]);
 
   useEffect(() => {
     if (isHistoryModalOpen) fetchModalHistory();
@@ -157,6 +159,7 @@ export default function Donation() {
   const handleOpenHistory = () => {
     setModalPage(1);
     setModalCategory('');
+    setModalPaymentMethod('');
     setIsHistoryModalOpen(true);
   };
 
@@ -293,8 +296,7 @@ export default function Donation() {
 
                   {/* ── Payment Account & Proof Wrapper ── */}
                   <div className={`user-payment-info-wrapper ${paymentMethod !== '' ? 'expanded' : ''}`}>
-                    {paymentMethod === 'GCash' && (
-                      <div className="user-payment-info-box">
+                      <div className="user-payment-info-box" style={{ display: paymentMethod === 'Bank' ? 'none' : 'block' }}>
                         <div className="user-payment-info-header">
                           <img src={gcashLogo} alt="GCash" style={{ width: 50, height: 25, objectFit: 'contain' }} />
                           <span className="user-payment-info-title">GCash Account Details</span>
@@ -316,10 +318,8 @@ export default function Donation() {
                           </div>
                         </div>
                       </div>
-                    )}
 
-                    {paymentMethod === 'Bank' && (
-                      <div className="user-payment-info-box">
+                      <div className="user-payment-info-box" style={{ display: paymentMethod === 'Bank' ? 'block' : 'none' }}>
                         <div className="user-payment-info-header">
                           <img src={bank} alt="Bank" style={{ width: 28, height: 28, objectFit: 'contain' }} />
                           <span className="user-payment-info-title">Bank Transfer Details</span>
@@ -345,7 +345,6 @@ export default function Donation() {
                           </div>
                         </div>
                       </div>
-                    )}
 
                     {/* ── Proof of Payment ── */}
                     <div className="user-donation-form-group" style={{ marginTop: '16px' }}>
@@ -534,6 +533,21 @@ export default function Donation() {
                   {CATEGORIES.map(c => (
                     <option key={c.name} value={c.name}>{c.name}</option>
                   ))}
+                </select>
+              </div>
+              <div className="user-donation-filter-group">
+                <label className="user-donation-filter-label" style={{ marginRight: '8px' }}>Payment Method:</label>
+                <select
+                  className="user-donation-filter-select"
+                  value={modalPaymentMethod}
+                  onChange={(e) => {
+                    setModalPaymentMethod(e.target.value);
+                    setModalPage(1);
+                  }}
+                >
+                  <option value="">All Methods</option>
+                  <option value="GCash">GCash</option>
+                  <option value="Bank">Bank Transfer</option>
                 </select>
               </div>
             </div>

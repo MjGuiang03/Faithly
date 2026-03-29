@@ -332,21 +332,21 @@ export default function AdminAttendance() {
         <button className="view-all-btn" onClick={() => setPage(1)}>View All History</button>
       </div>
 
-      <div className="admin-att-table-container">
-        <table className="admin-att-table">
-          <thead className="admin-att-thead">
+      <div className="loan-admin-mgmt-table-container">
+        <table className="loan-admin-mgmt-table">
+          <thead>
             <tr>
-              <th className="admin-att-th">Service ID</th>
-              <th className="admin-att-th">Branch</th>
-              <th className="admin-att-th">Service Type</th>
-              <th className="admin-att-th">Attendance</th>
-              <th className="admin-att-th">Date</th>
+              <th>Service ID</th>
+              <th>Branch</th>
+              <th>Service Type</th>
+              <th>Attendance</th>
+              <th>Date</th>
             </tr>
           </thead>
-          <tbody className="admin-att-tbody">
+          <tbody>
             {loading ? (
               <tr>
-                <td colSpan={5} className="admin-att-td admin-att-empty">
+                <td colSpan={5} className="admin-att-empty">
                   <div className="admin-att-loading">
                     <div className="admin-att-spinner" />
                     Loading services…
@@ -355,26 +355,26 @@ export default function AdminAttendance() {
               </tr>
             ) : recentServices.length === 0 ? (
               <tr>
-                <td colSpan={5} className="admin-att-td admin-att-empty">
+                <td colSpan={5} className="admin-att-empty">
                   No services found
                 </td>
               </tr>
             ) : (
               recentServices.map((service) => (
-                <tr key={service.id} className="admin-att-tr">
-                  <td className="admin-att-td">
+                <tr key={service.id}>
+                  <td>
                     <span className="admin-att-service-id">{service.id}</span>
                   </td>
-                  <td className="admin-att-td">
+                  <td>
                     <span className="admin-att-branch-name-cell">{service.branch}</span>
                   </td>
-                  <td className="admin-att-td">
+                  <td>
                     <span className="admin-att-service-type">{service.serviceType}</span>
                   </td>
-                  <td className="admin-att-td">
+                  <td>
                     <span className="admin-att-attendance">{service.attendance}</span>
                   </td>
-                  <td className="admin-att-td">
+                  <td>
                     <span className="admin-att-date">{service.date}</span>
                   </td>
                 </tr>
@@ -385,13 +385,13 @@ export default function AdminAttendance() {
       </div>
 
       {totalCount > LIMIT && (
-        <div className="pagination">
-          <p className="pagination-info">
+        <div className="loan-admin-pagination">
+          <p className="loan-admin-pagination-info">
             Showing {((page - 1) * LIMIT) + 1} to {Math.min(page * LIMIT, totalCount)} of {totalCount} records
           </p>
-          <div className="pagination-controls">
+          <div className="loan-admin-pagination-controls">
             <button
-              className="page-btn"
+              className="loan-admin-page-btn"
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1}
             >
@@ -400,14 +400,14 @@ export default function AdminAttendance() {
             {Array.from({ length: Math.ceil(totalCount / LIMIT) }, (_, i) => (
               <button
                 key={i + 1}
-                className={`page-btn ${page === i + 1 ? 'page-btn-active' : ''}`}
+                className={`loan-admin-page-btn ${page === i + 1 ? 'loan-admin-page-btn-active' : ''}`}
                 onClick={() => setPage(i + 1)}
               >
                 {i + 1}
               </button>
             ))}
             <button
-              className="page-btn"
+              className="loan-admin-page-btn"
               onClick={() => setPage(p => Math.min(Math.ceil(totalCount / LIMIT), p + 1))}
               disabled={page === Math.ceil(totalCount / LIMIT)}
             >

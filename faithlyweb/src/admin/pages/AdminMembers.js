@@ -285,21 +285,16 @@ export default function AdminMembers() {
   const navigate = useNavigate();
 
   const [members,        setMembers]        = useState([]);
-  const [officers,       setOfficers]       = useState([]);
   const [stats,          setStats]          = useState({ total: 0, active: 0, inactive: 0, officers: 0 });
-  const [pagination,     setPagination]     = useState({ page: 1, totalPages: 1, totalMembers: 0, hasNext: false, hasPrev: false });
-  const [officerPagination, setOfficerPagination] = useState({ totalMembers: 0 });
-  const [searchOfficers, setSearchOfficers] = useState('');
+  const [pagination,     setPagination]     = useState({ page: 1, totalPages: 1, totalMembers: 0 });
   const [searchMembers,  setSearchMembers]  = useState('');
+  const [roleFilter,     setRoleFilter]     = useState('all');
   const [currentPage,    setCurrentPage]    = useState(1);
-  const [currentOfficerPage, setCurrentOfficerPage] = useState(1);
   const [loadingMembers, setLoadingMembers] = useState(true);
-  const [loadingOfficers, setLoadingOfficers] = useState(true);
   const [editMember,     setEditMember]     = useState(null);
   const [deleteMember,   setDeleteMember]   = useState(null);
 
   const debouncedSearchMembers  = useDebounce(searchMembers,  400);
-  const debouncedSearchOfficers = useDebounce(searchOfficers, 400);
 
   const getToken = () =>
     localStorage.getItem('adminToken') ||
@@ -308,11 +303,11 @@ export default function AdminMembers() {
 
   useEffect(() => { if (!getToken()) navigate('/'); }, [navigate]);
 
-  /* ── Fetch regular (non-officer) members ── */
+  /* ── Fetch members with filters ── */
   const fetchMembers = useCallback(async () => {
     try {
       setLoadingMembers(true);
-      const q  = buildQuery({ search: debouncedSearchMembers.trim(), page: currentPage, limit: ITEMS_PER_PAGE, role: 'member' });
+      const q  = buildQuery({ search: debouncedSearchMembers.trim(), page: currentPage, limit: ITEMS_PER_PAGE, role: roleFilter === 'all' ? undefined : roleFilter });
       const res = await fetch(`${API}/api/admin/members?${q}`, {
         headers: { Authorization: `Bearer ${getToken()}` }
       });
@@ -327,33 +322,11 @@ export default function AdminMembers() {
     } finally {
       setLoadingMembers(false);
     }
-  }, [debouncedSearchMembers, currentPage, navigate]);
-
-  /* ── Fetch officers (verified members) ── */
-  const fetchOfficers = useCallback(async () => {
-    try {
-      setLoadingOfficers(true);
-      const q  = buildQuery({ search: debouncedSearchOfficers.trim(), role: 'officer', page: currentOfficerPage, limit: ITEMS_PER_PAGE });
-      const res = await fetch(`${API}/api/admin/members?${q}`, {
-        headers: { Authorization: `Bearer ${getToken()}` }
-      });
-      const data = await res.json();
-      if (data.success) {
-        setOfficers(data.members || []);
-        setOfficerPagination(data.pagination || { totalMembers: 0, totalPages: 1 });
-      }
-    } catch (err) {
-      console.error('Failed to fetch officers:', err);
-    } finally {
-      setLoadingOfficers(false);
-    }
-  }, [debouncedSearchOfficers, currentOfficerPage]);
+  }, [debouncedSearchMembers, currentPage, navigate, roleFilter]);
 
   useEffect(() => { fetchMembers(); }, [fetchMembers]);
-  useEffect(() => { fetchOfficers(); }, [fetchOfficers]);
 
-  useEffect(() => { setCurrentPage(1); }, [debouncedSearchMembers]);
-  useEffect(() => { setCurrentOfficerPage(1); }, [debouncedSearchOfficers]);
+  useEffect(() => { setCurrentPage(1); }, [debouncedSearchMembers, roleFilter]);
 
   const formatDate = d =>
     d ? new Date(d).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' }) : 'N/A';
@@ -372,8 +345,8 @@ export default function AdminMembers() {
   return (
     <div className="admin-members-main">
 
-      {editMember   && <EditModal   member={editMember}   onClose={() => setEditMember(null)}   onSave={()    => { setEditMember(null);   fetchMembers(); fetchOfficers(); }} />}
-      {deleteMember && <DeleteModal member={deleteMember} onClose={() => setDeleteMember(null)} onConfirm={() => { setDeleteMember(null); fetchMembers(); fetchOfficers(); }} />}
+      {editMember   && <EditModal   member={editMember}   onClose={() => setEditMember(null)}   onSave={()    => { setEditMember(null);   fetchMembers(); }} />}
+      {deleteMember && <DeleteModal member={deleteMember} onClose={() => setDeleteMember(null)} onConfirm={() => { setDeleteMember(null); fetchMembers(); }} />}
 
       {/* Header */}
       <div className="admin-members-header-container">
@@ -407,90 +380,7 @@ export default function AdminMembers() {
         </div>
       </div>
 
-      {/* Officers Section */}
-      <div className="admin-members-section">
-        <div className="admin-members-section-header">
-          <div className="admin-members-section-title-wrapper">
-            <ShieldCheck size={24} color="#155DFC" strokeWidth={2} />
-            <h2 className="admin-members-section-title">Verified Officers</h2>
-            <span className="admin-members-count-badge">{officerPagination.totalMembers ?? 0}</span>
-          </div>
-          <div className="admin-members-search-toolbar">
-            <div className="admin-members-search-wrapper">
-              <Search size={18} className="admin-members-search-icon" />
-              <input
-                type="text"
-                placeholder="Search by name, ID or email..."
-                value={searchOfficers}
-                onChange={e => setSearchOfficers(e.target.value)}
-                className="admin-members-search-input"
-              />
-            </div>
-          </div>
-        </div>
 
-        <table className="admin-members-table">
-          <thead>
-            <tr className="admin-members-table-header">
-              <th className="admin-members-table-header-cell">Member ID</th>
-              <th className="admin-members-table-header-cell">Officer Name</th>
-              <th className="admin-members-table-header-cell">Contact</th>
-              <th className="admin-members-table-header-cell">Branch</th>
-              <th className="admin-members-table-header-cell">Member Since</th>
-              <th className="admin-members-table-header-cell">Status</th>
-              <th className="admin-members-table-header-cell">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loadingOfficers ? (
-              Array.from({ length: 3 }).map((_, i) => (
-                <tr key={i} className="admin-members-table-row">
-                  {Array.from({ length: 7 }).map((__, j) => (
-                    <td key={j} className="admin-members-table-cell"><div className="admin-members-skeleton" /></td>
-                  ))}
-                </tr>
-              ))
-            ) : officers.length === 0 ? (
-              <tr className="admin-members-no-results"><td colSpan={7}>No officers found</td></tr>
-            ) : (
-              officers.map(m => (
-                <tr key={m._id} className="admin-members-table-row">
-                  <td className="admin-members-table-cell"><span className="admin-members-id">{m.memberId || '—'}</span></td>
-                  <td className="admin-members-table-cell">
-                    <div className="admin-members-avatar-name">
-                      <div className="admin-members-avatar-circle">{(m.fullName || m.name || 'M').charAt(0)}</div>
-                      <span className="admin-members-name-text">{m.fullName || m.name}</span>
-                    </div>
-                  </td>
-                  <td className="admin-members-table-cell"><span className="admin-members-email">{m.email}</span></td>
-                  <td className="admin-members-table-cell"><span className="admin-members-branch">{m.branch || 'Main Branch'}</span></td>
-                  <td className="admin-members-table-cell"><span className="admin-members-date">{formatDate(m.createdAt)}</span></td>
-                  <td className="admin-members-table-cell"><span className={`admin-members-status-badge ${m.status?.toLowerCase() === 'active' ? 'admin-members-status-active' : 'admin-members-status-inactive'}`}>{m.status || 'Active'}</span></td>
-                  <td className="admin-members-table-cell">
-                    <div className="admin-members-actions">
-                      <button className="admin-members-action-btn admin-members-action-edit" onClick={() => setEditMember(m)}><IconEdit /></button>
-                      <button className="admin-members-action-btn admin-members-action-delete" onClick={() => setDeleteMember(m)}><IconTrash /></button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-        
-        {officerPagination.totalPages > 1 && (
-          <div className="admin-members-pagination">
-            <button className="admin-members-pagination-nav" onClick={() => setCurrentOfficerPage(p => Math.max(1, p-1))} disabled={currentOfficerPage === 1}><ChevronLeft size={16} /></button>
-            <div className="admin-members-pagination-numbers">
-              {buildPageNumbers(officerPagination).map((num, i) => (
-                num === '…' ? <span key={`dots-${i}`} className="admin-members-pagination-dots">…</span> :
-                <button key={num} onClick={() => setCurrentOfficerPage(num)} className={`admin-members-pagination-num ${currentOfficerPage === num ? 'active' : ''}`}>{num}</button>
-              ))}
-            </div>
-            <button className="admin-members-pagination-nav" onClick={() => setCurrentOfficerPage(p => Math.min(officerPagination.totalPages, p+1))} disabled={currentOfficerPage === officerPagination.totalPages}><ChevronRight size={16} /></button>
-          </div>
-        )}
-      </div>
 
       {/* Regular Members Section */}
       <div className="admin-members-section">
@@ -501,72 +391,87 @@ export default function AdminMembers() {
             <span className="admin-members-count-badge">{pagination.totalMembers ?? 0}</span>
           </div>
           <div className="admin-members-search-toolbar">
-            <div className="admin-members-search-wrapper">
-              <Search size={18} className="admin-members-search-icon" />
-              <input
-                type="text"
-                placeholder="Search members..."
-                value={searchMembers}
-                onChange={e => setSearchMembers(e.target.value)}
-                className="admin-members-search-input"
-              />
+            <div className="admin-members-search-wrapper" style={{ display: 'flex', gap: '8px' }}>
+              <div style={{ position: 'relative', flex: 1 }}>
+                <Search size={18} className="admin-members-search-icon" style={{ position: 'absolute', top: 12, left: 14 }} />
+                <input
+                  type="text"
+                  placeholder="Search members..."
+                  value={searchMembers}
+                  onChange={e => setSearchMembers(e.target.value)}
+                  className="admin-members-search-input"
+                  style={{ width: '100%', paddingLeft: 40, height: 42, borderRadius: 8, border: '1px solid #D1D5DB' }}
+                />
+              </div>
+              <select
+                className="admin-members-filter-btn"
+                onChange={e => setRoleFilter(e.target.value)}
+                value={roleFilter}
+                style={{ height: 42, borderRadius: 8, padding: '0 12px', border: '1px solid #D1D5DB' }}
+              >
+                <option value="all">All Roles</option>
+                <option value="member">Members</option>
+                <option value="officer">Officers</option>
+              </select>
             </div>
           </div>
         </div>
 
-        <table className="admin-members-table">
-          <thead>
-            <tr className="admin-members-table-header">
-              <th className="admin-members-table-header-cell">Member ID</th>
-              <th className="admin-members-table-header-cell">Name</th>
-              <th className="admin-members-table-header-cell">Contact</th>
-              <th className="admin-members-table-header-cell">Branch</th>
-              <th className="admin-members-table-header-cell">Position</th>
-              <th className="admin-members-table-header-cell">Status</th>
-              <th className="admin-members-table-header-cell">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loadingMembers ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i} className="admin-members-table-row">
-                  {Array.from({ length: 7 }).map((__, j) => (
-                    <td key={j} className="admin-members-table-cell"><div className="admin-members-skeleton" /></td>
-                  ))}
-                </tr>
-              ))
-            ) : members.length === 0 ? (
-              <tr className="admin-members-no-results"><td colSpan={7}>No members found</td></tr>
-            ) : (
-              members.map(m => (
-                <tr key={m._id} className="admin-members-table-row">
-                  <td className="admin-members-table-cell"><span className="admin-members-id">{m.memberId || '—'}</span></td>
-                  <td className="admin-members-table-cell">
-                    <div className="admin-members-avatar-name">
-                      <div className="admin-members-avatar-circle">{(m.fullName || m.name || 'M').charAt(0)}</div>
-                      <span className="admin-members-name-text">{m.fullName || m.name}</span>
-                    </div>
-                  </td>
-                  <td className="admin-members-table-cell">
-                    <div className="admin-members-contact-info">
-                      <span className="admin-members-email">{m.email}</span>
-                      <span className="admin-members-phone">{m.phone}</span>
-                    </div>
-                  </td>
-                  <td className="admin-members-table-cell"><span className="admin-members-branch">{m.branch || 'Bulacan Main'}</span></td>
-                  <td className="admin-members-table-cell"><span className="admin-members-position">{m.position || 'Member'}</span></td>
-                  <td className="admin-members-table-cell"><span className={`admin-members-status-badge ${m.status?.toLowerCase() === 'active' ? 'admin-members-status-active' : 'admin-members-status-inactive'}`}>{m.status || 'Active'}</span></td>
-                  <td className="admin-members-table-cell">
-                    <div className="admin-members-actions">
-                      <button className="admin-members-action-btn admin-members-action-edit" onClick={() => setEditMember(m)}><IconEdit /></button>
-                      <button className="admin-members-action-btn admin-members-action-delete" onClick={() => setDeleteMember(m)}><IconTrash /></button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+        <div className="loan-admin-mgmt-table-container">
+          <table className="loan-admin-mgmt-table">
+            <thead>
+              <tr>
+                <th>Member ID</th>
+                <th>Name</th>
+                <th>Contact</th>
+                <th>Branch</th>
+                <th>Position</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loadingMembers ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i} className="loan-admin-mgmt-table-row-hover">
+                    {Array.from({ length: 7 }).map((__, j) => (
+                      <td key={j}><div className="admin-members-skeleton" /></td>
+                    ))}
+                  </tr>
+                ))
+              ) : members.length === 0 ? (
+                <tr><td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>No members found</td></tr>
+              ) : (
+                members.map(m => (
+                  <tr key={m._id} className="loan-admin-mgmt-table-row-hover">
+                    <td style={{ fontWeight: 600, color: '#111827' }}>{m.memberId || '—'}</td>
+                    <td>
+                      <div className="admin-members-avatar-name" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div className="admin-members-avatar-circle" style={{ width: 32, height: 32, borderRadius: '50%', background: '#EEF2FF', color: '#155DFC', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '600' }}>{(m.fullName || m.name || 'M').charAt(0)}</div>
+                        <span style={{ fontWeight: 500, color: '#111827' }}>{m.fullName || m.name}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="admin-members-contact-info" style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontSize: '13px', color: '#374151' }}>{m.email}</span>
+                        <span style={{ fontSize: '12px', color: '#6B7280' }}>{m.phone}</span>
+                      </div>
+                    </td>
+                    <td style={{ color: '#374151' }}>{m.branch || 'Bulacan Main'}</td>
+                    <td style={{ color: '#374151', textTransform: 'capitalize' }}>{m.position || 'Member'}</td>
+                    <td><span className={`ps-status-badge ${m.status?.toLowerCase() === 'active' ? 'on-track' : 'default'}`}>{m.status || 'Active'}</span></td>
+                    <td>
+                      <div className="admin-members-actions" style={{ display: 'flex', gap: '8px' }}>
+                        <button className="admin-members-action-btn admin-members-action-edit" onClick={() => setEditMember(m)}><IconEdit /></button>
+                        <button className="admin-members-action-btn admin-members-action-delete" onClick={() => setDeleteMember(m)}><IconTrash /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
 
         {pagination.totalPages > 1 && (
           <div className="admin-members-pagination">
@@ -574,7 +479,7 @@ export default function AdminMembers() {
             <div className="admin-members-pagination-numbers">
               {buildPageNumbers(pagination).map((num, i) => (
                 num === '…' ? <span key={`dots-${i}`} className="admin-members-pagination-dots">…</span> :
-                <button key={num} onClick={() => setCurrentPage(num)} className={`admin-members-pagination-num ${currentPage === num ? 'active' : ''}`}>{num}</button>
+                <button key={num} onClick={() => setCurrentPage(num)} className={`admin-members-pagination-num ${currentPage === num ? 'active' : ''}`} style={{ background: currentPage === num ? '#155DFC' : 'transparent', color: currentPage === num ? 'white' : '#4B5563', border: 'none', borderRadius: 6, width: 32, height: 32, cursor: 'pointer' }}>{num}</button>
               ))}
             </div>
             <button className="admin-members-pagination-nav" onClick={() => setCurrentPage(p => Math.min(pagination.totalPages, p+1))} disabled={currentPage === pagination.totalPages}><ChevronRight size={16} /></button>

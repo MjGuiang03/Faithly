@@ -162,13 +162,15 @@ export default function Notifications() {
 
       /* Donations → notifications */
       (dData.donations || []).forEach((d) => {
-        items.push({
-          id:        `donation-${d._id}`,
-          type:      'donation',
-          timestamp: d.createdAt || d.date,
-          title:     'Donation Received',
-          message:   `Thank you! Your donation of ₱${Number(d.amount).toLocaleString()} to the ${d.category} has been received and recorded.`,
-        });
+        if (d.status === 'confirmed') {
+          items.push({
+            id:        `donation-${d._id}`,
+            type:      'donation',
+            timestamp: d.confirmedAt || d.createdAt || d.date,
+            title:     'Donation Received',
+            message:   `Thank you! Your donation of ₱${Number(d.amount).toLocaleString()} to the ${d.category} has been received and recorded.`,
+          });
+        }
       });
 
       /* Savings → notifications */

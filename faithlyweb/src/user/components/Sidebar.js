@@ -320,7 +320,7 @@ export default function Sidebar() {
 
         {/* Logout Modal */}
         {showLogoutModal && (
-          <div className="user-logout-modal-overlay">
+          <div className="user-logout-modal-overlay" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 99999 }}>
             <div className="user-logout-modal-content">
               <h2 className="user-logout-modal-title">Confirm Logout</h2>
               <p className="user-logout-modal-message">Are you sure you want to log out?</p>

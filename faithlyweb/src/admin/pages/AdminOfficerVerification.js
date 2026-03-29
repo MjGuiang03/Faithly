@@ -273,6 +273,7 @@ export default function AdminOfficerVerification() {
   const [requests,          setRequests]         = useState([]);
   const [stats,             setStats]            = useState({ pending: 0, approved: 0, rejected: 0 });
   const [searchQuery,       setSearchQuery]      = useState('');
+  const [positionFilter,    setPositionFilter]   = useState('all');
   const debouncedSearch = useDebounce(searchQuery, 400);
   const [currentPage,       setCurrentPage]      = useState(1);
   const [totalCount,        setTotalCount]      = useState(0);
@@ -288,6 +289,7 @@ export default function AdminOfficerVerification() {
       p.set('page', currentPage);
       p.set('limit', PER_PAGE);
       if (debouncedSearch.trim()) p.set('search', debouncedSearch.trim());
+      if (positionFilter !== 'all') p.set('position', positionFilter);
 
       const res  = await fetch(`${API}/api/admin/verifications?${p}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -303,7 +305,7 @@ export default function AdminOfficerVerification() {
     } finally {
       setLoading(false);
     }
-  }, [token, currentPage, debouncedSearch]);
+  }, [token, currentPage, debouncedSearch, positionFilter]);
 
   useEffect(() => {
     const adminEmail = localStorage.getItem('adminEmail');
@@ -323,7 +325,7 @@ export default function AdminOfficerVerification() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [debouncedSearch]);
+  }, [debouncedSearch, positionFilter]);
 
   const totalPages      = Math.ceil(totalCount / PER_PAGE);
   const paginated       = requests;
@@ -398,15 +400,34 @@ export default function AdminOfficerVerification() {
       </div>
 
       <div className="admin-offver-toolbar">
-        <div className="admin-offver-search-wrapper">
-          <Search size={18} className="admin-offver-search-icon" />
-          <input
-            type="text"
-            placeholder="Search by name, email, or position..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="admin-offver-search-input"
-          />
+        <div className="admin-offver-search-wrapper" style={{ display: 'flex', gap: '8px' }}>
+          <div style={{ position: 'relative', flex: 1 }}>
+            <Search size={18} className="admin-offver-search-icon" style={{ position: 'absolute', top: 12, left: 14 }} />
+            <input
+              type="text"
+              placeholder="Search by name, email, or position..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="admin-offver-search-input"
+              style={{ width: '100%', paddingLeft: 40, height: 42, borderRadius: 8, border: '1px solid #D1D5DB' }}
+            />
+          </div>
+          <select
+            className="admin-offver-position-filter"
+            value={positionFilter}
+            onChange={(e) => setPositionFilter(e.target.value)}
+            style={{ height: 42, borderRadius: 8, padding: '0 12px', border: '1px solid #D1D5DB' }}
+          >
+            <option value="all">All Positions</option>
+            <option value="Pastor">Pastor</option>
+            <option value="Deacon">Deacon</option>
+            <option value="Secretary">Secretary</option>
+            <option value="Treasurer">Treasurer</option>
+            <option value="Elder">Elder</option>
+            <option value="Worship Leader">Worship Leader</option>
+            <option value="Youth Leader">Youth Leader</option>
+            <option value="Member">Member</option>
+          </select>
         </div>
       </div>
 
@@ -418,47 +439,48 @@ export default function AdminOfficerVerification() {
           </div>
         ) : (
           <>
-            <table className="admin-offver-table">
-              <thead>
-                <tr className="admin-offver-table-header">
-                  <th className="admin-offver-table-header-cell">Name</th>
-                  <th className="admin-offver-table-header-cell">Email</th>
-                  <th className="admin-offver-table-header-cell">Church Position</th>
-                  <th className="admin-offver-table-header-cell">Submitted</th>
-                  <th className="admin-offver-table-header-cell">Status</th>
-                  <th className="admin-offver-table-header-cell">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginated.length === 0 ? (
+            <div className="loan-admin-mgmt-table-container">
+              <table className="loan-admin-mgmt-table">
+                <thead>
                   <tr>
-                    <td colSpan={6} className="admin-offver-table-cell admin-offver-empty">
-                      {searchQuery ? 'No results found.' : 'No verification requests yet.'}
-                    </td>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Church Position</th>
+                    <th>Submitted</th>
+                    <th>Status</th>
+                    <th>Actions</th>
                   </tr>
-                ) : (
-                  paginated.map(r => (
-                    <tr key={r._id} className="admin-offver-table-row">
-                      <td className="admin-offver-table-cell" style={{ fontWeight: 500 }}>{r.memberName}</td>
-                      <td className="admin-offver-table-cell">{r.email}</td>
-                       <td className="admin-offver-table-cell">{r.position}</td>
-                      <td className="admin-offver-table-cell" style={{ whiteSpace: 'nowrap' }}>{fmtDate(r.submittedAt)}</td>
-                      <td className="admin-offver-table-cell">
-                        <span className={`admin-offver-status-badge ${getStatusBadgeClass(r.status)}`}>
-                          {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
-                        </span>
-                      </td>
-                      <td className="admin-offver-table-cell">
-                        <button className="admin-offver-view-btn" onClick={() => setSelectedRequest(r)}>
-                          <Eye size={16} />
-                          <span>View Details</span>
-                        </button>
+                </thead>
+                <tbody>
+                  {paginated.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>
+                        {searchQuery || positionFilter !== 'all' ? 'No results found.' : 'No verification requests yet.'}
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    paginated.map(r => (
+                      <tr key={r._id} className="loan-admin-mgmt-table-row-hover">
+                        <td style={{ fontWeight: 600, color: '#111827' }}>{r.memberName}</td>
+                        <td style={{ color: '#374151' }}>{r.email}</td>
+                        <td style={{ color: '#374151', textTransform: 'capitalize' }}>{r.position}</td>
+                        <td style={{ whiteSpace: 'nowrap', color: '#6B7280' }}>{fmtDate(r.submittedAt)}</td>
+                        <td>
+                          <span className={`ps-status-badge ${r.status === 'approved' ? 'on-track' : r.status === 'rejected' ? 'delayed' : 'pending'}`}>
+                            {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
+                          </span>
+                        </td>
+                        <td>
+                          <button className="admin-members-action-btn admin-members-action-edit" onClick={() => setSelectedRequest(r)} title="View Details">
+                            <Eye size={16} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
 
             {totalPages > 1 && (
               <div className="admin-offver-pagination">

@@ -285,7 +285,7 @@ export default function AdminDashboard() {
               <XAxis dataKey="branch" stroke="#9CA3AF" fontSize={11} angle={-15} textAnchor="end" height={50} />
               <YAxis stroke="#9CA3AF" fontSize={11} />
               <Tooltip />
-              <Bar dataKey="count" fill="#155DFC" radius={[6, 6, 0, 0]} name="Members" />
+              <Bar dataKey="count" fill="#155DFC" radius={[6, 6, 0, 0]} name="Members" barSize={40} />
             </BarChart>
           </ResponsiveContainer>
         </div>

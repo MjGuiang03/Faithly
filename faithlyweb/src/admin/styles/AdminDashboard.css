@@ -404,7 +404,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  background: #F8FAFC;
+  background: transparent;
   min-height: 100vh;
 }
 
@@ -433,10 +433,10 @@
   gap: 12px;
 }
 
-.adm-stat-card.blue  { border-top: 3px solid #155DFC; }
-.adm-stat-card.green { border-top: 3px solid #00A63E; }
-.adm-stat-card.pink  { border-top: 3px solid #E60076; }
-.adm-stat-card.gray  { border-top: 3px solid #1E293B; }
+.adm-stat-card.blue  { }
+.adm-stat-card.green { }
+.adm-stat-card.pink  { }
+.adm-stat-card.gray  { }
 
 .adm-stat-top {
   display: flex;

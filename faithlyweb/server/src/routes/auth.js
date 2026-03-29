@@ -225,11 +225,14 @@ router.post('/login',
             message: `Account is temporarily locked due to previous failed attempts. Try again in ${remainingMinutes} minute(s). We strongly recommend resetting your password.`
           });
         }
-        if (!account.isVerified) {
-          return res.status(401).json({ message: 'Email not verified. Please check your inbox.' });
-        }
+      } // End of if (!isAdminType)
 
-        // Reset tracking on successful clean login
+      // Reset tracking on successful clean login for user, and reset for admin too just in case
+      if (isAdminType) {
+        await admins.updateOne({ email }, {
+          $set: { lastLoginAt: now, failedLoginAttempts: 0, lockUntil: null }
+        });
+      } else {
         await users.updateOne({ email }, {
           $set: { lastLoginAt: now, failedLoginAttempts: 0, lockUntil: null, isPermanentlyLocked: false }
         });
