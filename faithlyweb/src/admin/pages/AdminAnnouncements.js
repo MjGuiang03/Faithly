@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
-import { Megaphone, Loader2, Trash2, Calendar, Clock, Globe, MapPin } from 'lucide-react';
+import { Megaphone, Trash2, Calendar, Clock, Globe, MapPin } from 'lucide-react';
 import API from '../../utils/api';
 import '../styles/AdminAnnouncements.css';
 

@@ -28,7 +28,7 @@ export default function AdminDashboard() {
   const [memberStats,   setMemberStats]   = useState({ total: 0, active: 0, inactive: 0, newThisMonth: 0 });
   const [loanStats,     setLoanStats]     = useState({ active: 0, pending: 0, totalDisbursed: 0 });
   const [donationStats, setDonationStats] = useState({ thisMonth: 0, total: 0 });
-  const [attendStats,   setAttendStats]   = useState({ thisWeek: 0, avgPerService: 0 });
+
   const [membersByBranch, setMembersByBranch] = useState([]);
   const [pieData, setPieData] = useState(INITIAL_DONATION_CATEGORIES);
   const [growthData, setGrowthData] = useState([]);
@@ -67,9 +67,7 @@ export default function AdminDashboard() {
           total: donationsData.stats.total || donationsData.stats.totalAmount || 0
         });
       }
-      if (attendData.success && attendData.stats) {
-        setAttendStats({ thisWeek: attendData.stats.thisWeek || 0, avgPerService: attendData.stats.avgPerService || 0 });
-      }
+
 
       // Members by branch
       if (membersData.success && membersData.members) {

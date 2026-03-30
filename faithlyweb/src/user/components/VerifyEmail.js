@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
-import { CheckCircle, AlertCircle, Loader, X } from 'lucide-react';
+import { CheckCircle, AlertCircle, X } from 'lucide-react';
 import { toast } from 'sonner';
 import puacLogo from '../../assets/puaclogo.png';
 import '../styles/Verify.css';
