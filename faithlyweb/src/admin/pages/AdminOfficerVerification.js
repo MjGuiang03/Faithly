@@ -21,7 +21,7 @@ const fmtDate = (d) => {
    VERIFICATION DETAILS MODAL
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function VerificationDetailsModal({ request, onClose, onApprove, onReject }) {
-  const [showRejectModal,  setShowRejectModal]  = useState(false);
+  const [showRejectModal, setShowRejectModal] = useState(false);
   const [showApproveModal, setShowApproveModal] = useState(false);
 
   return (
@@ -37,8 +37,8 @@ function VerificationDetailsModal({ request, onClose, onApprove, onReject }) {
             </div>
             <button className="admin-offver-modal-close" onClick={onClose}>
               <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-                <path d="M15 5L5 15" stroke="#6a7282" strokeWidth="1.8" strokeLinecap="round"/>
-                <path d="M5 5L15 15" stroke="#6a7282" strokeWidth="1.8" strokeLinecap="round"/>
+                <path d="M15 5L5 15" stroke="#6a7282" strokeWidth="1.8" strokeLinecap="round" />
+                <path d="M5 5L15 15" stroke="#6a7282" strokeWidth="1.8" strokeLinecap="round" />
               </svg>
             </button>
           </div>
@@ -74,8 +74,8 @@ function VerificationDetailsModal({ request, onClose, onApprove, onReject }) {
                   onClick={() => setShowRejectModal(true)}
                 >
                   <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-                    <circle cx="10" cy="10" r="8.5" stroke="currentColor" strokeWidth="1.5"/>
-                    <path d="M12.5 7.5L7.5 12.5M7.5 7.5L12.5 12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                    <circle cx="10" cy="10" r="8.5" stroke="currentColor" strokeWidth="1.5" />
+                    <path d="M12.5 7.5L7.5 12.5M7.5 7.5L12.5 12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                   </svg>
                   Cancel
                 </button>
@@ -84,8 +84,8 @@ function VerificationDetailsModal({ request, onClose, onApprove, onReject }) {
                   onClick={() => setShowApproveModal(true)}
                 >
                   <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-                    <circle cx="10" cy="10" r="8.5" stroke="currentColor" strokeWidth="1.5"/>
-                    <path d="M6.5 10L9 12.5L13.5 7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <circle cx="10" cy="10" r="8.5" stroke="currentColor" strokeWidth="1.5" />
+                    <path d="M6.5 10L9 12.5L13.5 7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                   Approve for Level 2
                 </button>
@@ -132,7 +132,7 @@ function VerificationDetailsModal({ request, onClose, onApprove, onReject }) {
    REJECT MODAL
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function RejectModal({ request, onClose, onConfirm }) {
-  const [reason,  setReason]  = useState('');
+  const [reason, setReason] = useState('');
   const [loading, setLoading] = useState(false);
   const token = localStorage.getItem('adminToken');
 
@@ -161,8 +161,8 @@ function RejectModal({ request, onClose, onConfirm }) {
       <div className="admin-offver-modal-confirm admin-offver-modal-reject" onClick={e => e.stopPropagation()}>
         <div className="admin-offver-confirm-icon admin-offver-confirm-icon-reject">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="10" stroke="#EF4444" strokeWidth="2"/>
-            <path d="M15 9L9 15M9 9L15 15" stroke="#EF4444" strokeWidth="2" strokeLinecap="round"/>
+            <circle cx="12" cy="12" r="10" stroke="#EF4444" strokeWidth="2" />
+            <path d="M15 9L9 15M9 9L15 15" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" />
           </svg>
         </div>
         <h3 className="admin-offver-confirm-title">Reject Verification?</h3>
@@ -224,8 +224,8 @@ function ApproveModal({ request, onClose, onConfirm }) {
         {/* Green checkmark icon */}
         <div className="admin-offver-confirm-icon admin-offver-confirm-icon-approve">
           <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-            <circle cx="14" cy="14" r="14" fill="#dcfce7"/>
-            <path d="M8 14.5L12 18.5L20 10" stroke="#16a34a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+            <circle cx="14" cy="14" r="14" fill="#dcfce7" />
+            <path d="M8 14.5L12 18.5L20 10" stroke="#16a34a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
 
@@ -269,16 +269,16 @@ function ApproveModal({ request, onClose, onConfirm }) {
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 export default function AdminOfficerVerification() {
   const navigate = useNavigate();
-  const [requests,          setRequests]         = useState([]);
-  const [stats,             setStats]            = useState({ pending: 0, approved: 0, rejected: 0 });
-  const [searchQuery,       setSearchQuery]      = useState('');
-  const [positionFilter,    setPositionFilter]   = useState('all');
-  const [statusFilter,      setStatusFilter]     = useState('all');
+  const [requests, setRequests] = useState([]);
+  const [stats, setStats] = useState({ pending: 0, approved: 0, rejected: 0 });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [positionFilter, setPositionFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
   const debouncedSearch = useDebounce(searchQuery, 400);
-  const [currentPage,       setCurrentPage]      = useState(1);
-  const [totalCount,        setTotalCount]      = useState(0);
-  const [selectedRequest,  setSelectedRequest]  = useState(null);
-  const [loading,          setLoading]          = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const token = localStorage.getItem('adminToken');
 
@@ -292,7 +292,7 @@ export default function AdminOfficerVerification() {
       if (positionFilter !== 'all') p.set('position', positionFilter);
       if (statusFilter !== 'all') p.set('status', statusFilter);
 
-      const res  = await fetch(`${API}/api/admin/verifications?${p}`, {
+      const res = await fetch(`${API}/api/admin/verifications?${p}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -328,8 +328,8 @@ export default function AdminOfficerVerification() {
     setCurrentPage(1);
   }, [debouncedSearch, positionFilter, statusFilter]);
 
-  const totalPages      = Math.ceil(totalCount / PER_PAGE);
-  const paginated       = requests;
+  const totalPages = Math.ceil(totalCount / PER_PAGE);
+  const paginated = requests;
 
 
 
@@ -357,7 +357,7 @@ export default function AdminOfficerVerification() {
             <span className="admin-offver-stat-label">Pending Review</span>
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
               <path d={svgPaths.p25397b80} stroke="#F59E0B" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d={svgPaths.p2c4f400}  stroke="#F59E0B" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+              <path d={svgPaths.p2c4f400} stroke="#F59E0B" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
               <path d={svgPaths.p2f5eb900} stroke="#F59E0B" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
@@ -401,46 +401,44 @@ export default function AdminOfficerVerification() {
       </div>
 
       <div className="admin-offver-toolbar">
-        <div className="admin-offver-search-wrapper" style={{ display: 'flex', gap: '8px' }}>
-          <div style={{ position: 'relative', flex: 1 }}>
-            <Search size={18} className="admin-offver-search-icon" style={{ position: 'absolute', top: 12, left: 14 }} />
-            <input
-              type="text"
-              placeholder="Search by name, email, or position..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="admin-offver-search-input"
-              style={{ width: '100%', paddingLeft: 40, height: 42, borderRadius: 8, border: '1px solid #D1D5DB' }}
-            />
-          </div>
-          <select
-            className="admin-offver-position-filter"
-            value={positionFilter}
-            onChange={(e) => setPositionFilter(e.target.value)}
-            style={{ height: 42, borderRadius: 8, padding: '0 12px', border: '1px solid #D1D5DB' }}
-          >
-            <option value="all">All Positions</option>
-            <option value="Pastor">Pastor</option>
-            <option value="Deacon">Deacon</option>
-            <option value="Secretary">Secretary</option>
-            <option value="Treasurer">Treasurer</option>
-            <option value="Elder">Elder</option>
-            <option value="Worship Leader">Worship Leader</option>
-            <option value="Youth Leader">Youth Leader</option>
-            <option value="Member">Member</option>
-          </select>
-          <select
-            className="admin-offver-status-filter"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            style={{ height: 42, borderRadius: 8, padding: '0 12px', border: '1px solid #D1D5DB' }}
-          >
-            <option value="all">All Statuses</option>
-            <option value="pending">Pending</option>
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected</option>
-          </select>
+        <div style={{ position: 'relative', flex: 1 }}>
+          <Search size={16} style={{ position: 'absolute', top: '50%', left: 12, transform: 'translateY(-50%)', color: '#9CA3AF', pointerEvents: 'none' }} />
+          <input
+            type="text"
+            placeholder="Search by name, email, or position..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="admin-offver-search-input"
+            style={{ width: '100%', boxSizing: 'border-box', paddingLeft: 38, height: 42, borderRadius: 8, border: '1px solid #D1D5DB', fontFamily: 'Inter', fontSize: 14, outline: 'none' }}
+          />
         </div>
+        <select
+          className="admin-offver-position-filter"
+          value={positionFilter}
+          onChange={(e) => setPositionFilter(e.target.value)}
+          style={{ height: 42, borderRadius: 8, padding: '0 12px', border: '1px solid #D1D5DB', fontFamily: 'Inter', fontSize: 14, minWidth: 140, background: 'var(--card)', color: 'var(--foreground)', cursor: 'pointer' }}
+        >
+          <option value="all">All Positions</option>
+          <option value="Pastor">Pastor</option>
+          <option value="Deacon">Deacon</option>
+          <option value="Secretary">Secretary</option>
+          <option value="Treasurer">Treasurer</option>
+          <option value="Elder">Elder</option>
+          <option value="Worship Leader">Worship Leader</option>
+          <option value="Youth Leader">Youth Leader</option>
+          <option value="Member">Member</option>
+        </select>
+        <select
+          className="admin-offver-status-filter"
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          style={{ height: 42, borderRadius: 8, padding: '0 12px', border: '1px solid #D1D5DB', fontFamily: 'Inter', fontSize: 14, minWidth: 130, background: 'var(--card)', color: 'var(--foreground)', cursor: 'pointer' }}
+        >
+          <option value="all">All Statuses</option>
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+        </select>
       </div>
 
       {/* Table */}

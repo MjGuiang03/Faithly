@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { users, admins, otps, announcements, savingsTransactions, savingsGoals } from '../config/db.js';
+import { users, admins, otps, announcements, savingsTransactions, savingsGoals, loans, loanPayments } from '../config/db.js';
 import { validate } from '../middleware/validate.js';
 import { loginLimiter } from '../middleware/rateLimiter.js';
 import { authenticateAdmin } from '../middleware/auth.js';
@@ -567,6 +567,136 @@ router.put('/savings/deposits/:id/reject', authenticateAdmin, async (req, res) =
   } catch (err) {
     console.error('Failed to reject deposit:', err);
     res.status(500).json({ success: false, message: 'Failed to reject deposit' });
+  }
+});
+
+/* ================== ADMIN - GET SAVINGS GOALS BY EMAIL ================== */
+router.get('/user-savings-goals/:email', authenticateAdmin, async (req, res) => {
+  try {
+    const email = req.params.email;
+    const goals = await savingsGoals.find({ email, status: { $ne: 'completed' } }).toArray();
+    res.json({ success: true, goals });
+  } catch (err) {
+    console.error('Failed to fetch user goals:', err);
+    res.status(500).json({ success: false, message: 'Failed to fetch user goals' });
+  }
+});
+
+/* ================== ADMIN - PROCESS WALK-IN SAVINGS DEPOSIT ================== */
+router.post('/process-savings-deposit', authenticateAdmin, async (req, res) => {
+  try {
+    const { email, goalId, amount, paymentMethod, referenceNumber } = req.body;
+    if (!email || !goalId || !amount || amount <= 0) {
+      return res.status(400).json({ success: false, message: 'Email, Goal ID, and positive amount are required' });
+    }
+
+    const { ObjectId } = await import('mongodb');
+    const goal = await savingsGoals.findOne({ _id: new ObjectId(goalId), email });
+    if (!goal) return res.status(404).json({ success: false, message: 'Goal not found' });
+
+    // Validate that amount doesn't exceed limit
+    const currentSaved = goal.savedAmount || 0;
+    const maxAllowed = Math.max(0, goal.targetAmount - currentSaved);
+    if (amount > maxAllowed) {
+      return res.status(400).json({ success: false, message: `Amount exceeds goal target. Maximum allowed deposit is ₱${maxAllowed.toLocaleString()}` });
+    }
+
+    const user = await users.findOne({ email });
+    const dt = new Date();
+
+    // 1. Create confirmed transaction
+    const txn = {
+      email,
+      memberName: user?.fullName || 'Unknown Member',
+      goalId: new ObjectId(goalId),
+      goalName: goal.name,
+      type: 'deposit',
+      amount: Number(amount),
+      description: 'Admin Walk-in Deposit',
+      source: 'walk-in',
+      paymentMethod: paymentMethod || 'cash',
+      referenceNumber: referenceNumber || '',
+      proofOfPayment: null,
+      status: 'confirmed',
+      confirmedAt: dt,
+      confirmedBy: req.admin.email,
+      date: dt,
+    };
+    await savingsTransactions.insertOne(txn);
+
+    // 2. Update goal balance
+    const newSaved = currentSaved + Number(amount);
+    const updates = { savedAmount: newSaved, updatedAt: dt };
+    if (newSaved >= goal.targetAmount) updates.status = 'completed';
+    await savingsGoals.updateOne({ _id: new ObjectId(goalId) }, { $set: updates });
+
+    res.json({ success: true, message: `Walk-in deposit of ₱${Number(amount).toLocaleString()} processed successfully.` });
+  } catch (err) {
+    console.error('Process walk-in deposit error:', err);
+    res.status(500).json({ success: false, message: 'Failed to process walk-in deposit' });
+  }
+});
+
+/* ================== ADMIN - PROCESS WALK-IN LOAN PAYMENT ================== */
+router.post('/process-loan-payment', authenticateAdmin, async (req, res) => {
+  try {
+    const { loanId, amount, paymentMethod, referenceNumber } = req.body;
+    if (!loanId || !amount || amount <= 0) {
+      return res.status(400).json({ success: false, message: 'Loan ID and positive amount are required' });
+    }
+
+    const { ObjectId } = await import('mongodb');
+    const loan = await loans.findOne({ _id: new ObjectId(loanId) });
+    if (!loan) return res.status(404).json({ success: false, message: 'Loan not found' });
+    if (loan.status !== 'active') return res.status(400).json({ success: false, message: 'Only active loans can receive payments' });
+
+    const dt = new Date();
+    
+    // 1. Create confirmed payment record
+    const payment = {
+      loanId: loan.loanId,
+      loanObjectId: loan._id,
+      email: loan.email,
+      memberName: loan.memberName,
+      amount: Number(amount),
+      paymentMethod: paymentMethod || 'cash',
+      referenceNumber: referenceNumber || '',
+      proofData: null,
+      proofFileName: null,
+      status: 'confirmed',
+      submittedAt: dt,
+      confirmedAt: dt,
+      confirmedBy: req.admin.email,
+      monthNumber: (loan.paidMonths || 0) + 1,
+    };
+    await loanPayments.insertOne(payment);
+
+    // 2. Update Loan balance
+    const newPaidMonths = (loan.paidMonths || 0) + 1;
+    const newBalance = Math.max(0, (loan.remainingBalance || loan.totalRepayment || loan.amount) - Number(amount));
+    const isComplete = newPaidMonths >= (loan.termMonths || 12);
+
+    const startDate = new Date(loan.disbursementDate || loan.approvedDate || loan.appliedDate);
+    const nextDue = new Date(startDate);
+    nextDue.setMonth(startDate.getMonth() + newPaidMonths + 1);
+
+    await loans.updateOne(
+      { _id: loan._id },
+      { 
+        $set: { 
+          remainingBalance: newBalance,
+          paidMonths: newPaidMonths,
+          status: isComplete ? 'completed' : 'active',
+          nextPaymentDate: nextDue,
+          nextDueDate: nextDue
+        } 
+      }
+    );
+
+    res.json({ success: true, message: `Walk-in payment of ₱${Number(amount).toLocaleString()} processed successfully.` });
+  } catch (err) {
+    console.error('Process walk-in payment error:', err);
+    res.status(500).json({ success: false, message: 'Failed to process walk-in loan payment' });
   }
 });
 

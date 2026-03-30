@@ -54,17 +54,55 @@ export default function AdminDashboard() {
         attendRes.json(),
       ]);
 
-      if (membersData.success && membersData.stats) {
-        const s = membersData.stats;
-        setMemberStats({ total: s.total || 0, active: s.active || 0, inactive: s.inactive || 0, newThisMonth: s.newThisMonth || 0 });
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+
+      // --- 1. Recalculate Member Stats (Active/Verified Only) ---
+      if (membersData.success && membersData.members) {
+        const activeMembers = membersData.members.filter(m => {
+          const s = (m.status || '').toLowerCase();
+          return s === 'active' || s === 'verified';
+        });
+
+        let newThisMonthCount = 0;
+        activeMembers.forEach(m => {
+          const d = new Date(m.createdAt);
+          if (d.getFullYear() === currentYear && d.getMonth() === currentMonth) {
+            newThisMonthCount++;
+          }
+        });
+
+        setMemberStats({
+          total: activeMembers.length,
+          active: activeMembers.length, // approximation or based on status
+          inactive: membersData.members.length - activeMembers.length,
+          newThisMonth: newThisMonthCount
+        });
       }
+
       if (loansData.success && loansData.stats) {
         setLoanStats({ active: loansData.stats.active || 0, pending: loansData.stats.pending || 0, totalDisbursed: loansData.stats.totalDisbursed || 0 });
       }
-      if (donationsData.success && donationsData.stats) {
+
+      // --- 2. Recalculate Donation Stats (Confirmed Only) ---
+      if (donationsData.success && donationsData.donations) {
+        const confirmedDonations = donationsData.donations.filter(d => (d.status || '').toLowerCase() === 'confirmed');
+        
+        let thisMonthAmount = 0;
+        let totalAmount = 0;
+        confirmedDonations.forEach(d => {
+          const amt = Number(d.amount) || 0;
+          totalAmount += amt;
+          const date = new Date(d.createdAt || d.date);
+          if (date.getFullYear() === currentYear && date.getMonth() === currentMonth) {
+            thisMonthAmount += amt;
+          }
+        });
+
         setDonationStats({
-          thisMonth: donationsData.stats.thisMonth || 0,
-          total: donationsData.stats.total || donationsData.stats.totalAmount || 0
+          thisMonth: thisMonthAmount,
+          total: totalAmount
         });
       }
 
@@ -84,7 +122,8 @@ export default function AdminDashboard() {
         const catTotals = {
           'General Fund': 0, 'Children Ministry': 0, 'Building Fund': 0, 'Youth Ministry': 0, 'Mission Fund': 0
         };
-        donationsData.donations.forEach(d => {
+        const confirmedDonations = donationsData.donations.filter(d => (d.status || '').toLowerCase() === 'confirmed');
+        confirmedDonations.forEach(d => {
           const amt = Number(d.amount) || 0;
           const cat = d.category || 'General Fund';
           if (catTotals[cat] !== undefined) {
@@ -102,7 +141,7 @@ export default function AdminDashboard() {
 
       // ── Process Time Series Data (Jan-Dec current year) ──
       const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const currentYear = new Date().getFullYear();
+      // currentYear is already defined above
       const allMonths = monthNames.map((m, i) => ({
         monthStr: m,
         year: currentYear,
@@ -157,7 +196,8 @@ export default function AdminDashboard() {
       }
       
       if (donationsData.success && donationsData.donations) {
-        donationsData.donations.forEach(d => {
+        const confirmedDonations = donationsData.donations.filter(d => (d.status || '').toLowerCase() === 'confirmed');
+        confirmedDonations.forEach(d => {
           const date = new Date(d.createdAt || d.date);
           const match = attendDonData.find(m => m.year === date.getFullYear() && m.monthIndex === date.getMonth());
           if (match) match.donations += Number(d.amount) || 0;
@@ -216,6 +256,19 @@ export default function AdminDashboard() {
           </div>
           <div className="adm-stat-value">{dash(loanStats.active)}</div>
           <div className="adm-stat-sub">{dash(loanStats.pending)} pending</div>
+        </div>
+
+        <div className="adm-stat-card orange">
+          <div className="adm-stat-top">
+            <span className="adm-stat-label">Total Donations</span>
+            <div className="adm-stat-icon adm-icon-orange">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+          </div>
+          <div className="adm-stat-value">{loading ? '—' : `₱${(donationStats.total || 0).toLocaleString()}`}</div>
+          <div className="adm-stat-sub">+₱{loading ? '—' : (donationStats.thisMonth || 0).toLocaleString()} this month</div>
         </div>
       </div>
 

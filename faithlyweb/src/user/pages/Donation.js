@@ -485,7 +485,7 @@ export default function Donation() {
             </div>
 
             <h2 className="user-donation-success-title">Thank You!</h2>
-            <p className="user-donation-success-subtitle">Your generous donation has been received</p>
+            <p className="user-donation-success-subtitle">Your donation has been received and is pending admin confirmation</p>
 
             {/* Amount + Category box */}
             <div className="user-donation-success-details">
@@ -520,35 +520,41 @@ export default function Donation() {
 
             <div className="user-modal-filters">
               <div className="user-donation-filter-group">
-                <label className="user-donation-filter-label" style={{ marginRight: '8px' }}>Filter by Category:</label>
-                <select
-                  className="user-donation-filter-select"
-                  value={modalCategory}
-                  onChange={(e) => {
-                    setModalCategory(e.target.value);
-                    setModalPage(1);
-                  }}
-                >
-                  <option value="">All Categories</option>
-                  {CATEGORIES.map(c => (
-                    <option key={c.name} value={c.name}>{c.name}</option>
-                  ))}
-                </select>
+                <label className="user-donation-filter-label">Filter by Category</label>
+                <div className="user-select-wrapper">
+                  <select
+                    className="user-donation-form-select user-donation-filter-select"
+                    value={modalCategory}
+                    onChange={(e) => {
+                      setModalCategory(e.target.value);
+                      setModalPage(1);
+                    }}
+                  >
+                    <option value="">All Categories</option>
+                    {CATEGORIES.map(c => (
+                      <option key={c.name} value={c.name}>{c.name}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="user-select-icon" size={16} />
+                </div>
               </div>
               <div className="user-donation-filter-group">
-                <label className="user-donation-filter-label" style={{ marginRight: '8px' }}>Payment Method:</label>
-                <select
-                  className="user-donation-filter-select"
-                  value={modalPaymentMethod}
-                  onChange={(e) => {
-                    setModalPaymentMethod(e.target.value);
-                    setModalPage(1);
-                  }}
-                >
-                  <option value="">All Methods</option>
-                  <option value="GCash">GCash</option>
-                  <option value="Bank">Bank Transfer</option>
-                </select>
+                <label className="user-donation-filter-label">Payment Method</label>
+                <div className="user-select-wrapper">
+                  <select
+                    className="user-donation-form-select user-donation-filter-select"
+                    value={modalPaymentMethod}
+                    onChange={(e) => {
+                      setModalPaymentMethod(e.target.value);
+                      setModalPage(1);
+                    }}
+                  >
+                    <option value="">All Methods</option>
+                    <option value="GCash">GCash</option>
+                    <option value="Bank">Bank Transfer</option>
+                  </select>
+                  <ChevronDown className="user-select-icon" size={16} />
+                </div>
               </div>
             </div>
 
@@ -624,7 +630,9 @@ export default function Donation() {
               <div className="user-receipt-amount-section">
                 <p className="user-receipt-amount-label">Amount Contributed</p>
                 <h1 className="user-receipt-amount-value">{fmt(selectedDonation.amount)}</h1>
-                <div className="user-receipt-status-badge">Completed</div>
+                <div className={`user-receipt-status-badge user-receipt-status-${selectedDonation.status || 'pending'}`}>
+                  {selectedDonation.status === 'confirmed' ? 'Confirmed' : selectedDonation.status === 'rejected' ? 'Rejected' : 'Pending Confirmation'}
+                </div>
               </div>
 
               <div className="user-receipt-details-list">

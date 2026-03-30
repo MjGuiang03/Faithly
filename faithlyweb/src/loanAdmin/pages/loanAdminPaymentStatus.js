@@ -46,6 +46,21 @@ export default function LoanAdminPaymentStatus() {
   const [savingsFilter, setSavingsFilter] = useState('all'); // 'all', 'this_month', 'this_year'
   const [interestFilter, setInterestFilter] = useState('all'); // 'all', '2x', '1.5x', '1x'
 
+  // Walk-in Feature State
+  const [showWalkinModal, setShowWalkinModal] = useState(false);
+  const [walkinType, setWalkinType] = useState('loan'); // 'loan' or 'savings'
+  const [walkinSearch, setWalkinSearch] = useState('');
+  const [walkinUsers, setWalkinUsers] = useState([]);
+  const [showWalkinUsers, setShowWalkinUsers] = useState(false);
+  const [walkinSelectedMember, setWalkinSelectedMember] = useState(null);
+  const [walkinSelectedLoan, setWalkinSelectedLoan] = useState('');
+  const [walkinGoals, setWalkinGoals] = useState([]);
+  const [walkinSelectedGoal, setWalkinSelectedGoal] = useState('');
+  const [walkinAmount, setWalkinAmount] = useState('');
+  const [walkinMethod, setWalkinMethod] = useState('cash');
+  const [walkinRef, setWalkinRef] = useState('');
+  const [walkinLoading, setWalkinLoading] = useState(false);
+
   const token = localStorage.getItem('adminToken');
 
   const fetchLoans = useCallback(async () => {
@@ -164,6 +179,103 @@ export default function LoanAdminPaymentStatus() {
     finally { setActionLoading(false); }
   };
 
+  /* ── WALKIN FUNCTIONS ── */
+  const handleWalkinSearchChange = async (query) => {
+    setWalkinSearch(query);
+    if (query.trim().length < 2) {
+      setWalkinUsers([]);
+      setShowWalkinUsers(false);
+      return;
+    }
+    try {
+      const res = await fetch(`${API}/api/admin/members?search=${query}&limit=5`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      if (data.success) {
+        setWalkinUsers(data.members || []);
+        setShowWalkinUsers(true);
+      }
+    } catch { /* silent */ }
+  };
+
+  const selectWalkinMember = async (member) => {
+    setWalkinSelectedMember(member);
+    setWalkinSearch(member.fullName || member.email);
+    setShowWalkinUsers(false);
+    setWalkinGoals([]);
+    setWalkinSelectedGoal('');
+    
+    // fetch goals
+    try {
+      const res = await fetch(`${API}/api/admin/user-savings-goals/${member.email}`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      if (data.success) {
+        setWalkinGoals(data.goals || []);
+        if (data.goals?.length > 0) setWalkinSelectedGoal(data.goals[0]._id);
+      }
+    } catch { /* silent */ }
+  };
+
+  const handleWalkinLoanSelected = (e) => {
+    const lId = e.target.value;
+    setWalkinSelectedLoan(lId);
+    const ln = allLoans.find(x => x._id === lId);
+    if (ln) setWalkinAmount(ln.monthlyPayment || '');
+    else setWalkinAmount('');
+  };
+
+  const handleWalkinSubmit = async () => {
+    if (walkinType === 'loan') {
+      if (!walkinSelectedLoan || !walkinAmount || Number(walkinAmount) <= 0) return toast.error('Select a loan and enter a valid amount');
+      setWalkinLoading(true);
+      try {
+        const res = await fetch(`${API}/api/admin/process-loan-payment`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ loanId: walkinSelectedLoan, amount: Number(walkinAmount), paymentMethod: walkinMethod, referenceNumber: walkinRef })
+        });
+        const data = await res.json();
+        if (data.success) {
+          toast.success(data.message);
+          setShowWalkinModal(false);
+          fetchLoans(); fetchPayments();
+        } else toast.error(data.message);
+      } catch { toast.error('Failed to process payment'); }
+      finally { setWalkinLoading(false); }
+    } else {
+      if (!walkinSelectedMember || !walkinSelectedGoal || !walkinAmount || Number(walkinAmount) <= 0) return toast.error('Select member, goal, and enter a valid amount');
+      setWalkinLoading(true);
+      try {
+        const res = await fetch(`${API}/api/admin/process-savings-deposit`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ email: walkinSelectedMember.email, goalId: walkinSelectedGoal, amount: Number(walkinAmount), paymentMethod: walkinMethod, referenceNumber: walkinRef })
+        });
+        const data = await res.json();
+        if (data.success) {
+          toast.success(data.message);
+          setShowWalkinModal(false);
+          fetchSavings();
+        } else toast.error(data.message);
+      } catch { toast.error('Failed to process deposit'); }
+      finally { setWalkinLoading(false); }
+    }
+  };
+
+  const resetWalkin = () => {
+    setWalkinType('loan');
+    setWalkinSearch('');
+    setWalkinUsers([]);
+    setShowWalkinUsers(false);
+    setWalkinSelectedMember(null);
+    setWalkinSelectedLoan('');
+    setWalkinGoals([]);
+    setWalkinSelectedGoal('');
+    setWalkinAmount('');
+    setWalkinMethod('cash');
+    setWalkinRef('');
+    setWalkinLoading(false);
+  };
+
   const enriched = loans.map(l => {
     const effectiveDueDate = l.nextPaymentDate || l.nextDueDate || l.approvedDate;
     const daysLate = getDaysLate(effectiveDueDate);
@@ -237,10 +349,17 @@ export default function LoanAdminPaymentStatus() {
     <div className="loan-admin-mgmt-page">
       <LoanAdminSidebar />
       <div className="loan-admin-mgmt-content">
-        <div className="loan-admin-mgmt-header">
+        <div className="loan-admin-mgmt-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h1 className="loan-admin-mgmt-title">
             {isSavingsRoute ? 'Pending Savings Deposits' : 'Loan Payments'}
           </h1>
+          <button 
+            onClick={() => { resetWalkin(); setShowWalkinModal(true); setWalkinType(isSavingsRoute ? 'savings' : 'loan'); }}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', background: '#155DFC', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'Inter', fontWeight: 600, fontSize: '14px', boxShadow: '0 2px 4px rgba(21, 93, 252, 0.2)' }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            Process Walk-in
+          </button>
         </div>
 
         {!isSavingsRoute && (
@@ -527,7 +646,7 @@ export default function LoanAdminPaymentStatus() {
                     <th>Submitted</th>
                     <th>Proof</th>
                     <th>Status</th>
-                    <th>Actions</th>
+                    <th>Details</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -558,12 +677,10 @@ export default function LoanAdminPaymentStatus() {
                           </span>
                         </td>
                         <td onClick={(e) => e.stopPropagation()}>
-                          {s.status === 'pending' && (
-                            <div style={{ display: 'flex', gap: '6px' }}>
-                              <button onClick={() => handleConfirmSavings(s._id)} disabled={actionLoading} style={{ background: '#16A34A', color: '#fff', border: 'none', padding: '5px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}>Confirm</button>
-                              <button onClick={() => handleRejectSavings(s._id)} disabled={actionLoading} style={{ background: '#fff', color: '#DC2626', border: '1px solid #FCA5A5', padding: '5px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}>Reject</button>
-                            </div>
-                          )}
+                          <button
+                            onClick={() => setSelectedSavings(s)}
+                            style={{ background: '#EEF2FF', color: '#155DFC', border: 'none', padding: '5px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}
+                          >View Details</button>
                         </td>
                       </tr>
                     ))
@@ -740,6 +857,114 @@ export default function LoanAdminPaymentStatus() {
               <svg width="14" height="14" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="#374151" strokeWidth="1.5" strokeLinecap="round" /></svg>
             </button>
             <img src={viewingImage} alt="Proof" style={{ maxWidth: '90vw', maxHeight: '90vh', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }} />
+          </div>
+        </div>
+      )}
+
+      {/* ── Walk-in Transaction Modal ── */}
+      {showWalkinModal && (
+        <div className="loan-admin-mgmt-modal-overlay" onClick={() => setShowWalkinModal(false)} style={{ zIndex: 2000 }}>
+          <div className="loan-admin-mgmt-modal-container" style={{ maxWidth: '440px', overflow: 'visible' }} onClick={(e) => e.stopPropagation()}>
+            <div className="loan-admin-mgmt-modal-header" style={{ borderBottom: '1px solid #E5E7EB', paddingBottom: '16px' }}>
+              <div>
+                <h2 className="loan-admin-mgmt-modal-title" style={{ fontSize: '18px' }}>Process Walk-in Transaction</h2>
+                <p style={{ fontSize: '13px', color: '#6B7280', margin: '4px 0 0', fontFamily: 'Inter' }}>Process payments or deposits directly on behalf of a user.</p>
+              </div>
+              <button className="loan-admin-mgmt-modal-close" onClick={() => setShowWalkinModal(false)}>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+              </button>
+            </div>
+
+            <div style={{ padding: '20px 24px', maxHeight: '65vh', overflowY: 'auto' }}>
+              <div className="walkin-form-group">
+                <label className="walkin-label">Transaction Type</label>
+                <select className="walkin-select" value={walkinType} onChange={(e) => { setWalkinType(e.target.value); setWalkinSelectedLoan(''); setWalkinSelectedMember(null); setWalkinAmount(''); }}>
+                  <option value="loan">Loan Repayment</option>
+                  <option value="savings">Savings Deposit</option>
+                </select>
+              </div>
+
+              {walkinType === 'loan' ? (
+                <div className="walkin-form-group">
+                  <label className="walkin-label">Select Active Loan</label>
+                  <select className="walkin-select" value={walkinSelectedLoan} onChange={handleWalkinLoanSelected}>
+                    <option value="">-- Choose Loan --</option>
+                    {allLoans.filter(l => l.status === 'active').map(l => (
+                      <option key={l._id} value={l._id}>
+                        [{l.loanId}] {l.memberName} — Bal: {fmt(l.remainingBalance)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
+                <>
+                  <div className="walkin-form-group" style={{ position: 'relative' }}>
+                    <label className="walkin-label">Search Member</label>
+                    <input 
+                      type="text" 
+                      className="walkin-input" 
+                      placeholder="Type name or email..." 
+                      value={walkinSearch}
+                      onChange={(e) => handleWalkinSearchChange(e.target.value)}
+                    />
+                    {showWalkinUsers && walkinUsers.length > 0 && (
+                      <div className="walkin-search-results">
+                        {walkinUsers.map(u => (
+                          <div key={u._id} className="walkin-search-item" onClick={() => selectWalkinMember(u)}>
+                            <span className="walkin-search-item-title">{u.fullName || 'Unknown'}</span>
+                            <span className="walkin-search-item-sub">{u.email}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  {walkinSelectedMember && (
+                    <div className="walkin-form-group">
+                      <label className="walkin-label">Select Savings Goal</label>
+                      <select className="walkin-select" value={walkinSelectedGoal} onChange={(e) => setWalkinSelectedGoal(e.target.value)} disabled={walkinGoals.length === 0}>
+                        {walkinGoals.length === 0 ? <option value="">No Active Goals Found</option> : <option value="">-- Choose Goal --</option>}
+                        {walkinGoals.map(g => (
+                          <option key={g._id} value={g._id}>
+                            {g.name} — Progress: {fmt(g.savedAmount)} / {fmt(g.targetAmount)}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </>
+              )}
+
+              <div className="walkin-form-group">
+                <label className="walkin-label">{walkinType === 'loan' ? 'Payment Amount' : 'Deposit Amount'}</label>
+                <div style={{ position: 'relative' }}>
+                  <span style={{ position: 'absolute', left: 12, top: 10, color: '#6B7280', fontFamily: 'Inter', fontSize: '14px', pointerEvents: 'none' }}>₱</span>
+                  <input type="number" className="walkin-input" style={{ paddingLeft: '28px' }} placeholder="0.00" value={walkinAmount} onChange={(e) => setWalkinAmount(e.target.value)} />
+                </div>
+              </div>
+
+              <div className="walkin-form-group" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label className="walkin-label">Payment Method</label>
+                  <select className="walkin-select" value={walkinMethod} onChange={(e) => setWalkinMethod(e.target.value)}>
+                    <option value="cash">Walk-in Cash</option>
+                    <option value="gcash">GCash</option>
+                    <option value="bank">Bank Transfer</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="walkin-label">Reference # (Optional)</label>
+                  <input type="text" className="walkin-input" placeholder="e.g. 12345678" value={walkinRef} onChange={(e) => setWalkinRef(e.target.value)} />
+                </div>
+              </div>
+            </div>
+
+            <div style={{ padding: '16px 24px', borderTop: '1px solid #E5E7EB', display: 'flex', justifyContent: 'flex-end', gap: '10px', background: '#F9FAFB', borderBottomLeftRadius: '16px', borderBottomRightRadius: '16px' }}>
+               <button onClick={() => setShowWalkinModal(false)} disabled={walkinLoading} style={{ background: '#fff', color: '#374151', border: '1px solid #D1D5DB', padding: '10px 20px', borderRadius: '8px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}>Cancel</button>
+               <button onClick={handleWalkinSubmit} disabled={walkinLoading} style={{ background: '#155DFC', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '8px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                 {walkinLoading ? <span className="btn-spinner" style={{ width: 14, height: 14 }} /> : null}
+                 Submit & Confirm
+               </button>
+            </div>
           </div>
         </div>
       )}

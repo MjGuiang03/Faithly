@@ -641,6 +641,17 @@ export default function Home() {
                 {selectedEvent.branch}
               </div>
             </div>
+            {/* Admin-uploaded event image */}
+            {selectedEvent.image && (
+              <div style={{ borderRadius: '10px', overflow: 'hidden', margin: '12px 0', maxHeight: '280px' }}>
+                <img
+                  src={selectedEvent.image}
+                  alt={selectedEvent.title}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  onError={(e) => { e.target.style.display = 'none'; }}
+                />
+              </div>
+            )}
             <div className="user-event-detail-body">
               <p>{selectedEvent.fullBody}</p>
             </div>

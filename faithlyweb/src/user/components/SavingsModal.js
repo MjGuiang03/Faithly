@@ -513,10 +513,10 @@ function QuickDepositModal({ goal, goals, onClose }) {
                     {success ? (
                         <div className="svm-success">
                             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <circle cx="10" cy="10" r="8" fill="#639922" />
+                                <circle cx="10" cy="10" r="8" fill="#0057B7" />
                                 <path d="M6.5 10.5l2.5 2.5 4.5-4.5" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
-                            ₱{numAmt.toLocaleString('en-PH', { minimumFractionDigits: 2 })} deposited!
+                            ₱{numAmt.toLocaleString('en-PH', { minimumFractionDigits: 2 })} submitted for admin confirmation!
                         </div>
                     ) : (
                         <>

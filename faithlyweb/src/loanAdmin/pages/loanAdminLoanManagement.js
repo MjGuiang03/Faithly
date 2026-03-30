@@ -297,7 +297,6 @@ export default function LoanAdminLoanManagement() {
                                 <th>Purpose</th>
                                 <th>Applied Date</th>
                                 <th>Status</th>
-                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -346,29 +345,6 @@ export default function LoanAdminLoanManagement() {
                                                     )}
                                                 </div>
                                             )}
-                                        </td>
-                                        <td>
-                                            <div className="loan-admin-mgmt-actions">
-                                                <button
-                                                    className="loan-admin-mgmt-btn-details"
-                                                    onClick={() => handleViewDetails(loan)}
-                                                >
-                                                    View Details
-                                                </button>
-                                                {loan.status === 'pending' && (
-                                                    <button
-                                                        className="loan-admin-mgmt-btn-approve"
-                                                        onClick={() => handleApprove(loan)}
-                                                        disabled={actionLoading === loan._id}
-                                                    >
-                                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                                            <path d={svgPaths.p2ba21180} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333" />
-                                                            <path d={svgPaths.p12d41400} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333" />
-                                                        </svg>
-                                                        {actionLoading === loan._id ? <span className="btn-spinner" /> : 'Approve'}
-                                                    </button>
-                                                )}
-                                            </div>
                                         </td>
                                     </tr>
                                 ))

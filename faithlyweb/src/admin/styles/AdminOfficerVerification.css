@@ -102,13 +102,16 @@
 /* ═══ SEARCH TOOLBAR ═══ */
 .admin-offver-toolbar {
   margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .admin-offver-search-wrapper {
   position: relative;
+  flex: 1;
   display: flex;
   align-items: center;
-  max-width: 480px;
 }
 
 .admin-offver-search-icon {
