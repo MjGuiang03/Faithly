@@ -110,7 +110,9 @@ export default function App() {
             <Route path="/loan-admin/dashboard" element={<AdminProtectedRoute><LoanAdminDashboard /></AdminProtectedRoute>} />
             <Route path="/loan-admin/notifications" element={<AdminProtectedRoute><LoanAdminNotif /></AdminProtectedRoute>} />
             <Route path="/loan-admin/loan-management" element={<AdminProtectedRoute><LoanAdminLoanManagement /></AdminProtectedRoute>} />
-            <Route path="/loan-admin/payment-status" element={<AdminProtectedRoute><LoanAdminPaymentStatus /></AdminProtectedRoute>} />
+            <Route path="/loan-admin/payments/loans" element={<AdminProtectedRoute><LoanAdminPaymentStatus /></AdminProtectedRoute>} />
+            <Route path="/loan-admin/payments/savings" element={<AdminProtectedRoute><LoanAdminPaymentStatus /></AdminProtectedRoute>} />
+            <Route path="/loan-admin/payment-status" element={<Navigate to="/loan-admin/payments/loans" replace />} />
             <Route path="/loan-admin/delinquency" element={<AdminProtectedRoute><LoanAdminDelinquency /></AdminProtectedRoute>} />
             <Route path="/loan-admin/reports" element={<AdminProtectedRoute><LoanAdminReports /></AdminProtectedRoute>} />
             <Route path="/loan-admin/settings" element={<AdminProtectedRoute><LoanAdminSettings /></AdminProtectedRoute>} />

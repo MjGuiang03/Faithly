@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import LoanAdminSidebar from './loanAdminSidebar';
 import '../styles/loanAdminLoanManagement.css';
@@ -24,12 +25,15 @@ function getPaymentStatus(daysLate) {
 }
 
 export default function LoanAdminPaymentStatus() {
+  const location = useLocation();
+  const isSavingsRoute = location.pathname.includes('/savings');
+
   const [loans, setLoans] = useState([]);
   const [pendingPayments, setPendingPayments] = useState([]);
   const [pendingSavings, setPendingSavings] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('loans');
+  const [activeTab, setActiveTab] = useState(isSavingsRoute ? 'savings' : 'loans');
   const [selectedLoan, setSelectedLoan] = useState(null);
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [selectedSavings, setSelectedSavings] = useState(null);
@@ -66,6 +70,12 @@ export default function LoanAdminPaymentStatus() {
   }, [token]);
 
   useEffect(() => { fetchLoans(); fetchPayments(); fetchSavings(); }, [fetchLoans, fetchPayments, fetchSavings]);
+
+  useEffect(() => {
+    setActiveTab(isSavingsRoute ? 'savings' : 'loans');
+    setPaymentMethodFilter('all');
+    setSearchQuery('');
+  }, [isSavingsRoute]);
 
   const handleConfirmPayment = async (paymentId) => {
     setActionLoading(true);
@@ -176,75 +186,85 @@ export default function LoanAdminPaymentStatus() {
       <LoanAdminSidebar />
       <div className="loan-admin-mgmt-content">
         <div className="loan-admin-mgmt-header">
-          <h1 className="loan-admin-mgmt-title">Payment Status</h1>
+          <h1 className="loan-admin-mgmt-title">
+            {isSavingsRoute ? 'Pending Savings Deposits' : 'Loan Payments'}
+          </h1>
         </div>
 
-        <div className="loan-admin-mgmt-stats" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
-          <div className="loan-admin-mgmt-stat-card">
-            <p className="loan-admin-mgmt-stat-label">On Track</p>
-            <p className="loan-admin-mgmt-stat-value approved">{counts.onTrack}</p>
+        {!isSavingsRoute && (
+          <div className="loan-admin-mgmt-stats" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
+            <div className="loan-admin-mgmt-stat-card">
+              <p className="loan-admin-mgmt-stat-label">On Track</p>
+              <p className="loan-admin-mgmt-stat-value approved">{counts.onTrack}</p>
+            </div>
+            <div className="loan-admin-mgmt-stat-card">
+              <p className="loan-admin-mgmt-stat-label">Overdue (1-30d)</p>
+              <p className="loan-admin-mgmt-stat-value pending">{counts.overdue}</p>
+            </div>
+            <div className="loan-admin-mgmt-stat-card">
+              <p className="loan-admin-mgmt-stat-label">High Risk (31-60d)</p>
+              <p className="loan-admin-mgmt-stat-value" style={{ color: '#EA580C' }}>{counts.highRisk}</p>
+            </div>
+            <div className="loan-admin-mgmt-stat-card">
+              <p className="loan-admin-mgmt-stat-label">Default (60+d)</p>
+              <p className="loan-admin-mgmt-stat-value rejected">{counts.defaulted}</p>
+            </div>
           </div>
-          <div className="loan-admin-mgmt-stat-card">
-            <p className="loan-admin-mgmt-stat-label">Overdue (1-30d)</p>
-            <p className="loan-admin-mgmt-stat-value pending">{counts.overdue}</p>
-          </div>
-          <div className="loan-admin-mgmt-stat-card">
-            <p className="loan-admin-mgmt-stat-label">High Risk (31-60d)</p>
-            <p className="loan-admin-mgmt-stat-value" style={{ color: '#EA580C' }}>{counts.highRisk}</p>
-          </div>
-          <div className="loan-admin-mgmt-stat-card">
-            <p className="loan-admin-mgmt-stat-label">Default (60+d)</p>
-            <p className="loan-admin-mgmt-stat-value rejected">{counts.defaulted}</p>
-          </div>
-        </div>
+        )}
 
         {/* Tabs */}
+        {/* Tabs */}
         <div style={{ display: 'flex', gap: '6px', marginBottom: '16px' }}>
-          <button
-            onClick={() => setActiveTab('loans')}
-            style={{
-              padding: '8px 18px', borderRadius: '8px', border: 'none', fontFamily: 'Inter',
-              fontSize: '13px', fontWeight: 600, cursor: 'pointer',
-              background: activeTab === 'loans' ? '#155DFC' : '#F3F4F6',
-              color: activeTab === 'loans' ? '#fff' : '#6B7280',
-            }}
-          >Active Loans</button>
-          <button
-            onClick={() => setActiveTab('payments')}
-            style={{
-              padding: '8px 18px', borderRadius: '8px', border: 'none', fontFamily: 'Inter',
-              fontSize: '13px', fontWeight: 600, cursor: 'pointer', position: 'relative',
-              background: activeTab === 'payments' ? '#155DFC' : '#F3F4F6',
-              color: activeTab === 'payments' ? '#fff' : '#6B7280',
-            }}
-          >
-            Pending Payments
-            {pendingCount > 0 && (
-              <span style={{
-                position: 'absolute', top: -6, right: -6, background: '#DC2626', color: '#fff',
-                borderRadius: '50%', width: 20, height: 20, fontSize: '11px', fontWeight: 700,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>{pendingCount}</span>
-            )}
-          </button>
-          <button
-            onClick={() => setActiveTab('savings')}
-            style={{
-              padding: '8px 18px', borderRadius: '8px', border: 'none', fontFamily: 'Inter',
-              fontSize: '13px', fontWeight: 600, cursor: 'pointer', position: 'relative',
-              background: activeTab === 'savings' ? '#155DFC' : '#F3F4F6',
-              color: activeTab === 'savings' ? '#fff' : '#6B7280',
-            }}
-          >
-            Pending Savings
-            {pendingSavingsCount > 0 && (
-              <span style={{
-                position: 'absolute', top: -6, right: -6, background: '#DC2626', color: '#fff',
-                borderRadius: '50%', width: 20, height: 20, fontSize: '11px', fontWeight: 700,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>{pendingSavingsCount}</span>
-            )}
-          </button>
+          {!isSavingsRoute ? (
+            <>
+              <button
+                onClick={() => setActiveTab('loans')}
+                style={{
+                  padding: '8px 18px', borderRadius: '8px', border: 'none', fontFamily: 'Inter',
+                  fontSize: '13px', fontWeight: 600, cursor: 'pointer',
+                  background: activeTab === 'loans' ? '#155DFC' : '#F3F4F6',
+                  color: activeTab === 'loans' ? '#fff' : '#6B7280',
+                }}
+              >Active Loans</button>
+              <button
+                onClick={() => setActiveTab('payments')}
+                style={{
+                  padding: '8px 18px', borderRadius: '8px', border: 'none', fontFamily: 'Inter',
+                  fontSize: '13px', fontWeight: 600, cursor: 'pointer', position: 'relative',
+                  background: activeTab === 'payments' ? '#155DFC' : '#F3F4F6',
+                  color: activeTab === 'payments' ? '#fff' : '#6B7280',
+                }}
+              >
+                Pending Payments
+                {pendingCount > 0 && (
+                  <span style={{
+                    position: 'absolute', top: -6, right: -6, background: '#DC2626', color: '#fff',
+                    borderRadius: '50%', width: 20, height: 20, fontSize: '11px', fontWeight: 700,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>{pendingCount}</span>
+                )}
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => setActiveTab('savings')}
+              style={{
+                padding: '8px 18px', borderRadius: '8px', border: 'none', fontFamily: 'Inter',
+                fontSize: '13px', fontWeight: 600, cursor: 'pointer', position: 'relative',
+                background: activeTab === 'savings' ? '#155DFC' : '#F3F4F6',
+                color: activeTab === 'savings' ? '#fff' : '#6B7280',
+              }}
+            >
+              Pending Savings
+              {pendingSavingsCount > 0 && (
+                <span style={{
+                  position: 'absolute', top: -6, right: -6, background: '#DC2626', color: '#fff',
+                  borderRadius: '50%', width: 20, height: 20, fontSize: '11px', fontWeight: 700,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>{pendingSavingsCount}</span>
+              )}
+            </button>
+          )}
         </div>
 
         <div className="loan-admin-mgmt-search">

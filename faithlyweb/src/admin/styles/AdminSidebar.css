@@ -133,11 +133,15 @@
   flex-shrink: 0;
 }
 
-.admin-sidebar-chevron {
+.admin-sidebar-dropdown-chevron {
   margin-left: auto;
-  display: flex;
-  align-items: center;
-  color: rgba(255, 255, 255, 0.72);
+  flex-shrink: 0;
+  transition: transform 0.25s ease;
+  color: rgba(255, 255, 255, 0.40);
+}
+
+.admin-sidebar-dropdown-chevron.open {
+  transform: rotate(180deg);
 }
 
 /* ── Dropdown content ── */
@@ -152,6 +156,13 @@
   flex-direction: column;
   gap: 2px;
   padding: 4px 0 8px 0;
+  overflow: hidden;
+  animation: admin-subnav-expand 0.25s ease;
+}
+
+@keyframes admin-subnav-expand {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .admin-sidebar-sub-button {
@@ -162,10 +173,11 @@
   height: 40px;
   background: transparent;
   border: none;
-  color: rgba(255, 255, 255, 0.72);
+  border-left: 1.5px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.65);
   font-size: 14px;
   font-family: 'Arial', sans-serif;
-  border-radius: 8px;
+  border-radius: 0 8px 8px 0;
   cursor: pointer;
   transition: all 0.2s;
   width: 100%;
@@ -176,12 +188,14 @@
 .admin-sidebar-sub-button:hover {
   background: rgba(255, 255, 255, 0.05);
   color: white;
+  border-left-color: rgba(255, 255, 255, 0.3);
 }
 
 .admin-sidebar-sub-button.active {
   color: white;
   font-weight: 600;
   background: rgba(255, 255, 255, 0.1);
+  border-left-color: #1E3A8A;
 }
 
 .admin-sidebar-sub-button .sidebar-notif-badge {

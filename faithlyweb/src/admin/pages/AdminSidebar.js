@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import {
   LayoutGrid, Bell, Users, Heart,
   Settings, LogOut,
-  ChevronDown, ChevronUp, Megaphone
+  ChevronDown, Megaphone
 } from 'lucide-react';
 import puacLogo from '../../assets/puaclogo.png';
 import '../styles/AdminSidebar.css';
@@ -141,9 +141,10 @@ export default function AdminSidebar() {
           >
             <Users size={20} />
             <span>People</span>
-            <span className="admin-sidebar-chevron">
-              {isMembersOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-            </span>
+            <ChevronDown
+              size={16}
+              className={`admin-sidebar-dropdown-chevron ${isMembersOpen ? 'open' : ''}`}
+            />
           </button>
           {isMembersOpen && (
             <div className="admin-sidebar-dropdown-content">
@@ -180,9 +181,10 @@ export default function AdminSidebar() {
           >
             <Heart size={20} />
             <span>Finance & Activity</span>
-            <span className="admin-sidebar-chevron">
-              {isFinanceOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-            </span>
+            <ChevronDown
+              size={16}
+              className={`admin-sidebar-dropdown-chevron ${isFinanceOpen ? 'open' : ''}`}
+            />
           </button>
           {isFinanceOpen && (
             <div className="admin-sidebar-dropdown-content">
@@ -210,9 +212,10 @@ export default function AdminSidebar() {
           >
             <Megaphone size={20} />
             <span>Communication</span>
-            <span className="admin-sidebar-chevron">
-              {isCommsOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-            </span>
+            <ChevronDown
+              size={16}
+              className={`admin-sidebar-dropdown-chevron ${isCommsOpen ? 'open' : ''}`}
+            />
           </button>
           {isCommsOpen && (
             <div className="admin-sidebar-dropdown-content">
@@ -234,9 +237,10 @@ export default function AdminSidebar() {
           >
             <Settings size={20} />
             <span>Admin</span>
-            <span className="admin-sidebar-chevron">
-              {isAdminOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-            </span>
+            <ChevronDown
+              size={16}
+              className={`admin-sidebar-dropdown-chevron ${isAdminOpen ? 'open' : ''}`}
+            />
           </button>
           {isAdminOpen && (
             <div className="admin-sidebar-dropdown-content">
