@@ -183,7 +183,7 @@ export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, o
 
   // ── Derive button label ────────────────────────────────────────────────────
   const getButtonLabel = () => {
-    if (loading) return 'Signing in...';
+    if (loading) return <span className="btn-spinner" />;
     if (isPermanentlyLocked) return 'Account Locked';
     if (isLocked) return `Locked (${formatTime(lockTimeRemaining)})`;
     return 'Login';

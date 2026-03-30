@@ -99,7 +99,10 @@ router.put('/admin/verifications/:id/approve', authenticateAdmin, async (req, re
       { _id: new ObjectId(id) },
       { $set: { status: 'approved', reviewedAt: new Date(), updatedAt: new Date() } }
     );
-    await users.updateOne({ email: verification.email }, { $set: { verificationStatus: 'verified' } });
+    await users.updateOne(
+      { email: verification.email }, 
+      { $set: { verificationStatus: 'verified', position: verification.position } }
+    );
 
     res.status(200).json({ success: true, message: 'Verification approved' });
   } catch (err) {

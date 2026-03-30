@@ -37,6 +37,7 @@ export default function AdminDonationsNew() {
     avgDonation: 0,
     thisWeek: 0,
     pendingCount: 0,
+    percentageChange: '0%',
   });
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -91,6 +92,7 @@ export default function AdminDonationsNew() {
         thisWeek:       data.stats?.thisWeek || 0,
         pendingCount:   data.stats?.pendingCount || 0,
         rejectedCount:  data.stats?.rejectedCount || 0,
+        percentageChange: data.stats?.percentageChange || '0%',
       });
     } catch {
       toast.error('Network error. Could not load donations.');
@@ -150,8 +152,6 @@ export default function AdminDonationsNew() {
     }
   };
 
-  const percentageChange = '+8%';
-
   /* ── Render ── */
   return (
     <div className="admin-don-new-main">
@@ -171,7 +171,7 @@ export default function AdminDonationsNew() {
             </svg>
           </div>
           <p className="admin-don-new-stat-value">{fmt(stats.totalThisMonth)}</p>
-          <p className="admin-don-new-stat-change">{percentageChange} from last month</p>
+          <p className="admin-don-new-stat-change">{stats.percentageChange} from last month</p>
         </div>
 
         <div className="admin-don-new-stat-card">

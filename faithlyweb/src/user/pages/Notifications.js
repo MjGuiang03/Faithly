@@ -269,10 +269,17 @@ export default function Notifications() {
         </svg>
       </div>
     );
-    if (type === 'donation' || type === 'savings') return (
+    if (type === 'donation') return (
       <div className="user-notif-icon user-notif-icon-donation">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
           <path d={svgPaths.p31f28900} stroke="#BE185D" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+        </svg>
+      </div>
+    );
+    if (type === 'savings') return (
+      <div className="user-notif-icon" style={{ background: '#DCFCE7', border: '1px solid #86EFAC', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
         </svg>
       </div>
     );
@@ -291,8 +298,9 @@ export default function Notifications() {
 
   const badgeClass = (type) =>
     type === 'loan' ? 'user-notif-badge-loan'
-      : (type === 'donation' || type === 'savings') ? 'user-notif-badge-donation'
-        : type === 'payment_pending' ? 'user-notif-badge-loan'
+      : type === 'donation' ? 'user-notif-badge-donation'
+        : type === 'savings' ? 'user-notif-badge-attendance'
+          : type === 'payment_pending' ? 'user-notif-badge-loan'
           : 'user-notif-badge-attendance';
 
   const cardClass = (type, isRead, actionRequired) => {

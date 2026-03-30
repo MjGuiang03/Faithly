@@ -21,6 +21,7 @@ export default function AdminAnnouncements() {
   const [branches, setBranches] = useState([]);
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [editingId, setEditingId] = useState(null);
+  const [template, setTemplate] = useState('banner');
   const [form, setForm] = useState({
     title: '', body: '', category: 'General',
     eventDate: '', expiresAt: '',
@@ -75,6 +76,7 @@ export default function AdminAnnouncements() {
 
   const handleEdit = (a) => {
     setEditingId(a._id);
+    setTemplate(a.template || 'banner');
     setForm({
       title: a.title || '',
       body: a.body || '',
@@ -90,6 +92,7 @@ export default function AdminAnnouncements() {
 
   const cancelEdit = () => {
     setEditingId(null);
+    setTemplate('banner');
     setForm({
       title: '', body: '', category: 'General',
       eventDate: '', expiresAt: '',
@@ -112,6 +115,7 @@ export default function AdminAnnouncements() {
       const token = localStorage.getItem('adminToken');
       const payload = {
         ...form,
+        template,
         eventDate: form.eventDate || null,
         expiresAt: form.expiresAt || null,
       };
@@ -148,9 +152,7 @@ export default function AdminAnnouncements() {
       return;
     }
     const reader = new FileReader();
-    reader.onload = () => {
-      setForm(prev => ({ ...prev, imageBase64: reader.result }));
-    };
+    reader.onload = () => setForm(prev => ({ ...prev, imageBase64: reader.result }));
     reader.onerror = () => toast.error('Failed to read image');
     reader.readAsDataURL(file);
   };
@@ -183,6 +185,14 @@ export default function AdminAnnouncements() {
     return a.visibility;
   };
 
+  const previewDate = form.eventDate
+    ? new Date(form.eventDate).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
+    : 'No date set';
+
+  const previewAudience = form.visibility === 'all'
+    ? 'All Branches'
+    : form.targetBranches.join(', ') || 'No branch selected';
+
   return (
     <div className="admin-announce-main">
       <div className="admin-announce-header">
@@ -191,21 +201,42 @@ export default function AdminAnnouncements() {
       </div>
 
       <div className="admin-announce-grid">
-        {/* Create / Edit Form */}
+
+        {/* ── LEFT: Create / Edit Form ── */}
         <div className="admin-announce-card">
           <div className="admin-announce-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <p className="admin-announce-card-title">{editingId ? 'Edit Announcement' : 'Post New Announcement'}</p>
             {editingId && (
-              <button 
-                type="button" 
-                onClick={cancelEdit}
-                style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '13px' }}
-              >
+              <button type="button" onClick={cancelEdit} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '13px' }}>
                 Cancel Edit
               </button>
             )}
           </div>
+
           <form className="admin-announce-form" onSubmit={handleSubmit}>
+
+            {/* Template Picker */}
+            <div className="admin-announce-form-group">
+              <label className="admin-announce-label">Template</label>
+              <div className="admin-announce-template-grid">
+                {[
+                  { id: 'banner', label: 'Banner top' },
+                  { id: 'side', label: 'Side image' },
+                  { id: 'text', label: 'Text only' },
+                ].map(t => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    className={`admin-announce-tpl-btn${template === t.id ? ' active' : ''}`}
+                    onClick={() => setTemplate(t.id)}
+                  >
+                    <div className={`admin-announce-tpl-thumb admin-announce-tpl-${t.id}`} />
+                    <span>{t.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="admin-announce-form-group">
               <label className="admin-announce-label">Title</label>
               <input
@@ -218,6 +249,7 @@ export default function AdminAnnouncements() {
                 required
               />
             </div>
+
             <div className="admin-announce-form-group">
               <label className="admin-announce-label">Message</label>
               <textarea
@@ -230,88 +262,67 @@ export default function AdminAnnouncements() {
               />
             </div>
 
-            {/* Optional Image */}
-            <div className="admin-announce-form-group">
-              <label className="admin-announce-label">Event Banner / Image (Optional)</label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="admin-announce-input"
-              />
-              {form.imageBase64 && (
-                <div style={{ marginTop: 10, borderRadius: 8, overflow: 'hidden', maxWidth: 200 }}>
-                  <img src={form.imageBase64} alt="Preview" style={{ width: '100%', display: 'block' }} />
+            {template !== 'text' && (
+              <div className="admin-announce-form-group">
+                <label className="admin-announce-label">Banner / Image (Optional)</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="admin-announce-input"
+                />
+                {form.imageBase64 && (
+                  <div className={`admin-announce-img-preview admin-announce-img-${template}`}>
+                    <img src={form.imageBase64} alt="Preview" />
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="admin-announce-form-row">
+              <div className="admin-announce-form-group">
+                <label className="admin-announce-label">Category</label>
+                <select name="category" className="admin-announce-select" value={form.category} onChange={handleChange}>
+                  <option value="General">General</option>
+                  <option value="Events">Events</option>
+                  <option value="Services">Services</option>
+                  <option value="Donations">Donations</option>
+                  <option value="Urgent">Urgent</option>
+                </select>
+              </div>
+              <div className="admin-announce-form-group">
+                <label className="admin-announce-label">Target Audience</label>
+                <div className="admin-announce-radio-group">
+                  {[
+                    { value: 'all', label: 'All Branches' },
+                    { value: 'branches', label: 'Selected' },
+                  ].map(opt => (
+                    <label key={opt.value} className={`admin-announce-radio-item${form.visibility === opt.value ? ' active' : ''}`}>
+                      <input type="radio" name="visibility" value={opt.value} checked={form.visibility === opt.value} onChange={handleChange} />
+                      <span>{opt.label}</span>
+                    </label>
+                  ))}
                 </div>
-              )}
-            </div>
-            <div className="admin-announce-form-group">
-              <label className="admin-announce-label">Category</label>
-              <select name="category" className="admin-announce-select" value={form.category} onChange={handleChange}>
-                <option value="General">General</option>
-                <option value="Events">Events</option>
-                <option value="Services">Services</option>
-                <option value="Donations">Donations</option>
-                <option value="Urgent">Urgent</option>
-              </select>
+              </div>
             </div>
 
-            {/* Event Date & Time */}
             <div className="admin-announce-form-row">
               <div className="admin-announce-form-group">
                 <label className="admin-announce-label">
-                  <Calendar size={14} style={{ marginRight: 4, verticalAlign: 'middle' }} />
-                  Event Date & Time
+                  <Calendar size={13} style={{ marginRight: 4, verticalAlign: 'middle' }} />
+                  Event Date &amp; Time
                 </label>
-                <input
-                  type="datetime-local"
-                  name="eventDate"
-                  className="admin-announce-input"
-                  value={form.eventDate}
-                  onChange={handleChange}
-                />
+                <input type="datetime-local" name="eventDate" className="admin-announce-input" value={form.eventDate} onChange={handleChange} />
               </div>
               <div className="admin-announce-form-group">
                 <label className="admin-announce-label">
-                  <Clock size={14} style={{ marginRight: 4, verticalAlign: 'middle' }} />
+                  <Clock size={13} style={{ marginRight: 4, verticalAlign: 'middle' }} />
                   Auto-Disappear Date
                 </label>
-                <input
-                  type="datetime-local"
-                  name="expiresAt"
-                  className="admin-announce-input"
-                  value={form.expiresAt}
-                  onChange={handleChange}
-                />
+                <input type="datetime-local" name="expiresAt" className="admin-announce-input" value={form.expiresAt} onChange={handleChange} />
               </div>
             </div>
 
-            {/* Target Audience */}
-            <div className="admin-announce-form-group">
-              <label className="admin-announce-label">
-                <Globe size={14} style={{ marginRight: 4, verticalAlign: 'middle' }} />
-                Target Audience
-              </label>
-              <div className="admin-announce-radio-group">
-                {[
-                  { value: 'all', label: 'All Branches' },
-                  { value: 'branches', label: 'Selected Branch(es)' }
-                ].map(opt => (
-                  <label key={opt.value} className={`admin-announce-radio-item${form.visibility === opt.value ? ' active' : ''}`}>
-                    <input
-                      type="radio"
-                      name="visibility"
-                      value={opt.value}
-                      checked={form.visibility === opt.value}
-                      onChange={handleChange}
-                    />
-                    <span>{opt.label}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Branch Multi-Select */}
             {form.visibility === 'branches' && (
               <div className="admin-announce-form-group">
                 <label className="admin-announce-label">Select Branches</label>
@@ -320,16 +331,9 @@ export default function AdminAnnouncements() {
                     <p className="admin-announce-no-branches">No branches found.</p>
                   ) : (
                     branches.map(b => (
-                      <label
-                        key={b}
-                        className={`admin-announce-branch-chip${form.targetBranches.includes(b) ? ' selected' : ''}`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={form.targetBranches.includes(b)}
-                          onChange={() => toggleBranch(b)}
-                        />
-                        <MapPin size={12} />
+                      <label key={b} className={`admin-announce-branch-chip${form.targetBranches.includes(b) ? ' selected' : ''}`}>
+                        <input type="checkbox" checked={form.targetBranches.includes(b)} onChange={() => toggleBranch(b)} />
+                        <MapPin size={11} />
                         <span>{b}</span>
                       </label>
                     ))
@@ -338,18 +342,53 @@ export default function AdminAnnouncements() {
               </div>
             )}
 
+            {/* Live Preview */}
+            <div className="admin-announce-form-group">
+              <label className="admin-announce-label">Preview</label>
+              <div className="admin-announce-preview-wrap">
+                <div className={`ann-card ann-card-${template}`}>
+                  {template === 'banner' && (
+                    <div className="ann-banner">
+                      {form.imageBase64
+                        ? <img src={form.imageBase64} alt="" />
+                        : <div className="ann-banner-placeholder"><Megaphone size={24} color="#1E3A8A" /></div>}
+                    </div>
+                  )}
+                  {template === 'side' && (
+                    <div className="ann-side-img">
+                      {form.imageBase64
+                        ? <img src={form.imageBase64} alt="" />
+                        : <div className="ann-banner-placeholder"><Megaphone size={20} color="#1E3A8A" /></div>}
+                    </div>
+                  )}
+                  <div className="ann-body">
+                    <span className="ann-cat">{form.category}</span>
+                    <p className="ann-title">
+                      {form.title || <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>Announcement title...</span>}
+                    </p>
+                    <p className="ann-msg">
+                      {form.body || <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>Your message will appear here.</span>}
+                    </p>
+                    <div className="ann-meta">
+                      <span><Calendar size={10} /> {previewDate}</span>
+                      <span><Globe size={10} /> {previewAudience}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <button type="submit" className="admin-announce-submit" disabled={submitting}>
-              {submitting ? (
-                <><span className="btn-spinner" /></>
-              ) : (
-                <><Megaphone size={18} /> {editingId ? 'Update Announcement' : 'Post Announcement'}</>
-              )}
+              {submitting
+                ? <span className="btn-spinner" />
+                : <><Megaphone size={16} /> {editingId ? 'Update Announcement' : 'Post Announcement'}</>}
             </button>
           </form>
         </div>
 
-        {/* List */}
+        {/* ── RIGHT: Compact List ── */}
         <div className="admin-announce-card">
+
           {/* Stats Bar */}
           <div className="admin-announce-stats-bar">
             <div className="admin-announce-stat-item">
@@ -368,15 +407,14 @@ export default function AdminAnnouncements() {
             </div>
           </div>
 
-          <div className="admin-announce-card-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div className="admin-announce-card-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px 10px' }}>
             <div>
-              <p className="admin-announce-card-title">Posted Announcements</p>
-              <p style={{ fontSize: '13px', color: '#94a3b8', marginTop: '2px' }}>Manage active announcements</p>
+              <p className="admin-announce-card-title" style={{ fontSize: '13px' }}>Posted announcements</p>
+              <p style={{ fontSize: '11px', color: '#94a3b8', marginTop: 1 }}>Manage active announcements</p>
             </div>
             <span className="admin-announce-active-badge">{items.filter(a => !isExpired(a.expiresAt)).length} active</span>
           </div>
 
-          {/* Category Filter Tabs */}
           <div className="admin-announce-filter-tabs">
             {['All', 'General', 'Events', 'Prayer', 'Services', 'Donations', 'Urgent'].map(cat => (
               <button
@@ -394,66 +432,60 @@ export default function AdminAnnouncements() {
               [1, 2, 3].map(i => (
                 <div key={i} className="admin-announce-item">
                   <div style={{ flex: 1 }}>
-                    <div className="user-skeleton" style={{ height: '14px', width: '60%', marginBottom: '8px', borderRadius: '6px' }} />
-                    <div className="user-skeleton" style={{ height: '12px', width: '90%', borderRadius: '6px' }} />
+                    <div className="user-skeleton" style={{ height: 12, width: '60%', marginBottom: 6, borderRadius: 4 }} />
+                    <div className="user-skeleton" style={{ height: 10, width: '90%', borderRadius: 4 }} />
                   </div>
                 </div>
               ))
-            ) : items.filter(a => categoryFilter === 'All' || a.category === categoryFilter).length === 0 ? (
+) : (filteredItems => filteredItems.length === 0 ? (
               <div className="admin-announce-empty">
-                <p style={{ fontSize: '32px' }}>📢</p>
+                <Megaphone size={28} color="#cbd5e1" style={{ marginBottom: 8 }} />
                 <p>{items.length === 0 ? 'No announcements yet. Post one!' : `No ${categoryFilter} announcements.`}</p>
               </div>
             ) : (
-              items
-                .filter(a => categoryFilter === 'All' || a.category === categoryFilter)
-                .map(a => (
-                <div key={a._id} className={`admin-announce-item${isExpired(a.expiresAt) ? ' expired' : ''}`}>
-                  <div className="admin-announce-item-content">
-                    <p className="admin-announce-item-title">{a.title}</p>
-                    <p className="admin-announce-item-body">{a.body}</p>
-                    <div className="admin-announce-item-meta">
-                      <span className="admin-announce-item-cat">{a.category}</span>
-                      {a.eventDate && (
-                        <span className="admin-announce-item-badge event">
-                          <Calendar size={10} /> {fmtDateTime(a.eventDate)}
+              filteredItems.map(a => (
+                  <div key={a._id} className={`admin-announce-item${isExpired(a.expiresAt) ? ' expired' : ''}`}>
+                    <div className="admin-announce-item-content">
+                      <p className="admin-announce-item-title">{a.title}</p>
+                      <p className="admin-announce-item-body">{a.body}</p>
+                      <div className="admin-announce-item-meta">
+                        <span className="admin-announce-item-cat">{a.category}</span>
+                        {a.eventDate && (
+                          <span className="admin-announce-item-badge event">
+                            <Calendar size={9} /> {fmtDateTime(a.eventDate)}
+                          </span>
+                        )}
+                        {a.expiresAt && (
+                          <span className={`admin-announce-item-badge${isExpired(a.expiresAt) ? ' expired' : ' expiry'}`}>
+                            <Clock size={9} /> {isExpired(a.expiresAt) ? 'Expired' : `Expires ${fmtDate(a.expiresAt)}`}
+                          </span>
+                        )}
+                        <span className="admin-announce-item-badge scope">
+                          <Globe size={9} /> {getVisibilityLabel(a)}
                         </span>
-                      )}
-                      {a.expiresAt && (
-                        <span className={`admin-announce-item-badge${isExpired(a.expiresAt) ? ' expired' : ' expiry'}`}>
-                          <Clock size={10} /> {isExpired(a.expiresAt) ? 'Expired' : `Expires ${fmtDate(a.expiresAt)}`}
-                        </span>
-                      )}
-                      <span className="admin-announce-item-badge scope">
-                        <Globe size={10} /> {getVisibilityLabel(a)}
-                      </span>
+                      </div>
+                      <div className="admin-announce-item-footer">
+                        <span>{fmtDate(a.createdAt)}</span>
+                        {a.createdBy && <span>· by {a.createdBy}</span>}
+                      </div>
                     </div>
-                    <div className="admin-announce-item-footer">
-                      <span>{fmtDate(a.createdAt)}</span>
-                      {a.createdBy && <span>· by {a.createdBy}</span>}
+                    <div className="admin-announce-actions">
+                      <button className="admin-announce-edit" onClick={() => handleEdit(a)} title="Edit">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                        </svg>
+                      </button>
+                      <button className="admin-announce-delete" onClick={() => handleDelete(a._id)} title="Delete">
+                        <Trash2 size={14} />
+                      </button>
                     </div>
                   </div>
-                  <div className="admin-announce-actions">
-                    <button
-                      className="admin-announce-edit"
-                      onClick={() => handleEdit(a)}
-                      title="Edit announcement"
-                    >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                    </button>
-                    <button
-                      className="admin-announce-delete"
-                      onClick={() => handleDelete(a._id)}
-                      title="Delete announcement"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </div>
-              ))
-            )}
+                ))
+            ))(items.filter(a => categoryFilter === 'All' || a.category === categoryFilter))}
           </div>
         </div>
+
       </div>
     </div>
   );

@@ -483,6 +483,39 @@ router.post('/announcements', authenticateAdmin, async (req, res) => {
   }
 });
 
+/* ================== ANNOUNCEMENTS - UPDATE (ADMIN) ================== */
+router.put('/announcements/:id', authenticateAdmin, async (req, res) => {
+  try {
+    const { ObjectId } = await import('mongodb');
+    const { id } = req.params;
+    const { title, body, category, eventDate, expiresAt, visibility, targetBranches, imageBase64, template } = req.body;
+    if (!title || !body) {
+      return res.status(400).json({ success: false, message: 'Title and body are required' });
+    }
+    const updateDoc = {
+      title,
+      body,
+      category: category || 'General',
+      eventDate: eventDate ? new Date(eventDate) : null,
+      expiresAt: expiresAt ? new Date(expiresAt) : null,
+      visibility: visibility || 'all',
+      targetBranches: Array.isArray(targetBranches) ? targetBranches : [],
+      image: imageBase64 || null,
+      template: template || 'banner',
+      updatedAt: new Date(),
+      updatedBy: req.admin.email,
+    };
+    const result = await announcements.updateOne({ _id: new ObjectId(id) }, { $set: updateDoc });
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ success: false, message: 'Announcement not found' });
+    }
+    res.status(200).json({ success: true, message: 'Announcement updated' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to update announcement' });
+  }
+});
+
 /* ================== ANNOUNCEMENTS - DELETE (ADMIN) ================== */
 router.delete('/announcements/:id', authenticateAdmin, async (req, res) => {
   try {

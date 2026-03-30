@@ -126,16 +126,31 @@ router.get('/admin/donations', authenticateAdmin, async (req, res) => {
     const allForStats = await donations.find({}).toArray();
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
     const startOfWeek  = new Date(now);
     startOfWeek.setDate(now.getDate() - now.getDay());
     startOfWeek.setHours(0, 0, 0, 0);
 
     const confirmedAll = allForStats.filter(d => d.status === 'confirmed');
     const thisMonthDons = confirmedAll.filter(d => new Date(d.createdAt) >= startOfMonth);
+    const lastMonthDons = confirmedAll.filter(d => {
+      const dDate = new Date(d.createdAt);
+      return dDate >= startOfLastMonth && dDate <= endOfLastMonth;
+    });
     const thisWeekDons  = confirmedAll.filter(d => new Date(d.createdAt) >= startOfWeek);
 
     const thisMonth   = thisMonthDons.reduce((s, d) => s + (Number(d.amount) || 0), 0);
+    const lastMonth   = lastMonthDons.reduce((s, d) => s + (Number(d.amount) || 0), 0);
     const thisWeek    = thisWeekDons.reduce((s, d) => s + (Number(d.amount) || 0), 0);
+
+    let percentageChange = 0;
+    if (lastMonth === 0) {
+      percentageChange = thisMonth > 0 ? 100 : 0;
+    } else {
+      percentageChange = ((thisMonth - lastMonth) / lastMonth) * 100;
+    }
+    const formattedPercentage = (percentageChange > 0 ? '+' : '') + Math.round(percentageChange) + '%';
     const totalAmount = confirmedAll.reduce((s, d) => s + (Number(d.amount) || 0), 0);
     const uniqueEmails = new Set(confirmedAll.map(d => d.email)).size;
     const avgDonation  = confirmedAll.length > 0 ? Math.round(totalAmount / confirmedAll.length) : 0;
@@ -147,6 +162,7 @@ router.get('/admin/donations', authenticateAdmin, async (req, res) => {
       total: totalAmount,
       thisMonth,
       thisWeek,
+      percentageChange: formattedPercentage,
       totalDonors: uniqueEmails,
       avgDonation,
       pendingCount,

@@ -240,7 +240,7 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div className="adm-stat-value">{dash(memberStats.total.toLocaleString())}</div>
-          <div className="adm-stat-sub">+{dash(memberStats.newThisMonth)} new this month</div>
+          <div className="adm-stat-sub"><span style={{ color: '#00A63E', fontWeight: 600 }}>+{dash(memberStats.newThisMonth)} new</span> this month</div>
         </div>
 
         <div className="adm-stat-card green">
@@ -254,7 +254,7 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div className="adm-stat-value">{dash(loanStats.active)}</div>
-          <div className="adm-stat-sub">{dash(loanStats.pending)} pending</div>
+          <div className="adm-stat-sub"><span style={{ color: '#D97706', fontWeight: 600 }}>{dash(loanStats.pending)} pending</span></div>
         </div>
 
         <div className="adm-stat-card orange">
@@ -267,7 +267,7 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div className="adm-stat-value">{loading ? '—' : `₱${(donationStats.total || 0).toLocaleString()}`}</div>
-          <div className="adm-stat-sub">+₱{loading ? '—' : (donationStats.thisMonth || 0).toLocaleString()} this month</div>
+          <div className="adm-stat-sub"><span style={{ color: '#00A63E', fontWeight: 600 }}>+₱{loading ? '—' : (donationStats.thisMonth || 0).toLocaleString()}</span> this month</div>
         </div>
       </div>
 

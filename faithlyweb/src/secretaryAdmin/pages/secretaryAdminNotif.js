@@ -9,6 +9,7 @@ export default function SecretaryAdminNotif() {
 
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [detailModal, setDetailModal] = useState(null);
 
     const fetchNotifications = async () => {
         try {
@@ -138,6 +139,11 @@ export default function SecretaryAdminNotif() {
                             <div
                                 key={notification.id}
                                 className={`sec-admin-notif-card ${notification.isRead ? 'read' : 'unread'}`}
+                                onClick={() => {
+                                    if (!notification.isRead) handleMarkAsRead(notification.id);
+                                    setDetailModal(notification);
+                                }}
+                                style={{ cursor: 'pointer' }}
                             >
                                 <div className="sec-admin-notif-card-content">
                                     <div className="sec-admin-notif-card-icon">
@@ -183,6 +189,39 @@ export default function SecretaryAdminNotif() {
                     )}
                 </div>
             </div>
+
+            {/* ── Notification Detail Modal ── */}
+            {detailModal && (
+                <div className="sec-admin-mgmt-modal-overlay" onClick={() => setDetailModal(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0, 0, 0, 0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 24 }}>
+                    <div className="sec-admin-mgmt-modal-container" onClick={(e) => e.stopPropagation()} style={{ background: 'white', borderRadius: 16, width: '100%', maxWidth: 500, display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)' }}>
+                        <div className="sec-admin-mgmt-modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 24px', borderBottom: '0.8px solid #E5E7EB' }}>
+                            <h2 className="sec-admin-mgmt-modal-title" style={{ fontFamily: 'Inter', fontSize: 18, fontWeight: 700, margin: 0, color: '#101828' }}>Loan Approved</h2>
+                            <button className="sec-admin-mgmt-modal-close" onClick={() => setDetailModal(null)} style={{ width: 32, height: 32, border: 'none', background: '#F3F4F6', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6A7282' }}>×</button>
+                        </div>
+                        <div style={{ padding: '20px 24px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                                <span style={{ fontSize: '12px', color: '#1E3A8A', background: '#EFF6FF', padding: '2px 8px', borderRadius: 999, fontWeight: 600, textTransform: 'capitalize' }}>
+                                    Loan
+                                </span>
+                                <span style={{ fontSize: '12px', color: '#9CA3AF', marginLeft: 'auto', fontFamily: 'Inter' }}>
+                                    {detailModal.date} {detailModal.time}
+                                </span>
+                            </div>
+                            <p style={{ fontFamily: 'Inter', fontSize: '14px', color: '#374151', lineHeight: '22px', margin: 0 }}>
+                                Loan LN-{detailModal.loanId} for {detailModal.member} (₱{Number(detailModal.amount).toLocaleString()}) has been approved by the Loan Admin. Please process the disbursement.
+                            </p>
+                        </div>
+                        <div style={{ padding: '0 24px 20px', display: 'flex', justifyContent: 'flex-end' }}>
+                            <button
+                                style={{ padding: '10px 20px', background: '#1E3A8A', color: 'white', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}
+                                onClick={() => setDetailModal(null)}
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

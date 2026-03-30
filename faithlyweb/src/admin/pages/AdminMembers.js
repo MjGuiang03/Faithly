@@ -98,7 +98,7 @@ function EditModal({ member, onClose, onSave }) {
         </div>
 
         <div className="admin-members-modal-body">
-          <div className="admin-members-form-row">
+          <div className="admin-members-form-grid-2col">
             <div className="admin-members-form-group">
               <label className="admin-members-form-label">Full Name</label>
               <input className="admin-members-form-input" name="fullName" value={form.fullName} onChange={handleChange} />
@@ -108,7 +108,7 @@ function EditModal({ member, onClose, onSave }) {
               <input className="admin-members-form-input" name="phone" value={form.phone} onChange={handleChange} />
             </div>
           </div>
-          <div className="admin-members-form-row">
+          <div className="admin-members-form-grid-2col">
             <div className="admin-members-form-group">
               <label className="admin-members-form-label">Branch</label>
               <input className="admin-members-form-input" name="branch" value={form.branch} onChange={handleChange} />
@@ -155,7 +155,7 @@ function EditModal({ member, onClose, onSave }) {
         </div>
 
         <div className="admin-members-modal-footer">
-          <button className="admin-members-btn admin-members-btn-cancel" onClick={onClose} disabled={saving}>Cancel</button>
+          <button className="admin-members-btn admin-members-btn-cancel" onClick={onClose} disabled={saving} style={{ flex: 'none', width: '130px' }}>Cancel</button>
           <button className="admin-members-btn admin-members-btn-save" onClick={handleSubmit} disabled={saving}>
             {saving ? <span className="btn-spinner" /> : 'Save Changes'}
           </button>
@@ -265,7 +265,7 @@ function DeleteModal({ member, onClose, onConfirm }) {
         </div>
 
         <div className="admin-members-modal-footer">
-          <button className="admin-members-btn admin-members-btn-cancel" onClick={onClose} disabled={deleting}>Cancel</button>
+          <button className="admin-members-btn admin-members-btn-cancel" onClick={onClose} disabled={deleting} style={{ flex: 'none', width: '130px' }}>Cancel</button>
           <button className="admin-members-btn admin-members-btn-delete" onClick={handleDelete} disabled={deleting}>
             {deleting ? <span className="btn-spinner" /> : 'Delete Member'}
           </button>
@@ -327,7 +327,7 @@ function AddMemberModal({ onClose, onSave }) {
               <input className="admin-members-form-input" type="text" name="fullName" value={form.fullName} onChange={handleChange} placeholder="e.g. Juan De La Cruz" />
             </div>
           </div>
-          <div className="admin-members-form-row">
+          <div className="admin-members-form-grid-2col">
             <div className="admin-members-form-group">
               <label className="admin-members-form-label">Email Address</label>
               <input className="admin-members-form-input" type="email" name="email" value={form.email} onChange={handleChange} placeholder="juan@example.com" />
@@ -337,7 +337,7 @@ function AddMemberModal({ onClose, onSave }) {
               <input className="admin-members-form-input" type="password" name="password" value={form.password} onChange={handleChange} placeholder="Create a password" />
             </div>
           </div>
-          <div className="admin-members-form-row">
+          <div className="admin-members-form-grid-2col">
             <div className="admin-members-form-group">
               <label className="admin-members-form-label">Phone Number</label>
               <input className="admin-members-form-input" type="text" name="phone" value={form.phone} onChange={handleChange} placeholder="+63XXXXXXXXXX" />
@@ -392,8 +392,8 @@ function AddMemberModal({ onClose, onSave }) {
               </select>
             </div>
           </div>
-          <div className="admin-members-form-row">
-            <div className="admin-members-form-group" style={{ gridColumn: 'span 2' }}>
+          <div className="admin-members-form-grid-2col">
+            <div className="admin-members-form-group">
               <label className="admin-members-form-label">Position / Role</label>
               <select className="admin-members-form-input" name="position" value={form.position} onChange={handleChange}>
                 <option value="Member">Member</option>
@@ -410,7 +410,7 @@ function AddMemberModal({ onClose, onSave }) {
         </div>
 
         <div className="admin-members-modal-footer">
-          <button className="admin-members-btn admin-members-btn-cancel" onClick={onClose} disabled={saving}>Cancel</button>
+          <button className="admin-members-btn admin-members-btn-cancel" onClick={onClose} disabled={saving} style={{ flex: 'none', width: '130px' }}>Cancel</button>
           <button className="admin-members-btn admin-members-btn-save" onClick={handleSubmit} disabled={saving}>
             {saving ? <span className="btn-spinner" /> : 'Add Member'}
           </button>
@@ -452,7 +452,8 @@ export default function AdminMembers() {
   const fetchMembers = useCallback(async () => {
     try {
       setLoadingMembers(true);
-      const q  = buildQuery({ search: debouncedSearchMembers.trim(), page: currentPage, limit: ITEMS_PER_PAGE, role: roleFilter === 'all' ? undefined : roleFilter });
+      const isOfficerVal = roleFilter === 'officer' ? 'true' : roleFilter === 'member' ? 'false' : undefined;
+      const q  = buildQuery({ search: debouncedSearchMembers.trim(), page: currentPage, limit: ITEMS_PER_PAGE, isOfficer: isOfficerVal });
       const res = await fetch(`${API}/api/admin/members?${q}`, {
         headers: { Authorization: `Bearer ${getToken()}` }
       });
