@@ -419,6 +419,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
+  width: 100%;
 }
 
 .adm-stat-card {
@@ -480,8 +481,9 @@
 /* ── Row 2: Analytics Row ── */
 .adm-analytics-row {
   display: grid;
-  grid-template-columns: 220px 1fr 160px;
+  grid-template-columns: 250px 1fr;
   gap: 12px;
+  width: 100%;
 }
 
 /* ── Card base ── */

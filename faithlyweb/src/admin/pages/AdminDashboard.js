@@ -317,14 +317,6 @@ export default function AdminDashboard() {
             </BarChart>
           </ResponsiveContainer>
         </div>
-
-        {/* Vertical summary column */}
-        <div className="adm-summary-col">
-          <div className="adm-summary-card">
-            <span className="adm-summary-label">Total Donations</span>
-            <span className="adm-summary-value green">{dash(fmt(donationStats.total))}</span>
-          </div>
-        </div>
       </div>
 
       {/* ── Row 3: Member Growth Trends ── */}

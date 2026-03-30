@@ -418,7 +418,7 @@ export default function AdminOfficerVerification() {
           onChange={(e) => setPositionFilter(e.target.value)}
           style={{ height: 42, borderRadius: 8, padding: '0 12px', border: '1px solid #D1D5DB', fontFamily: 'Inter', fontSize: 14, minWidth: 140, background: 'var(--card)', color: 'var(--foreground)', cursor: 'pointer' }}
         >
-          <option value="all">All Positions</option>
+          <option value="all">Position</option>
           <option value="Pastor">Pastor</option>
           <option value="Deacon">Deacon</option>
           <option value="Secretary">Secretary</option>
@@ -434,7 +434,7 @@ export default function AdminOfficerVerification() {
           onChange={(e) => setStatusFilter(e.target.value)}
           style={{ height: 42, borderRadius: 8, padding: '0 12px', border: '1px solid #D1D5DB', fontFamily: 'Inter', fontSize: 14, minWidth: 130, background: 'var(--card)', color: 'var(--foreground)', cursor: 'pointer' }}
         >
-          <option value="all">All Statuses</option>
+          <option value="all">Status</option>
           <option value="pending">Pending</option>
           <option value="approved">Approved</option>
           <option value="rejected">Rejected</option>

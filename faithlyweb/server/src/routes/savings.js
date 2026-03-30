@@ -19,7 +19,7 @@ router.get('/savings/stats', authenticateUser, async (req, res) => {
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const monthDeposits = await savingsTransactions.aggregate([
-      { $match: { email, type: 'deposit', date: { $gte: monthStart } } },
+      { $match: { email, type: 'deposit', status: 'confirmed', date: { $gte: monthStart } } },
       { $group: { _id: null, total: { $sum: '$amount' } } },
     ]).toArray();
     const thisMonth = monthDeposits[0]?.total || 0;

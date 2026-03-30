@@ -7,8 +7,6 @@ import '../styles/AdminMembers.css';
 import svgPaths from "../../imports/svg-icons";
 
 import API from '../../utils/api';
-import SignupModal from '../../user/components/SignupModal';
-
 /* ─── query-string builder ──────────────────────────────────────────────── */
 function buildQuery(params) {
   return Object.entries(params)
@@ -278,6 +276,93 @@ function DeleteModal({ member, onClose, onConfirm }) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   ADD MEMBER MODAL
+═══════════════════════════════════════════════════════════════════════════ */
+function AddMemberModal({ onClose, onSave }) {
+  const [form, setForm] = useState({
+    fullName: '', email: '', password: '', phone: '', branch: 'Bulacan Main', position: 'member',
+  });
+  const [saving, setSaving] = useState(false);
+
+  const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
+
+  const handleSubmit = async () => {
+    if (!form.fullName.trim() || !form.email.trim() || !form.password.trim() || !form.phone.trim()) {
+      return toast.error('All fields are required');
+    }
+    setSaving(true);
+    try {
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+      const res = await fetch(`${API}/api/admin/create-member`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(form)
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message || 'Registration failed');
+      toast.success('Member added successfully');
+      onSave();
+    } catch (err) { toast.error(err.message || 'Failed to add member'); } 
+    finally { setSaving(false); }
+  };
+
+  return (
+    <div className="admin-members-modal-overlay" onClick={onClose}>
+      <div className="admin-members-modal" onClick={e => e.stopPropagation()}>
+        <div className="admin-members-modal-header">
+          <div className="admin-members-modal-header-icon" style={{ background: '#EEF2FF', color: '#155DFC' }}><UserPlus size={20} /></div>
+          <div className="admin-members-modal-header-text">
+            <p className="admin-members-modal-title">Add New Member</p>
+            <p className="admin-members-modal-subtitle">Register a new member directly</p>
+          </div>
+          <button className="admin-members-modal-close" onClick={onClose}>
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M15 5L5 15M5 5L15 15" stroke="#6a7282" strokeWidth="1.5" strokeLinecap="round"/></svg>
+          </button>
+        </div>
+
+        <div className="admin-members-modal-body" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div className="admin-members-field" style={{ gridColumn: 'span 2' }}>
+            <label className="admin-members-label">Full Name</label>
+            <input className="admin-members-input" type="text" name="fullName" value={form.fullName} onChange={handleChange} placeholder="e.g. Juan De La Cruz" style={{width:'100%', padding:'10px', borderRadius:'8px', border:'1px solid #d1d5db'}} />
+          </div>
+          <div className="admin-members-field">
+            <label className="admin-members-label">Email Address</label>
+            <input className="admin-members-input" type="email" name="email" value={form.email} onChange={handleChange} placeholder="juan@example.com" style={{width:'100%', padding:'10px', borderRadius:'8px', border:'1px solid #d1d5db'}} />
+          </div>
+          <div className="admin-members-field">
+            <label className="admin-members-label">Default Password</label>
+            <input className="admin-members-input" type="password" name="password" value={form.password} onChange={handleChange} placeholder="Create a password" style={{width:'100%', padding:'10px', borderRadius:'8px', border:'1px solid #d1d5db'}} />
+          </div>
+          <div className="admin-members-field">
+            <label className="admin-members-label">Phone Number</label>
+            <input className="admin-members-input" type="text" name="phone" value={form.phone} onChange={handleChange} placeholder="+63XXXXXXXXXX" style={{width:'100%', padding:'10px', borderRadius:'8px', border:'1px solid #d1d5db'}} />
+          </div>
+          <div className="admin-members-field">
+            <label className="admin-members-label">Branch</label>
+            <select className="admin-members-input" name="branch" value={form.branch} onChange={handleChange} style={{width:'100%', padding:'10px', borderRadius:'8px', border:'1px solid #d1d5db'}}>
+              <option value="Bulacan Main">Bulacan Main</option>
+              <option value="Quezon City">Quezon City</option>
+              <option value="Makati">Makati</option>
+            </select>
+          </div>
+          <div className="admin-members-field" style={{ gridColumn: 'span 2' }}>
+            <label className="admin-members-label">Position / Role</label>
+            <input className="admin-members-input" type="text" name="position" value={form.position} onChange={handleChange} placeholder="e.g. member, officer, admin" style={{width:'100%', padding:'10px', borderRadius:'8px', border:'1px solid #d1d5db'}} />
+          </div>
+        </div>
+
+        <div className="admin-members-modal-footer">
+          <button className="admin-members-btn-secondary" onClick={onClose} disabled={saving} style={{padding:'10px 16px', borderRadius:'8px', border:'1px solid #d1d5db', background:'white', cursor:'pointer'}}>Cancel</button>
+          <button className="admin-members-btn-primary" onClick={handleSubmit} disabled={saving} style={{padding:'10px 16px', borderRadius:'8px', border:'none', background:'#155DFC', color:'white', cursor:'pointer' }}>
+            {saving ? 'Saving...' : 'Add Member'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    MAIN PAGE
 ═══════════════════════════════════════════════════════════════════════════ */
 const ITEMS_PER_PAGE = 5;
@@ -347,7 +432,7 @@ export default function AdminMembers() {
 
       {editMember   && <EditModal   member={editMember}   onClose={() => setEditMember(null)}   onSave={()    => { setEditMember(null);   fetchMembers(); }} />}
       {deleteMember && <DeleteModal member={deleteMember} onClose={() => setDeleteMember(null)} onConfirm={() => { setDeleteMember(null); fetchMembers(); }} />}
-      {showAddModal && <SignupModal isOpen={showAddModal} onClose={() => { setShowAddModal(false); fetchMembers(); }} onSwitchToLogin={() => {}} />}
+      {showAddModal && <AddMemberModal onClose={() => setShowAddModal(false)} onSave={() => { setShowAddModal(false); fetchMembers(); }} />}
 
       {/* Header */}
       <div className="admin-members-header-container">

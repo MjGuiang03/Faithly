@@ -699,5 +699,59 @@ router.post('/process-loan-payment', authenticateAdmin, async (req, res) => {
     res.status(500).json({ success: false, message: 'Failed to process walk-in loan payment' });
   }
 });
+/* ================== ADMIN - CREATE NEW MEMBER DIRECTLY ================== */
+router.post('/create-member', authenticateAdmin, async (req, res) => {
+  try {
+    const { email, password, fullName, phone, branch, position } = req.body;
+
+    if (!email || !password || !fullName || !phone) {
+      return res.status(400).json({ success: false, message: 'Email, Default Password, Full Name, and Phone are required' });
+    }
+
+    // Check if user already exists
+    const existingUser = await users.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ success: false, message: 'Email already registered' });
+    }
+
+    // Hash the password securely
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    // Create the active, verified user directly
+    const newUser = {
+      email,
+      passwordHash,
+      fullName,
+      phone,
+      branch: branch || 'Bulacan Main',
+      position: position || 'member',
+      gender: null,
+      birthday: null,
+      isVerified: true,
+      verifiedAt: new Date(),
+      createdAt: new Date(),
+      failedLoginAttempts: 0,
+      lockUntil: null,
+      isPermanentlyLocked: false,
+    };
+
+    const result = await users.insertOne(newUser);
+
+    // Just in case there is a leftover pending registration or OTP, clear it
+    await import('../config/db.js').then(async ({ pendingRegistrations }) => {
+      await pendingRegistrations.deleteOne({ email });
+    }).catch(() => {});
+    await otps.deleteMany({ email });
+
+    res.status(201).json({
+      success: true,
+      message: 'Member registered successfully',
+      user: { _id: result.insertedId, email, fullName, phone, branch, position }
+    });
+  } catch (err) {
+    console.error('Create member error:', err);
+    res.status(500).json({ success: false, message: 'Failed to create member' });
+  }
+});
 
 export default router;

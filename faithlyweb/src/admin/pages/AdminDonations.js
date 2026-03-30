@@ -246,63 +246,54 @@ export default function AdminDonationsNew() {
           </div>
         </div>
 
-        <div className="admin-don-new-table-container">
-          <table className="admin-don-new-table">
-            <thead className="admin-don-new-thead">
+        <div className="loan-admin-mgmt-table-container">
+          <table className="loan-admin-mgmt-table">
+            <thead>
               <tr>
-                <th className="admin-don-new-th">Donation ID</th>
-                <th className="admin-don-new-th">Member</th>
-                <th className="admin-don-new-th">Amount</th>
-                <th className="admin-don-new-th">Purpose</th>
-                <th className="admin-don-new-th">Date</th>
-                <th className="admin-don-new-th">Status</th>
-                <th className="admin-don-new-th">Actions</th>
+                <th>Donation ID</th>
+                <th>Member</th>
+                <th>Amount</th>
+                <th>Purpose</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Actions</th>
               </tr>
             </thead>
-            <tbody className="admin-don-new-tbody">
+            <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="admin-don-new-td admin-don-new-empty">
-                    <div className="admin-don-new-loading">
-                      <div className="admin-don-new-spinner" />
-                      Loading donations…
-                    </div>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>
+                    Loading donations…
                   </td>
                 </tr>
               ) : donations.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="admin-don-new-td admin-don-new-empty">
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>
                     No donations found
                   </td>
                 </tr>
               ) : (
                 donations.map((donation, index) => (
-                  <tr key={donation._id || index} className="admin-don-new-tr">
-                    <td className="admin-don-new-td">
-                      <span className="admin-don-new-donation-id">
-                        {donation.donationId || `D-${String(index + 1).padStart(3, '0')}`}
-                      </span>
+                  <tr key={donation._id || index} className="loan-admin-mgmt-table-row-hover">
+                    <td style={{ fontWeight: 600, color: '#111827' }}>
+                      {donation.donationId || `D-${String(index + 1).padStart(3, '0')}`}
                     </td>
-                    <td className="admin-don-new-td">
-                      <span className="admin-don-new-member-name">{donation.member || '—'}</span>
+                    <td>
+                      {donation.member || '—'}
                     </td>
-                    <td className="admin-don-new-td">
-                      <span className="admin-don-new-amount">{fmt(donation.amount)}</span>
+                    <td style={{ color: '#00A63E', fontWeight: 600 }}>
+                      {fmt(donation.amount)}
                     </td>
-                    <td className="admin-don-new-td">
-                      <span className="admin-don-new-purpose">
-                        {donation.category || donation.purpose || 'General Fund'}
-                      </span>
+                    <td style={{ color: '#374151' }}>
+                      {donation.category || donation.purpose || 'General Fund'}
                     </td>
-                    <td className="admin-don-new-td">
-                      <span className="admin-don-new-date">
-                        {fmtDate(donation.createdAt || donation.date)}
-                      </span>
+                    <td style={{ whiteSpace: 'nowrap', color: '#6B7280' }}>
+                      {fmtDate(donation.createdAt || donation.date)}
                     </td>
-                    <td className="admin-don-new-td">
+                    <td>
                       <StatusBadge status={donation.status || 'pending'} />
                     </td>
-                    <td className="admin-don-new-td">
+                    <td>
                       <div className="admin-don-action-group">
                         <button
                           className="admin-don-action-btn admin-don-action-view"
