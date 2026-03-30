@@ -219,7 +219,7 @@ export default function LoanAdminPaymentStatus() {
     const lId = e.target.value;
     setWalkinSelectedLoan(lId);
     const ln = allLoans.find(x => x._id === lId);
-    if (ln) setWalkinAmount(ln.monthlyPayment || '');
+    if (ln) setWalkinAmount(ln.upcomingPaymentAmount || ln.monthlyPayment || '');
     else setWalkinAmount('');
   };
 
@@ -578,7 +578,10 @@ export default function LoanAdminPaymentStatus() {
                           <p className="loan-admin-mgmt-table-member-email">{p.email}</p>
                         </div>
                       </td>
-                      <td className="loan-admin-mgmt-table-amount">{fmt(p.amount)}</td>
+                      <td className="loan-admin-mgmt-table-amount">
+                        {fmt(p.amount)}
+                        {p.isLate && <span style={{ fontSize: '10px', color: '#DC2626', background: '#FEE2E2', padding: '2px 4px', borderRadius: '4px', marginLeft: '6px', fontWeight: 600 }}>3% Penalty</span>}
+                      </td>
                       <td style={{ textTransform: 'capitalize', fontSize: '13px' }}>{p.paymentMethod}</td>
                       <td style={{ fontSize: '13px', textAlign: 'center' }}>{p.monthNumber || '—'}</td>
                       <td style={{ fontSize: '13px' }}>{fmtDate(p.submittedAt)}</td>
@@ -767,7 +770,13 @@ export default function LoanAdminPaymentStatus() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
                 <div><p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Loan ID</p><p style={{ fontSize: '14px', fontWeight: 600, fontFamily: 'Inter', color: '#111827' }}>{selectedPayment.loanId}</p></div>
                 <div><p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Member</p><p style={{ fontSize: '14px', fontWeight: 600, fontFamily: 'Inter', color: '#111827' }}>{selectedPayment.memberName}</p></div>
-                <div><p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Amount</p><p style={{ fontSize: '14px', fontWeight: 600, fontFamily: 'Inter', color: '#111827' }}>{fmt(selectedPayment.amount)}</p></div>
+                <div>
+                  <p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Expected Amount</p>
+                  <p style={{ fontSize: '14px', fontWeight: 600, fontFamily: 'Inter', color: '#111827' }}>
+                    {fmt(selectedPayment.amount)}
+                    {selectedPayment.isLate && <span style={{ fontSize: '11px', color: '#DC2626', background: '#FEE2E2', padding: '2px 6px', borderRadius: '4px', marginLeft: '8px', verticalAlign: 'middle' }}>Late 3% Penalty Included</span>}
+                  </p>
+                </div>
                 <div><p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Method</p><p style={{ fontSize: '14px', fontWeight: 600, fontFamily: 'Inter', color: '#111827', textTransform: 'capitalize' }}>{selectedPayment.paymentMethod}</p></div>
                 <div><p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Month #</p><p style={{ fontSize: '14px', fontWeight: 600, fontFamily: 'Inter', color: '#111827' }}>{selectedPayment.monthNumber || '—'}</p></div>
                 <div><p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Submitted</p><p style={{ fontSize: '13px', fontFamily: 'Inter', color: '#374151' }}>{fmtDate(selectedPayment.submittedAt)}</p></div>

@@ -320,41 +320,99 @@ function AddMemberModal({ onClose, onSave }) {
           </button>
         </div>
 
-        <div className="admin-members-modal-body" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-          <div className="admin-members-field" style={{ gridColumn: 'span 2' }}>
-            <label className="admin-members-label">Full Name</label>
-            <input className="admin-members-input" type="text" name="fullName" value={form.fullName} onChange={handleChange} placeholder="e.g. Juan De La Cruz" style={{width:'100%', padding:'10px', borderRadius:'8px', border:'1px solid #d1d5db'}} />
+        <div className="admin-members-modal-body">
+          <div className="admin-members-form-row">
+            <div className="admin-members-form-group" style={{ gridColumn: 'span 2' }}>
+              <label className="admin-members-form-label">Full Name</label>
+              <input className="admin-members-form-input" type="text" name="fullName" value={form.fullName} onChange={handleChange} placeholder="e.g. Juan De La Cruz" />
+            </div>
           </div>
-          <div className="admin-members-field">
-            <label className="admin-members-label">Email Address</label>
-            <input className="admin-members-input" type="email" name="email" value={form.email} onChange={handleChange} placeholder="juan@example.com" style={{width:'100%', padding:'10px', borderRadius:'8px', border:'1px solid #d1d5db'}} />
+          <div className="admin-members-form-row">
+            <div className="admin-members-form-group">
+              <label className="admin-members-form-label">Email Address</label>
+              <input className="admin-members-form-input" type="email" name="email" value={form.email} onChange={handleChange} placeholder="juan@example.com" />
+            </div>
+            <div className="admin-members-form-group">
+              <label className="admin-members-form-label">Default Password</label>
+              <input className="admin-members-form-input" type="password" name="password" value={form.password} onChange={handleChange} placeholder="Create a password" />
+            </div>
           </div>
-          <div className="admin-members-field">
-            <label className="admin-members-label">Default Password</label>
-            <input className="admin-members-input" type="password" name="password" value={form.password} onChange={handleChange} placeholder="Create a password" style={{width:'100%', padding:'10px', borderRadius:'8px', border:'1px solid #d1d5db'}} />
+          <div className="admin-members-form-row">
+            <div className="admin-members-form-group">
+              <label className="admin-members-form-label">Phone Number</label>
+              <input className="admin-members-form-input" type="text" name="phone" value={form.phone} onChange={handleChange} placeholder="+63XXXXXXXXXX" />
+            </div>
+            <div className="admin-members-form-group">
+              <label className="admin-members-form-label">Branch</label>
+              <select className="admin-members-form-input" name="branch" value={form.branch} onChange={handleChange}>
+                <option value="Bulacan Main">Bulacan Main</option>
+                <optgroup label="Kalinga">
+                  <option>Tabuk</option><option>Zapote</option><option>Bliss</option>
+                  <option>Libanon</option><option>Batong Buhay</option><option>Balatoc</option><option>Lat-nog</option>
+                </optgroup>
+                <optgroup label="Isabela"><option>Santiago City</option></optgroup>
+                <optgroup label="Abra">
+                  <option>Lamao</option><option>Lingey</option><option>Cabaruyan</option><option>Ducligan</option>
+                  <option>Gangal</option><option>Bila-Bila</option><option>Naguillian</option><option>Ud-udiao</option>
+                  <option>Villa Conchita</option><option>Ay-yeng Manabo</option><option>Dao-angan</option>
+                  <option>Kilong-olao</option><option>Bao-yan</option><option>Amti</option><option>Danac</option>
+                  <option>Bengued</option><option>Sappaac</option><option>Saccaang</option>
+                </optgroup>
+                <optgroup label="Benguet"><option>Baguio</option></optgroup>
+                <optgroup label="Rizal"><option>Montalban</option></optgroup>
+                <optgroup label="NCR">
+                  <option>Valenzuela City</option><option>Tandang Sora, Quezon City</option>
+                  <option>COA, Quezon City</option><option>Payatas, Quezon City</option><option>Malaria, Caloocan</option>
+                </optgroup>
+                <optgroup label="Bulacan">
+                  <option>Meycauayan City</option><option>Camalig</option><option>San Jose Del Monte</option>
+                </optgroup>
+                <optgroup label="Tarlac">
+                  <option>Pacpaco, San Manuel</option><option>Victoria</option>
+                </optgroup>
+                <optgroup label="Nueva Ecija"><option>Bambanaba, Cuyapo</option></optgroup>
+                <optgroup label="Pangasinan">
+                  <option>Dagupan</option><option>Mangatarem</option><option>Laoak Langka</option>
+                  <option>Orbiztondo</option><option>Malasiqui, Bolaoit</option><option>Taloyan</option>
+                  <option>Binmaley</option><option>San Carlos</option><option>Manaoag</option>
+                  <option>Pozorrubio</option><option>Alcala</option>
+                </optgroup>
+                <optgroup label="Agusan Del Norte">
+                  <option>Butuan City</option><option>RTR</option><option>Jabonga, Bangonay</option>
+                  <option>Kasiklan</option><option>San Mateo</option><option>Fatima Kim.13</option>
+                  <option>Bayugan</option><option>Ibuan</option><option>Balubo</option>
+                </optgroup>
+                <optgroup label="Cebu">
+                  <option>Mandaue</option><option>Liloan</option><option>Calero</option><option>Compostela</option>
+                </optgroup>
+                <optgroup label="Surigao Del Norte">
+                  <option>Alegria</option><option>Bonifacio</option><option>Matin-ao</option><option>Ipil</option>
+                </optgroup>
+                <optgroup label="Surigao Del Sur"><option>Kinabigtasan, Tago</option></optgroup>
+              </select>
+            </div>
           </div>
-          <div className="admin-members-field">
-            <label className="admin-members-label">Phone Number</label>
-            <input className="admin-members-input" type="text" name="phone" value={form.phone} onChange={handleChange} placeholder="+63XXXXXXXXXX" style={{width:'100%', padding:'10px', borderRadius:'8px', border:'1px solid #d1d5db'}} />
-          </div>
-          <div className="admin-members-field">
-            <label className="admin-members-label">Branch</label>
-            <select className="admin-members-input" name="branch" value={form.branch} onChange={handleChange} style={{width:'100%', padding:'10px', borderRadius:'8px', border:'1px solid #d1d5db'}}>
-              <option value="Bulacan Main">Bulacan Main</option>
-              <option value="Quezon City">Quezon City</option>
-              <option value="Makati">Makati</option>
-            </select>
-          </div>
-          <div className="admin-members-field" style={{ gridColumn: 'span 2' }}>
-            <label className="admin-members-label">Position / Role</label>
-            <input className="admin-members-input" type="text" name="position" value={form.position} onChange={handleChange} placeholder="e.g. member, officer, admin" style={{width:'100%', padding:'10px', borderRadius:'8px', border:'1px solid #d1d5db'}} />
+          <div className="admin-members-form-row">
+            <div className="admin-members-form-group" style={{ gridColumn: 'span 2' }}>
+              <label className="admin-members-form-label">Position / Role</label>
+              <select className="admin-members-form-input" name="position" value={form.position} onChange={handleChange}>
+                <option value="Member">Member</option>
+                <option value="Pastor">Pastor</option>
+                <option value="Deacon">Deacon</option>
+                <option value="Secretary">Secretary</option>
+                <option value="Treasurer">Treasurer</option>
+                <option value="Elder">Elder</option>
+                <option value="Worship Leader">Worship Leader</option>
+                <option value="Youth Leader">Youth Leader</option>
+              </select>
+            </div>
           </div>
         </div>
 
         <div className="admin-members-modal-footer">
-          <button className="admin-members-btn-secondary" onClick={onClose} disabled={saving} style={{padding:'10px 16px', borderRadius:'8px', border:'1px solid #d1d5db', background:'white', cursor:'pointer'}}>Cancel</button>
-          <button className="admin-members-btn-primary" onClick={handleSubmit} disabled={saving} style={{padding:'10px 16px', borderRadius:'8px', border:'none', background:'#155DFC', color:'white', cursor:'pointer' }}>
-            {saving ? 'Saving...' : 'Add Member'}
+          <button className="admin-members-btn admin-members-btn-cancel" onClick={onClose} disabled={saving}>Cancel</button>
+          <button className="admin-members-btn admin-members-btn-save" onClick={handleSubmit} disabled={saving}>
+            {saving ? <span className="btn-spinner" /> : 'Add Member'}
           </button>
         </div>
       </div>

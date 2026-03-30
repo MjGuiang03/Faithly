@@ -46,7 +46,34 @@ function enrichLoanWithNextPayment(loan) {
   // Next payment is due (paidMonths + 1) months after disbursement
   const nextDue = new Date(startDate);
   nextDue.setMonth(startDate.getMonth() + paidMonths + 1);
-  return { ...loan, nextPaymentDate: nextDue };
+
+  // Late Penalty Check: > 3 days past due date exactly
+  const cutoffDate = new Date(nextDue);
+  cutoffDate.setDate(nextDue.getDate() + 3);
+  // Give them until the end of the 3rd day exactly 
+  cutoffDate.setHours(23, 59, 59, 999);
+
+  let upcomingPaymentAmount = loan.monthlyPayment;
+  let isLate = false;
+
+  if (Date.now() > cutoffDate.getTime()) {
+      isLate = true;
+      const principalPerMonth = (loan.amount || 0) / term;
+      let interestPerMonth;
+      if (loan.totalInterest != null && loan.totalInterest > 0) {
+        interestPerMonth = loan.totalInterest / term;
+      } else {
+        let rate = loan.interestRate || 0.02;
+        if (rate > 1) rate = rate / 100;
+        interestPerMonth = (loan.amount || 0) * rate;
+      }
+      
+      // 3% flat interest applied strictly to this late month payment
+      const penaltyInterestPerMonth = (loan.amount || 0) * 0.03;
+      upcomingPaymentAmount = principalPerMonth + penaltyInterestPerMonth;
+  }
+
+  return { ...loan, nextPaymentDate: nextDue, upcomingPaymentAmount, isLate };
 }
 
 
@@ -457,13 +484,31 @@ router.get('/loans/:id/schedule', authenticateUser, async (req, res) => {
         const dueDate = new Date(startDate);
         dueDate.setMonth(startDate.getMonth() + i);
         
+        let currentInterest = interestPerMonth;
+        let currentPayment = paymentPerMonth;
+
+        const isNext = i === (loan.paidMonths || 0) + 1;
+        let isLate = false;
+        
+        if (isNext) {
+            const cutoffDate = new Date(dueDate);
+            cutoffDate.setDate(dueDate.getDate() + 3);
+            cutoffDate.setHours(23, 59, 59, 999);
+            if (Date.now() > cutoffDate.getTime()) {
+                isLate = true;
+                currentInterest = (loan.amount || 0) * 0.03;
+                currentPayment = principalPerMonth + currentInterest;
+            }
+        }
+        
         schedule.push({
             dueDate,
             principal: principalPerMonth,
-            interest: interestPerMonth,
-            payment: paymentPerMonth,
+            interest: currentInterest,
+            payment: currentPayment,
             status: i <= (loan.paidMonths || 0) ? 'paid' : 'upcoming',
-            isNext: i === (loan.paidMonths || 0) + 1
+            isNext,
+            isLate
         });
     }
 
@@ -486,22 +531,26 @@ router.post('/loans/:id/pay', authenticateUser, async (req, res) => {
             query = { $or: [{ loanId: id }, { _id: new ObjectId(id) }], email };
         }
 
-        const loan = await loans.findOne(query);
-        if (!loan) return res.status(404).json({ success: false, message: 'Loan not found' });
-        if (loan.status !== 'active') return res.status(400).json({ success: false, message: 'Only active loans can receive payments' });
+        const dbLoan = await loans.findOne(query);
+        if (!dbLoan) return res.status(404).json({ success: false, message: 'Loan not found' });
+        if (dbLoan.status !== 'active') return res.status(400).json({ success: false, message: 'Only active loans can receive payments' });
+
+        const loan = enrichLoanWithNextPayment(dbLoan);
 
         const payment = {
             loanId: loan.loanId,
             loanObjectId: loan._id,
             email,
             memberName: loan.memberName,
-            amount: loan.monthlyPayment || 0,
+            amount: loan.upcomingPaymentAmount || loan.monthlyPayment || 0,
             paymentMethod: paymentMethod || 'cash',
             proofData: proofData || null,
             proofFileName: proofFileName || null,
             status: 'pending',
             submittedAt: new Date(),
             monthNumber: (loan.paidMonths || 0) + 1,
+            isLate: loan.isLate || false,
+            interestMultiplier: loan.interestMultiplier || 1
         };
 
         await loanPayments.insertOne(payment);

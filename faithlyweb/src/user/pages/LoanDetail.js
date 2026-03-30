@@ -66,7 +66,7 @@ function PayNowModal({ loan, onClose, onSuccess }) {
             instructions: [
                 `Visit the office or authorized cashier during business hours.`,
                 `Present your Loan ID: ${loan?.loanId} to the cashier.`,
-                `Pay the exact amount of ${fmt(loan?.monthlyPayment)} and keep your receipt.`,
+                `Pay the exact amount of ${fmt(loan?.upcomingPaymentAmount || loan?.monthlyPayment)} and keep your receipt.`,
             ],
         },
         {
@@ -172,7 +172,10 @@ function PayNowModal({ loan, onClose, onSuccess }) {
                         <div className="ld-pay-amount-box">
                             <div>
                                 <div className="ld-pay-amount-label">Amount due</div>
-                                <div className="ld-pay-amount-value">{fmt(loan?.monthlyPayment)}</div>
+                                <div className="ld-pay-amount-value">
+                                    {fmt(loan?.upcomingPaymentAmount || loan?.monthlyPayment)}
+                                    {loan?.isLate && <span style={{ fontSize: '12px', color: '#DC2626', background: '#FEE2E2', padding: '2px 6px', borderRadius: '4px', marginLeft: '8px', fontWeight: 600, verticalAlign: 'middle' }}>Late 3% Penalty</span>}
+                                </div>
                                 <div className="ld-pay-amount-sub">Due {fmtDate(loan?.nextPaymentDate)}</div>
                             </div>
                             {loan?.nextPaymentDate && (
@@ -488,7 +491,10 @@ export default function LoanDetail() {
                             </div>
                             <div className="ld-stat-card">
                                 <label className="ld-stat-label">Monthly payment</label>
-                                <div className="ld-stat-value">{fmt(loan.monthlyPayment)}</div>
+                                <div className="ld-stat-value">
+                                    {fmt(loan?.upcomingPaymentAmount || loan?.monthlyPayment)}
+                                    {loan?.isLate && <span style={{ fontSize: '11px', color: '#DC2626', background: '#FEE2E2', padding: '2px 6px', borderRadius: '4px', marginLeft: '8px', verticalAlign: 'middle' }}>Late Penalty</span>}
+                                </div>
                                 <div className="ld-stat-sub">Over {loan.termMonths} months</div>
                             </div>
                             <div className={`ld-stat-card ${loan.nextPaymentDate && new Date(loan.nextPaymentDate) < new Date() ? 'ld-stat-card--warn' : ''}`}>
@@ -499,7 +505,7 @@ export default function LoanDetail() {
                                         : loan.status === 'pending' ? 'Pending Approval' : '—'}
                                 </div>
                                 <div className="ld-stat-sub">
-                                    {loan.nextPaymentDate ? `${fmt(loan.monthlyPayment)} due` : loan.status === 'pending' ? 'Starts after disbursement' : 'No upcoming payment'}
+                                    {loan.nextPaymentDate ? `${fmt(loan.upcomingPaymentAmount || loan.monthlyPayment)} due` : loan.status === 'pending' ? 'Starts after disbursement' : 'No upcoming payment'}
                                 </div>
                             </div>
                         </div>
@@ -595,6 +601,7 @@ export default function LoanDetail() {
                                                     <div style={{ textAlign: 'right' }}>
                                                         <div className={`ld-preview-amount ${isNext ? 'ld-preview-amount--warn' : ''}`}>
                                                             {fmt(row.payment)}
+                                                            {row.isLate && <div style={{ fontSize: '10px', color: '#DC2626', background: '#FEE2E2', padding: '1px 4px', borderRadius: '4px', marginTop: '2px', display: 'inline-block', marginLeft: '6px' }}>3% Penalty</div>}
                                                         </div>
                                                         <div className={`ld-preview-status ${isNext ? 'ld-preview-status--due' : 'ld-preview-status--upcoming'}`}>
                                                             {isNext ? 'Due soon' : 'Upcoming'}
@@ -676,10 +683,24 @@ export default function LoanDetail() {
                                 <span style={{ background: '#DCFCE7', color: '#166534', fontSize: '11px', fontWeight: 700, padding: '3px 10px', borderRadius: '20px', fontFamily: 'Inter' }}>Confirmed</span>
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '12px' }}>
+                                <div style={{ gridColumn: 'span 2' }}>
+                                    <div className="ld-pay-section-label" style={{ marginBottom: '2px' }}>Payment For</div>
+                                    <div style={{ fontFamily: 'Inter', fontSize: '14px', fontWeight: 600, color: '#111827' }}>Loan Repayment — {loan.purpose}</div>
+                                </div>
                                 <div><div className="ld-pay-section-label" style={{ marginBottom: '2px' }}>Method</div><div style={{ fontFamily: 'Inter', fontSize: '14px', fontWeight: 600, color: '#111827', textTransform: 'capitalize' }}>{historyDetail.paymentMethod}</div></div>
                                 <div><div className="ld-pay-section-label" style={{ marginBottom: '2px' }}>Submitted</div><div style={{ fontFamily: 'Inter', fontSize: '13px', color: '#374151' }}>{fmtDate(historyDetail.submittedAt)}</div></div>
                                 <div><div className="ld-pay-section-label" style={{ marginBottom: '2px' }}>Confirmed</div><div style={{ fontFamily: 'Inter', fontSize: '13px', color: '#374151' }}>{fmtDate(historyDetail.confirmedAt)}</div></div>
-                                <div><div className="ld-pay-section-label" style={{ marginBottom: '2px' }}>Month #</div><div style={{ fontFamily: 'Inter', fontSize: '14px', fontWeight: 600, color: '#111827' }}>{historyDetail.monthNumber}</div></div>
+                                <div>
+                                    <div className="ld-pay-section-label" style={{ marginBottom: '2px' }}>Month #</div>
+                                    <div style={{ fontFamily: 'Inter', fontSize: '14px', fontWeight: 600, color: '#111827' }}>
+                                        {historyDetail.monthNumber}
+                                        {schedule && schedule[historyDetail.monthNumber - 1]?.dueDate && (
+                                            <span style={{ fontWeight: 400, color: '#6B7280', marginLeft: '4px' }}>
+                                                ({new Date(schedule[historyDetail.monthNumber - 1].dueDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })})
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                             {historyDetail.proofData && (
                                 <div style={{ marginTop: '16px' }}>
