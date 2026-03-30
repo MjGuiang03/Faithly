@@ -11,7 +11,6 @@ import '../styles/AdminDashboard.css';
 import svgPaths from '../../imports/svg-icons';
 import API from '../../utils/api';
 
-const fmt    = (n) => `₱${Number(n).toLocaleString()}`;
 
 
 const INITIAL_DONATION_CATEGORIES = [
