@@ -64,10 +64,10 @@
   background: #0d3ba8;
 }
 
-/* ═══ STATS GRID - 4 Cards ═══ */
+/* ═══ STATS GRID - 5 Cards ═══ */
 .admin-members-stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 24px;
   margin-bottom: 24px;
   height: 105.588px;

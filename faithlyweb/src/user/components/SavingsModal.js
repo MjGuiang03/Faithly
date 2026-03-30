@@ -246,7 +246,7 @@ function DepositModal({ goals, onClose }) {
                 <div className="svm-modal-footer">
                     <button className="svm-btn-cancel" onClick={onClose} disabled={loading}>Cancel</button>
                     <button className="svm-btn-submit" onClick={handleSubmit} disabled={loading}>
-                        {loading ? 'Depositing…' : 'Confirm deposit'}
+                        {loading ? <span className="btn-spinner" /> : 'Confirm deposit'}
                     </button>
                 </div>
             </div>
@@ -436,7 +436,7 @@ function NewGoalModal({ onClose }) {
                 <div className="svm-modal-footer">
                     <button className="svm-btn-cancel" onClick={onClose} disabled={loading}>Cancel</button>
                     <button className="svm-btn-submit" onClick={handleSubmit} disabled={loading}>
-                        {loading ? 'Creating…' : 'Create goal'}
+                        {loading ? <span className="btn-spinner" /> : 'Create goal'}
                     </button>
                 </div>
             </div>
@@ -633,7 +633,7 @@ function QuickDepositModal({ goal, goals, onClose }) {
                     <div className="svm-modal-footer">
                         <button className="svm-btn-cancel" onClick={onClose} disabled={loading}>Cancel</button>
                         <button className="svm-btn-submit" onClick={handleSubmit} disabled={loading || !numAmt}>
-                            {loading ? 'Depositing…' : `Deposit ${numAmt > 0 ? fmt(numAmt) : ''}`}
+                            {loading ? <span className="btn-spinner" /> : `Deposit ${numAmt > 0 ? fmt(numAmt) : ''}`}
                         </button>
                     </div>
                 )}
@@ -852,7 +852,7 @@ function EditGoalModal({ goal, onClose }) {
                                         No, keep it
                                     </button>
                                     <button className="svm-btn-danger" onClick={handleDelete} disabled={loading}>
-                                        {loading ? 'Deleting…' : 'Yes, delete'}
+                                        {loading ? <span className="btn-spinner" /> : 'Yes, delete'}
                                     </button>
                                 </div>
                             </div>
@@ -863,7 +863,7 @@ function EditGoalModal({ goal, onClose }) {
                 <div className="svm-modal-footer">
                     <button className="svm-btn-cancel" onClick={onClose} disabled={loading}>Cancel</button>
                     <button className="svm-btn-submit" onClick={handleSave} disabled={loading}>
-                        {loading ? 'Saving…' : 'Save changes'}
+                        {loading ? <span className="btn-spinner" /> : 'Save changes'}
                     </button>
                 </div>
             </div>
@@ -1021,7 +1021,7 @@ function TransferModal({ goal, goals, onClose }) {
                     <div className="svm-modal-footer">
                         <button className="svm-btn-cancel" onClick={onClose} disabled={loading}>Cancel</button>
                         <button className="svm-btn-submit" onClick={handleSubmit} disabled={loading || !numAmt}>
-                            {loading ? 'Transferring…' : `Transfer ${numAmt > 0 ? fmt(numAmt) : ''}`}
+                            {loading ? <span className="btn-spinner" /> : `Transfer ${numAmt > 0 ? fmt(numAmt) : ''}`}
                         </button>
                     </div>
                 )}

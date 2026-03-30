@@ -185,8 +185,7 @@ function RejectModal({ request, onClose, onConfirm }) {
         <div className="admin-offver-confirm-actions">
           <button className="admin-offver-btn admin-offver-btn-secondary" onClick={onClose} disabled={loading}>Cancel</button>
           <button className="admin-offver-btn admin-offver-btn-danger" onClick={handleReject} disabled={loading}>
-            {loading ? 'Rejecting...' : 'Reject'}
-          </button>
+            {loading ? <span className="btn-spinner" /> : 'Reject'}          </button>
         </div>
       </div>
     </div>
@@ -257,7 +256,7 @@ function ApproveModal({ request, onClose, onConfirm }) {
             onClick={handleApprove}
             disabled={loading}
           >
-            {loading ? 'Approvingâ€¦' : 'Approve'}
+            {loading ? <span className="btn-spinner" /> : 'Approve'}
           </button>
         </div>
       </div>
@@ -274,6 +273,7 @@ export default function AdminOfficerVerification() {
   const [stats,             setStats]            = useState({ pending: 0, approved: 0, rejected: 0 });
   const [searchQuery,       setSearchQuery]      = useState('');
   const [positionFilter,    setPositionFilter]   = useState('all');
+  const [statusFilter,      setStatusFilter]     = useState('all');
   const debouncedSearch = useDebounce(searchQuery, 400);
   const [currentPage,       setCurrentPage]      = useState(1);
   const [totalCount,        setTotalCount]      = useState(0);
@@ -290,6 +290,7 @@ export default function AdminOfficerVerification() {
       p.set('limit', PER_PAGE);
       if (debouncedSearch.trim()) p.set('search', debouncedSearch.trim());
       if (positionFilter !== 'all') p.set('position', positionFilter);
+      if (statusFilter !== 'all') p.set('status', statusFilter);
 
       const res  = await fetch(`${API}/api/admin/verifications?${p}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -305,7 +306,7 @@ export default function AdminOfficerVerification() {
     } finally {
       setLoading(false);
     }
-  }, [token, currentPage, debouncedSearch, positionFilter]);
+  }, [token, currentPage, debouncedSearch, positionFilter, statusFilter]);
 
   useEffect(() => {
     const adminEmail = localStorage.getItem('adminEmail');
@@ -325,7 +326,7 @@ export default function AdminOfficerVerification() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [debouncedSearch, positionFilter]);
+  }, [debouncedSearch, positionFilter, statusFilter]);
 
   const totalPages      = Math.ceil(totalCount / PER_PAGE);
   const paginated       = requests;
@@ -427,6 +428,17 @@ export default function AdminOfficerVerification() {
             <option value="Worship Leader">Worship Leader</option>
             <option value="Youth Leader">Youth Leader</option>
             <option value="Member">Member</option>
+          </select>
+          <select
+            className="admin-offver-status-filter"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            style={{ height: 42, borderRadius: 8, padding: '0 12px', border: '1px solid #D1D5DB' }}
+          >
+            <option value="all">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
           </select>
         </div>
       </div>

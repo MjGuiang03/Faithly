@@ -195,7 +195,7 @@ export default function ResetPassword({ isOpen, onClose }) {
           </div>
 
           <button type="submit" className="user-reset-submit-btn" disabled={loading || rateLimitSecs > 0}>
-            {loading ? "Sending..." : "Send Verification Code"}
+            {loading ? <span className="btn-spinner" /> : "Send Verification Code"}
           </button>
         </form>
       </>
@@ -245,7 +245,7 @@ export default function ResetPassword({ isOpen, onClose }) {
             className="user-reset-submit-btn"
             disabled={loading || rateLimitSecs > 0 || otp.join("").length < 6}
           >
-            {loading ? "Verifying..." : "Verify Code"}
+            {loading ? <span className="btn-spinner" /> : "Verify Code"}
           </button>
         </form>
       </>
@@ -313,7 +313,7 @@ export default function ResetPassword({ isOpen, onClose }) {
             className="user-reset-submit-btn"
             disabled={loading || !allRulesPass(newPassword) || newPassword !== confirmPassword}
           >
-            {loading ? "Updating..." : "Update Password"}
+            {loading ? <span className="btn-spinner" /> : "Update Password"}
           </button>
         </form>
       </>

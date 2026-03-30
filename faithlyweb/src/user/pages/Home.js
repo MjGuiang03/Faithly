@@ -293,7 +293,7 @@ export default function Home() {
           </div>
 
           <div className="user-home-header-right">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontFamily: '"Inter", sans-serif', color: '#111827', fontSize: '22px', fontWeight: '700' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontFamily: `'Inter', sans-serif`, color: '#111827', fontSize: '22px', fontWeight: '700' }}>
               <span>{formatTimePill(currentTime)}</span>
             </div>
           </div>

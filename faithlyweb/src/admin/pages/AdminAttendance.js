@@ -135,7 +135,7 @@ function AddServiceModal({ branch, onClose, onSave }) {
             onClick={handleSubmit}
             disabled={saving}
           >
-            {saving ? 'Adding...' : 'Add Service'}
+            {saving ? <span className="btn-spinner" /> : 'Add Service'}
           </button>
         </div>
       </div>
@@ -265,18 +265,6 @@ export default function AdminAttendance() {
           <p className="admin-att-stat-value">{stats.servicesThisWeek}</p>
         </div>
 
-        <div className="admin-att-stat-card">
-          <div className="admin-att-stat-header">
-            <span className="admin-att-stat-label">Average Per Service</span>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M6.66667 1.66667V5" stroke="#9810FA" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M13.3333 1.66667V5" stroke="#9810FA" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <rect x="2.5" y="3.33333" width="15" height="13.3333" rx="1.66667" stroke="#9810FA" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M2.5 8.33333H17.5" stroke="#9810FA" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-          <p className="admin-att-stat-value">{stats.avgPerService.toLocaleString()}</p>
-        </div>
       </div>
 
       {/* Branches Section */}

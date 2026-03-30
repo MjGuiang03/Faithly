@@ -1447,3 +1447,48 @@
 .dark .user-donation-stat-value {
   color: var(--foreground);
 }
+
+/* ── Skeleton Loaders ── */
+@keyframes user-donation-shimmer {
+  0% {
+    background-position: -600px 0;
+  }
+
+  100% {
+    background-position: 600px 0;
+  }
+}
+
+.user-skeleton {
+  background: linear-gradient(90deg,
+      var(--border) 25%,
+      var(--muted) 50%,
+      var(--border) 75%);
+  background-size: 600px 100%;
+  animation: user-donation-shimmer 1.4s ease-in-out infinite;
+  border-radius: 6px;
+}
+
+.user-skeleton-circle {
+  border-radius: 50%;
+}
+
+.dark .user-skeleton {
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0.06) 25%,
+      rgba(255, 255, 255, 0.12) 50%,
+      rgba(255, 255, 255, 0.06) 75%);
+  background-size: 600px 100%;
+  animation: user-donation-shimmer 1.4s ease-in-out infinite;
+}
+
+/* Modal history loading state */
+.user-modal-loading,
+.user-modal-empty {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 32px 0;
+  margin: 0;
+}

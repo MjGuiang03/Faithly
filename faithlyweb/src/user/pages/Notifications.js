@@ -9,30 +9,30 @@ const fmt = (n) =>
 
 const fmtAgo = (date) => {
   if (!date) return '';
-  const diff  = Date.now() - new Date(date).getTime();
-  const mins  = Math.floor(diff / 60000);
+  const diff = Date.now() - new Date(date).getTime();
+  const mins = Math.floor(diff / 60000);
   const hours = Math.floor(diff / 3600000);
-  const days  = Math.floor(diff / 86400000);
-  if (mins  <  1) return 'just now';
-  if (mins  < 60) return `${mins} minute${mins  > 1 ? 's' : ''} ago`;
-  if (hours < 24) return `${hours} hour${hours  > 1 ? 's' : ''} ago`;
-  if (days  <  7) return `${days} day${days     > 1 ? 's' : ''} ago`;
+  const days = Math.floor(diff / 86400000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins} minute${mins > 1 ? 's' : ''} ago`;
+  if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+  if (days < 7) return `${days} day${days > 1 ? 's' : ''} ago`;
   return new Date(date).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
 };
 
 const READ_KEY = 'faithly_notif_read';
 const getReadSet = () => new Set(JSON.parse(localStorage.getItem(READ_KEY) || '[]'));
-const saveReadSet = (s, newUnreadCount) => { 
-  localStorage.setItem(READ_KEY, JSON.stringify([...s])); 
-  window.dispatchEvent(new CustomEvent('notif-read-update', { detail: newUnreadCount })); 
+const saveReadSet = (s, newUnreadCount) => {
+  localStorage.setItem(READ_KEY, JSON.stringify([...s]));
+  window.dispatchEvent(new CustomEvent('notif-read-update', { detail: newUnreadCount }));
 };
 
 export default function Notifications() {
-  const [activeFilter,   setActiveFilter]   = useState('all');
-  const [rawItems,       setRawItems]       = useState([]);
-  const [readIds,        setReadIds]        = useState(getReadSet);
-  const [loading,        setLoading]        = useState(true);
-  const [detailModal,    setDetailModal]    = useState(null);
+  const [activeFilter, setActiveFilter] = useState('all');
+  const [rawItems, setRawItems] = useState([]);
+  const [readIds, setReadIds] = useState(getReadSet);
+  const [loading, setLoading] = useState(true);
+  const [detailModal, setDetailModal] = useState(null);
 
   /* ── Terms review modal state ── */
   const [termsModal, setTermsModal] = useState(null);  // the loan object
@@ -42,15 +42,15 @@ export default function Notifications() {
   const fetchAll = useCallback(async () => {
     setLoading(true);
     const token = localStorage.getItem('token');
-    const hdrs  = { Authorization: `Bearer ${token}` };
+    const hdrs = { Authorization: `Bearer ${token}` };
 
     try {
       const [lRes, dRes, aRes, sRes, ppRes] = await Promise.all([
-        fetch(`${API}/api/loans/my-loans`,                 { headers: hdrs }),
-        fetch(`${API}/api/donations/my-donations`,         { headers: hdrs }),
-        fetch(`${API}/api/attendance/my-attendance`,       { headers: hdrs }),
-        fetch(`${API}/api/savings/transactions`,           { headers: hdrs }),
-        fetch(`${API}/api/loans/my-pending-payments`,      { headers: hdrs }),
+        fetch(`${API}/api/loans/my-loans`, { headers: hdrs }),
+        fetch(`${API}/api/donations/my-donations`, { headers: hdrs }),
+        fetch(`${API}/api/attendance/my-attendance`, { headers: hdrs }),
+        fetch(`${API}/api/savings/transactions`, { headers: hdrs }),
+        fetch(`${API}/api/loans/my-pending-payments`, { headers: hdrs }),
       ]);
 
       const [lData, dData, aData, sData, ppData] = await Promise.all([
@@ -85,29 +85,34 @@ export default function Notifications() {
           l.statusHistory.forEach((history) => {
             const hBase = { ...base, timestamp: history.date };
             if (history.status === 'pending') {
-              items.push({ ...hBase, id: `loan-pending-${l._id}`,
-                title:   'Loan Application Submitted',
+              items.push({
+                ...hBase, id: `loan-pending-${l._id}`,
+                title: 'Loan Application Submitted',
                 message: `Your loan application ${l.loanId ? `#${l.loanId}` : ''} for ₱${Number(l.amount).toLocaleString()} is under review.`,
               });
             } else if (history.status === 'approved') {
-              items.push({ ...hBase, id: `loan-approved-${l._id}`,
-                title:   'Loan Application Approved',
+              items.push({
+                ...hBase, id: `loan-approved-${l._id}`,
+                title: 'Loan Application Approved',
                 message: `Your loan application ${l.loanId ? `#${l.loanId}` : ''} has been approved by the loan officer.`,
               });
             } else if (history.status === 'rejected') {
-              items.push({ ...hBase, id: `loan-rejected-${l._id}`,
-                title:   'Loan Application Rejected',
+              items.push({
+                ...hBase, id: `loan-rejected-${l._id}`,
+                title: 'Loan Application Rejected',
                 message: `Your loan application ${l.loanId ? `#${l.loanId}` : ''} was not approved.${history.reason ? ` Reason: ${history.reason}` : ''}`,
               });
             } else if (history.status === 'processed') {
-              items.push({ ...hBase, id: `loan-processed-${l._id}`,
-                title:   'Loan Disbursed',
+              items.push({
+                ...hBase, id: `loan-processed-${l._id}`,
+                title: 'Loan Disbursed',
                 message: `Your loan ${l.loanId ? `#${l.loanId}` : ''} for ₱${Number(l.amount).toLocaleString()} has been disbursed via ${(l.paymentMethod || 'cash').toUpperCase()}.`,
                 proofData: l.proofData || null,
               });
             } else if (history.status === 'payment_confirmed') {
-              items.push({ ...hBase, id: `loan-payment-${l._id}-${history.monthNumber || hBase.timestamp}`,
-                title:   'Payment Confirmed',
+              items.push({
+                ...hBase, id: `loan-payment-${l._id}-${history.monthNumber || hBase.timestamp}`,
+                title: 'Payment Confirmed',
                 message: `Your Month #${history.monthNumber || ''} payment of ₱${Number(history.amount || l.monthlyPayment || 0).toLocaleString()} via ${(history.paymentMethod || 'cash').toUpperCase()} has been confirmed by the loan admin.`,
               });
             }
@@ -115,23 +120,27 @@ export default function Notifications() {
         } else {
           // Fallback for older loans without statusHistory
           if (l.status === 'approved' || l.status === 'active') {
-            items.push({ ...base, id: `loan-approved-${l._id}`,
-              title:   'Loan Application Approved',
+            items.push({
+              ...base, id: `loan-approved-${l._id}`,
+              title: 'Loan Application Approved',
               message: `Your loan application ${l.loanId ? `#${l.loanId}` : ''} for ₱${Number(l.amount).toLocaleString()} has been approved and is ready for release.`,
             });
           } else if (l.status === 'pending') {
-            items.push({ ...base, id: `loan-pending-${l._id}`,
-              title:   'Loan Application Submitted',
+            items.push({
+              ...base, id: `loan-pending-${l._id}`,
+              title: 'Loan Application Submitted',
               message: `Your loan application ${l.loanId ? `#${l.loanId}` : ''} for ₱${Number(l.amount).toLocaleString()} is under review.`,
             });
           } else if (l.status === 'rejected') {
-            items.push({ ...base, id: `loan-rejected-${l._id}`,
-              title:   'Loan Application Update',
+            items.push({
+              ...base, id: `loan-rejected-${l._id}`,
+              title: 'Loan Application Update',
               message: `Your loan application ${l.loanId ? `#${l.loanId}` : ''} for ₱${Number(l.amount).toLocaleString()} was not approved.`,
             });
           } else if (l.status === 'completed') {
-            items.push({ ...base, id: `loan-done-${l._id}`,
-              title:   'Loan Completed',
+            items.push({
+              ...base, id: `loan-done-${l._id}`,
+              title: 'Loan Completed',
               message: `Your loan ${l.loanId ? `#${l.loanId}` : ''} has been fully paid. Thank you!`,
             });
           }
@@ -139,11 +148,12 @@ export default function Notifications() {
 
         /* Payment reminder for active loans */
         if ((l.status === 'active') && l.nextPaymentDate) {
-          items.push({ ...base,
-            id:        `loan-reminder-${l._id}`,
-            title:     'Payment Reminder',
+          items.push({
+            ...base,
+            id: `loan-reminder-${l._id}`,
+            title: 'Payment Reminder',
             timestamp: l.nextPaymentDate,
-            message:   `Your loan payment of ₱${Number(l.monthlyPayment || l.amount).toLocaleString()} is due on ${new Date(l.nextPaymentDate).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' })}. Please settle on time to avoid penalties.`,
+            message: `Your loan payment of ₱${Number(l.monthlyPayment || l.amount).toLocaleString()} is due on ${new Date(l.nextPaymentDate).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' })}. Please settle on time to avoid penalties.`,
           });
         }
       });
@@ -151,11 +161,11 @@ export default function Notifications() {
       /* Pending Payments → notifications */
       (ppData.payments || []).forEach((p) => {
         items.push({
-          id:          `payment-pending-${p._id}`,
-          type:        'payment_pending',
-          timestamp:   p.submittedAt,
-          title:       'Payment Submitted — Awaiting Confirmation',
-          message:     `Your Month #${p.monthNumber} payment of ₱${Number(p.amount).toLocaleString()} via ${(p.paymentMethod || 'cash').toUpperCase()} has been submitted and is pending admin confirmation.`,
+          id: `payment-pending-${p._id}`,
+          type: 'payment_pending',
+          timestamp: p.submittedAt,
+          title: 'Payment Submitted — Awaiting Confirmation',
+          message: `Your Month #${p.monthNumber} payment of ₱${Number(p.amount).toLocaleString()} via ${(p.paymentMethod || 'cash').toUpperCase()} has been submitted and is pending admin confirmation.`,
           paymentData: p,
         });
       });
@@ -164,11 +174,11 @@ export default function Notifications() {
       (dData.donations || []).forEach((d) => {
         if (d.status === 'confirmed') {
           items.push({
-            id:        `donation-${d._id}`,
-            type:      'donation',
+            id: `donation-${d._id}`,
+            type: 'donation',
             timestamp: d.confirmedAt || d.createdAt || d.date,
-            title:     'Donation Received',
-            message:   `Thank you! Your donation of ₱${Number(d.amount).toLocaleString()} to the ${d.category} has been received and recorded.`,
+            title: 'Donation Received',
+            message: `Thank you! Your donation of ₱${Number(d.amount).toLocaleString()} to the ${d.category} has been received and recorded.`,
           });
         }
       });
@@ -176,22 +186,22 @@ export default function Notifications() {
       /* Savings → notifications */
       (sData.transactions || []).filter(t => t.type === 'deposit').forEach((s) => {
         items.push({
-          id:        `savings-${s._id}`,
-          type:      'savings',
+          id: `savings-${s._id}`,
+          type: 'savings',
           timestamp: s.date,
-          title:     'Savings Deposit',
-          message:   `A deposit of ₱${Number(s.amount).toLocaleString()} was added to ${s.goalName}.`,
+          title: 'Savings Deposit',
+          message: `A deposit of ₱${Number(s.amount).toLocaleString()} was added to ${s.goalName}.`,
         });
       });
 
       /* Attendance → notifications */
       (aData.attendance || []).forEach((a) => {
         items.push({
-          id:        `attendance-${a._id}`,
-          type:      'attendance',
+          id: `attendance-${a._id}`,
+          type: 'attendance',
           timestamp: a.createdAt || a.date,
-          title:     'Attendance Recorded',
-          message:   `Your attendance for ${a.service || 'Sunday Service'}${a.date ? ` on ${new Date(a.date || a.createdAt).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' })}` : ''} has been successfully recorded.`,
+          title: 'Attendance Recorded',
+          message: `Your attendance for ${a.service || 'Sunday Service'}${a.date ? ` on ${new Date(a.date || a.createdAt).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' })}` : ''} has been successfully recorded.`,
         });
       });
 
@@ -220,13 +230,13 @@ export default function Notifications() {
       : notifications.filter((n) => n.type === type && !n.isRead).length;
 
   const markAsRead = (id) => {
-    setReadIds((prev) => { 
-      const s = new Set(prev); 
-      s.add(id); 
+    setReadIds((prev) => {
+      const s = new Set(prev);
+      s.add(id);
       // Calculate remaining unread instantly
       const remainingUnread = notifications.filter(n => !s.has(n.id)).length;
-      saveReadSet(s, remainingUnread); 
-      return s; 
+      saveReadSet(s, remainingUnread);
+      return s;
     });
   };
 
@@ -244,35 +254,35 @@ export default function Notifications() {
     if (type === 'payment_pending') return (
       <div className="user-notif-icon" style={{ background: '#FFF7ED', border: '1px solid #FED7AA', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <circle cx="9" cy="9" r="7.5" stroke="#EA580C" strokeWidth="1.4"/>
-          <path d="M9 5.5v4l2.5 1.5" stroke="#EA580C" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+          <circle cx="9" cy="9" r="7.5" stroke="#EA580C" strokeWidth="1.4" />
+          <path d="M9 5.5v4l2.5 1.5" stroke="#EA580C" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </div>
     );
     if (type === 'loan') return (
       <div className="user-notif-icon user-notif-icon-loan">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <path d={svgPaths.p34ee3000} stroke="#B45309" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"/>
-          <path d={svgPaths.p3054b580} stroke="#B45309" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"/>
-          <path d="M7.5 9.75H12" stroke="#B45309" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"/>
-          <path d="M7.5 12.75H12" stroke="#B45309" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"/>
+          <path d={svgPaths.p34ee3000} stroke="#B45309" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+          <path d={svgPaths.p3054b580} stroke="#B45309" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+          <path d="M7.5 9.75H12" stroke="#B45309" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+          <path d="M7.5 12.75H12" stroke="#B45309" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
         </svg>
       </div>
     );
     if (type === 'donation' || type === 'savings') return (
       <div className="user-notif-icon user-notif-icon-donation">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <path d={svgPaths.p31f28900} stroke="#BE185D" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"/>
+          <path d={svgPaths.p31f28900} stroke="#BE185D" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
         </svg>
       </div>
     );
     if (type === 'attendance') return (
       <div className="user-notif-icon user-notif-icon-attendance">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <path d="M6 1.5V4.5" stroke="#1D4ED8" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"/>
-          <path d="M12 1.5V4.5" stroke="#1D4ED8" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"/>
-          <path d={svgPaths.p5193100} stroke="#1D4ED8" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"/>
-          <path d="M2.25 7.5H15.75" stroke="#1D4ED8" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"/>
+          <path d="M6 1.5V4.5" stroke="#1D4ED8" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+          <path d="M12 1.5V4.5" stroke="#1D4ED8" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+          <path d={svgPaths.p5193100} stroke="#1D4ED8" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+          <path d="M2.25 7.5H15.75" stroke="#1D4ED8" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
         </svg>
       </div>
     );
@@ -281,9 +291,9 @@ export default function Notifications() {
 
   const badgeClass = (type) =>
     type === 'loan' ? 'user-notif-badge-loan'
-    : (type === 'donation' || type === 'savings') ? 'user-notif-badge-donation'
-    : type === 'payment_pending' ? 'user-notif-badge-loan'
-    : 'user-notif-badge-attendance';
+      : (type === 'donation' || type === 'savings') ? 'user-notif-badge-donation'
+        : type === 'payment_pending' ? 'user-notif-badge-loan'
+          : 'user-notif-badge-attendance';
 
   const cardClass = (type, isRead, actionRequired) => {
     if (actionRequired) return 'user-notif-card user-notif-card-action';
@@ -314,10 +324,10 @@ export default function Notifications() {
 
   const badgeLabel = (type) =>
     type === 'loan' ? 'Loan'
-    : type === 'donation' ? 'Donation'
-    : type === 'savings' ? 'Savings'
-    : type === 'payment_pending' ? 'Payment'
-    : 'Attendance';
+      : type === 'donation' ? 'Donation'
+        : type === 'savings' ? 'Savings'
+          : type === 'payment_pending' ? 'Payment'
+            : 'Attendance';
 
   return (
     <div className="user-notif-page">
@@ -342,12 +352,12 @@ export default function Notifications() {
         {/* Filter Tabs */}
         <div className="user-notif-filters">
           {[
-            { key: 'all',             label: 'All'              },
-            { key: 'attendance',     label: 'Attendance'       },
-            { key: 'loan',           label: 'Loan Transaction' },
-            { key: 'payment_pending',label: 'Pending Payments' },
-            { key: 'donation',       label: 'Donations'        },
-            { key: 'savings',        label: 'Savings'          },
+            { key: 'all', label: 'All' },
+            { key: 'attendance', label: 'Attendance' },
+            { key: 'loan', label: 'Loan Transaction' },
+            { key: 'payment_pending', label: 'Pending Payments' },
+            { key: 'donation', label: 'Donations' },
+            { key: 'savings', label: 'Savings' },
           ].map(({ key, label }) => (
             <button
               key={key}
@@ -364,12 +374,37 @@ export default function Notifications() {
 
         {/* List */}
         {loading ? (
-          <p className="user-notif-loading">Loading notifications…</p>
+          <div className="user-notif-skeleton-list">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="user-notif-skeleton-card">
+                {/* Icon */}
+                <div className="user-notif-skeleton-icon user-notif-skel" />
+
+                {/* Body */}
+                <div className="user-notif-skeleton-body">
+                  {/* Title row + badge */}
+                  <div className="user-notif-skeleton-header">
+                    <div className="user-notif-skel" style={{ height: '14px', width: '45%', borderRadius: '4px' }} />
+                    <div className="user-notif-skel" style={{ height: '18px', width: '60px', borderRadius: '999px' }} />
+                  </div>
+
+                  {/* Message lines */}
+                  <div className="user-notif-skel" style={{ height: '12px', width: '90%', borderRadius: '4px' }} />
+                  <div className="user-notif-skel" style={{ height: '12px', width: '70%', borderRadius: '4px' }} />
+
+                  {/* Timestamp */}
+                  <div className="user-notif-skeleton-footer">
+                    <div className="user-notif-skel" style={{ height: '11px', width: '80px', borderRadius: '4px' }} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         ) : filtered.length === 0 ? (
           <div className="user-notif-empty">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="#d1d5dc" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="#d1d5dc" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="#d1d5dc" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="#d1d5dc" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             <p>No notifications found</p>
           </div>
@@ -439,7 +474,7 @@ export default function Notifications() {
 
               {/* Arrow */}
               <div className="user-terms-arrow">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </div>
 
               {/* Proposed */}
@@ -466,7 +501,7 @@ export default function Notifications() {
                 onClick={() => handleTermsResponse(true)}
                 disabled={termsLoading}
               >
-                {termsLoading ? 'Processing…' : 'Agree to Terms'}
+                {termsLoading ? <span className="btn-spinner" /> : 'Agree to Terms'}
               </button>
             </div>
           </div>
@@ -508,7 +543,7 @@ export default function Notifications() {
                     <div style={{ gridColumn: '1 / -1' }}><div style={{ fontFamily: 'Inter', fontSize: '11px', color: '#9CA3AF' }}>Submitted</div><div style={{ fontFamily: 'Inter', fontSize: '13px', color: '#374151' }}>{detailModal.paymentData.submittedAt ? new Date(detailModal.paymentData.submittedAt).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}</div></div>
                   </div>
                   <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#EA580C" strokeWidth="1.2"/><path d="M6 4v2.5l1.5 1" stroke="#EA580C" strokeWidth="1.2" strokeLinecap="round"/></svg>
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#EA580C" strokeWidth="1.2" /><path d="M6 4v2.5l1.5 1" stroke="#EA580C" strokeWidth="1.2" strokeLinecap="round" /></svg>
                     <span style={{ fontFamily: 'Inter', fontSize: '11px', color: '#EA580C', fontWeight: 600 }}>Pending admin confirmation</span>
                   </div>
                   {detailModal.paymentData.proofData && (

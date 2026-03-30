@@ -591,7 +591,7 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
 
           {/* SUBMIT */}
           <button type="submit" className="user-signup-submit-button" disabled={!isFormValid || loading}>
-            {loading ? 'Creating...' : 'Create Account'}
+            {loading ? <span className="btn-spinner" /> : 'Create Account'}
           </button>
         </form>
 

@@ -162,7 +162,7 @@ export default function VerificationModal({ isOpen, onClose }) {
         </div>
 
         <button type="submit" className="user-verification-submit-btn" disabled={loading}>
-          {loading ? "Submitting…" : "Submit Verification"}
+          {loading ? <span className="btn-spinner" /> : "Submit Verification"}
         </button>
 
         <button type="button" className="user-verification-cancel-btn" onClick={handleClose} disabled={loading}>

@@ -416,10 +416,10 @@
   margin: 0 0 4px;
 }
 
-/* ── Row 1: 4 Stat Cards ── */
+/* ── Row 1: 2 Stat Cards ── */
 .adm-stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 12px;
 }
 

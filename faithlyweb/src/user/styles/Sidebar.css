@@ -63,15 +63,13 @@
 
 /* ── Logo ── */
 .user-sidebar-logo {
-  padding: 24px;
+  padding: 24px 20px;
   border-bottom: 0.8px solid var(--sidebar-border);
   flex-shrink: 0;
 }
 
 .user-sidebar-collapsed .user-sidebar-logo {
-  padding: 24px 0;
-  display: flex;
-  justify-content: center;
+  display: none;
 }
 
 .user-sidebar-logo-content {
@@ -132,7 +130,7 @@
 }
 
 .user-sidebar-collapsed .user-sidebar-nav {
-  padding: 16px 8px;
+  padding: 64px 8px 16px 8px;
   align-items: center;
 }
 

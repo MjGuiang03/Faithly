@@ -190,7 +190,7 @@ export default function Settings() {
 
   /* ── Verification badge ──────────────────────────────────────────────── */
   const renderVerificationBadge = () => {
-    if (verificationStatus === null) return null;
+    if (verificationStatus === null || verificationStatus === 'verified') return null;
     const STATUS = {
       verified:   { cls: 'user-pi-verify-pill--verified',   label: 'Officer Verified',       actionLabel: null },
       pending:    { cls: 'user-pi-verify-pill--pending',     label: 'Verification Pending',   actionLabel: null },
@@ -430,7 +430,7 @@ export default function Settings() {
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <button className="user-pi-btn-cancel-bottom" onClick={handleCancelEdit} disabled={isSaving}>Cancel</button>
                         <button className="user-pi-btn-save-bottom" onClick={handleSaveChanges} disabled={isSaving}>
-                          {isSaving ? 'Saving…' : 'Save'}
+                          {isSaving ? <span className="btn-spinner" /> : 'Save'}
                         </button>
                       </div>
                     ) : (

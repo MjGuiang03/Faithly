@@ -435,7 +435,7 @@ export default function AdminDonationsNew() {
                       onClick={() => handleReject(detailModal._id)}
                       disabled={actionLoading}
                     >
-                      {actionLoading ? 'Processing…' : 'Reject'}
+                      {actionLoading ? <span className="btn-spinner" /> : 'Reject'}
                     </button>
                     <button
                       className="admin-don-action-btn admin-don-action-confirm"
@@ -443,7 +443,7 @@ export default function AdminDonationsNew() {
                       onClick={() => handleConfirm(detailModal._id)}
                       disabled={actionLoading}
                     >
-                      {actionLoading ? 'Processing…' : 'Confirm Donation'}
+                      {actionLoading ? <span className="btn-spinner" /> : 'Confirm Donation'}
                     </button>
                   </div>
                 </div>

@@ -40,6 +40,11 @@ export default function LoanAdminPaymentStatus() {
   const [viewingImage, setViewingImage] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [paymentMethodFilter, setPaymentMethodFilter] = useState('all');
+  
+  const [allLoans, setAllLoans] = useState([]);
+  const [allSavings, setAllSavings] = useState([]);
+  const [savingsFilter, setSavingsFilter] = useState('all'); // 'all', 'this_month', 'this_year'
+  const [interestFilter, setInterestFilter] = useState('all'); // 'all', '2x', '1.5x', '1x'
 
   const token = localStorage.getItem('adminToken');
 
@@ -48,7 +53,10 @@ export default function LoanAdminPaymentStatus() {
     try {
       const res = await fetch(`${API}/api/admin/loans`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
-      if (data.success) setLoans((data.loans || []).filter(l => l.status === 'active'));
+      if (data.success) {
+        setAllLoans(data.loans || []);
+        setLoans((data.loans || []).filter(l => l.status === 'active'));
+      }
     } catch { /* silent */ }
     finally { setLoading(false); }
   }, [token]);
@@ -63,9 +71,18 @@ export default function LoanAdminPaymentStatus() {
 
   const fetchSavings = useCallback(async () => {
     try {
-      const res = await fetch(`${API}/api/admin/savings/deposits?status=pending`, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(`${API}/api/admin/savings/deposits`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
-      if (data.success) setPendingSavings(data.deposits || []);
+      if (data.success) {
+        const deposits = data.deposits || [];
+        setAllSavings(deposits);
+        setPendingSavings(deposits.filter(d => d.status === 'pending'));
+      } else {
+        // Fallback if backend doesn't support fetching all without status=pending
+        const resPending = await fetch(`${API}/api/admin/savings/deposits?status=pending`, { headers: { Authorization: `Bearer ${token}` } });
+        const dataPending = await resPending.json();
+        if (dataPending.success) setPendingSavings(dataPending.deposits || []);
+      }
     } catch { /* silent */ }
   }, [token]);
 
@@ -181,6 +198,41 @@ export default function LoanAdminPaymentStatus() {
   const pendingCount = pendingPayments.filter(p => p.status === 'pending').length;
   const pendingSavingsCount = pendingSavings.length;
 
+  const totalSavingsFiltered = allSavings.filter(s => {
+    if (s.status !== 'confirmed') return false;
+    const sDate = new Date(s.confirmedAt || s.date);
+    const now = new Date();
+    if (savingsFilter === 'this_month') {
+      return sDate.getMonth() === now.getMonth() && sDate.getFullYear() === now.getFullYear();
+    }
+    if (savingsFilter === 'this_year') {
+      return sDate.getFullYear() === now.getFullYear();
+    }
+    return true; // 'all'
+  }).reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
+
+  const totalInterestFiltered = allLoans.filter(l => {
+    if (l.status === 'rejected' || l.status === 'pending') return false;
+    const lType = (l.loanType || '').toLowerCase();
+    
+    // Map loan types to multipliers because multiplier isn't always directly saved in DB. 
+    // Usually: Personal = 2x, Emergency = 1.5x, Short-term = 1x.
+    let mult = '2x';
+    if (lType.includes('emergency')) mult = '1.5x';
+    if (lType.includes('short')) mult = '1x';
+    if (l.multiplier) mult = `${l.multiplier}x`;
+
+    if (interestFilter === '2x' && mult !== '2x') return false;
+    if (interestFilter === '1.5x' && mult !== '1.5x') return false;
+    if (interestFilter === '1x' && mult !== '1x') return false;
+    return true;
+  }).reduce((sum, l) => {
+    const totalRepay = Number(l.totalRepayment || (l.monthlyPayment * l.term)) || 0;
+    const principal = Number(l.amount) || 0;
+    const interest = totalRepay - principal;
+    return sum + (interest > 0 ? interest : 0);
+  }, 0);
+
   return (
     <div className="loan-admin-mgmt-page">
       <LoanAdminSidebar />
@@ -208,6 +260,34 @@ export default function LoanAdminPaymentStatus() {
             <div className="loan-admin-mgmt-stat-card">
               <p className="loan-admin-mgmt-stat-label">Default (60+d)</p>
               <p className="loan-admin-mgmt-stat-value rejected">{counts.defaulted}</p>
+            </div>
+          </div>
+        )}
+
+        {isSavingsRoute && (
+          <div className="loan-admin-mgmt-stats" style={{ gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+            <div className="loan-admin-mgmt-stat-card">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <p className="loan-admin-mgmt-stat-label" style={{ margin: 0 }}>Total Savings (Confirmed)</p>
+                <select value={savingsFilter} onChange={e => setSavingsFilter(e.target.value)} style={{ fontSize: '12px', padding: '4px 6px', borderRadius: '6px', border: '1px solid #D1D5DB' }}>
+                  <option value="all">All Time</option>
+                  <option value="this_month">This Month</option>
+                  <option value="this_year">This Year</option>
+                </select>
+              </div>
+              <p className="loan-admin-mgmt-stat-value approved">{fmt(totalSavingsFiltered)}</p>
+            </div>
+            <div className="loan-admin-mgmt-stat-card">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <p className="loan-admin-mgmt-stat-label" style={{ margin: 0 }}>Total Income from Interest</p>
+                <select value={interestFilter} onChange={e => setInterestFilter(e.target.value)} style={{ fontSize: '12px', padding: '4px 6px', borderRadius: '6px', border: '1px solid #D1D5DB' }}>
+                  <option value="all">All Multipliers</option>
+                  <option value="2x">2x Savings (Personal)</option>
+                  <option value="1.5x">1.5x Savings (Emergency)</option>
+                  <option value="1x">1x Savings (Short-term)</option>
+                </select>
+              </div>
+              <p className="loan-admin-mgmt-stat-value" style={{ color: '#155DFC' }}>{fmt(totalInterestFiltered)}</p>
             </div>
           </div>
         )}
@@ -594,7 +674,7 @@ export default function LoanAdminPaymentStatus() {
                     style={{ background: '#fff', color: '#DC2626', border: '1px solid #FCA5A5', padding: '8px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}>Reject</button>
                   <button onClick={() => handleConfirmPayment(selectedPayment._id)} disabled={actionLoading}
                     style={{ background: '#16A34A', color: '#fff', border: 'none', padding: '8px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}>
-                    {actionLoading ? 'Processing…' : 'Confirm Payment'}
+                    {actionLoading ? <span className="btn-spinner" /> : 'Confirm Payment'}
                   </button>
                 </>
               ) : (
@@ -636,7 +716,7 @@ export default function LoanAdminPaymentStatus() {
                 <>
                   <button onClick={() => handleRejectSavings(selectedSavings._id)} disabled={actionLoading} style={{ background: '#fff', color: '#DC2626', border: '1px solid #FCA5A5', padding: '8px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}>Reject</button>
                   <button onClick={() => handleConfirmSavings(selectedSavings._id)} disabled={actionLoading} style={{ background: '#16A34A', color: '#fff', border: 'none', padding: '8px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}>
-                    {actionLoading ? 'Processing…' : 'Confirm Deposit'}
+                    {actionLoading ? <span className="btn-spinner" /> : 'Confirm Deposit'}
                   </button>
                 </>
               ) : (

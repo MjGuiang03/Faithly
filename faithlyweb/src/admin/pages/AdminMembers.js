@@ -7,6 +7,7 @@ import '../styles/AdminMembers.css';
 import svgPaths from "../../imports/svg-icons";
 
 import API from '../../utils/api';
+import SignupModal from '../../user/components/SignupModal';
 
 /* ─── query-string builder ──────────────────────────────────────────────── */
 function buildQuery(params) {
@@ -158,7 +159,7 @@ function EditModal({ member, onClose, onSave }) {
         <div className="admin-members-modal-footer">
           <button className="admin-members-btn admin-members-btn-cancel" onClick={onClose} disabled={saving}>Cancel</button>
           <button className="admin-members-btn admin-members-btn-save" onClick={handleSubmit} disabled={saving}>
-            {saving ? 'Saving…' : 'Save Changes'}
+            {saving ? <span className="btn-spinner" /> : 'Save Changes'}
           </button>
         </div>
       </div>
@@ -268,7 +269,7 @@ function DeleteModal({ member, onClose, onConfirm }) {
         <div className="admin-members-modal-footer">
           <button className="admin-members-btn admin-members-btn-cancel" onClick={onClose} disabled={deleting}>Cancel</button>
           <button className="admin-members-btn admin-members-btn-delete" onClick={handleDelete} disabled={deleting}>
-            {deleting ? 'Deleting…' : 'Delete Member'}
+            {deleting ? <span className="btn-spinner" /> : 'Delete Member'}
           </button>
         </div>
       </div>
@@ -293,6 +294,7 @@ export default function AdminMembers() {
   const [loadingMembers, setLoadingMembers] = useState(true);
   const [editMember,     setEditMember]     = useState(null);
   const [deleteMember,   setDeleteMember]   = useState(null);
+  const [showAddModal,   setShowAddModal]   = useState(false);
 
   const debouncedSearchMembers  = useDebounce(searchMembers,  400);
 
@@ -345,6 +347,7 @@ export default function AdminMembers() {
 
       {editMember   && <EditModal   member={editMember}   onClose={() => setEditMember(null)}   onSave={()    => { setEditMember(null);   fetchMembers(); }} />}
       {deleteMember && <DeleteModal member={deleteMember} onClose={() => setDeleteMember(null)} onConfirm={() => { setDeleteMember(null); fetchMembers(); }} />}
+      {showAddModal && <SignupModal isOpen={showAddModal} onClose={() => { setShowAddModal(false); fetchMembers(); }} onSwitchToLogin={() => {}} />}
 
       {/* Header */}
       <div className="admin-members-header-container">
@@ -352,7 +355,7 @@ export default function AdminMembers() {
           <h1 className="admin-members-title">Member Management</h1>
           <p className="admin-members-subtitle">View and manage church members and officers</p>
         </div>
-        <button className="admin-members-add-btn">
+        <button className="admin-members-add-btn" onClick={() => setShowAddModal(true)}>
           <UserPlus size={20} />
           <span>Add Member</span>
         </button>
@@ -376,6 +379,10 @@ export default function AdminMembers() {
           <p className="admin-members-stat-label">Inactive Members</p>
           <p className="admin-members-stat-value admin-members-stat-value-orange">{stats.inactive ?? 0}</p>
         </div>
+        <div className="admin-members-stat-card">
+          <p className="admin-members-stat-label">New This Month</p>
+          <p className="admin-members-stat-value admin-members-stat-value-blue">{stats.newThisMonth ?? 0}</p>
+        </div>
       </div>
 
 
@@ -386,7 +393,6 @@ export default function AdminMembers() {
           <div className="admin-members-section-title-wrapper">
             <UsersIcon size={24} color="#155DFC" strokeWidth={2} />
             <h2 className="admin-members-section-title">All Members</h2>
-            <span className="admin-members-count-badge">{pagination.totalMembers ?? 0}</span>
           </div>
           <div className="admin-members-search-toolbar">
             <div className="admin-members-search-wrapper" style={{ display: 'flex', gap: '8px' }}>

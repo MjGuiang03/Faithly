@@ -567,7 +567,7 @@ export default function LoanApplicationModal({
               className="user-loan-application-submit-btn"
               disabled={loading || !allEligible || !calc}
             >
-              {loading ? 'Submitting…' : 'Submit Application'}
+              {loading ? <span className="btn-spinner" /> : 'Submit Application'}
             </button>
             <button type="button" className="user-loan-application-cancel-btn" onClick={onClose} disabled={loading}>
               Cancel

@@ -20,6 +20,7 @@ export default function AdminAnnouncements() {
   const [items, setItems] = useState([]);
   const [branches, setBranches] = useState([]);
   const [categoryFilter, setCategoryFilter] = useState('All');
+  const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState({
     title: '', body: '', category: 'General',
     eventDate: '', expiresAt: '',
@@ -72,6 +73,30 @@ export default function AdminAnnouncements() {
     }));
   };
 
+  const handleEdit = (a) => {
+    setEditingId(a._id);
+    setForm({
+      title: a.title || '',
+      body: a.body || '',
+      category: a.category || 'General',
+      eventDate: a.eventDate ? new Date(new Date(a.eventDate).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : '',
+      expiresAt: a.expiresAt ? new Date(new Date(a.expiresAt).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : '',
+      visibility: (!a.visibility || a.visibility === 'all') ? 'all' : 'branches',
+      targetBranches: a.targetBranches || [],
+      imageBase64: a.image || ''
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setForm({
+      title: '', body: '', category: 'General',
+      eventDate: '', expiresAt: '',
+      visibility: 'all', targetBranches: [], imageBase64: ''
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.title.trim() || !form.body.trim()) {
@@ -90,22 +115,19 @@ export default function AdminAnnouncements() {
         eventDate: form.eventDate || null,
         expiresAt: form.expiresAt || null,
       };
-      const res = await fetch(`${API}/api/admin/announcements`, {
-        method: 'POST',
+      const url = editingId ? `${API}/api/admin/announcements/${editingId}` : `${API}/api/admin/announcements`;
+      const res = await fetch(url, {
+        method: editingId ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        toast.success('Announcement posted!');
-        setForm({
-          title: '', body: '', category: 'General',
-          eventDate: '', expiresAt: '',
-          visibility: 'all', targetBranches: [], imageBase64: ''
-        });
+        toast.success(editingId ? 'Announcement updated!' : 'Announcement posted!');
+        cancelEdit();
         fetchAnnouncements();
       } else {
-        toast.error(data.message || 'Failed to post announcement');
+        toast.error(data.message || (editingId ? 'Failed to update' : 'Failed to post'));
       }
     } catch {
       toast.error('Network error');
@@ -169,10 +191,19 @@ export default function AdminAnnouncements() {
       </div>
 
       <div className="admin-announce-grid">
-        {/* Create Form */}
+        {/* Create / Edit Form */}
         <div className="admin-announce-card">
-          <div className="admin-announce-card-header">
-            <p className="admin-announce-card-title">Post New Announcement</p>
+          <div className="admin-announce-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <p className="admin-announce-card-title">{editingId ? 'Edit Announcement' : 'Post New Announcement'}</p>
+            {editingId && (
+              <button 
+                type="button" 
+                onClick={cancelEdit}
+                style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '13px' }}
+              >
+                Cancel Edit
+              </button>
+            )}
           </div>
           <form className="admin-announce-form" onSubmit={handleSubmit}>
             <div className="admin-announce-form-group">
@@ -309,9 +340,9 @@ export default function AdminAnnouncements() {
 
             <button type="submit" className="admin-announce-submit" disabled={submitting}>
               {submitting ? (
-                <><Loader2 className="animate-spin" size={18} /> Posting...</>
+                <><span className="btn-spinner" /></>
               ) : (
-                <><Megaphone size={18} /> Post Announcement</>
+                <><Megaphone size={18} /> {editingId ? 'Update Announcement' : 'Post Announcement'}</>
               )}
             </button>
           </form>
@@ -402,13 +433,22 @@ export default function AdminAnnouncements() {
                       {a.createdBy && <span>· by {a.createdBy}</span>}
                     </div>
                   </div>
-                  <button
-                    className="admin-announce-delete"
-                    onClick={() => handleDelete(a._id)}
-                    title="Delete announcement"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                  <div className="admin-announce-actions">
+                    <button
+                      className="admin-announce-edit"
+                      onClick={() => handleEdit(a)}
+                      title="Edit announcement"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    </button>
+                    <button
+                      className="admin-announce-delete"
+                      onClick={() => handleDelete(a._id)}
+                      title="Delete announcement"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
                 </div>
               ))
             )}

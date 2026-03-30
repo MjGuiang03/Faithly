@@ -55,7 +55,7 @@ function PasswordModal({ title, description, onConfirm, onClose, loading }) {
             onClick={() => onConfirm(password)}
             disabled={!password || loading}
           >
-            {loading ? <><Loader2 className="animate-spin" size={16} /> Confirming...</> : 'Confirm'}
+            {loading ? <span className="btn-spinner" /> : 'Confirm'}
           </button>
         </div>
       </div>
@@ -282,7 +282,7 @@ export default function AdminUserManagement() {
                     </td>
                     <td className="admin-users-date-cell">{fmtDate(a.createdAt)}</td>
                     <td>
-                      {isSuperAdmin(a.email) ? (
+                      {a.role === 'admin' ? (
                         <span className="admin-users-protected">Protected</span>
                       ) : (
                         <div className="admin-users-actions-cell">
@@ -354,7 +354,7 @@ export default function AdminUserManagement() {
               <div className="admin-users-modal-actions">
                 <button type="button" className="admin-users-btn secondary" onClick={() => setShowAddModal(false)}>Cancel</button>
                 <button type="submit" className="admin-users-btn primary" disabled={createLoading}>
-                  {createLoading ? <><Loader2 className="animate-spin" size={16} /> Creating...</> : <><UserPlus size={16} /> Create Account</>}
+                  {createLoading ? <span className="btn-spinner" /> : <><UserPlus size={16} /> Create Account</>}
                 </button>
               </div>
             </form>

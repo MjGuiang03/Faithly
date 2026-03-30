@@ -1,11 +1,11 @@
 .admin-announce-main {
-  padding: 32px;
+  padding: 24px;
   background: transparent;
   min-height: calc(100vh - 80px);
 }
 
 .admin-announce-header {
-  margin-bottom: 28px;
+  margin-bottom: 16px;
 }
 
 .admin-announce-title {
@@ -23,7 +23,7 @@
 .admin-announce-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 28px;
+  gap: 20px;
   align-items: flex-start;
 }
 
@@ -41,7 +41,7 @@
 }
 
 .admin-announce-card-header {
-  padding: 20px 24px 16px;
+  padding: 16px 20px 12px;
   border-bottom: 1px solid #f1f5f9;
 }
 
@@ -53,10 +53,10 @@
 
 /* ─── Create form ─── */
 .admin-announce-form {
-  padding: 20px 24px 24px;
+  padding: 16px 20px 20px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .admin-announce-form-group {
@@ -212,7 +212,7 @@
 
 /* ─── List ─── */
 .admin-announce-list {
-  padding: 12px 24px 20px;
+  padding: 12px 20px 16px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -223,7 +223,7 @@
 .admin-announce-item {
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-  padding: 14px 16px;
+  padding: 12px 14px;
   background: #fafafa;
   display: flex;
   align-items: flex-start;
@@ -307,17 +307,30 @@
   color: #065f46;
 }
 
+.admin-announce-actions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.admin-announce-edit,
 .admin-announce-delete {
   background: none;
   border: none;
-  color: #ef4444;
   cursor: pointer;
   padding: 6px;
   border-radius: 8px;
   transition: background 0.2s;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
+.admin-announce-edit { color: #155DFC; }
+.admin-announce-delete { color: #ef4444; }
+
+.admin-announce-edit:hover { background: #e7f0ff; }
 .admin-announce-delete:hover { background: #fee2e2; }
 
 .admin-announce-empty {
@@ -339,7 +352,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px 0;
+  padding: 12px 0;
   gap: 4px;
 }
 
@@ -379,7 +392,7 @@
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  padding: 12px 24px 0;
+  padding: 12px 20px 0;
 }
 
 .admin-announce-filter-tab {

@@ -116,8 +116,14 @@ export default function AdminDashboard() {
         const growth = allMonths.map(m => ({ month: m.monthStr, totalMembers: 0, newMembers: 0 }));
         let runningTotal = 0;
         
+        // count members that successfully registered (active or verified)
+        const validMembers = membersData.members.filter(m => {
+          const s = (m.status || '').toLowerCase();
+          return s === 'active' || s === 'verified';
+        });
+
         // sort members by date ascending
-        const sortedMembers = [...membersData.members].sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt));
+        const sortedMembers = validMembers.sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt));
         
         // Count base total before Jan 1 of the current year
         const windowStartDate = new Date(currentYear, 0, 1);
@@ -213,35 +219,6 @@ export default function AdminDashboard() {
           <div className="adm-stat-value">{dash(loanStats.active)}</div>
           <div className="adm-stat-sub">{dash(loanStats.pending)} pending</div>
         </div>
-
-        <div className="adm-stat-card pink">
-          <div className="adm-stat-top">
-            <span className="adm-stat-label">This Month Donations</span>
-            <div className="adm-stat-icon adm-icon-pink">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d={svgPaths.p1dff4600} stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-          </div>
-          <div className="adm-stat-value">{dash(fmt(donationStats.thisMonth))}</div>
-          <div className="adm-stat-sub">Total: {dash(fmt(donationStats.total))}</div>
-        </div>
-
-        <div className="adm-stat-card gray">
-          <div className="adm-stat-top">
-            <span className="adm-stat-label">Avg. Per Service</span>
-            <div className="adm-stat-icon adm-icon-navy">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d="M8 2V6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M16 2V6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d={svgPaths.p32f12c00} stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M3 10H21" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-          </div>
-          <div className="adm-stat-value">{dash(attendStats.avgPerService.toLocaleString())}</div>
-          <div className="adm-stat-sub">{dash(attendStats.thisWeek)} attended this week</div>
-        </div>
       </div>
 
       {/* ── Row 2: Analytics Row ── */}
@@ -295,11 +272,6 @@ export default function AdminDashboard() {
           <div className="adm-summary-card">
             <span className="adm-summary-label">Total Donations</span>
             <span className="adm-summary-value green">{dash(fmt(donationStats.total))}</span>
-          </div>
-          <div className="adm-summary-card">
-            <span className="adm-summary-label">Member Growth</span>
-            <span className="adm-summary-value blue">+{dash(memberStats.newThisMonth)}</span>
-            <span className="adm-summary-sub">new this month</span>
           </div>
         </div>
       </div>

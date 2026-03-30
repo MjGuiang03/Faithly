@@ -215,10 +215,7 @@ export default function VerifyEmailModal({ isOpen, onClose, email, onVerify, onR
               disabled={loading || otp.join('').length !== 6}
             >
               {loading ? (
-                <>
-                  <Loader className="spinning" size={20} />
-                  <span>Verifying...</span>
-                </>
+                <span className="btn-spinner" />
               ) : (
                 'Verify Email'
               )}
@@ -238,7 +235,7 @@ export default function VerifyEmailModal({ isOpen, onClose, email, onVerify, onR
               className="resend-trigger-link"
               disabled={resendLoading || loading}
             >
-              {resendLoading ? 'Sending...' : 'Resend Code'}
+              {resendLoading ? <span className="btn-spinner btn-spinner--dark btn-spinner--sm" /> : 'Resend Code'}
             </button>
 
 

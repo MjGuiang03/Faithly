@@ -365,7 +365,7 @@ export default function LoanAdminLoanManagement() {
                                                             <path d={svgPaths.p2ba21180} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333" />
                                                             <path d={svgPaths.p12d41400} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333" />
                                                         </svg>
-                                                        {actionLoading === loan._id ? 'Processing…' : 'Approve'}
+                                                        {actionLoading === loan._id ? <span className="btn-spinner" /> : 'Approve'}
                                                     </button>
                                                 )}
                                             </div>
@@ -404,7 +404,7 @@ export default function LoanAdminLoanManagement() {
                         <div className="loan-admin-mgmt-modal-actions">
                             <button className="loan-admin-mgmt-modal-btn cancel" onClick={() => setShowApproveModal(false)}>Cancel</button>
                             <button className="loan-admin-mgmt-modal-btn approve" onClick={confirmApprove} disabled={!!actionLoading}>
-                                {actionLoading ? 'Approving…' : 'Approve Loan'}
+                                {actionLoading ? <span className="btn-spinner" /> : 'Approve Loan'}
                             </button>
                         </div>
                     </div>
@@ -454,7 +454,7 @@ export default function LoanAdminLoanManagement() {
                                 onClick={confirmReject}
                                 disabled={!rejectReason.trim() || !!actionLoading}
                             >
-                                {actionLoading ? 'Rejecting…' : 'Reject Loan'}
+                                {actionLoading ? <span className="btn-spinner" /> : 'Reject Loan'}
                             </button>
                         </div>
                     </div>

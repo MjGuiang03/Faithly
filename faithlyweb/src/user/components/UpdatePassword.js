@@ -70,7 +70,7 @@ export default function UpdatePassword() {
         </div>
 
         <button type="submit" disabled={loading}>
-          {loading ? 'Updating...' : 'Update Password'}
+          {loading ? <span className="btn-spinner" /> : 'Update Password'}
         </button>
       </form>
     </div>
