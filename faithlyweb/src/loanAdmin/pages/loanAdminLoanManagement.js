@@ -302,19 +302,19 @@ export default function LoanAdminLoanManagement() {
                         <tbody>
                             {loading ? (
                                 <tr>
-                                    <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>
+                                    <td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>
                                         Loading loans…
                                     </td>
                                 </tr>
                             ) : filteredLoans.length === 0 ? (
                                 <tr>
-                                    <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>
+                                    <td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>
                                         No loans found
                                     </td>
                                 </tr>
                             ) : (
                                 filteredLoans.map(loan => (
-                                    <tr key={loan._id}>
+                                    <tr key={loan._id} onClick={() => handleViewDetails(loan)} style={{ cursor: 'pointer' }} className="loan-admin-mgmt-table-row-hover">
                                         <td className="loan-admin-mgmt-table-id">{loan.loanId}</td>
                                         <td>
                                             <div className="loan-admin-mgmt-table-member">
