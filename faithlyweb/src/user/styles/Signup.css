@@ -404,7 +404,7 @@ input[type="date"].user-signup-form-input {
 
 .user-gender-radio-text {
   font-family: 'DM Sans', sans-serif;
-  font-size: 0.88rem;
+  font-size: 0.80rem;
   color: var(--su-muted);
   transition: color 0.2s;
 }

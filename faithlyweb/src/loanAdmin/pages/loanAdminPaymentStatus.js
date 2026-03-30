@@ -138,9 +138,10 @@ export default function LoanAdminPaymentStatus() {
   };
 
   const enriched = loans.map(l => {
-    const daysLate = getDaysLate(l.nextDueDate || l.approvedDate);
+    const effectiveDueDate = l.nextPaymentDate || l.nextDueDate || l.approvedDate;
+    const daysLate = getDaysLate(effectiveDueDate);
     const status = getPaymentStatus(daysLate);
-    return { ...l, daysLate, paymentStatus: status };
+    return { ...l, daysLate, paymentStatus: status, effectiveDueDate };
   });
 
   const filtered = enriched.filter(l =>
@@ -288,7 +289,7 @@ export default function LoanAdminPaymentStatus() {
                       <td className="loan-admin-mgmt-table-amount">{fmt(loan.amount)}</td>
                       <td style={{ fontSize: '13px' }}>{loan.paidMonths || 0}/{loan.termMonths || 0}</td>
                       <td className="loan-admin-mgmt-table-amount">{fmt(loan.remainingBalance)}</td>
-                      <td>{fmtDate(loan.nextDueDate || loan.approvedDate)}</td>
+                      <td>{fmtDate(loan.effectiveDueDate)}</td>
                       <td style={{ fontWeight: 600, color: loan.daysLate > 0 ? '#DC2626' : '#16A34A' }}>
                         {loan.daysLate > 0 ? `${loan.daysLate} days` : '—'}
                       </td>
@@ -525,7 +526,7 @@ export default function LoanAdminPaymentStatus() {
                 <div><p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Status</p><span className={`ps-status-badge ${selectedLoan.paymentStatus.cls}`}>{selectedLoan.paymentStatus.label}</span></div>
                 <div><p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Days Late</p><p style={{ fontSize: '14px', fontWeight: 600, fontFamily: 'Inter', color: selectedLoan.daysLate > 0 ? '#DC2626' : '#16A34A' }}>{selectedLoan.daysLate > 0 ? `${selectedLoan.daysLate} days` : 'Current'}</p></div>
                 <div><p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Approved Date</p><p style={{ fontSize: '13px', fontFamily: 'Inter', color: '#374151' }}>{fmtDate(selectedLoan.approvedDate)}</p></div>
-                <div><p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Next Due Date</p><p style={{ fontSize: '13px', fontFamily: 'Inter', color: '#374151' }}>{fmtDate(selectedLoan.nextDueDate || selectedLoan.approvedDate)}</p></div>
+                <div><p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Next Due Date</p><p style={{ fontSize: '13px', fontFamily: 'Inter', color: '#374151' }}>{fmtDate(selectedLoan.effectiveDueDate)}</p></div>
               </div>
             </div>
             <div style={{ padding: '12px 24px 20px', display: 'flex', justifyContent: 'flex-end' }}>

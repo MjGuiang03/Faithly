@@ -73,7 +73,7 @@
 /* ── Navigation ── */
 .loan-admin-sidebar-nav {
   flex: 1;
-  padding: 16px;
+  padding: 16px 0;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -83,7 +83,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding-left: 16px;
+  padding-left: 20px;
   height: 48px;
   background: transparent;
   border: none;
@@ -199,6 +199,77 @@
 .loan-admin-sidebar-profile-signout svg {
   width: 18px;
   height: 18px;
+}
+
+/* ── Payments Dropdown ── */
+.loan-admin-sidebar-dropdown {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.loan-admin-dropdown-chevron {
+  margin-left: auto;
+  flex-shrink: 0;
+  transition: transform 0.25s ease;
+  color: rgba(255, 255, 255, 0.60);
+}
+
+.loan-admin-dropdown-chevron.open {
+  transform: rotate(180deg);
+}
+
+.loan-admin-sidebar-subnav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 20px;
+  margin-top: 2px;
+  overflow: hidden;
+  animation: subnav-expand 0.2s ease;
+}
+
+@keyframes subnav-expand {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.loan-admin-sidebar-subnav-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-left: 12px;
+  height: 40px;
+  background: transparent;
+  border: none;
+  border-left: 1.5px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 14px;
+  font-family: 'Arial', sans-serif;
+  border-radius: 0 8px 8px 0;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+  text-align: left;
+}
+
+.loan-admin-sidebar-subnav-button:hover {
+  background: rgba(21, 93, 252, 0.2);
+  color: white;
+  border-left-color: rgba(255, 255, 255, 0.5);
+}
+
+.loan-admin-sidebar-subnav-button.active {
+  background: rgba(255, 255, 255, 0.12);
+  color: white;
+  font-weight: 600;
+  border-left-color: #155DFC;
+}
+
+.loan-admin-sidebar-subnav-button svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
 /* ── Responsive ── */

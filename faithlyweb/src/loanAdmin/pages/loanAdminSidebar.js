@@ -2,7 +2,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import {
-  LayoutGrid, Bell, FileText, CreditCard, AlertTriangle, Settings, LogOut
+  LayoutGrid, Bell, FileText, CreditCard, AlertTriangle, Settings, LogOut,
+  ChevronDown, PiggyBank, FileBarChart2
 } from 'lucide-react';
 import puacLogo from '../../assets/puaclogo.png';
 import '../styles/loanAdminSidebar.css';
@@ -17,6 +18,9 @@ export default function LoanAdminSidebar() {
   const location  = useLocation();
   const [unreadCount, setUnreadCount] = useState(0);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [paymentsOpen, setPaymentsOpen] = useState(
+    location.pathname.startsWith('/loan-admin/payments')
+  );
 
   const handleSignOut = () => {
     localStorage.removeItem('adminToken');
@@ -112,13 +116,44 @@ export default function LoanAdminSidebar() {
           <span>Loan Management</span>
         </button>
 
-        <button
-          onClick={() => navigate('/loan-admin/payment-status')}
-          className={`loan-admin-sidebar-nav-button ${isActive('/loan-admin/payment-status') ? 'active' : ''}`}
-        >
-          <CreditCard size={20} />
-          <span>Payment Status</span>
-        </button>
+        {/* Payments Dropdown */}
+        <div className="loan-admin-sidebar-dropdown">
+          <button
+            onClick={() => setPaymentsOpen(o => !o)}
+            className={`loan-admin-sidebar-nav-button ${
+              location.pathname.startsWith('/loan-admin/payments') ? 'active' : ''
+            }`}
+          >
+            <CreditCard size={20} />
+            <span>Payments</span>
+            <ChevronDown
+              size={16}
+              className={`loan-admin-dropdown-chevron ${paymentsOpen ? 'open' : ''}`}
+            />
+          </button>
+          {paymentsOpen && (
+            <div className="loan-admin-sidebar-subnav">
+              <button
+                onClick={() => navigate('/loan-admin/payments/loans')}
+                className={`loan-admin-sidebar-subnav-button ${
+                  location.pathname === '/loan-admin/payments/loans' ? 'active' : ''
+                }`}
+              >
+                <FileBarChart2 size={16} />
+                <span>Loans</span>
+              </button>
+              <button
+                onClick={() => navigate('/loan-admin/payments/savings')}
+                className={`loan-admin-sidebar-subnav-button ${
+                  location.pathname === '/loan-admin/payments/savings' ? 'active' : ''
+                }`}
+              >
+                <PiggyBank size={16} />
+                <span>Savings</span>
+              </button>
+            </div>
+          )}
+        </div>
 
         <button
           onClick={() => navigate('/loan-admin/delinquency')}

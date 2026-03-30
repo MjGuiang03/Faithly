@@ -193,7 +193,7 @@ router.get('/admin/loans', authenticateAdmin, async (req, res) => {
 
     res.status(200).json({ 
       success: true, 
-      loans: allLoans, 
+      loans: allLoans.map(enrichLoanWithNextPayment), 
       totalCount,
       totalPages: Math.ceil(totalCount / limit),
       currentPage: page,
@@ -542,6 +542,11 @@ router.put('/admin/loan-payments/:id/confirm', authenticateAdmin, async (req, re
         const newBalance = Math.max(0, (loan.remainingBalance || loan.totalRepayment || loan.amount) - paymentAmount);
         const isComplete = newPaidMonths >= (loan.termMonths || 12);
 
+        // Compute next due date: (paidMonths + 1) months after disbursement/approval
+        const startDate = new Date(loan.disbursementDate || loan.approvedDate || loan.appliedDate);
+        const nextDue = new Date(startDate);
+        nextDue.setMonth(startDate.getMonth() + newPaidMonths + 1);
+
         await loans.updateOne(
             { _id: payment.loanObjectId },
             {
@@ -549,6 +554,7 @@ router.put('/admin/loan-payments/:id/confirm', authenticateAdmin, async (req, re
                     paidMonths: newPaidMonths,
                     remainingBalance: newBalance,
                     status: isComplete ? 'completed' : 'active',
+                    nextDueDate: isComplete ? null : nextDue,
                     updatedAt: new Date(),
                 },
                 $push: {
