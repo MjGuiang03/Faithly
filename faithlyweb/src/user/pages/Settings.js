@@ -217,7 +217,7 @@ export default function Settings() {
      RENDER
   ════════════════════════════════════════════════════════════════════ */
   return (
-    <div className="user-home-layout">
+    <div className="user-home-layout inter-font-scope">
       <Sidebar />
 
       {/* Email OTP Modal */}

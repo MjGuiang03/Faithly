@@ -93,7 +93,7 @@ export default function Attendance() {
   };
 
   return (
-    <div className="user-home-layout">
+    <div className="user-home-layout inter-font-scope">
       <Sidebar />
 
       <div className="user-main-content">

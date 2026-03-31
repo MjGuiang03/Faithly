@@ -357,3 +357,8 @@ html {
     opacity: 1;
   }
 }
+
+/* Custom scoping for Inter font as requested */
+.inter-font-scope, .inter-font-scope * {
+  font-family: 'Inter', sans-serif !important;
+}
