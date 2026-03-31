@@ -338,7 +338,7 @@ export default function Notifications() {
             : 'Attendance';
 
   return (
-    <div className="user-notif-page inter-font-scope">
+    <div className="user-notif-page">
       <Sidebar />
       <div className="user-notif-main">
 

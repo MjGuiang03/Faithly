@@ -170,7 +170,7 @@ export default function Donation() {
 
   return (
     <>
-      <div className="user-home-layout inter-font-scope">
+      <div className="user-home-layout">
         <Sidebar />
         <div className="user-main-content user-donation-main">
 

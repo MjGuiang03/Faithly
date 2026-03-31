@@ -231,7 +231,7 @@ export default function Branches() {
       : totalBranches;
 
   return (
-    <div className="user-home-layout inter-font-scope">
+    <div className="user-home-layout">
       <Sidebar />
 
       <div className="user-main-content">
