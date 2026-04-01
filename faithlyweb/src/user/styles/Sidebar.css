@@ -11,7 +11,7 @@
   top: 0;
   left: 0;
   overflow-y: auto;
-  overflow-x: visible;
+  overflow-x: hidden;
   z-index: 50;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease;
   -ms-overflow-style: none;
@@ -26,39 +26,27 @@
   width: 72px;
 }
 
-/* ── Toggle button ── */
+/* ── Toggle button (now INSIDE the sidebar logo row) ── */
 .user-sidebar-toggle-btn {
-  position: fixed;
-  top: 20px;
-  width: 26px;
-  height: 26px;
-  background: var(--sidebar);
-  border: 1px solid var(--sidebar-border);
-  border-radius: 50%;
-  color: var(--sidebar-nav-inactive);
+  margin-left: auto;
+  width: 30px;
+  height: 30px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: 100;
-  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.2s, color 0.2s, transform 0.2s;
   flex-shrink: 0;
   padding: 0;
+  transition: background 0.2s, color 0.2s;
 }
 
 .user-sidebar-toggle-btn:hover {
-  background: var(--blue-hover);
+  background: rgba(255, 255, 255, 0.2);
   color: white;
-  transform: scale(1.1);
-}
-
-.dark .user-sidebar-toggle-btn {
-  background: var(--card);
-  border-color: var(--border);
-}
-
-.dark .user-sidebar-toggle-btn:hover {
-  background: var(--border);
 }
 
 /* ── Logo ── */
@@ -69,7 +57,7 @@
 }
 
 .user-sidebar-collapsed .user-sidebar-logo {
-  display: none;
+  padding: 20px 12px;
 }
 
 .user-sidebar-logo-content {
@@ -83,6 +71,10 @@
   gap: 0;
 }
 
+.user-sidebar-collapsed .user-sidebar-toggle-btn {
+  margin-left: 0;
+}
+
 .user-sidebar-logo-image {
   width: 44px;
   height: 44px;
@@ -93,6 +85,10 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+.user-sidebar-collapsed .user-sidebar-logo-image {
+  display: none;
 }
 
 .user-sidebar-logo-image img {
@@ -130,7 +126,7 @@
 }
 
 .user-sidebar-collapsed .user-sidebar-nav {
-  padding: 64px 8px 16px 8px;
+  padding: 16px 8px;
   align-items: center;
 }
 
@@ -421,8 +417,6 @@
   padding: 0 3px;
 }
 
-
-
 @keyframes badge-pop {
   from {
     transform: scale(0.6);
@@ -435,8 +429,6 @@
   }
 }
 
-
-
 /* ── Mobile overlay ── */
 .user-sidebar-mobile-overlay {
   position: fixed;
@@ -446,17 +438,7 @@
 }
 
 /* ── Responsive ── */
-@media (max-width: 1024px) {
-  .user-sidebar-toggle-btn {
-    display: none;
-  }
-}
-
 @media (max-width: 768px) {
-  .user-sidebar-toggle-btn {
-    display: flex !important;
-  }
-
   .user-sidebar {
     width: 256px !important;
     transform: translateX(0);

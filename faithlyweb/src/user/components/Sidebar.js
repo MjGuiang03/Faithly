@@ -1,10 +1,11 @@
 import { useNavigate, useLocation } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 import { useState, useEffect } from 'react';
-import { LayoutGrid, FileText, Heart, Calendar, Building2, Settings, LogOut, Bell, ChevronLeft, ChevronRight, Menu, X, Wallet } from 'lucide-react';
+import { LayoutGrid, FileText, Heart, Calendar, Building2, Settings, LogOut, Bell, Menu, X, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
 import puacLogo from '../../assets/puaclogo.png';
 import '../styles/Sidebar.css';
+import Chatbot from './Chatbot';
 
 import API from '../../utils/api';
 const READ_KEY = 'faithly_notif_read';
@@ -15,6 +16,7 @@ export default function Sidebar() {
   const { user, profile, signOut } = useAuth();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [chatOpen, setChatOpen] = useState(false);
   const [verificationStatus, setVerificationStatus] = useState(() => localStorage.getItem('verificationStatus') || null);
   const [collapsed, setCollapsed] = useState(() => {
     return localStorage.getItem('sidebar_collapsed') === 'true';
@@ -35,7 +37,7 @@ export default function Sidebar() {
     const handleResize = () => {
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
-      
+
       if (mobile) {
         setCollapsed(true); // Always keep folded on mobile initially
       } else if (window.innerWidth < 1024) {
@@ -180,7 +182,7 @@ export default function Sidebar() {
     };
 
     calcUnread();
-    
+
     // Fast-path: When Notifications.js updates, it sends the exact new count via `detail`
     const handleLocalUpdate = (e) => {
       if (e.detail !== undefined) {
@@ -189,16 +191,16 @@ export default function Sidebar() {
         calcUnread();
       }
     };
-    
+
     window.addEventListener('notif-read-update', handleLocalUpdate);
     window.addEventListener('storage', (e) => {
       // If another tab or component updates the read key, recalculate
       if (e.key === READ_KEY) calcUnread();
     });
-    
+
     // Poll every 30 seconds for new notifications
     const intervalId = setInterval(calcUnread, 30000);
-    
+
     return () => {
       window.removeEventListener('notif-read-update', handleLocalUpdate);
       window.removeEventListener('storage', calcUnread);
@@ -226,28 +228,10 @@ export default function Sidebar() {
       {isMobile && !collapsed && (
         <div className="user-sidebar-mobile-overlay" onClick={() => setCollapsed(true)} />
       )}
-      
-      {/* Toggle button is OUTSIDE the sidebar div so overflow:hidden never clips it */}
-      <button
-        className="user-sidebar-toggle-btn"
-        onClick={toggleCollapsed}
-        title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        style={{ 
-          left: isMobile ? '16px' : (collapsed ? '58px' : '242px'),
-          top: isMobile ? '16px' : '20px',
-          zIndex: 100 // keep above overlay
-        }}
-      >
-        {isMobile ? (
-          collapsed ? <Menu size={20} /> : <X size={20} />
-        ) : (
-          collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />
-        )}
-      </button>
 
       <div className={`user-sidebar ${collapsed ? 'user-sidebar-collapsed' : ''}`}>
 
-        {/* Logo */}
+        {/* Logo + Toggle button inside */}
         <div className="user-sidebar-logo">
           <div className="user-sidebar-logo-content">
             <div className="user-sidebar-logo-image">
@@ -258,6 +242,13 @@ export default function Sidebar() {
                 <h1>FaithLy</h1>
               </div>
             )}
+            <button
+              className="user-sidebar-toggle-btn"
+              onClick={toggleCollapsed}
+              title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              {collapsed ? <Menu size={18} /> : <X size={18} />}
+            </button>
           </div>
         </div>
 
@@ -280,8 +271,6 @@ export default function Sidebar() {
             </button>
           ))}
         </div>
-
-
 
         {/* User Profile */}
         <div className="user-sidebar-profile">
@@ -333,6 +322,29 @@ export default function Sidebar() {
           </div>
         </div>
       )}
+
+      {/* Floating Chat Button */}
+      <button
+        className={`user-chat-button ${chatOpen ? 'user-chat-button--open' : ''}`}
+        onClick={() => setChatOpen(prev => !prev)}
+        aria-label={chatOpen ? 'Close chat' : 'Open chat'}
+        title={chatOpen ? 'Close chat' : 'Chat with FaithBot'}
+      >
+        {chatOpen ? (
+          <svg fill="none" viewBox="0 0 24 24" width="22" height="22">
+            <line x1="18" y1="6" x2="6" y2="18" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
+            <line x1="6" y1="6" x2="18" y2="18" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
+          </svg>
+        ) : (
+          <svg fill="none" viewBox="0 0 24 24" width="24" height="24">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+          </svg>
+        )}
+      </button>
+
+      {/* Chatbot */}
+      <Chatbot isOpen={chatOpen} onClose={() => setChatOpen(false)} />
+
     </>
   );
 }

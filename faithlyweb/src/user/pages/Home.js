@@ -590,13 +590,6 @@ export default function Home() {
 
       </div>
 
-      {/* Floating Chat Button */}
-      <button className="user-chat-button">
-        <svg fill="none" viewBox="0 0 24 24">
-          <path d={svgPaths.p261dfb00} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-        </svg>
-      </button>
-
       {/* "Are you an officer?" Confirmation Modal */}
       {showAskOfficerModal && (
         <div className="user-logout-modal-overlay" style={{ zIndex: 1100 }}>
