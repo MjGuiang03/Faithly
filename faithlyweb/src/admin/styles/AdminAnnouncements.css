@@ -1,11 +1,11 @@
 .admin-announce-main {
-  padding: 24px;
+  padding: 16px 24px;
   background: transparent;
   min-height: calc(100vh - 80px);
 }
 
 .admin-announce-header {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .admin-announce-title {
@@ -409,7 +409,42 @@
   border-radius: 20px;
 }
 
-/* ── Filter Tabs ── */
+/* ── Filter Tabs & Slide Container ── */
+.admin-announce-slide-container {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.admin-announce-slide-container.open {
+  grid-template-rows: 1fr;
+}
+
+.admin-announce-slide-content {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-announce-toggle-btn {
+  padding: 6px 12px;
+  font-size: 12px;
+  background: #f8fafc;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s;
+}
+
+.admin-announce-toggle-btn:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
 .admin-announce-filter-tabs {
   display: flex;
   gap: 8px;

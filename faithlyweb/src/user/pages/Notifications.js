@@ -338,9 +338,9 @@ export default function Notifications() {
             : 'Attendance';
 
   return (
-    <div className="user-notif-page">
+    <div className="user-home-layout">
       <Sidebar />
-      <div className="user-notif-main">
+      <div className="user-main-content">
 
         {/* Header */}
         <div className="user-notifications-page-header">

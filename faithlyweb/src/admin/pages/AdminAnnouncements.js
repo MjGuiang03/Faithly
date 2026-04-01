@@ -22,6 +22,7 @@ export default function AdminAnnouncements() {
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [editingId, setEditingId] = useState(null);
   const [template, setTemplate] = useState('banner');
+  const [showPosted, setShowPosted] = useState(false);
   const [form, setForm] = useState({
     title: '', body: '', category: 'General',
     eventDate: '', expiresAt: '',
@@ -342,42 +343,6 @@ export default function AdminAnnouncements() {
               </div>
             )}
 
-            {/* Live Preview */}
-            <div className="admin-announce-form-group">
-              <label className="admin-announce-label">Preview</label>
-              <div className="admin-announce-preview-wrap">
-                <div className={`ann-card ann-card-${template}`}>
-                  {template === 'banner' && (
-                    <div className="ann-banner">
-                      {form.imageBase64
-                        ? <img src={form.imageBase64} alt="" />
-                        : <div className="ann-banner-placeholder"><Megaphone size={24} color="#1E3A8A" /></div>}
-                    </div>
-                  )}
-                  {template === 'side' && (
-                    <div className="ann-side-img">
-                      {form.imageBase64
-                        ? <img src={form.imageBase64} alt="" />
-                        : <div className="ann-banner-placeholder"><Megaphone size={20} color="#1E3A8A" /></div>}
-                    </div>
-                  )}
-                  <div className="ann-body">
-                    <span className="ann-cat">{form.category}</span>
-                    <p className="ann-title">
-                      {form.title || <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>Announcement title...</span>}
-                    </p>
-                    <p className="ann-msg">
-                      {form.body || <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>Your message will appear here.</span>}
-                    </p>
-                    <div className="ann-meta">
-                      <span><Calendar size={10} /> {previewDate}</span>
-                      <span><Globe size={10} /> {previewAudience}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             <button type="submit" className="admin-announce-submit" disabled={submitting}>
               {submitting
                 ? <span className="btn-spinner" />
@@ -387,7 +352,47 @@ export default function AdminAnnouncements() {
         </div>
 
         {/* ── RIGHT: Compact List ── */}
-        <div className="admin-announce-card">
+        <div className="admin-announce-card" style={{ display: 'flex', flexDirection: 'column' }}>
+
+          {/* Live Preview */}
+          <div className="admin-announce-card-header" style={{ paddingBottom: '12px', borderBottom: 'none' }}>
+            <p className="admin-announce-card-title">Live Preview</p>
+          </div>
+          <div style={{ padding: '0 20px 20px' }}>
+            <div className="admin-announce-preview-wrap">
+              <div className={`ann-card ann-card-${template}`}>
+                {template === 'banner' && (
+                  <div className="ann-banner">
+                    {form.imageBase64
+                      ? <img src={form.imageBase64} alt="" />
+                      : <div className="ann-banner-placeholder"><Megaphone size={24} color="#1E3A8A" /></div>}
+                  </div>
+                )}
+                {template === 'side' && (
+                  <div className="ann-side-img">
+                    {form.imageBase64
+                      ? <img src={form.imageBase64} alt="" />
+                      : <div className="ann-banner-placeholder"><Megaphone size={20} color="#1E3A8A" /></div>}
+                  </div>
+                )}
+                <div className="ann-body">
+                  <span className="ann-cat">{form.category}</span>
+                  <p className="ann-title">
+                    {form.title || <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>Announcement title...</span>}
+                  </p>
+                  <p className="ann-msg">
+                    {form.body || <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>Your message will appear here.</span>}
+                  </p>
+                  <div className="ann-meta">
+                    <span><Calendar size={10} /> {previewDate}</span>
+                    <span><Globe size={10} /> {previewAudience}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ height: '8px', background: '#f8fafc', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }} />
 
           {/* Stats Bar */}
           <div className="admin-announce-stats-bar">
@@ -407,82 +412,95 @@ export default function AdminAnnouncements() {
             </div>
           </div>
 
-          <div className="admin-announce-card-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px 10px' }}>
+          <div className="admin-announce-card-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: showPosted ? '1px solid #f1f5f9' : 'none' }}>
             <div>
-              <p className="admin-announce-card-title" style={{ fontSize: '13px' }}>Posted announcements</p>
-              <p style={{ fontSize: '11px', color: '#94a3b8', marginTop: 1 }}>Manage active announcements</p>
+              <p className="admin-announce-card-title" style={{ fontSize: '13px' }}>Recent Announcements</p>
+              <p style={{ fontSize: '11px', color: '#94a3b8', marginTop: 1 }}>Manage active and expired announcements</p>
             </div>
-            <span className="admin-announce-active-badge">{items.filter(a => !isExpired(a.expiresAt)).length} active</span>
+            <button 
+              type="button"
+              className="admin-announce-toggle-btn"
+              onClick={() => setShowPosted(!showPosted)}
+            >
+              {showPosted ? 'Hide List' : 'View List'}
+              <span className="admin-announce-active-badge" style={{ padding: '2px 6px', marginLeft: '6px', background: '#DBEAFE' }}>
+                {items.filter(a => !isExpired(a.expiresAt)).length} active
+              </span>
+            </button>
           </div>
 
-          <div className="admin-announce-filter-tabs">
-            {['All', 'General', 'Events', 'Prayer', 'Services', 'Donations', 'Urgent'].map(cat => (
-              <button
-                key={cat}
-                className={`admin-announce-filter-tab${categoryFilter === cat ? ' active' : ''}`}
-                onClick={() => setCategoryFilter(cat)}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-
-          <div className="admin-announce-list">
-            {loading ? (
-              [1, 2, 3].map(i => (
-                <div key={i} className="admin-announce-item">
-                  <div style={{ flex: 1 }}>
-                    <div className="user-skeleton" style={{ height: 12, width: '60%', marginBottom: 6, borderRadius: 4 }} />
-                    <div className="user-skeleton" style={{ height: 10, width: '90%', borderRadius: 4 }} />
-                  </div>
-                </div>
-              ))
-) : (filteredItems => filteredItems.length === 0 ? (
-              <div className="admin-announce-empty">
-                <Megaphone size={28} color="#cbd5e1" style={{ marginBottom: 8 }} />
-                <p>{items.length === 0 ? 'No announcements yet. Post one!' : `No ${categoryFilter} announcements.`}</p>
+          <div className={`admin-announce-slide-container ${showPosted ? 'open' : ''}`}>
+            <div className="admin-announce-slide-content">
+              <div className="admin-announce-filter-tabs">
+                {['All', 'General', 'Events', 'Prayer', 'Services', 'Donations', 'Urgent'].map(cat => (
+                  <button
+                    key={cat}
+                    className={`admin-announce-filter-tab${categoryFilter === cat ? ' active' : ''}`}
+                    onClick={() => setCategoryFilter(cat)}
+                  >
+                    {cat}
+                  </button>
+                ))}
               </div>
-            ) : (
-              filteredItems.map(a => (
-                  <div key={a._id} className={`admin-announce-item${isExpired(a.expiresAt) ? ' expired' : ''}`}>
-                    <div className="admin-announce-item-content">
-                      <p className="admin-announce-item-title">{a.title}</p>
-                      <p className="admin-announce-item-body">{a.body}</p>
-                      <div className="admin-announce-item-meta">
-                        <span className="admin-announce-item-cat">{a.category}</span>
-                        {a.eventDate && (
-                          <span className="admin-announce-item-badge event">
-                            <Calendar size={9} /> {fmtDateTime(a.eventDate)}
-                          </span>
-                        )}
-                        {a.expiresAt && (
-                          <span className={`admin-announce-item-badge${isExpired(a.expiresAt) ? ' expired' : ' expiry'}`}>
-                            <Clock size={9} /> {isExpired(a.expiresAt) ? 'Expired' : `Expires ${fmtDate(a.expiresAt)}`}
-                          </span>
-                        )}
-                        <span className="admin-announce-item-badge scope">
-                          <Globe size={9} /> {getVisibilityLabel(a)}
-                        </span>
-                      </div>
-                      <div className="admin-announce-item-footer">
-                        <span>{fmtDate(a.createdAt)}</span>
-                        {a.createdBy && <span>· by {a.createdBy}</span>}
+
+              <div className="admin-announce-list">
+                {loading ? (
+                  [1, 2, 3].map(i => (
+                    <div key={i} className="admin-announce-item">
+                      <div style={{ flex: 1 }}>
+                        <div className="user-skeleton" style={{ height: 12, width: '60%', marginBottom: 6, borderRadius: 4 }} />
+                        <div className="user-skeleton" style={{ height: 10, width: '90%', borderRadius: 4 }} />
                       </div>
                     </div>
-                    <div className="admin-announce-actions">
-                      <button className="admin-announce-edit" onClick={() => handleEdit(a)} title="Edit">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                        </svg>
-                      </button>
-                      <button className="admin-announce-delete" onClick={() => handleDelete(a._id)} title="Delete">
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
+                  ))
+                ) : (filteredItems => filteredItems.length === 0 ? (
+                  <div className="admin-announce-empty">
+                    <Megaphone size={28} color="#cbd5e1" style={{ marginBottom: 8 }} />
+                    <p>{items.length === 0 ? 'No announcements yet. Post one!' : `No ${categoryFilter} announcements.`}</p>
                   </div>
-                ))
-            ))(items.filter(a => categoryFilter === 'All' || a.category === categoryFilter))}
+                ) : (
+                  filteredItems.map(a => (
+                      <div key={a._id} className={`admin-announce-item${isExpired(a.expiresAt) ? ' expired' : ''}`}>
+                        <div className="admin-announce-item-content">
+                          <p className="admin-announce-item-title">{a.title}</p>
+                          <p className="admin-announce-item-body">{a.body}</p>
+                          <div className="admin-announce-item-meta">
+                            <span className="admin-announce-item-cat">{a.category}</span>
+                            {a.eventDate && (
+                              <span className="admin-announce-item-badge event">
+                                <Calendar size={9} /> {fmtDateTime(a.eventDate)}
+                              </span>
+                            )}
+                            {a.expiresAt && (
+                              <span className={`admin-announce-item-badge${isExpired(a.expiresAt) ? ' expired' : ' expiry'}`}>
+                                <Clock size={9} /> {isExpired(a.expiresAt) ? 'Expired' : `Expires ${fmtDate(a.expiresAt)}`}
+                              </span>
+                            )}
+                            <span className="admin-announce-item-badge scope">
+                              <Globe size={9} /> {getVisibilityLabel(a)}
+                            </span>
+                          </div>
+                          <div className="admin-announce-item-footer">
+                            <span>{fmtDate(a.createdAt)}</span>
+                            {a.createdBy && <span>· by {a.createdBy}</span>}
+                          </div>
+                        </div>
+                        <div className="admin-announce-actions">
+                          <button className="admin-announce-edit" onClick={() => handleEdit(a)} title="Edit">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                            </svg>
+                          </button>
+                          <button className="admin-announce-delete" onClick={() => handleDelete(a._id)} title="Delete">
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                ))(items.filter(a => categoryFilter === 'All' || a.category === categoryFilter))}
+              </div>
+            </div>
           </div>
         </div>
 
