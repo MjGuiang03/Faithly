@@ -29,7 +29,6 @@ export default function AdminNotifications() {
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [readIds,       setReadIds]       = useState(loadReadSet);
-  const [filter,        setFilter]        = useState('all');
   const [typeFilter,    setTypeFilter]    = useState('all');
   const [page,          setPage]          = useState(1);
   const [loading,       setLoading]       = useState(true);
@@ -71,8 +70,6 @@ export default function AdminNotifications() {
   const unreadCount = enriched.filter(n => !n.isRead).length;
 
   const filtered = enriched.filter(n => {
-    if (filter === 'unread' && n.isRead) return false;
-    if (filter === 'read' && !n.isRead)  return false;
     if (typeFilter !== 'all' && n.type !== typeFilter) return false;
     return true;
   });
@@ -98,11 +95,6 @@ export default function AdminNotifications() {
     });
   }, [notifications]);
 
-  // Reset page when filter changes
-  const handleFilterChange = (f) => {
-    setFilter(f);
-    setPage(1);
-  };
 
   const getIconBg = (type) => {
     if (type === 'donation' || type === 'savings') return 'admin-notif-icon-donation';
