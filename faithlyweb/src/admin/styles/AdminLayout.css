@@ -7,13 +7,12 @@
    3. .admin-main      → flex-1 column, THIS is the only scroll zone
    ============================================================= */
 
-/* ── Shell: full viewport, flex row, NEVER scrolls itself ── */
 .admin-shell {
   display: flex;
   width: 100%;
   height: 100dvh;          /* dvh collapses mobile browser chrome */
   overflow: hidden;        /* ← critical: prevents the shell from growing */
-  background: #f4f6fb;
+  background: #e6eaf0;
 }
 
 /* ── Main content: grows to fill remaining width, scrolls vertically ── */

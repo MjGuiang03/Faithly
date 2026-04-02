@@ -1,7 +1,6 @@
 .admin-announce-main {
-  padding: 16px 24px;
-  background: transparent;
-  min-height: calc(100vh - 80px);
+  flex: 1;
+  max-width: 100%;
 }
 
 .admin-announce-header {

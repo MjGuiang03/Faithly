@@ -87,7 +87,7 @@
 }
 
 .user-home-page-title {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Inter', sans-serif;
   font-size: 32px;
   font-weight: 700;
   color: var(--foreground);
