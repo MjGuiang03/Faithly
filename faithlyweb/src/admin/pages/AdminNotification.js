@@ -136,35 +136,30 @@ export default function AdminNotifications() {
         </p>
       </div>
 
-      {/* Filters Bar */}
-      <div className="admin-notif-filters-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '16px', padding: '0 24px' }}>
-        <div className="admin-notif-tabs" style={{ margin: 0, padding: 0 }}>
-          {['all', 'unread', 'read'].map(f => (
+      {/* Filter Tabs matching User Design */}
+      <div className="admin-notif-tabs" style={{ margin: '0 24px 16px', overflowX: 'auto', flexWrap: 'nowrap', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', display: 'flex' }}>
+        {[
+          { key: 'all',        label: 'All' },
+          { key: 'member',     label: 'Members' },
+          { key: 'donation',   label: 'Donations' },
+          { key: 'savings',    label: 'Savings' },
+          { key: 'attendance', label: 'Attendance' },
+          { key: 'loan',       label: 'Loans' }
+        ].map(({ key, label }) => {
+          const count = enriched.filter(n => (key === 'all' ? true : n.type === key) && !n.isRead).length;
+          return (
             <button
-              key={f}
-              className={`admin-notif-tab${filter === f ? ' admin-notif-tab-active' : ''}`}
-              onClick={() => handleFilterChange(f)}
+              key={key}
+              className={`admin-notif-tab${typeFilter === key ? ' admin-notif-tab-active' : ''}`}
+              onClick={() => { setTypeFilter(key); setPage(1); }}
             >
-              {f.charAt(0).toUpperCase() + f.slice(1)}
-              {f === 'unread' && unreadCount > 0 && (
-                <span className="admin-notif-tab-badge">{unreadCount}</span>
+              {label}
+              {count > 0 && (
+                <span className="admin-notif-tab-badge">{count}</span>
               )}
             </button>
-          ))}
-        </div>
-        
-        <select 
-          value={typeFilter}
-          onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}
-          style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #D0D5DD', fontFamily: 'Inter', fontSize: '13px', background: 'white', color: '#344054', outline: 'none', cursor: 'pointer', minWidth: '140px' }}
-        >
-          <option value="all">All Types</option>
-          <option value="member">Members</option>
-          <option value="donation">Donations</option>
-          <option value="savings">Savings</option>
-          <option value="attendance">Attendance</option>
-          <option value="loan">Loans</option>
-        </select>
+          );
+        })}
       </div>
 
       {/* List */}

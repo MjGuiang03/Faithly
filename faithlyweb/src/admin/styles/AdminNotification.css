@@ -73,47 +73,60 @@
 /* ═══ Filter Tabs ═══ */
 .admin-notif-tabs {
   display: flex;
-  gap: 8px;
+  gap: 4px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 4px;
+  width: fit-content;
   margin-bottom: 16px;
 }
 
 .admin-notif-tab {
-  background: white;
-  border: 0.8px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 7px 16px;
-  font-family: Arial, sans-serif;
+  background: transparent;
+  border: none;
+  border-radius: 9px;
+  padding: 8px 16px;
+  font-family: 'Inter', sans-serif;
   font-size: 13px;
-  font-weight: 500;
-  color: #4a5565;
+  color: #6B7280;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 8px;
-  transition: all 0.15s;
+  gap: 7px;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
   line-height: 20px;
 }
 
-.admin-notif-tab:hover { background: #f9fafb; }
+.admin-notif-tab:hover {
+  background: #f3f4f6;
+}
 
 .admin-notif-tab-active {
   background: #1E3A8A;
-  color: white;
-  border-color: #1E3A8A;
+  color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }
 
 .admin-notif-tab-badge {
-  background: white;
-  color: #1E3A8A;
+  background: #1E3A8A;
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
   font-size: 11px;
-  font-weight: 700;
-  padding: 1px 7px;
+  font-weight: 600;
+  padding: 1px 6px;
   border-radius: 999px;
-  min-width: 20px;
-  height: 20px;
-  display: inline-flex;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
   align-items: center;
   justify-content: center;
+  line-height: 1;
+}
+
+.admin-notif-tab-active .admin-notif-tab-badge {
+  background: rgba(255, 255, 255, 0.28);
 }
 
 /* ═══ List ═══ */
