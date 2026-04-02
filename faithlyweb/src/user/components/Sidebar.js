@@ -229,6 +229,16 @@ export default function Sidebar() {
         <div className="user-sidebar-mobile-overlay" onClick={() => setCollapsed(true)} />
       )}
 
+      {isMobile && collapsed && (
+        <button
+          className="user-sidebar-mobile-toggle-btn"
+          onClick={toggleCollapsed}
+          title="Open Menu"
+        >
+          <Menu size={24} />
+        </button>
+      )}
+
       <div className={`user-sidebar ${collapsed ? 'user-sidebar-collapsed' : ''}`}>
 
         {/* Logo + Toggle button inside */}

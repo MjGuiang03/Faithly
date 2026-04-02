@@ -358,4 +358,9 @@ html {
   }
 }
 
+/* Standardize main page titles to 22px across user, admin, loan, and secretary dashboards */
+h1[class*="-title"]:not(.fl-hero-title) {
+  font-size: 22px !important;
+}
+
 
