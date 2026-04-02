@@ -159,7 +159,7 @@ export default function AdminNotifications() {
         <div className="admin-notif-empty">Loading notifications…</div>
       ) : paginated.length === 0 ? (
         <div className="admin-notif-empty">
-          {filter === 'unread' ? 'All caught up — no unread notifications.' : 'No notifications found.'}
+          No notifications found.
         </div>
       ) : (
         <>
