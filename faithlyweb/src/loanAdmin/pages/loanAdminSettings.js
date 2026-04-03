@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import LoanAdminSidebar from './loanAdminSidebar';
-import svgPaths from "../../imports/svg-icons";
+
 import '../styles/loanAdminSettings.css';
+import { Banknote } from 'lucide-react';
+
 
 export default function LoanAdminSettings() {
     const [churchName, setChurchName] = useState('Church of Grace');
@@ -62,10 +64,7 @@ export default function LoanAdminSettings() {
                 <div className="loan-admin-settings-section">
                     <div className="loan-admin-settings-section-header">
                         <div className="loan-admin-settings-section-icon blue">
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <path d={svgPaths.p35168980} stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                                <path d={svgPaths.p3d26e2c0} stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                            </svg>
+                            <Banknote size={20} color="#155DFC" />
                         </div>
                         <div>
                             <h3 className="loan-admin-settings-section-title">System Settings</h3>
@@ -118,10 +117,7 @@ export default function LoanAdminSettings() {
                 <div className="loan-admin-settings-section">
                     <div className="loan-admin-settings-section-header">
                         <div className="loan-admin-settings-section-icon purple">
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <path d={svgPaths.p1c3efea0} stroke="#7C3AED" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                                <path d={svgPaths.p25877f40} stroke="#7C3AED" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                            </svg>
+                            <Banknote size={20} color="#7C3AED" />
                         </div>
                         <div>
                             <h3 className="loan-admin-settings-section-title">Notification Settings</h3>
@@ -178,10 +174,7 @@ export default function LoanAdminSettings() {
                 <div className="loan-admin-settings-section">
                     <div className="loan-admin-settings-section-header">
                         <div className="loan-admin-settings-section-icon green">
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <path d={svgPaths.ped54800} stroke="#00A63E" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                                <path d={svgPaths.p3b27f100} stroke="#00A63E" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                            </svg>
+                            <Banknote size={20} color="#00A63E" />
                         </div>
                         <div>
                             <h3 className="loan-admin-settings-section-title">Security Settings</h3>
@@ -209,10 +202,7 @@ export default function LoanAdminSettings() {
 
                         <div className="loan-admin-settings-security-item">
                             <div className="loan-admin-settings-security-header">
-                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                    <path d={svgPaths.p15fea100} stroke="#6B7280" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333" />
-                                    <path d={svgPaths.p3b5dcf80} stroke="#6B7280" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333" />
-                                </svg>
+                                <Banknote size={16} color="#6B7280" />
                                 <div>
                                     <p className="loan-admin-settings-security-label">Admin Password</p>
                                     <p className="loan-admin-settings-security-desc">Last changed 45 days ago</p>
@@ -242,13 +232,7 @@ export default function LoanAdminSettings() {
                 <div className="loan-admin-settings-section">
                     <div className="loan-admin-settings-section-header">
                         <div className="loan-admin-settings-section-icon orange">
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <path d={svgPaths.p3713e00} stroke="#F59E0B" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                                <path d={svgPaths.pd2076c0} stroke="#F59E0B" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                                <path d="M8.33333 7.5H6.66667" stroke="#F59E0B" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                                <path d="M13.3333 10.8333H6.66667" stroke="#F59E0B" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                                <path d="M13.3333 14.1667H6.66667" stroke="#F59E0B" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                            </svg>
+                            <Banknote size={20} color="#F59E0B" />
                         </div>
                         <div>
                             <h3 className="loan-admin-settings-section-title">Loan Settings</h3>
@@ -322,10 +306,7 @@ export default function LoanAdminSettings() {
                 <div className="loan-admin-settings-section">
                     <div className="loan-admin-settings-section-header">
                         <div className="loan-admin-settings-section-icon pink">
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <path d={svgPaths.p3b998a80} stroke="#EC4899" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                                <path d={svgPaths.p2bb6700} stroke="#EC4899" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                            </svg>
+                            <Banknote size={20} color="#EC4899" />
                         </div>
                         <div>
                             <h3 className="loan-admin-settings-section-title">Email Configuration</h3>

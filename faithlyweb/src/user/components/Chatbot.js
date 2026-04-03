@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import '../styles/Chatbot.css';
+import { MapPin, User, X } from 'lucide-react';
+
 
 /* ─────────────────────────────────────────────
    Knowledge Base
@@ -343,10 +345,7 @@ export default function Chatbot({ isOpen, onClose }) {
         <div className="cb-header">
           <div className="cb-header-brand">
             <div className="cb-avatar">
-              <svg viewBox="0 0 24 24" fill="none" width="22" height="22">
-                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"
-                  fill="white" />
-              </svg>
+              <X size={22} />
             </div>
             <div className="cb-header-info">
               <p className="cb-header-name">FaithBot</p>
@@ -357,10 +356,7 @@ export default function Chatbot({ isOpen, onClose }) {
             </div>
           </div>
           <button className="cb-close-btn" onClick={onClose} aria-label="Close chat">
-            <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
-              <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-              <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            </svg>
+            <X size={18} />
           </button>
         </div>
 
@@ -370,9 +366,7 @@ export default function Chatbot({ isOpen, onClose }) {
             <div key={msg.id} className={`cb-msg-row cb-msg-row--${msg.sender}`}>
               {msg.sender === 'bot' && (
                 <div className="cb-bot-avatar">
-                  <svg viewBox="0 0 24 24" fill="none" width="14" height="14">
-                    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" fill="white" />
-                  </svg>
+                  <User size={14} />
                 </div>
               )}
               <div className={`cb-bubble cb-bubble--${msg.sender}`}>
@@ -401,9 +395,7 @@ export default function Chatbot({ isOpen, onClose }) {
           {isTyping && (
             <div className="cb-msg-row cb-msg-row--bot">
               <div className="cb-bot-avatar">
-                <svg viewBox="0 0 24 24" fill="none" width="14" height="14">
-                  <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" fill="white" />
-                </svg>
+                <User size={14} />
               </div>
               <div className="cb-bubble cb-bubble--bot cb-typing-bubble">
                 <span className="cb-typing-dot" />
@@ -449,10 +441,7 @@ export default function Chatbot({ isOpen, onClose }) {
             disabled={!input.trim() || isTyping}
             aria-label="Send message"
           >
-            <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
-              <line x1="22" y1="2" x2="11" y2="13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <polygon points="22 2 15 22 11 13 2 9 22 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <MapPin size={18} />
           </button>
         </div>
       </div>

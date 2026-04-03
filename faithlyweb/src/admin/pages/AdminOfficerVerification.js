@@ -1,10 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Search, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
+import { CheckCircle, ChevronLeft, ChevronRight, Circle, Eye, Search, X, XCircle } from 'lucide-react';
 import useDebounce from '../../hooks/useDebounce';
 import '../styles/AdminOfficerVerification.css';
-import svgPaths from "../../imports/svg-icons";
 
 import API from '../../utils/api';
 const PER_PAGE = 5;
@@ -36,10 +35,7 @@ function VerificationDetailsModal({ request, onClose, onApprove, onReject }) {
               <p className="admin-offver-modal-request-id">Request ID: VR-{String(request._id).slice(-3).toUpperCase()}</p>
             </div>
             <button className="admin-offver-modal-close" onClick={onClose}>
-              <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-                <path d="M15 5L5 15" stroke="#6a7282" strokeWidth="1.8" strokeLinecap="round" />
-                <path d="M5 5L15 15" stroke="#6a7282" strokeWidth="1.8" strokeLinecap="round" />
-              </svg>
+              <X size={18} color="#6a7282" />
             </button>
           </div>
 
@@ -73,20 +69,14 @@ function VerificationDetailsModal({ request, onClose, onApprove, onReject }) {
                   className="admin-offver-btn admin-offver-btn-cancel"
                   onClick={() => setShowRejectModal(true)}
                 >
-                  <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-                    <circle cx="10" cy="10" r="8.5" stroke="currentColor" strokeWidth="1.5" />
-                    <path d="M12.5 7.5L7.5 12.5M7.5 7.5L12.5 12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                  </svg>
+                  <XCircle size={18} />
                   Cancel
                 </button>
                 <button
                   className="admin-offver-btn admin-offver-btn-approve"
                   onClick={() => setShowApproveModal(true)}
                 >
-                  <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-                    <circle cx="10" cy="10" r="8.5" stroke="currentColor" strokeWidth="1.5" />
-                    <path d="M6.5 10L9 12.5L13.5 7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  <CheckCircle size={18} />
                   Approve for Level 2
                 </button>
               </>
@@ -160,10 +150,7 @@ function RejectModal({ request, onClose, onConfirm }) {
     <div className="admin-offver-modal-overlay" onClick={onClose} style={{ zIndex: 10000 }}>
       <div className="admin-offver-modal-confirm admin-offver-modal-reject" onClick={e => e.stopPropagation()}>
         <div className="admin-offver-confirm-icon admin-offver-confirm-icon-reject">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="10" stroke="#EF4444" strokeWidth="2" />
-            <path d="M15 9L9 15M9 9L15 15" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" />
-          </svg>
+          <CheckCircle size={24} color="#EF4444" />
         </div>
         <h3 className="admin-offver-confirm-title">Reject Verification?</h3>
         <p className="admin-offver-confirm-text">
@@ -223,10 +210,7 @@ function ApproveModal({ request, onClose, onConfirm }) {
 
         {/* Green checkmark icon */}
         <div className="admin-offver-confirm-icon admin-offver-confirm-icon-approve">
-          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-            <circle cx="14" cy="14" r="14" fill="#dcfce7" />
-            <path d="M8 14.5L12 18.5L20 10" stroke="#16a34a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <CheckCircle size={28} color="#16a34a" />
         </div>
 
         <h3 className="admin-offver-confirm-title">Approve Verification?</h3>
@@ -355,11 +339,7 @@ export default function AdminOfficerVerification() {
         <div className="admin-offver-stat-card">
           <div className="admin-offver-stat-header">
             <span className="admin-offver-stat-label">Pending Review</span>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d={svgPaths.p25397b80} stroke="#F59E0B" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d={svgPaths.p2c4f400} stroke="#F59E0B" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d={svgPaths.p2f5eb900} stroke="#F59E0B" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <Circle size={20} color="#F59E0B" />
           </div>
           <p className="admin-offver-stat-value admin-offver-stat-value-pending">{loading ? 'â€”' : stats.pending}</p>
         </div>
@@ -367,10 +347,7 @@ export default function AdminOfficerVerification() {
         <div className="admin-offver-stat-card">
           <div className="admin-offver-stat-header">
             <span className="admin-offver-stat-label">Approved</span>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d={svgPaths.p17cc7980} stroke="#00A63E" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d={svgPaths.p3fe63d80} stroke="#00A63E" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <CheckCircle size={20} color="#00A63E" />
           </div>
           <p className="admin-offver-stat-value admin-offver-stat-value-approved">{loading ? 'â€”' : stats.approved}</p>
         </div>
@@ -378,11 +355,7 @@ export default function AdminOfficerVerification() {
         <div className="admin-offver-stat-card">
           <div className="admin-offver-stat-header">
             <span className="admin-offver-stat-label">Rejected</span>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d={svgPaths.p14d24500} stroke="#EF4444" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M12.5 7.5L7.5 12.5" stroke="#EF4444" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M7.5 7.5L12.5 12.5" stroke="#EF4444" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <XCircle size={20} color="#EF4444" />
           </div>
           <p className="admin-offver-stat-value admin-offver-stat-value-rejected">{loading ? 'â€”' : stats.rejected}</p>
         </div>

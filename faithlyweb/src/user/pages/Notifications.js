@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import Sidebar from '../components/Sidebar';
-import svgPaths from '../../imports/svg-icons';
+
 import '../styles/Notifications.css';
 import API from '../../utils/api';
+import { Circle, User, Users } from 'lucide-react';
+
 
 const fmt = (n) =>
   n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : '₱0.00';
@@ -264,44 +266,27 @@ export default function Notifications() {
   const getIcon = (type) => {
     if (type === 'payment_pending') return (
       <div className="user-notif-icon" style={{ background: '#FFF7ED', border: '1px solid #FED7AA', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <circle cx="9" cy="9" r="7.5" stroke="#EA580C" strokeWidth="1.4" />
-          <path d="M9 5.5v4l2.5 1.5" stroke="#EA580C" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+        <User size={18} color="#EA580C" />
       </div>
     );
     if (type === 'loan') return (
       <div className="user-notif-icon user-notif-icon-loan">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <path d={svgPaths.p34ee3000} stroke="#B45309" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
-          <path d={svgPaths.p3054b580} stroke="#B45309" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
-          <path d="M7.5 9.75H12" stroke="#B45309" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
-          <path d="M7.5 12.75H12" stroke="#B45309" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
-        </svg>
+        <User size={18} color="#B45309" />
       </div>
     );
     if (type === 'donation') return (
       <div className="user-notif-icon user-notif-icon-donation">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <path d={svgPaths.p31f28900} stroke="#BE185D" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
-        </svg>
+        <User size={18} color="#BE185D" />
       </div>
     );
     if (type === 'savings') return (
       <div className="user-notif-icon" style={{ background: '#DCFCE7', border: '1px solid #86EFAC', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-        </svg>
+        <User size={18} color="#16A34A" />
       </div>
     );
     if (type === 'attendance') return (
       <div className="user-notif-icon user-notif-icon-attendance">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <path d="M6 1.5V4.5" stroke="#1D4ED8" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
-          <path d="M12 1.5V4.5" stroke="#1D4ED8" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
-          <path d={svgPaths.p5193100} stroke="#1D4ED8" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
-          <path d="M2.25 7.5H15.75" stroke="#1D4ED8" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
-        </svg>
+        <User size={18} color="#1D4ED8" />
       </div>
     );
     return null;
@@ -421,10 +406,7 @@ export default function Notifications() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="user-notif-empty">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="#d1d5dc" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="#d1d5dc" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <User size={40} color="#d1d5dc" />
             <p>No notifications found</p>
           </div>
         ) : (
@@ -493,7 +475,7 @@ export default function Notifications() {
 
               {/* Arrow */}
               <div className="user-terms-arrow">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                <Users size={24} color="#6B7280" />
               </div>
 
               {/* Proposed */}
@@ -562,7 +544,7 @@ export default function Notifications() {
                     <div style={{ gridColumn: '1 / -1' }}><div style={{ fontFamily: 'Inter', fontSize: '11px', color: '#9CA3AF' }}>Submitted</div><div style={{ fontFamily: 'Inter', fontSize: '13px', color: '#374151' }}>{detailModal.paymentData.submittedAt ? new Date(detailModal.paymentData.submittedAt).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}</div></div>
                   </div>
                   <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#EA580C" strokeWidth="1.2" /><path d="M6 4v2.5l1.5 1" stroke="#EA580C" strokeWidth="1.2" strokeLinecap="round" /></svg>
+                    <Circle size={12} color="#EA580C" />
                     <span style={{ fontFamily: 'Inter', fontSize: '11px', color: '#EA580C', fontWeight: 600 }}>Pending admin confirmation</span>
                   </div>
                   {detailModal.paymentData.proofData && (

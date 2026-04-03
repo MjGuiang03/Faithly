@@ -4,6 +4,8 @@ import { useAuth } from '../../context/AuthContext';
 import Sidebar from '../components/Sidebar';
 import '../styles/Loandetail.css';
 import API from '../../utils/api';
+import { CheckCircle, Circle, FileText, X } from 'lucide-react';
+
 
 const fileToBase64 = (file) =>
   new Promise((resolve, reject) => {
@@ -28,16 +30,12 @@ const STATUS_CLASS = {
 
 /* ── Back arrow ── */
 const BackIcon = () => (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-        <path d="M9 2L4 7l5 5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
+    <X size={14} />
 );
 
 /* ── Close icon ── */
 const CloseIcon = () => (
-    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-        <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-    </svg>
+    <X size={12} />
 );
 
 /* ════════════════════════════════════════════════════════════
@@ -56,11 +54,7 @@ function PayNowModal({ loan, onClose, onSuccess }) {
             name: 'Cash',
             desc: 'Pay in person at the office or cashier',
             icon: (
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <rect x="2" y="5" width="16" height="10" rx="2" stroke="#3b6d11" strokeWidth="1.3" />
-                    <circle cx="10" cy="10" r="2.5" stroke="#3b6d11" strokeWidth="1.3" />
-                    <path d="M5 10h.01M15 10h.01" stroke="#3b6d11" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
+                <Circle size={20} color="#3b6d11" />
             ),
             iconBg: 'ld-method-icon--cash',
             instructions: [
@@ -74,10 +68,7 @@ function PayNowModal({ loan, onClose, onSuccess }) {
             name: 'Bank transfer',
             desc: 'Transfer via online banking or over-the-counter',
             icon: (
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path d="M3 8h14M3 8V7l7-4 7 4v1M3 8v8h14V8" stroke="#185fa5" strokeWidth="1.3" strokeLinejoin="round" />
-                    <rect x="8" y="12" width="4" height="4" rx="0.5" stroke="#185fa5" strokeWidth="1.3" />
-                </svg>
+                <Circle size={20} color="#185fa5" />
             ),
             iconBg: 'ld-method-icon--bank',
             instructions: [
@@ -92,10 +83,7 @@ function PayNowModal({ loan, onClose, onSuccess }) {
             name: 'GCash',
             desc: 'Send via GCash wallet instantly',
             icon: (
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <circle cx="10" cy="10" r="7" stroke="#6d28d9" strokeWidth="1.3" />
-                    <path d="M10 7v3l2 2" stroke="#6d28d9" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                <Circle size={20} color="#6d28d9" />
             ),
             iconBg: 'ld-method-icon--gcash',
             instructions: [
@@ -158,10 +146,7 @@ function PayNowModal({ loan, onClose, onSuccess }) {
                 {submitted ? (
                     <div className="ld-pay-success">
                         <div className="ld-pay-success-icon">
-                            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                                <circle cx="14" cy="14" r="13" stroke="#22c55e" strokeWidth="1.5" />
-                                <path d="M8 14l4 4 8-8" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
+                            <CheckCircle size={28} color="#22c55e" />
                         </div>
                         <div className="ld-pay-success-title">Payment submitted!</div>
                         <div className="ld-pay-success-sub">Your payment is being processed. You'll be notified once confirmed.</div>
@@ -230,10 +215,7 @@ function PayNowModal({ loan, onClose, onSuccess }) {
                                         <span className="ld-upload-done-text">✓ {receipt.name}</span>
                                     ) : (
                                         <>
-                                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ marginBottom: '4px' }}>
-                                                <path d="M10 13V7M7 10l3-3 3 3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-                                                <path d="M3 17a4 4 0 0 1 0-8h.5A5.5 5.5 0 0 1 15.5 7H16a3 3 0 0 1 0 6H3z" stroke="currentColor" strokeWidth="1.3" />
-                                            </svg>
+                                            <FileText size={20} />
                                             <span>Click to upload screenshot or PDF</span>
                                         </>
                                     )}
