@@ -32,15 +32,15 @@
 /* Stats Cards */
 .admin-branch-stats {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: 1fr 1.1fr 1.1fr 1fr;
   gap: 24px;
   margin-bottom: 32px;
 }
 
 .admin-branch-stat-card {
   background: white;
-  border: 0.8px solid #e5e7eb;
-  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 2px;
   padding: 24.8px;
   min-height: 60px;
 }
@@ -71,14 +71,14 @@
 /* Branches Grid */
 .admin-branch-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1.1fr 1fr;
   gap: 24px;
 }
 
 .admin-branch-card {
   background: white;
-  border: 0.8px solid #e5e7eb;
-  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 2px;
   padding: 24.8px;
 }
 
@@ -93,7 +93,7 @@
   width: 48px;
   height: 48px;
   background: #eff6ff;
-  border-radius: 10px;
+  border-radius: 2px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -133,7 +133,7 @@
   align-items: center;
   height: 23.988px;
   padding: 4px 8px;
-  border-radius: 26843500px;
+  border-radius: 2px;
   background: #dcfce7;
   font-family: 'Inter', 'Arial', sans-serif;
   font-size: 12px;
@@ -188,7 +188,7 @@
   }
 
   .admin-branch-stats {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1.1fr 1fr;
   }
 
   .admin-branch-grid {
@@ -210,3 +210,10 @@
     gap: 12px;
   }
 }
+
+
+.admin-branch-stat-card { transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; }
+.admin-branch-stat-card:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.08); }
+
+.admin-branch-card { transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; }
+.admin-branch-card:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.08); }

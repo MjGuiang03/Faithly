@@ -27,16 +27,16 @@
 
 .admin-loan-stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: 1fr 1.1fr 1.1fr 1fr;
   gap: 12px;
   margin-bottom: 20px;
 }
 
 .admin-loan-stat-card {
   background: white;
-  border: 0.8px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 14px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 2px;
+  padding: 24px; /* Enhanced breathing room */
 }
 
 .admin-loan-stat-label {
@@ -60,8 +60,8 @@
 
 .admin-loan-search-section {
   background: white;
-  border: 0.8px solid #e5e7eb;
-  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 2px;
   padding: 16.8px;
   margin-bottom: 24px;
 }
@@ -81,8 +81,8 @@
 .admin-loan-search-input {
   width: 100%;
   height: 40px;
-  border: 0.8px solid #d1d5dc;
-  border-radius: 10px;
+  border: 1px solid #d1d5dc;
+  border-radius: 2px;
   padding: 8px 16px 8px 40px;
   font-family: 'Inter', sans-serif;
   font-size: 13px;
@@ -113,9 +113,9 @@
 
 .admin-loan-filter-button {
   height: 40px;
-  border: 0.8px solid #d1d5dc;
-  border-radius: 10px;
-  padding: 8px 16px;
+  border: 1px solid #d1d5dc;
+  border-radius: 2px;
+  padding: 24px; /* Enhanced breathing room */
   background: white;
   font-family: 'Inter', sans-serif;
   font-size: 13px;
@@ -138,8 +138,8 @@
 
 .admin-loan-table-section {
   background: white;
-  border: 0.8px solid #e5e7eb;
-  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 2px;
   overflow: hidden;
 }
 
@@ -161,7 +161,7 @@
   color: #4a5565;
   text-align: left;
   text-transform: uppercase;
-  padding: 10px 16px;
+  padding: 24px; /* Enhanced breathing room */
 }
 
 .admin-loan-table-row {
@@ -174,7 +174,7 @@
   font-size: 14px;
   line-height: 20px;
   color: #101828;
-  padding: 14px 16px;
+  padding: 24px; /* Enhanced breathing room */
 }
 
 .admin-loan-member-info {
@@ -217,7 +217,7 @@
   align-items: center;
   height: 24px;
   padding: 4px 12px;
-  border-radius: 9999px;
+  border-radius: 2px;
   font-family: 'Inter', sans-serif;
   font-size: 12px;
   font-weight: 500;
@@ -256,13 +256,13 @@
   height: 32px;
   border: none;
   background: none;
-  border-radius: 10px;
+  border-radius: 2px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px;
-}
+  padding: 24px; /* Enhanced breathing room */
+ transition: transform 0.3s ease, background 0.3s ease; }
 
 .admin-loan-action-btn:hover {
   background: #f3f4f6;
@@ -320,3 +320,6 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.admin-loan-stat-card { transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; }
+.admin-loan-stat-card:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.08); }

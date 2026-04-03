@@ -32,22 +32,22 @@
 /* Stats Grids */
 .admin-reports-stats-grid-4 {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: 1fr 1.1fr 1.1fr 1fr;
   gap: 24px;
   margin-bottom: 24px;
 }
 
 .admin-reports-stats-grid-2 {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1.1fr 1fr;
   gap: 24px;
   margin-bottom: 32px;
 }
 
 .admin-reports-stat-card {
   background: white;
-  border: 0.8px solid #e5e7eb;
-  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 2px;
   padding: 24.8px;
   min-height: 137.588px;
   display: flex;
@@ -121,8 +121,8 @@
 /* Chart Sections */
 .admin-reports-chart-section {
   background: white;
-  border: 0.8px solid #e5e7eb;
-  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 2px;
   padding: 24.8px;
   margin-bottom: 24px;
 }
@@ -152,7 +152,7 @@
 /* Two Column Grid */
 .admin-reports-two-col-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1.1fr 1fr;
   gap: 24px;
   margin-bottom: 24px;
 }
@@ -204,7 +204,7 @@
 /* Branch Stats */
 .admin-reports-branch-stats {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1.1fr 1fr;
   gap: 16px;
   margin-top: 24px;
   padding: 0 8px;
@@ -272,7 +272,7 @@
   border: 1px solid #e5e7eb !important;
   border-radius: 8px !important;
   padding: 12px !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  /* box-shadow removed for flat layout */
 }
 
 .admin-reports-chart-container .recharts-tooltip-label {
@@ -296,7 +296,7 @@
   }
 
   .admin-reports-stats-grid-4 {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1.1fr 1fr;
   }
 
   .admin-reports-two-col-grid {
@@ -304,7 +304,7 @@
   }
 
   .admin-reports-branch-stats {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1.1fr 1fr;
   }
 }
 
@@ -329,3 +329,7 @@
     overflow-x: auto;
   }
 }
+
+
+.admin-reports-stat-card { transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; }
+.admin-reports-stat-card:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.08); }

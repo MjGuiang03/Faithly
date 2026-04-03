@@ -32,15 +32,15 @@
 /* Stats Cards */
 .admin-att-stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr 1.2fr 1fr;
   gap: 24px;
   margin-bottom: 32px;
 }
 
 .admin-att-stat-card {
   background: white;
-  border: 0.8px solid #e5e7eb;
-  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 2px;
   padding: 24.8px;
   min-height: 109.588px;
 }
@@ -86,14 +86,14 @@
 /* Branches Grid */
 .admin-att-branches-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1.1fr 1fr;
   gap: 24px;
 }
 
 .admin-att-branch-card {
   background: white;
-  border: 0.8px solid #e5e7eb;
-  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 2px;
   padding: 24.8px;
   display: flex;
   justify-content: space-between;
@@ -134,7 +134,7 @@
 .admin-att-add-service-btn {
   background: #1E3A8A;
   border: none;
-  border-radius: 10px;
+  border-radius: 2px;
   height: 32px;
   padding: 5.8px 12px;
   font-family: 'Inter', 'Arial', sans-serif;
@@ -147,7 +147,7 @@
   align-items: center;
   gap: 8px;
   transition: background 0.2s ease;
-}
+ transition: transform 0.3s ease, background 0.3s ease; }
 
 .admin-att-add-service-btn:hover {
   background: #0d4ed4;
@@ -161,14 +161,14 @@
 /* Table Section */
 .admin-att-table-section {
   background: white;
-  border: 0.8px solid #e5e7eb;
-  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 2px;
   overflow: hidden;
 }
 
 .admin-att-table-header {
   padding: 24px 24px 0 24px;
-  border-bottom: 0.8px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
   padding-bottom: 24px;
 }
 
@@ -186,7 +186,7 @@
 }
 
 .admin-att-thead tr {
-  border-bottom: 0.8px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .admin-att-th {
@@ -256,7 +256,7 @@
 .admin-att-spinner {
   width: 20px;
   height: 20px;
-  border: 2px solid #e5e7eb;
+  border: 1px solid #e5e7eb;
   border-top-color: #1E3A8A;
   border-radius: 50%;
   animation: admin-att-spin 0.8s linear infinite;
@@ -271,13 +271,13 @@
 /* ═══ Search + Table Header ═══ */
 .admin-att-table-header {
   background: white;
-  border: 0.8px solid #e5e7eb;
-  border-radius: 14px 14px 0 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 2px;
   padding: 18px 24px;
   display: flex;
   align-items: center;
   gap: 12px;
-  border-bottom: 0.8px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .admin-att-section-title {
@@ -295,8 +295,8 @@
   align-items: center;
   gap: 8px;
   background: #f9fafb;
-  border: 0.8px solid #e5e7eb;
-  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 2px;
   padding: 7px 12px;
   min-width: 220px;
   transition: border-color 0.2s;
@@ -328,8 +328,8 @@
 
 .view-all-btn {
   background: white;
-  border: 0.8px solid #e5e7eb;
-  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 2px;
   padding: 7px 16px;
   font-family: 'Inter', 'Arial', sans-serif;
   font-size: 14px;
@@ -339,7 +339,7 @@
   white-space: nowrap;
   transition: all 0.2s;
   flex-shrink: 0;
-}
+ transition: transform 0.3s ease, background 0.3s ease; }
 
 .view-all-btn:hover {
   background: #eff6ff;
@@ -348,9 +348,9 @@
 
 .admin-att-table-container {
   background: white;
-  border: 0.8px solid #e5e7eb;
+  border: 1px solid #e5e7eb;
   border-top: none;
-  border-radius: 0 0 14px 14px;
+  border-radius: 2px;
   overflow-x: auto;
   min-height: 400px;
 }
@@ -369,10 +369,10 @@
 
 .admin-att-modal {
   background: white;
-  border-radius: 10px;
+  border-radius: 2px;
   width: 90%;
   max-width: 432px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  /* box-shadow removed for flat layout */
 }
 
 .admin-att-modal-header {
@@ -413,8 +413,8 @@
 .admin-att-form-select,
 .admin-att-form-input {
   height: 40.8px;
-  border: 0.8px solid #d1d5dc;
-  border-radius: 10px;
+  border: 1px solid #d1d5dc;
+  border-radius: 2px;
   padding: 0 16px;
   font-family: 'Inter', 'Arial', sans-serif;
   font-size: 16px;
@@ -448,7 +448,7 @@
 .admin-att-btn {
   flex: 1;
   height: 41.6px;
-  border-radius: 10px;
+  border-radius: 2px;
   font-family: 'Inter', 'Arial', sans-serif;
   font-size: 16px;
   font-weight: 500;
@@ -457,7 +457,7 @@
   cursor: pointer;
   transition: all 0.2s;
   border: none;
-}
+ transition: transform 0.3s ease, background 0.3s ease; }
 
 .admin-att-btn:disabled {
   opacity: 0.6;
@@ -466,9 +466,9 @@
 
 .admin-att-btn-cancel {
   background: white;
-  border: 0.8px solid #d1d5dc;
+  border: 1px solid #d1d5dc;
   color: #0a0a0a;
-}
+ transition: transform 0.3s ease, background 0.3s ease; }
 
 .admin-att-btn-cancel:hover:not(:disabled) {
   background: #f9fafb;
@@ -477,7 +477,7 @@
 .admin-att-btn-primary {
   background: #1E3A8A;
   color: white;
-}
+ transition: transform 0.3s ease, background 0.3s ease; }
 
 .admin-att-btn-primary:hover:not(:disabled) {
   background: #0d4ed4;
@@ -516,5 +516,11 @@
   .admin-att-add-service-btn {
     width: 100%;
     justify-content: center;
-  }
+   transition: transform 0.3s ease, background 0.3s ease; }
 }
+
+.admin-att-stat-card { transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; }
+.admin-att-stat-card:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.08); }
+
+.admin-att-branch-card { transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; }
+.admin-att-branch-card:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.08); }

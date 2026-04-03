@@ -27,15 +27,15 @@
 /* Stats */
 .admin-offver-stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr 1.2fr 1fr;
   gap: 16px;
   margin-bottom: 20px;
 }
 
 .admin-offver-stat-card {
   background: white;
-  border: 0.8px solid #e5e7eb;
-  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 2px;
   padding: 18px 20px;
 }
 
@@ -68,9 +68,9 @@
 /* Info box */
 .admin-offver-info {
   background: #e7f0ff;
-  border: 0.8px solid #b3d4ff;
-  border-radius: 10px;
-  padding: 14px 16px;
+  border: 1px solid #b3d4ff;
+  border-radius: 2px;
+  padding: 24px; /* Enhanced breathing room */
   display: flex;
   gap: 12px;
   margin-bottom: 20px;
@@ -126,18 +126,18 @@
   height: 44px;
   padding: 10px 14px 10px 42px;
   border: 1px solid #D1D5DC;
-  border-radius: 8px;
+  border-radius: 2px;
   font-family: 'Inter', sans-serif;
   font-size: 14px;
   color: #101828;
   background: white;
-  box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
+  /* box-shadow removed for flat layout */
   transition: all 0.2s;
 }
 
 .admin-offver-search-input:focus {
   border-color: #1E3A8A;
-  box-shadow: 0px 0px 0px 4px rgba(21, 93, 252, 0.1);
+  /* box-shadow removed for flat layout */
   outline: none;
 }
 
@@ -154,20 +154,20 @@
   border-collapse: collapse;
 }
 
-.admin-offver-table-header { border-bottom: 0.8px solid #e5e7eb; }
+.admin-offver-table-header { border-bottom: 1px solid #e5e7eb; }
 
 .admin-offver-table-header-cell {
   font-family: Arial, sans-serif;
   font-size: 13px;
   color: #6a7282;
   text-align: left;
-  padding: 14px 12px;
+  padding: 24px; /* Enhanced breathing room */
   white-space: nowrap;
   font-weight: 500;
 }
 
 .admin-offver-table-row {
-  border-bottom: 0.8px solid #f3f4f6;
+  border-bottom: 1px solid #f3f4f6;
   transition: background 0.15s;
 }
 
@@ -178,7 +178,7 @@
   font-family: Arial, sans-serif;
   font-size: 13px;
   color: #101828;
-  padding: 14px 12px;
+  padding: 24px; /* Enhanced breathing room */
   vertical-align: middle;
   line-height: 18px;
 }
@@ -187,7 +187,7 @@
   display: inline-flex;
   align-items: center;
   padding: 3px 10px;
-  border-radius: 999px;
+  border-radius: 2px;
   font-family: Arial, sans-serif;
   font-size: 12px;
   font-weight: 500;
@@ -202,18 +202,18 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 14px;
+  padding: 24px; /* Enhanced breathing room */
   background: white;
   border: 1px solid #D1D5DC;
-  border-radius: 8px;
+  border-radius: 2px;
   font-family: 'Inter', sans-serif;
   font-size: 14px;
   font-weight: 600;
   color: #344054;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
-}
+  /* box-shadow removed for flat layout */
+ transition: transform 0.3s ease, background 0.3s ease; }
 
 .admin-offver-view-btn:hover {
   background: #F9FAFB;
@@ -243,9 +243,9 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 14px;
+  padding: 24px; /* Enhanced breathing room */
   border: 1px solid #D1D5DC;
-  border-radius: 8px;
+  border-radius: 2px;
   background: white;
   font-family: 'Inter', sans-serif;
   font-size: 14px;
@@ -253,8 +253,8 @@
   color: #344054;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
-}
+  /* box-shadow removed for flat layout */
+ transition: transform 0.3s ease, background 0.3s ease; }
 
 .admin-offver-pagination-btn:hover:not(:disabled) {
   background: #F9FAFB;
@@ -279,7 +279,7 @@
   justify-content: center;
   border: none;
   background: transparent;
-  border-radius: 8px;
+  border-radius: 2px;
   font-family: 'Inter', sans-serif;
   font-size: 14px;
   font-weight: 500;
@@ -317,17 +317,17 @@
 
 .admin-offver-modal-details {
   background: white;
-  border-radius: 16px;
+  border-radius: 2px;
   width: 100%;
   max-width: 460px;
-  box-shadow: 0 24px 48px rgba(0,0,0,0.16);
+  /* box-shadow removed for flat layout */
   overflow: hidden;
   animation: slideUp 0.2s cubic-bezier(0.34,1.56,0.64,1);
 }
 
 .admin-offver-modal-header {
   padding: 22px 24px 14px 24px;
-  border-bottom: 0.8px solid #f3f4f6;
+  border-bottom: 1px solid #f3f4f6;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -360,7 +360,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
+  border-radius: 2px;
   flex-shrink: 0;
   transition: background 0.15s;
 }
@@ -382,7 +382,7 @@
 
 .admin-offver-info-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1.1fr 1fr;
   gap: 14px 24px;
 }
 
@@ -420,7 +420,7 @@
 .admin-offver-btn {
   flex: 1;
   height: 44px;
-  border-radius: 10px;
+  border-radius: 2px;
   font-family: Arial, sans-serif;
   font-size: 14px;
   font-weight: 600;
@@ -431,36 +431,36 @@
   justify-content: center;
   gap: 7px;
   transition: all 0.15s;
-}
+ transition: transform 0.3s ease, background 0.3s ease; }
 
 .admin-offver-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .admin-offver-btn-cancel {
   background: #6b7280;
   color: white;
-}
+ transition: transform 0.3s ease, background 0.3s ease; }
 .admin-offver-btn-cancel:hover:not(:disabled)  { background: #4b5563; }
 
 .admin-offver-btn-approve {
   background: #00A63E;
   color: white;
-}
+ transition: transform 0.3s ease, background 0.3s ease; }
 .admin-offver-btn-approve:hover:not(:disabled) { background: #059669; }
 
 .admin-offver-btn-reject {
   background: #EF4444;
   color: white;
-}
+ transition: transform 0.3s ease, background 0.3s ease; }
 .admin-offver-btn-reject:hover:not(:disabled)  { background: #DC2626; }
 
 /* ═══ Confirmation Modals ═══ */
 .admin-offver-modal-confirm {
   background: white;
-  border-radius: 20px;
+  border-radius: 2px;
   width: 100%;
   max-width: 400px;
   padding: 32px 28px 26px 28px;
-  box-shadow: 0 24px 48px rgba(0,0,0,0.16);
+  /* box-shadow removed for flat layout */
   text-align: center;
   animation: slideUp 0.22s cubic-bezier(0.34,1.56,0.64,1);
 }
@@ -518,9 +518,9 @@
 .admin-offver-form-textarea {
   width: 100%;
   min-height: 80px;
-  border: 0.8px solid #d1d5dc;
-  border-radius: 8px;
-  padding: 10px 12px;
+  border: 1px solid #d1d5dc;
+  border-radius: 2px;
+  padding: 24px; /* Enhanced breathing room */
   font-family: Arial, sans-serif;
   font-size: 13px;
   color: #101828;
@@ -535,9 +535,9 @@
 
 .admin-offver-benefits {
   background: #D1FAE5;
-  border: 0.8px solid #6EE7B7;
-  border-radius: 8px;
-  padding: 14px 16px;
+  border: 1px solid #6EE7B7;
+  border-radius: 2px;
+  padding: 24px; /* Enhanced breathing room */
   margin-bottom: 20px;
   text-align: left;
 }
@@ -572,28 +572,28 @@
 .admin-offver-confirm-actions .admin-offver-btn {
   flex: 1;
   height: 44px;
-}
+ transition: transform 0.3s ease, background 0.3s ease; }
 
 .admin-offver-btn-secondary {
   background: #f3f4f6;
   border: none;
   color: #374151;
   font-weight: 600;
-}
+ transition: transform 0.3s ease, background 0.3s ease; }
 .admin-offver-btn-secondary:hover:not(:disabled) { background: #e5e7eb; }
 
 .admin-offver-btn-danger {
   background: #EF4444;
   color: white;
   border: none;
-}
+ transition: transform 0.3s ease, background 0.3s ease; }
 .admin-offver-btn-danger:hover:not(:disabled) { background: #DC2626; }
 
 .admin-offver-btn-success {
   background: #00A63E;
   color: white;
   border: none;
-}
+ transition: transform 0.3s ease, background 0.3s ease; }
 .admin-offver-btn-success:hover:not(:disabled) { background: #059669; }
 
 @keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
@@ -608,3 +608,6 @@
   .admin-offver-info-grid       { grid-template-columns: 1fr; }
   .admin-offver-table           { display: block; overflow-x: auto; }
 }
+
+.admin-offver-stat-card { transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; }
+.admin-offver-stat-card:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.08); }

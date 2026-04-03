@@ -25,7 +25,7 @@
 /* ── Logo / brand area ── */
 .loan-admin-sidebar-logo {
   padding: 24px;
-  border-bottom: 0.8px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
   flex-shrink: 0;
 }
 
@@ -90,7 +90,7 @@
   color: rgba(255, 255, 255, 0.72);
   font-size: 16px;
   font-family: 'Arial', sans-serif;
-  border-radius: 10px;
+  border-radius: 2px;
   cursor: pointer;
   transition: all 0.2s;
   width: 100%;
@@ -117,7 +117,7 @@
 
 /* ── Profile / sign-out footer ── */
 .loan-admin-sidebar-profile {
-  padding: 16px;
+  padding: 24px; /* Enhanced breathing room */
   border-top: 0.8px solid rgba(255, 255, 255, 0.12);
   flex-shrink: 0;
 }
@@ -179,13 +179,13 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 12px;
+  padding: 24px; /* Enhanced breathing room */
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.12);
   color: rgba(255, 255, 255, 0.72);
   font-size: 14px;
   font-family: 'Arial', sans-serif;
-  border-radius: 10px;
+  border-radius: 2px;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -246,7 +246,7 @@
   color: rgba(255, 255, 255, 0.65);
   font-size: 14px;
   font-family: 'Arial', sans-serif;
-  border-radius: 0 8px 8px 0;
+  border-radius: 2px;
   cursor: pointer;
   transition: all 0.2s;
   width: 100%;
@@ -295,7 +295,7 @@
   min-width: 20px;
   height: 20px;
   padding: 0 5px;
-  border-radius: 999px;
+  border-radius: 2px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -330,11 +330,11 @@
 
 .logout-modal-content {
   background: white;
-  border-radius: 14px;
+  border-radius: 2px;
   padding: 32px;
   max-width: 400px;
   width: 100%;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  /* box-shadow removed for flat layout */
 }
 
 .logout-modal-title {
@@ -363,7 +363,7 @@
 .logout-modal-confirm {
   padding: 12px 24px;
   border: none;
-  border-radius: 10px;
+  border-radius: 2px;
   font-family: 'Arial', sans-serif;
   font-size: 14px;
   font-weight: 600;
@@ -391,7 +391,7 @@
 
 /* ── Theme Toggle (Switch Style) ── */
 .loan-admin-sidebar-theme-toggle {
-  padding: 12px 16px;
+  padding: 24px; /* Enhanced breathing room */
   margin-top: auto;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   flex-shrink: 0;
@@ -401,9 +401,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
+  padding: 24px; /* Enhanced breathing room */
   background: rgba(255, 255, 255, 0.04);
-  border-radius: 12px;
+  border-radius: 2px;
 }
 
 .loan-theme-switch-label {
@@ -432,7 +432,7 @@
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
   background-color: rgba(255, 255, 255, 0.15);
-  border-radius: 34px;
+  border-radius: 2px;
   transition: 0.3s;
 }
 
@@ -446,7 +446,7 @@
   background-color: white;
   border-radius: 50%;
   transition: 0.3s;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  /* box-shadow removed for flat layout */
 }
 
 /* ========== DARK MODE OVERRIDES ========== */

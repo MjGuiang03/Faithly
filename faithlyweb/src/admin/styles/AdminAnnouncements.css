@@ -35,9 +35,9 @@
 /* ─── Card shared ─── */
 .admin-announce-card {
   background: white;
-  border-radius: 16px;
+  border-radius: 2px;
   border: 1px solid #e2e8f0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  /* box-shadow removed for flat layout */
   overflow: hidden;
 }
 
@@ -89,8 +89,8 @@
 .admin-announce-input,
 .admin-announce-select,
 .admin-announce-textarea {
-  padding: 10px 14px;
-  border-radius: 10px;
+  padding: 24px; /* Enhanced breathing room */
+  border-radius: 2px;
   border: 1.5px solid #e2e8f0;
   font-size: 14px;
   color: #1e293b;
@@ -111,7 +111,7 @@
   outline: none;
   border-color: #1E3A8A;
   background: white;
-  box-shadow: 0 0 0 3px rgba(21, 93, 252, 0.1);
+  /* box-shadow removed for flat layout */
 }
 
 /* ─── Radio group ─── */
@@ -125,8 +125,8 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 14px;
-  border-radius: 8px;
+  padding: 24px; /* Enhanced breathing room */
+  border-radius: 2px;
   border: 1.5px solid #e2e8f0;
   cursor: pointer;
   font-size: 13px;
@@ -163,7 +163,7 @@
   align-items: center;
   gap: 5px;
   padding: 6px 12px;
-  border-radius: 20px;
+  border-radius: 2px;
   border: 1.5px solid #e2e8f0;
   cursor: pointer;
   font-size: 12px;
@@ -195,11 +195,11 @@
 
 /* ─── Submit button ─── */
 .admin-announce-submit {
-  padding: 12px;
+  padding: 24px; /* Enhanced breathing room */
   background: #1E3A8A;
   color: white;
   border: none;
-  border-radius: 10px;
+  border-radius: 2px;
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
@@ -231,8 +231,8 @@
 
 .admin-announce-item {
   border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 12px 14px;
+  border-radius: 2px;
+  padding: 24px; /* Enhanced breathing room */
   background: #fafafa;
   display: flex;
   align-items: flex-start;
@@ -284,7 +284,7 @@
   color: #1E3A8A;
   font-weight: 600;
   padding: 2px 8px;
-  border-radius: 20px;
+  border-radius: 2px;
   font-size: 11px;
 }
 
@@ -293,7 +293,7 @@
   align-items: center;
   gap: 3px;
   padding: 2px 8px;
-  border-radius: 20px;
+  border-radius: 2px;
   font-size: 10px;
   font-weight: 500;
 }
@@ -330,7 +330,7 @@
   border: none;
   cursor: pointer;
   padding: 6px;
-  border-radius: 8px;
+  border-radius: 2px;
   transition: background 0.2s;
   flex-shrink: 0;
   display: flex;
@@ -405,7 +405,7 @@
   font-weight: 600;
   font-family: 'Inter', sans-serif;
   padding: 4px 12px;
-  border-radius: 20px;
+  border-radius: 2px;
 }
 
 /* ── Filter Tabs & Slide Container ── */
@@ -431,13 +431,13 @@
   background: #f8fafc;
   color: #475569;
   border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  border-radius: 2px;
   cursor: pointer;
   font-weight: 500;
   display: flex;
   align-items: center;
   transition: all 0.2s;
-}
+ transition: transform 0.3s ease, background 0.3s ease; }
 
 .admin-announce-toggle-btn:hover {
   background: #f1f5f9;
@@ -453,7 +453,7 @@
 
 .admin-announce-filter-tab {
   padding: 6px 14px;
-  border-radius: 20px;
+  border-radius: 2px;
   border: 1.5px solid #e2e8f0;
   background: #fcfcfd;
   font-size: 13px;
@@ -478,13 +478,13 @@
 /* ── Template Picker ── */
 .admin-announce-template-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr 1.2fr 1fr;
   gap: 8px;
 }
 
 .admin-announce-tpl-btn {
   border: 1.5px solid #e2e8f0;
-  border-radius: 10px;
+  border-radius: 2px;
   padding: 8px 6px 7px;
   background: #fcfcfd;
   cursor: pointer;
@@ -496,7 +496,7 @@
   flex-direction: column;
   align-items: center;
   gap: 5px;
-}
+ transition: transform 0.3s ease, background 0.3s ease; }
 
 .admin-announce-tpl-btn.active {
   border-color: #1E3A8A;
@@ -507,7 +507,7 @@
 .admin-announce-tpl-thumb {
   width: 100%;
   height: 32px;
-  border-radius: 5px;
+  border-radius: 2px;
 }
 
 .admin-announce-tpl-banner {
@@ -526,7 +526,7 @@
 
 /* ── Image preview variants ── */
 .admin-announce-img-preview {
-  border-radius: 8px;
+  border-radius: 2px;
   overflow: hidden;
   margin-top: 6px;
 }
@@ -552,14 +552,14 @@
 /* ── Live Preview card ── */
 .admin-announce-preview-wrap {
   background: #f8fafc;
-  border-radius: 10px;
-  padding: 10px;
+  border-radius: 2px;
+  padding: 24px; /* Enhanced breathing room */
   border: 1px solid #e2e8f0;
 }
 
 .ann-card {
   background: white;
-  border-radius: 10px;
+  border-radius: 2px;
   border: 1px solid #e2e8f0;
   overflow: hidden;
 }
@@ -608,7 +608,7 @@
 }
 
 .ann-body {
-  padding: 10px 12px;
+  padding: 24px; /* Enhanced breathing room */
   flex: 1;
 }
 
@@ -618,7 +618,7 @@
   background: #EEF2FF;
   color: #1E3A8A;
   padding: 2px 8px;
-  border-radius: 99px;
+  border-radius: 2px;
   display: inline-block;
   margin-bottom: 5px;
 }
@@ -655,7 +655,7 @@
 /* ── Tighter list items ── */
 .admin-announce-item {
   border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  border-radius: 2px;
   padding: 9px 10px;
   background: #fafafa;
   display: flex;
@@ -717,3 +717,9 @@
   gap: 5px;
   padding: 0 16px 8px;
 }
+
+.admin-announce-card { transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; }
+.admin-announce-card:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.08); }
+
+.ann-card { transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; }
+.ann-card:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.08); }

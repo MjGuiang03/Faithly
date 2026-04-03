@@ -39,7 +39,7 @@
   font-size: 12px;
   font-weight: 600;
   padding: 3px 10px;
-  border-radius: 999px;
+  border-radius: 2px;
   height: 24px;
   display: inline-flex;
   align-items: center;
@@ -58,7 +58,7 @@
   align-items: center;
   gap: 6px;
   transition: opacity 0.2s;
-}
+ transition: transform 0.3s ease, background 0.3s ease; }
 
 .admin-notif-mark-all-btn:hover { opacity: 0.75; }
 
@@ -76,7 +76,7 @@
   gap: 4px;
   background: #ffffff;
   border: 1px solid #e5e7eb;
-  border-radius: 12px;
+  border-radius: 2px;
   padding: 4px;
   width: fit-content;
   margin-bottom: 16px;
@@ -85,8 +85,8 @@
 .admin-notif-tab {
   background: transparent;
   border: none;
-  border-radius: 9px;
-  padding: 8px 16px;
+  border-radius: 2px;
+  padding: 24px; /* Enhanced breathing room */
   font-family: 'Inter', sans-serif;
   font-size: 13px;
   color: #6B7280;
@@ -106,7 +106,7 @@
 .admin-notif-tab-active {
   background: #1E3A8A;
   color: #ffffff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  /* box-shadow removed for flat layout */
 }
 
 .admin-notif-tab-badge {
@@ -116,7 +116,7 @@
   font-size: 11px;
   font-weight: 600;
   padding: 1px 6px;
-  border-radius: 999px;
+  border-radius: 2px;
   min-width: 18px;
   height: 18px;
   display: flex;
@@ -139,10 +139,10 @@
 /* ═══ Card ═══ */
 .admin-notif-item {
   background: white;
-  border: 0.8px solid #e5e7eb;
+  border: 1px solid #e5e7eb;
   border-left: 3.5px solid transparent;
-  border-radius: 10px;
-  padding: 16px 18px;
+  border-radius: 2px;
+  padding: 24px; /* Enhanced breathing room */
   display: flex;
   gap: 14px;
   align-items: flex-start;
@@ -150,7 +150,7 @@
 }
 
 .admin-notif-item:hover {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  /* box-shadow removed for flat layout */
 }
 
 .admin-notif-item-unread {
@@ -255,7 +255,7 @@
   font-size: 11px;
   font-weight: 600;
   padding: 2px 9px;
-  border-radius: 999px;
+  border-radius: 2px;
   display: inline-flex;
   align-items: center;
   height: 20px;
@@ -268,7 +268,7 @@
   font-size: 11px;
   font-weight: 500;
   padding: 2px 9px;
-  border-radius: 999px;
+  border-radius: 2px;
   display: inline-flex;
   align-items: center;
   height: 20px;
@@ -285,7 +285,7 @@
   padding: 0;
   transition: opacity 0.15s;
   white-space: nowrap;
-}
+ transition: transform 0.3s ease, background 0.3s ease; }
 
 .admin-notif-mark-read-btn:hover { opacity: 0.7; text-decoration: underline; }
 
@@ -324,8 +324,8 @@
   min-width: 32px;
   height: 32px;
   padding: 0 8px;
-  border: 0.8px solid #e5e7eb;
-  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  border-radius: 2px;
   background: white;
   font-size: 13px;
   font-family: Arial, sans-serif;
@@ -335,7 +335,7 @@
   align-items: center;
   justify-content: center;
   transition: all 0.15s;
-}
+ transition: transform 0.3s ease, background 0.3s ease; }
 
 .admin-notif-page-btn:hover:not(:disabled):not(.active) {
   background: #f3f4f6;
@@ -358,7 +358,7 @@
 @media (max-width: 768px) {
   .admin-notif-title-row   { flex-direction: column; align-items: flex-start; gap: 10px; }
   .admin-notif-tabs        { flex-wrap: wrap; }
-  .admin-notif-item        { padding: 14px 14px; }
+  .admin-notif-item        { padding: 24px; /* Enhanced breathing room */ }
   .admin-notif-content-footer { flex-direction: column; align-items: flex-start; gap: 6px; }
   .admin-notif-pagination  { flex-direction: column; gap: 10px; align-items: flex-start; }
 }

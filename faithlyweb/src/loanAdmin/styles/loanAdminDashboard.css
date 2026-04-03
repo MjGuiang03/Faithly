@@ -39,8 +39,8 @@
 .loan-admin-dashboard-payment-card {
     background: #F9FAFB;
     border: 1px solid #F3F4F6;
-    border-radius: 10px;
-    padding: 14px 16px;
+    border-radius: 2px;
+    padding: 24px; /* Enhanced breathing room */
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -55,7 +55,7 @@
 .loan-admin-dashboard-payment-icon {
     width: 36px;
     height: 36px;
-    border-radius: 8px;
+    border-radius: 2px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -110,3 +110,6 @@
     font-size: 11px;
     margin: 0;
 }
+
+.loan-admin-dashboard-payment-card { transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; }
+.loan-admin-dashboard-payment-card:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.08); }

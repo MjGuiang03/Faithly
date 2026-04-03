@@ -32,15 +32,15 @@
 /* Stats Cards */
 .admin-don-new-stats {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: 1fr 1.1fr 1.1fr 1fr;
   gap: 24px;
   margin-bottom: 32px;
 }
 
 .admin-don-new-stat-card {
   background: white;
-  border: 0.8px solid #e5e7eb;
-  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 2px;
   padding: 24.8px;
   min-height: 80px;
 }
@@ -84,8 +84,8 @@
   align-items: center;
   gap: 8px;
   background: #f9fafb;
-  border: 0.8px solid #e5e7eb;
-  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 2px;
   padding: 7px 12px;
   min-width: 220px;
   transition: border-color 0.2s;
@@ -118,8 +118,8 @@
 /* Section */
 .admin-don-new-section {
   background: white;
-  border: 0.8px solid #e5e7eb;
-  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 2px;
   padding: 24.8px;
 }
 
@@ -155,7 +155,7 @@
 }
 
 .admin-don-new-thead tr {
-  border-bottom: 0.8px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .admin-don-new-th {
@@ -225,7 +225,7 @@
 .admin-don-new-spinner {
   width: 20px;
   height: 20px;
-  border: 2px solid #e5e7eb;
+  border: 1px solid #e5e7eb;
   border-top-color: #1E3A8A;
   border-radius: 50%;
   animation: admin-don-new-spin 0.8s linear infinite;
@@ -267,9 +267,9 @@
 
 .admin-don-new-pagination-btn {
   background: white;
-  border: 0.8px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 8px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 2px;
+  padding: 24px; /* Enhanced breathing room */
   font-family: 'Inter', 'Arial', sans-serif;
   font-size: 14px;
   font-weight: 500;
@@ -277,7 +277,7 @@
   color: #4a5565;
   cursor: pointer;
   transition: all 0.2s ease;
-}
+ transition: transform 0.3s ease, background 0.3s ease; }
 
 .admin-don-new-pagination-btn:hover:not(:disabled) {
   background: #f9fafb;
@@ -292,8 +292,8 @@
 
 .admin-don-new-pagination-number {
   background: white;
-  border: 0.8px solid #e5e7eb;
-  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 2px;
   width: 40px;
   height: 40px;
   display: flex;
@@ -330,7 +330,7 @@
 /* Responsive */
 @media (max-width: 1200px) {
   .admin-don-new-stats {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1.1fr 1fr;
   }
 }
 
@@ -367,7 +367,7 @@
   display: inline-flex;
   align-items: center;
   padding: 3px 10px;
-  border-radius: 999px;
+  border-radius: 2px;
   font-family: 'Inter', sans-serif;
   font-size: 12px;
   font-weight: 600;
@@ -400,14 +400,14 @@
 .admin-don-action-btn {
   padding: 5px 12px;
   border: none;
-  border-radius: 7px;
+  border-radius: 2px;
   font-family: 'Inter', sans-serif;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s;
   white-space: nowrap;
-}
+ transition: transform 0.3s ease, background 0.3s ease; }
 
 .admin-don-action-confirm {
   background: #16a34a;
@@ -430,7 +430,7 @@
 .admin-don-action-view {
   background: #f1f5f9;
   color: #1E3A8A;
-  border: 0.8px solid #e2e8f0;
+  border: 1px solid #e2e8f0;
 }
 
 .admin-don-action-view:hover {
@@ -445,8 +445,8 @@
 /* ── Status Filter ── */
 .admin-don-status-filter {
   padding: 7px 12px;
-  border: 0.8px solid #e5e7eb;
-  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 2px;
   font-family: 'Inter', sans-serif;
   font-size: 14px;
   color: #374151;
@@ -469,17 +469,17 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: 16px;
+  padding: 24px; /* Enhanced breathing room */
 }
 
 .admin-don-modal-content {
   background: white;
-  border-radius: 16px;
+  border-radius: 2px;
   width: 100%;
   max-width: 560px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  /* box-shadow removed for flat layout */
   display: flex;
   flex-direction: column;
 }
@@ -489,7 +489,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px 16px;
-  border-bottom: 0.8px solid #f1f5f9;
+  border-bottom: 1px solid #f1f5f9;
 }
 
 .admin-don-modal-title {
@@ -513,7 +513,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
+  border-radius: 2px;
   transition: background 0.15s;
 }
 
@@ -581,8 +581,8 @@
   width: 100%;
   max-height: 280px;
   object-fit: contain;
-  border-radius: 10px;
-  border: 0.8px solid #e5e7eb;
+  border-radius: 2px;
+  border: 1px solid #e5e7eb;
   cursor: pointer;
   transition: opacity 0.15s;
 }
@@ -594,7 +594,7 @@
 .admin-don-modal-no-proof {
   background: #f9fafb;
   border: 0.8px dashed #d1d5db;
-  border-radius: 10px;
+  border-radius: 2px;
   padding: 24px;
   text-align: center;
   font-family: 'Inter', sans-serif;
@@ -605,9 +605,9 @@
 .admin-don-modal-reject-reason {
   margin-top: 16px;
   background: #FEF2F2;
-  border: 0.8px solid #FECACA;
-  border-radius: 8px;
-  padding: 12px;
+  border: 1px solid #FECACA;
+  border-radius: 2px;
+  padding: 24px; /* Enhanced breathing room */
 }
 
 .admin-don-modal-reject-reason p {
@@ -639,3 +639,7 @@
 }
 
 
+
+
+.admin-don-new-stat-card { transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; }
+.admin-don-new-stat-card:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.08); }

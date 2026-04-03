@@ -58,7 +58,7 @@
 
 .admin-dashboard-stat-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.08); /* Ultra-soft shadow on lift */
+  /* box-shadow removed for flat layout */ /* Ultra-soft shadow on lift */
 }
 
 .admin-dashboard-stat-icon-row {
@@ -71,7 +71,7 @@
 .admin-dashboard-stat-icon {
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: 2px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -85,7 +85,7 @@
 
 .admin-dashboard-stat-badge {
   height: 24px;
-  border-radius: 999px;
+  border-radius: 2px;
   padding: 2px 8px;
   font-family: 'Inter', Arial, sans-serif;
   font-size: 12px;
@@ -131,7 +131,7 @@
 
 .admin-dashboard-activity-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.08); /* Hover lift effect */
+  /* box-shadow removed for flat layout */ /* Hover lift effect */
 }
 
 .admin-dashboard-activity-header {
@@ -160,7 +160,7 @@
   border: none;
   cursor: pointer;
   padding: 0;
-}
+ transition: transform 0.3s ease, background 0.3s ease; }
 
 .admin-dashboard-view-all-btn:hover { text-decoration: underline; }
 
@@ -185,7 +185,7 @@
 .admin-dashboard-activity-icon-container {
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: 2px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -233,14 +233,14 @@
 
 .activity-modal {
   background: white;
-  border-radius: 16px;
+  border-radius: 2px;
   width: 100%;
   max-width: 800px;
   max-height: 100vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  /* box-shadow removed for flat layout */
 }
 
 .activity-modal-header {
@@ -248,7 +248,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 18px 24px;
-  border-bottom: 0.8px solid #000000;
+  border-bottom: 1px solid #000000;
   flex-shrink: 0;
 }
 
@@ -265,7 +265,7 @@
   height: 32px;
   border: none;
   background: #f3f4f6;
-  border-radius: 8px;
+  border-radius: 2px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -306,8 +306,8 @@
   min-width: 30px;
   height: 30px;
   padding: 0 8px;
-  border: 0.8px solid #e5e7eb;
-  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  border-radius: 2px;
   background: white;
   font-size: 13px;
   color: #4a5565;
@@ -317,7 +317,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-}
+ transition: transform 0.3s ease, background 0.3s ease; }
 
 .activity-page-btn:hover:not(:disabled):not(.active) {
   background: #f3f4f6;
@@ -355,7 +355,7 @@
 
 .admin-dashboard-bottom-stat-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.08); /* Hover lift effect */
+  /* box-shadow removed for flat layout */ /* Hover lift effect */
 }
 
 .admin-dashboard-bottom-stat-header {
@@ -408,8 +408,8 @@
 
 /* Responsive */
 @media (max-width: 1200px) {
-  .admin-dashboard-stats-grid  { grid-template-columns: repeat(2, 1fr); }
-  .admin-dashboard-bottom-stats { grid-template-columns: repeat(2, 1fr); }
+  .admin-dashboard-stats-grid  { grid-template-columns: 1.1fr 1fr; }
+  .admin-dashboard-bottom-stats { grid-template-columns: 1.1fr 1fr; }
 }
 
 @media (max-width: 768px) {
@@ -458,7 +458,7 @@
 
 .adm-stat-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.08); /* Soft hover shadow */
+  /* box-shadow removed for flat layout */ /* Soft hover shadow */
 }
 
 
@@ -481,7 +481,7 @@
 .adm-stat-icon {
   width: 32px;
   height: 32px;
-  border-radius: 8px;
+  border-radius: 2px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -534,7 +534,7 @@
 
 .adm-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.08); /* Hover lift */
+  /* box-shadow removed for flat layout */ /* Hover lift */
 }
 
 .adm-card-header {
@@ -611,7 +611,7 @@
 
 .adm-summary-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.08); /* Hover lift effect */
+  /* box-shadow removed for flat layout */ /* Hover lift effect */
 }
 
 .adm-summary-label {
@@ -651,10 +651,10 @@
 
 /* Responsive */
 @media (max-width: 1200px) {
-  .admin-dashboard-main .adm-stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .admin-dashboard-main .adm-stats-grid { grid-template-columns: 1.1fr 1fr; }
   .adm-analytics-row  { grid-template-columns: 1fr 1fr; }
   .adm-charts-row { grid-template-columns: 1fr; }
-  .adm-summary-col    { display: grid; grid-template-columns: repeat(3, 1fr); }
+  .adm-summary-col    { display: grid; grid-template-columns: 1fr 1.2fr 1fr; }
 }
 
 @media (max-width: 768px) {
@@ -675,7 +675,7 @@
   }
   .adm-card, .adm-stat-card {
     break-inside: avoid;
-    box-shadow: none !important;
+    /* box-shadow removed for flat layout */
     border: 1px solid #e5e7eb !important;
   }
-}
+}
