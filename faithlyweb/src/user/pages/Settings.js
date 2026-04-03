@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import svgPaths from '../../imports/svg-icons';
+
 import '../styles/Settings.css';
 import Sidebar from '../components/Sidebar';
 import VerifyEmailModal from '../components/VerifyEmail';
@@ -8,6 +8,8 @@ import VerificationModal from '../components/OfficerVerification';
 import { useTheme } from '../../context/ThemeContext';
 
 import API from '../../utils/api';
+import { CalendarDays, Circle, Edit, Mail, Settings as SettingsIcon, User, XCircle } from 'lucide-react';
+
 
 /* ─── Community options ──────────────────────────────────────────────── */
 const COMMUNITIES = {
@@ -236,10 +238,7 @@ export default function Settings() {
         <div className="user-logout-modal-overlay" style={{ zIndex: 1100 }}>
           <div className="user-logout-modal-content" style={{ maxWidth: 380, textAlign: 'center' }}>
             <div style={{ width: 48, height: 48, borderRadius: 12, background: '#dbeafe', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
-              <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M9 12l2 2 4-4" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <Circle size={24} color="#2563eb" />
             </div>
             <h2 className="user-logout-modal-title" style={{ marginBottom: 8 }}>Are you an officer?</h2>
             <p className="user-logout-modal-message" style={{ marginBottom: 20 }}>
@@ -289,17 +288,12 @@ export default function Settings() {
                   {avatarSrc ? (
                     <img src={avatarSrc} alt="Profile" style={{ width: 52, height: 52, borderRadius: '50%', objectFit: 'cover' }} />
                   ) : (
-                    <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
-                      <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 2c-5.33 0-8 2.686-8 4v1h16v-1c0-1.314-2.67-4-8-4Z" fill="white" />
-                    </svg>
+                    <Edit size={28} />
                   )}
                 </div>
                 {isEditing && (
                   <div className="user-pi-card-avatar-badge">
-                    <svg width="13" height="13" fill="none" viewBox="0 0 24 24">
-                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <circle cx="12" cy="13" r="4" stroke="white" strokeWidth="2"/>
-                    </svg>
+                    <Edit size={13} color="white" />
                   </div>
                 )}
                 <input id="user-pi-photo-input-header" type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhotoSelect} />
@@ -325,12 +319,7 @@ export default function Settings() {
                 onClick={() => setInfoExpanded(prev => !prev)}
                 title={infoExpanded ? 'Collapse' : 'Expand'}
               >
-                <svg
-                  width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                  style={{ transition: 'transform 0.3s ease', transform: infoExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
-                >
-                  <polyline points="6 9 12 15 18 9" />
-                </svg>
+                <Edit size={18} color="white" />
               </button>
 
             </div>
@@ -340,20 +329,14 @@ export default function Settings() {
             <div className="user-pi-edit-form">
               {isEditing && (
                 <p className="user-pi-edit-notice">
-                  <svg width="14" height="14" fill="none" viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="#155DFC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5Z" stroke="#155DFC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
+                  <Edit size={14} color="#155DFC" />
                   Editing your profile — changes won't be saved until you click Save
                 </p>
               )}
 
                 {formError && (
                   <div style={{ display:'flex', alignItems:'center', gap:8, background:'#FEF2F2', border:'1px solid #FECACA', borderRadius:10, padding:'10px 14px', marginBottom:16 }}>
-                    <svg width="16" height="16" fill="none" viewBox="0 0 20 20" style={{ flexShrink:0 }}>
-                      <circle cx="10" cy="10" r="9" stroke="#F04438" strokeWidth="1.5"/>
-                      <path d="M10 6v4M10 14h.01" stroke="#F04438" strokeWidth="1.5" strokeLinecap="round"/>
-                    </svg>
+                    <XCircle size={16} color="#F04438" />
                     <span style={{ fontSize:13, color:'#B91C1C' }}>{formError}</span>
                   </div>
                 )}
@@ -371,12 +354,12 @@ export default function Settings() {
                     <input type="email" className="user-pi-form-input" value={editForm.email} onChange={e => handleEditChange('email', e.target.value)} placeholder="Enter email" disabled={!isEditing} />
                     {editForm.email.trim().toLowerCase() !== (user?.email || '').trim().toLowerCase() && editForm.email ? (
                       <span style={{ display:'flex', alignItems:'center', gap:5, fontSize:11, color:'#D97706', marginTop:5 }}>
-                        <svg width="12" height="12" fill="none" viewBox="0 0 20 20"><path d="M10 2L2 17h16L10 2Z" stroke="#D97706" strokeWidth="1.5" strokeLinejoin="round"/><path d="M10 8v4M10 14h.01" stroke="#D97706" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                        <Edit size={12} color="#D97706" />
                         Changing email requires OTP verification · You can only change your email once per day
                       </span>
                     ) : (
                       <span style={{ display:'flex', alignItems:'center', gap:5, fontSize:11, color:'#9CA3AF', marginTop:5 }}>
-                        <svg width="12" height="12" fill="none" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" stroke="#9CA3AF" strokeWidth="1.5"/><path d="M10 6v4M10 14h.01" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                        <Mail size={12} color="#9CA3AF" />
                         You can only change your email once per day
                       </span>
                     )}
@@ -405,10 +388,7 @@ export default function Settings() {
                   <div className="user-pi-form-field">
                     <label className="user-pi-form-label">DATE OF BIRTH</label>
                     <div className="user-pi-readonly-text">
-                      <svg width="15" height="15" fill="none" viewBox="0 0 20 20">
-                        <rect x="2" y="3" width="16" height="15" rx="2" stroke="#9CA3AF" strokeWidth="1.4"/>
-                        <path d="M6 1v3M14 1v3M2 8h16" stroke="#9CA3AF" strokeWidth="1.4" strokeLinecap="round"/>
-                      </svg>
+                      <CalendarDays size={15} color="#9CA3AF" />
                       <span>{dateOfBirth}</span>
                     </div>
                   </div>
@@ -417,10 +397,7 @@ export default function Settings() {
                   <div className="user-pi-form-field">
                     <label className="user-pi-form-label">ACCOUNT CREATED</label>
                     <div className="user-pi-readonly-text">
-                      <svg width="15" height="15" fill="none" viewBox="0 0 20 20">
-                        <circle cx="10" cy="10" r="8" stroke="#9CA3AF" strokeWidth="1.4"/>
-                        <path d="M10 5v5l3 2" stroke="#9CA3AF" strokeWidth="1.4" strokeLinecap="round"/>
-                      </svg>
+                      <Circle size={15} color="#9CA3AF" />
                       <span>{accountCreated}</span>
                     </div>
                   </div>
@@ -435,10 +412,7 @@ export default function Settings() {
                       </div>
                     ) : (
                       <button className="user-pi-btn-edit-bottom" onClick={() => setIsEditing(true)}>
-                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" style={{ marginRight: '6px' }}>
-                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
+                        <Edit size={14} />
                         Edit Profile
                       </button>
                     )}
@@ -452,9 +426,7 @@ export default function Settings() {
           <div className="user-settings-section">
             <div className="user-settings-section-header">
               <div className="user-settings-icon-box" style={{ background: '#f3e8ff' }}>
-                <svg className="user-settings-section-icon" fill="none" viewBox="0 0 24 24" stroke="#8B5CF6" strokeWidth="2">
-                   <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                </svg>
+                <User className="user-settings-section-icon" size={20} color="#8B5CF6" />
               </div>
               <div className="user-settings-header-text">
                 <h2 className="user-settings-section-title">Appearance</h2>
@@ -479,10 +451,7 @@ export default function Settings() {
           <div className="user-settings-section">
             <div className="user-settings-section-header">
               <div className="user-settings-icon-box user-notifications-icon">
-                <svg className="user-settings-section-icon" fill="none" viewBox="0 0 20 20">
-                  <path d="M15 6.66667C15 5.34058 14.4732 4.06881 13.5355 3.13113C12.5979 2.19345 11.3261 1.66667 10 1.66667C8.67392 1.66667 7.40215 2.19345 6.46447 3.13113C5.52678 4.06881 5 5.34058 5 6.66667C5 12.5 2.5 14.1667 2.5 14.1667H17.5C17.5 14.1667 15 12.5 15 6.66667Z" stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                  <path d="M11.4417 17.5C11.2952 17.7526 11.0849 17.9622 10.8319 18.1079C10.5789 18.2537 10.292 18.3304 10 18.3304C9.70803 18.3304 9.42117 18.2537 9.16816 18.1079C8.91515 17.9622 8.70486 17.7526 8.55835 17.5" stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                </svg>
+                <User className="user-settings-section-icon" size={20} color="#155DFC" />
               </div>
               <div className="user-settings-header-text">
                 <h2 className="user-settings-section-title">Notifications</h2>
@@ -523,9 +492,7 @@ export default function Settings() {
 
       {/* Floating Chat Button */}
       <button className="user-chat-button">
-        <svg fill="none" viewBox="0 0 24 24">
-          <path d={svgPaths.p261dfb00} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-        </svg>
+        <SettingsIcon size={20} color="white" />
       </button>
     </div>
   );

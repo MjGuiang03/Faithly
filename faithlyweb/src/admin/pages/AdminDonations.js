@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import useDebounce from '../../hooks/useDebounce';
 import '../styles/AdminDonations.css';
-import svgPaths from "../../imports/svg-icons";
 
 import API from '../../utils/api';
+import { Circle, Heart, Search, XCircle } from 'lucide-react';
+
 
 const fmt = (n) =>
   n != null ? `₱${Number(n).toLocaleString('en-PH')}` : '₱0';
@@ -166,9 +167,7 @@ export default function AdminDonationsNew() {
         <div className="admin-don-new-stat-card">
           <div className="admin-don-new-stat-header">
             <span className="admin-don-new-stat-label">Total This Month</span>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d={svgPaths.p2f84f400} stroke="#E60076" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <Circle size={20} color="#E60076" />
           </div>
           <p className="admin-don-new-stat-value">{fmt(stats.totalThisMonth)}</p>
           <p className="admin-don-new-stat-change">{stats.percentageChange} from last month</p>
@@ -177,10 +176,7 @@ export default function AdminDonationsNew() {
         <div className="admin-don-new-stat-card">
           <div className="admin-don-new-stat-header">
             <span className="admin-don-new-stat-label">Total Donors</span>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d={svgPaths.p3c797180} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d={svgPaths.p3ac0b600} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <Circle size={20} color="#155DFC" />
           </div>
           <p className="admin-don-new-stat-value">{stats.totalDonors}</p>
         </div>
@@ -188,10 +184,7 @@ export default function AdminDonationsNew() {
         <div className="admin-don-new-stat-card">
           <div className="admin-don-new-stat-header">
             <span className="admin-don-new-stat-label">Avg. Donation</span>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M10 1.66667V18.3333" stroke="#00A63E" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d={svgPaths.p3055a600} stroke="#00A63E" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <Heart size={20} color="#00A63E" />
           </div>
           <p className="admin-don-new-stat-value">{fmt(stats.avgDonation)}</p>
         </div>
@@ -206,9 +199,7 @@ export default function AdminDonationsNew() {
         }}>
           <div className="admin-don-new-stat-header">
             <span className="admin-don-new-stat-label">Total Rejected</span>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d={svgPaths.p14d24500} stroke="#EF4444" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <XCircle size={20} color="#EF4444" />
           </div>
           <p className="admin-don-new-stat-value" style={{ color: '#EF4444' }}>{stats.rejectedCount}</p>
         </div>
@@ -231,10 +222,7 @@ export default function AdminDonationsNew() {
             </select>
             {/* Search */}
             <div className="history-search-box">
-              <svg fill="none" viewBox="0 0 16 16" width="14" height="14" className="search-icon-inner">
-                <circle cx="7" cy="7" r="5" stroke="#9ca3af" strokeWidth="1.5" />
-                <path d="M10.5 10.5L13.5 13.5" stroke="#9ca3af" strokeLinecap="round" strokeWidth="1.5" />
-              </svg>
+              <Search className="search-icon-inner" size={14} color="#9ca3af" />
               <input
                 type="text"
                 className="history-search-input"

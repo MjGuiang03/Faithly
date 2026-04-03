@@ -2,9 +2,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import useDebounce from '../../hooks/useDebounce';
 import '../styles/AdminAttendance.css';
-import svgPaths from "../../imports/svg-icons";
 
 import API from '../../utils/api';
+import { CalendarDays, MapPin, Search } from 'lucide-react';
+
 
 /* ═══════════════════════════════════════════════════════════════════════════
    ADD SERVICE MODAL
@@ -242,12 +243,7 @@ export default function AdminAttendance() {
         <div className="admin-att-stat-card">
           <div className="admin-att-stat-header">
             <span className="admin-att-stat-label">Total Attendance Today</span>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d={svgPaths.p25397b80} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d={svgPaths.p2c4f400} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d={svgPaths.p2241fff0} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d={svgPaths.pae3c380} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <CalendarDays size={20} color="#155DFC" />
           </div>
           <p className="admin-att-stat-value">{stats.totalToday.toLocaleString()}</p>
         </div>
@@ -255,12 +251,7 @@ export default function AdminAttendance() {
         <div className="admin-att-stat-card">
           <div className="admin-att-stat-header">
             <span className="admin-att-stat-label">Services This Week</span>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M6.66667 1.66667V5" stroke="#00A63E" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M13.3333 1.66667V5" stroke="#00A63E" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <rect x="2.5" y="3.33333" width="15" height="13.3333" rx="1.66667" stroke="#00A63E" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M2.5 8.33333H17.5" stroke="#00A63E" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <CalendarDays size={20} color="#00A63E" />
           </div>
           <p className="admin-att-stat-value">{stats.servicesThisWeek}</p>
         </div>
@@ -276,10 +267,7 @@ export default function AdminAttendance() {
             <div key={index} className="admin-att-branch-card">
               <div className="admin-att-branch-info">
                 <div className="admin-att-branch-header">
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path d={svgPaths.p26ddc800} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d={svgPaths.p35ba4680} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  <MapPin size={20} color="#155DFC" />
                   <h3 className="admin-att-branch-name">{branch.name}</h3>
                 </div>
                 <p className="admin-att-branch-stats">
@@ -290,10 +278,7 @@ export default function AdminAttendance() {
                 className="admin-att-add-service-btn"
                 onClick={() => handleAddService(branch.name)}
               >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M3.33333 8H12.6667" stroke="white" strokeWidth="1.33333" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M8 3.33333V12.6667" stroke="white" strokeWidth="1.33333" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                <CalendarDays size={16} color="white" />
                 Add Service
               </button>
             </div>
@@ -305,10 +290,7 @@ export default function AdminAttendance() {
       <div className="admin-att-table-header">
         <h2 className="admin-att-section-title">Services</h2>
         <div className="history-search-box">
-          <svg fill="none" viewBox="0 0 16 16" width="14" height="14" className="search-icon-inner">
-            <circle cx="7" cy="7" r="5" stroke="#9ca3af" strokeWidth="1.5" />
-            <path d="M10.5 10.5L13.5 13.5" stroke="#9ca3af" strokeLinecap="round" strokeWidth="1.5" />
-          </svg>
+          <Search className="search-icon-inner" size={14} color="#9ca3af" />
           <input
             type="text"
             className="history-search-input"

@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import '../styles/AnnouncementModal.css';
 import API from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
+import { CalendarDays, Circle } from 'lucide-react';
+
 
 const fmtDate = (d) =>
   d ? new Date(d).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
@@ -41,10 +43,7 @@ export default function AnnouncementModal({ isOpen, onClose }) {
         <div className="ann-modal-header">
           <div className="ann-modal-header-left">
             <div className="ann-modal-icon">
-              <svg fill="none" viewBox="0 0 24 24" width="20" height="20">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-              </svg>
+              <Circle size={20} color="white" />
             </div>
             <div>
               <p className="ann-modal-title">Announcements</p>
@@ -52,9 +51,7 @@ export default function AnnouncementModal({ isOpen, onClose }) {
             </div>
           </div>
           <button className="ann-modal-close" onClick={onClose}>
-            <svg fill="none" viewBox="0 0 24 24" width="16" height="16">
-              <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-            </svg>
+            <CalendarDays size={16} />
           </button>
         </div>
 
@@ -88,17 +85,12 @@ export default function AnnouncementModal({ isOpen, onClose }) {
                 <p className="ann-item-body">{a.body}</p>
                 {a.eventDate && (
                   <div className="ann-item-event">
-                    <svg fill="none" viewBox="0 0 16 16" width="12" height="12">
-                      <path d="M5.333 1.333v2.667M10.667 1.333v2.667M2 6.667h12M12.667 2.667H3.333c-.736 0-1.333.597-1.333 1.333v8c0 .736.597 1.333 1.333 1.333h9.334c.736 0 1.333-.597 1.333-1.333V4c0-.736-.597-1.333-1.333-1.333z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
+                    <CalendarDays size={12} />
                     <span>{fmtDateTime(a.eventDate)}</span>
                   </div>
                 )}
                 <div className="ann-item-footer">
-                  <svg fill="none" viewBox="0 0 16 16" width="12" height="12">
-                    <path d="M8 1.333A6.667 6.667 0 1 0 8 14.667 6.667 6.667 0 0 0 8 1.333z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M8 4v4l2.667 1.333" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  <CalendarDays size={12} />
                   <span>{fmtDate(a.createdAt)}</span>
                   {a.createdBy && <span>· by {a.createdBy}</span>}
                 </div>

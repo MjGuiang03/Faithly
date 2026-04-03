@@ -19,7 +19,9 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import '../styles/AdminReports.css';
-import svgPaths from "../../imports/svg-icons";
+
+import { Banknote, CalendarDays, Circle, Heart, Users } from 'lucide-react';
+
 
 export default function AdminReports() {
   const navigate = useNavigate();
@@ -125,19 +127,11 @@ export default function AdminReports() {
         <div className="admin-reports-stat-card">
           <div className="admin-reports-stat-header">
             <span className="admin-reports-stat-label">Total Members</span>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d={svgPaths.p25397b80} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d={svgPaths.p2c4f400} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d={svgPaths.p2241fff0} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d={svgPaths.pae3c380} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <Users size={20} color="#155DFC" />
           </div>
           <p className="admin-reports-stat-value admin-reports-stat-value-blue">{stats.totalMembers}</p>
           <p className="admin-reports-stat-change admin-reports-stat-change-green">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <path d={svgPaths.p3a7e7417} stroke="#00A63E" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M8 3.5H11V6.5" stroke="#00A63E" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <Users size={12} color="#00A63E" />
             {stats.totalMembersChange}
           </p>
         </div>
@@ -145,10 +139,7 @@ export default function AdminReports() {
         <div className="admin-reports-stat-card">
           <div className="admin-reports-stat-header">
             <span className="admin-reports-stat-label">Total Donations</span>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M10 1.66667V18.3333" stroke="#00A63E" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d={svgPaths.p3055a600} stroke="#00A63E" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <Heart size={20} color="#00A63E" />
           </div>
           <p className="admin-reports-stat-value admin-reports-stat-value-green">{stats.totalDonations}</p>
           <p className="admin-reports-stat-period">{stats.totalDonationsperiod}</p>
@@ -157,11 +148,7 @@ export default function AdminReports() {
         <div className="admin-reports-stat-card">
           <div className="admin-reports-stat-header">
             <span className="admin-reports-stat-label">Avg. Attendance</span>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d={svgPaths.p25397b80} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d={svgPaths.p2c4f400} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d={svgPaths.p2f5eb900} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <CalendarDays size={20} color="#155DFC" />
           </div>
           <p className="admin-reports-stat-value admin-reports-stat-value-blue">{stats.avgAttendance}</p>
           <p className="admin-reports-stat-period">{stats.avgAttendancePeriod}</p>
@@ -170,10 +157,7 @@ export default function AdminReports() {
         <div className="admin-reports-stat-card">
           <div className="admin-reports-stat-header">
             <span className="admin-reports-stat-label">Net Balance</span>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d={svgPaths.p3c797180} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d={svgPaths.p3ac0b600} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <CalendarDays size={20} color="#155DFC" />
           </div>
           <p className="admin-reports-stat-value admin-reports-stat-value-blue">{stats.netBalance}</p>
           <p className="admin-reports-stat-period">{stats.netBalancePeriod}</p>
@@ -185,10 +169,7 @@ export default function AdminReports() {
         <div className="admin-reports-stat-card">
           <div className="admin-reports-stat-header">
             <span className="admin-reports-stat-label">Total Received</span>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d={svgPaths.p3c797180} stroke="#00A63E" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d={svgPaths.p3ac0b600} stroke="#00A63E" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <Circle size={20} color="#00A63E" />
           </div>
           <p className="admin-reports-stat-value admin-reports-stat-value-green">{stats.totalReceived}</p>
           <p className="admin-reports-stat-period">{stats.totalReceivedPeriod}</p>
@@ -197,10 +178,7 @@ export default function AdminReports() {
         <div className="admin-reports-stat-card">
           <div className="admin-reports-stat-header">
             <span className="admin-reports-stat-label">Total Disbursed</span>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d={svgPaths.p145ec80} stroke="#EF4444" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d={svgPaths.p548e880} stroke="#EF4444" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <Banknote size={20} color="#EF4444" />
           </div>
           <p className="admin-reports-stat-value admin-reports-stat-value-red">{stats.totalDisbursed}</p>
           <p className="admin-reports-stat-period">{stats.totalDisbursedPeriod}</p>

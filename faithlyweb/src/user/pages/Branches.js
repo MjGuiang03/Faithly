@@ -1,8 +1,10 @@
 import { useAuth } from '../../context/AuthContext';
-import svgPaths from '../../imports/svg-icons';
+
 import '../styles/Branches.css';
 import Sidebar from '../components/Sidebar';
 import { useState, useMemo, useEffect } from 'react';
+import { ChevronRight, MapPin, Search, User } from 'lucide-react';
+
 
 // ─── Branch data ordered North → South ───────────────────────────────────────
 const branchData = [
@@ -241,10 +243,7 @@ export default function Branches() {
           <div className="user-my-community-banner" onClick={() => openDrawer(userBranch)}>
             <div className="user-mcb-left">
               <div className="user-mcb-icon">
-                <svg width="18" height="18" fill="none" viewBox="0 0 24 24">
-                  <path d="M12 21s-8-7.5-8-12a8 8 0 1 1 16 0c0 4.5-8 12-8 12Z" stroke="#155dfc" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                  <circle cx="12" cy="9" r="2.5" stroke="#155dfc" strokeWidth="1.8" />
-                </svg>
+                <User size={18} color="#155dfc" />
               </div>
               <div className="user-mcb-text">
                 <span className="user-mcb-eyebrow">Your Community</span>
@@ -262,9 +261,7 @@ export default function Branches() {
                   </span>
                 ))}
               </div>
-              <svg className="user-mcb-chevron" fill="none" viewBox="0 0 16 16">
-                <path d="m6 4 4 4-4 4" stroke="#155dfc" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <ChevronRight className="user-mcb-chevron" size={20} color="#155dfc" />
             </div>
           </div>
         )}
@@ -287,9 +284,7 @@ export default function Branches() {
         {/* ── Search Bar ─────────────────────────────────────── */}
         <div className="ubr-search-row">
           <div className="ubr-search-wrap">
-            <svg className="ubr-search-icon" fill="none" viewBox="0 0 20 20">
-              <path d="M17.5 17.5 13.875 13.875M15.833 9.167a6.667 6.667 0 1 1-13.333 0 6.667 6.667 0 0 1 13.333 0Z" stroke="#99A1AF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.67" />
-            </svg>
+            <Search className="ubr-search-icon" size={20} color="#99A1AF" />
             <input
               className="ubr-search-input"
               placeholder="Search branches…"
@@ -348,10 +343,7 @@ export default function Branches() {
                       onClick={() => openDrawer(branch)}
                     >
                       <div className="ubr-branch-row-left">
-                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" className="ubr-pin-icon">
-                          <path d="M12 21s-8-7.5-8-12a8 8 0 1 1 16 0c0 4.5-8 12-8 12Z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                          <circle cx="12" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.8" />
-                        </svg>
+                        <MapPin className="ubr-pin-icon" size={14} />
                         <div className="ubr-branch-info">
                           <span className="ubr-branch-name">{branch.name}</span>
                           <div className="ubr-branch-days">
@@ -392,10 +384,7 @@ export default function Branches() {
                       onClick={() => openDrawer(branch)}
                     >
                       <div className="ubr-branch-row-left">
-                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" className="ubr-pin-icon">
-                          <path d="M12 21s-8-7.5-8-12a8 8 0 1 1 16 0c0 4.5-8 12-8 12Z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                          <circle cx="12" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.8" />
-                        </svg>
+                        <MapPin className="ubr-pin-icon" size={14} />
                         <div className="ubr-branch-info">
                           <span className="ubr-branch-name">{branch.name}</span>
                           <div className="ubr-branch-days">
@@ -426,10 +415,7 @@ export default function Branches() {
           <div className={`user-branch-drawer${drawerVisible ? ' user-visible' : ''}`}>
             <div className="user-drawer-header">
               <div className={`user-drawer-header-icon${userBranchName && drawerBranch?.name === userBranchName ? ' user-my-branch-icon' : ''}`}>
-                <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
-                  <path d="M12 21s-8-7.5-8-12a8 8 0 1 1 16 0c0 4.5-8 12-8 12Z" stroke={userBranchName && drawerBranch?.name === userBranchName ? '#fff' : '#155dfc'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                  <circle cx="12" cy="9" r="2.5" stroke={userBranchName && drawerBranch?.name === userBranchName ? '#fff' : '#155dfc'} strokeWidth="1.8" />
-                </svg>
+                <User size={20} />
               </div>
               <div className="user-drawer-header-text">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -446,9 +432,7 @@ export default function Branches() {
                 </div>
               </div>
               <button className="user-drawer-close" onClick={closeDrawer}>
-                <svg fill="none" viewBox="0 0 20 20" width="16" height="16">
-                  <path d="M15 5 5 15M5 5l10 10" stroke="#6b7280" strokeWidth="1.8" strokeLinecap="round" />
-                </svg>
+                <MapPin size={16} color="#6b7280" />
               </button>
             </div>
 
@@ -506,9 +490,7 @@ export default function Branches() {
       )}
 
       <button className="user-chat-button">
-        <svg fill="none" viewBox="0 0 24 24">
-          <path d={svgPaths.p261dfb00} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-        </svg>
+        <User size={20} color="white" />
       </button>
     </div>
   );

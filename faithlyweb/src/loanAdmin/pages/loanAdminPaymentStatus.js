@@ -5,6 +5,8 @@ import LoanAdminSidebar from './loanAdminSidebar';
 import '../styles/loanAdminLoanManagement.css';
 import '../styles/loanAdminPaymentStatus.css';
 import API from '../../utils/api';
+import { Banknote, FileText, PiggyBank, Search } from 'lucide-react';
+
 
 const fmt = (n) => n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : '₱0.00';
 const fmtDate = (d) => { if (!d) return 'N/A'; return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); };
@@ -357,7 +359,7 @@ export default function LoanAdminPaymentStatus() {
             onClick={() => { resetWalkin(); setShowWalkinModal(true); setWalkinType(isSavingsRoute ? 'savings' : 'loan'); }}
             style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', background: '#155DFC', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'Inter', fontWeight: 600, fontSize: '14px', boxShadow: '0 2px 4px rgba(21, 93, 252, 0.2)' }}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            <PiggyBank size={16} />
             Process Walk-in
           </button>
         </div>
@@ -467,10 +469,7 @@ export default function LoanAdminPaymentStatus() {
         </div>
 
         <div className="loan-admin-mgmt-search">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M9.16667 15.8333C12.8486 15.8333 15.8333 12.8486 15.8333 9.16667C15.8333 5.48477 12.8486 2.5 9.16667 2.5C5.48477 2.5 2.5 5.48477 2.5 9.16667C2.5 12.8486 5.48477 15.8333 9.16667 15.8333Z" stroke="#9CA3AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M17.5 17.5L13.875 13.875" stroke="#9CA3AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+          <Search size={20} color="#9CA3AF" />
           <input type="text" placeholder="Search by member name or loan ID..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
         </div>
 
@@ -708,7 +707,7 @@ export default function LoanAdminPaymentStatus() {
             <div className="loan-admin-mgmt-modal-header">
               <h2 className="loan-admin-mgmt-modal-title">Loan Payment Progress</h2>
               <button className="loan-admin-mgmt-modal-close" onClick={() => setSelectedLoan(null)}>
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                <Banknote size={12} />
               </button>
             </div>
             <div style={{ padding: '20px 24px' }}>
@@ -763,7 +762,7 @@ export default function LoanAdminPaymentStatus() {
             <div className="loan-admin-mgmt-modal-header">
               <h2 className="loan-admin-mgmt-modal-title">Payment Details</h2>
               <button className="loan-admin-mgmt-modal-close" onClick={() => setSelectedPayment(null)}>
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                <Banknote size={12} />
               </button>
             </div>
             <div style={{ padding: '20px 24px' }}>
@@ -818,7 +817,7 @@ export default function LoanAdminPaymentStatus() {
             <div className="loan-admin-mgmt-modal-header">
               <h2 className="loan-admin-mgmt-modal-title">Savings Deposit Details</h2>
               <button className="loan-admin-mgmt-modal-close" onClick={() => setSelectedSavings(null)}>
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                <Banknote size={12} />
               </button>
             </div>
             <div style={{ padding: '20px 24px' }}>
@@ -863,7 +862,7 @@ export default function LoanAdminPaymentStatus() {
               cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
               zIndex: 1101, boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
             }}>
-              <svg width="14" height="14" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="#374151" strokeWidth="1.5" strokeLinecap="round" /></svg>
+              <FileText size={14} color="#374151" />
             </button>
             <img src={viewingImage} alt="Proof" style={{ maxWidth: '90vw', maxHeight: '90vh', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }} />
           </div>
@@ -880,7 +879,7 @@ export default function LoanAdminPaymentStatus() {
                 <p style={{ fontSize: '13px', color: '#6B7280', margin: '4px 0 0', fontFamily: 'Inter' }}>Process payments or deposits directly on behalf of a user.</p>
               </div>
               <button className="loan-admin-mgmt-modal-close" onClick={() => setShowWalkinModal(false)}>
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                <Banknote size={12} />
               </button>
             </div>
 

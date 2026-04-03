@@ -4,25 +4,27 @@ import LoginModal from '../components/LoginModal';
 import SignupModal from '../components/SignupModal';
 import ResetPassword from '../components/ResetPassword';
 import '../styles/Welcome.css';
+import { Banknote, CalendarDays, FileText, Heart, Lock } from 'lucide-react';
+
 
 const features = [
   {
     icon: (
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
+      <Banknote size={20} />
     ),
     title: 'Loan Management',
     desc: 'Apply for loans instantly and monitor status, due dates, and repayment milestones in real-time.',
   },
   {
     icon: (
-      <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
+      <CalendarDays size={20} />
     ),
     title: 'Savings Goals',
     desc: 'Set, track, and achieve your personal savings goals with a clear visual progress tracker.',
   },
   {
     icon: (
-      <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" /></svg>
+      <Heart size={20} />
     ),
     title: 'Donations & Payments',
     desc: 'Seamless giving with multiple payment channels. Submit proof and track every donation effortlessly.',
@@ -30,42 +32,42 @@ const features = [
   },
   {
     icon: (
-      <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" /></svg>
+      <CalendarDays size={20} />
     ),
     title: 'Attendance Tracking',
     desc: 'Real-time digital attendance recording. View your full history anytime, from anywhere.',
   },
   {
     icon: (
-      <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 01-3.46 0" /></svg>
+      <CalendarDays size={20} />
     ),
     title: 'Branch Announcements',
     desc: 'Stay updated with real-time, branch-specific church announcements and upcoming events.',
   },
   {
     icon: (
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" /></svg>
+      <CalendarDays size={20} />
     ),
     title: 'Member Profiles',
     desc: 'Comprehensive personal profiles with church records, account details, and full history.',
   },
   {
     icon: (
-      <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" /></svg>
+      <FileText size={20} />
     ),
     title: 'Church Branches',
     desc: 'View all branches and locations with maps, contact details, and service schedules.',
   },
   {
     icon: (
-      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>
+      <CalendarDays size={20} />
     ),
     title: 'Chatbot Assistant',
     desc: 'Our built-in chatbot provides instant support for questions about loans, donations, and services — anytime, day or night.',
   },
   {
     icon: (
-      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" /></svg>
+      <CalendarDays size={20} />
     ),
     title: 'Repayment Tracking',
     desc: 'Submit payment proofs and track loan repayment status in real-time with a clean dashboard.',
@@ -171,19 +173,19 @@ export default function Welcome() {
               <div className="fl-perks">
                 <div className="fl-perk">
                   <div className="fl-perk-icon">
-                    <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" /></svg>
+                    <CalendarDays size={20} />
                   </div>
                   Real-time loan tracking &amp; repayment status
                 </div>
                 <div className="fl-perk">
                   <div className="fl-perk-icon">
-                    <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" /></svg>
+                    <Heart size={20} />
                   </div>
                   GCash &amp; bank transfer donations
                 </div>
                 <div className="fl-perk">
                   <div className="fl-perk-icon">
-                    <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 01-3.46 0" /></svg>
+                    <CalendarDays size={20} />
                   </div>
                   Branch-specific announcements &amp; updates
                 </div>
@@ -257,7 +259,7 @@ export default function Welcome() {
           © 2026 FaithLy. All rights reserved.<br />Philippine United Apostolic Church Portal
         </p>
         <div className="fl-footer-secure">
-          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+          <Lock size={20} />
           Secure &amp; Trusted Platform
         </div>
       </footer>

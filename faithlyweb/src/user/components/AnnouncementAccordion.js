@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import '../styles/AnnouncementAccordion.css';
 import API from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
+import { CalendarDays, Circle } from 'lucide-react';
+
 
 const fmtDate = (d) =>
   d ? new Date(d).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
@@ -19,18 +21,7 @@ function AccordionItem({ item, isOpen, onToggle }) {
           <span className="aa-item-title">{item.title}</span>
           <span className="aa-item-category">{item.category}</span>
         </div>
-        <svg 
-          className="aa-item-chevron" 
-          viewBox="0 0 24 24" 
-          fill="none" 
-          stroke="currentColor" 
-          strokeWidth="2.5" 
-          strokeLinecap="round" 
-          strokeLinejoin="round" 
-          width="16" height="16"
-        >
-          <polyline points="6 9 12 15 18 9"></polyline>
-        </svg>
+        <Circle className="aa-item-chevron" size={16} />
       </button>
       
       <div 
@@ -47,19 +38,14 @@ function AccordionItem({ item, isOpen, onToggle }) {
           
           {item.eventDate && (
             <div className="aa-item-event">
-              <svg fill="none" viewBox="0 0 16 16" width="12" height="12">
-                <path d="M5.333 1.333v2.667M10.667 1.333v2.667M2 6.667h12M12.667 2.667H3.333c-.736 0-1.333.597-1.333 1.333v8c0 .736.597 1.333 1.333 1.333h9.334c.736 0 1.333-.597 1.333-1.333V4c0-.736-.597-1.333-1.333-1.333z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <CalendarDays size={12} />
               <span>{fmtDateTime(item.eventDate)}</span>
             </div>
           )}
           
           <div className="aa-item-footer">
             <span className="aa-item-date">
-              <svg fill="none" viewBox="0 0 16 16" width="12" height="12">
-                <path d="M8 1.333A6.667 6.667 0 1 0 8 14.667 6.667 6.667 0 0 0 8 1.333z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M8 4v4l2.667 1.333" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <CalendarDays size={12} />
               {fmtDate(item.createdAt)}
             </span>
             {item.createdBy && <span className="aa-item-author">· by {item.createdBy}</span>}

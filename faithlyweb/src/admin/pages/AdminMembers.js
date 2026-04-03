@@ -1,10 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Search, UserPlus, Users as UsersIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Edit, Lock, Search, Trash2, User, UserPlus, Users as UsersIcon, XCircle } from 'lucide-react';
 import useDebounce from '../../hooks/useDebounce';
 import '../styles/AdminMembers.css';
-import svgPaths from "../../imports/svg-icons";
 
 import API from '../../utils/api';
 /* ─── query-string builder ──────────────────────────────────────────────── */
@@ -17,25 +16,12 @@ function buildQuery(params) {
 
 /* ─── Pencil (Edit) icon ────────────────────────────────────────────────── */
 const IconEdit = () => (
-  <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
-    <path d="M1.5 12.4999V14.9999H4L12.6733 6.32659L10.1733 3.82659L1.5 12.4999Z"
-      stroke="#155DFC" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M11.9267 1.07326C12.1767 0.823262 12.5933 0.823262 12.8433 1.07326L15.4267 3.65659C15.6767 3.90659 15.6767 4.32326 15.4267 4.57326L13.9267 6.07326L11.4267 3.57326L11.9267 1.07326Z"
-      stroke="#155DFC" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
+  <Edit size={17} color="#155DFC" />
 );
 
 /* ─── Trash (Delete) icon ───────────────────────────────────────────────── */
 const IconTrash = () => (
-  <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
-    <path d="M1 3.5H16" stroke="#F04438" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M7 7.25V12.5" stroke="#F04438" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M10 7.25V12.5" stroke="#F04438" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M1.75 3.5L2.5 14C2.5 14.8284 3.17157 15.5 4 15.5H13C13.8284 15.5 14.5 14.8284 14.5 14L15.25 3.5"
-      stroke="#F04438" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M6.25 3.5V1.5C6.25 1.08579 6.58579 0.75 7 0.75H10C10.4142 0.75 10.75 1.08579 10.75 1.5V3.5"
-      stroke="#F04438" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
+  <Edit size={17} color="#F04438" />
 );
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -91,9 +77,7 @@ function EditModal({ member, onClose, onSave }) {
             <p className="admin-members-modal-subtitle">Update information for {member.fullName || member.name}</p>
           </div>
           <button className="admin-members-modal-close" onClick={onClose}>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M15 5L5 15M5 5L15 15" stroke="#6a7282" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
+            <Edit size={20} color="#6a7282" />
           </button>
         </div>
 
@@ -137,16 +121,9 @@ function EditModal({ member, onClose, onSave }) {
               />
               <button className="admin-members-password-toggle" onClick={() => setShowPassword(!showPassword)}>
                 {showPassword ? (
-                  <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-                    <path d="M2.5 2.5L17.5 17.5" stroke="#99A1AF" strokeWidth="1.5" strokeLinecap="round"/>
-                    <path d="M8.82 4.02A9.31 9.31 0 0110 3.89c4.17 0 7.5 6.11 7.5 6.11a16.17 16.17 0 01-1.96 2.77" stroke="#99A1AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M11.94 14.06A4.17 4.17 0 016.06 8.18M4.61 5.83C3.12 6.9 2.11 8.6 1.67 10c.83 2.78 3.89 6.11 8.33 6.11a8.68 8.68 0 003.39-.7" stroke="#99A1AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
+                  <Lock size={18} color="#99A1AF" />
                 ) : (
-                  <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-                    <path d="M10 4.17C5.83 4.17 2.5 10 2.5 10s3.33 5.83 7.5 5.83S17.5 10 17.5 10 14.17 4.17 10 4.17z" stroke="#99A1AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" stroke="#99A1AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
+                  <XCircle size={18} color="#99A1AF" />
                 )}
               </button>
             </div>
@@ -209,19 +186,14 @@ function DeleteModal({ member, onClose, onConfirm }) {
             <p className="admin-members-modal-subtitle">This action cannot be undone</p>
           </div>
           <button className="admin-members-modal-close" onClick={onClose}>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M15 5L5 15M5 5L15 15" stroke="#6a7282" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
+            <Trash2 size={20} color="#6a7282" />
           </button>
         </div>
 
         <div className="admin-members-modal-body">
           <div className="admin-members-delete-member-card">
             <div className="admin-members-avatar">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d={svgPaths.p25397b80} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d={svgPaths.p2c4f400}  stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+              <User size={20} color="#155DFC" />
             </div>
             <div>
               <p className="admin-members-delete-name">{member.fullName || member.name}</p>
@@ -247,16 +219,9 @@ function DeleteModal({ member, onClose, onConfirm }) {
               />
               <button className="admin-members-password-toggle" onClick={() => setShowPassword(!showPassword)}>
                 {showPassword ? (
-                  <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-                    <path d="M2.5 2.5L17.5 17.5" stroke="#99A1AF" strokeWidth="1.5" strokeLinecap="round"/>
-                    <path d="M8.82 4.02A9.31 9.31 0 0110 3.89c4.17 0 7.5 6.11 7.5 6.11a16.17 16.17 0 01-1.96 2.77" stroke="#99A1AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M11.94 14.06A4.17 4.17 0 016.06 8.18M4.61 5.83C3.12 6.9 2.11 8.6 1.67 10c.83 2.78 3.89 6.11 8.33 6.11a8.68 8.68 0 003.39-.7" stroke="#99A1AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
+                  <Lock size={18} color="#99A1AF" />
                 ) : (
-                  <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-                    <path d="M10 4.17C5.83 4.17 2.5 10 2.5 10s3.33 5.83 7.5 5.83S17.5 10 17.5 10 14.17 4.17 10 4.17z" stroke="#99A1AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" stroke="#99A1AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
+                  <XCircle size={18} color="#99A1AF" />
                 )}
               </button>
             </div>
@@ -316,7 +281,7 @@ function AddMemberModal({ onClose, onSave }) {
             <p className="admin-members-modal-subtitle">Register a new member directly</p>
           </div>
           <button className="admin-members-modal-close" onClick={onClose}>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M15 5L5 15M5 5L15 15" stroke="#6a7282" strokeWidth="1.5" strokeLinecap="round"/></svg>
+            <User size={20} color="#6a7282" />
           </button>
         </div>
 
