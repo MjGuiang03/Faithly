@@ -2,9 +2,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import '../styles/AdminNotification.css';
-import svgPaths from "../../imports/svg-icons";
 
 import API from '../../utils/api';
+import { Bell, CalendarDays, User } from 'lucide-react';
 const PER_PAGE = 10;
 
 const fmtTime = (date) => {
@@ -122,9 +122,7 @@ export default function AdminNotifications() {
           </div>
           {unreadCount > 0 && (
             <button className="admin-notif-mark-all-btn" onClick={markAllAsRead}>
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d={svgPaths.p32ddfd00} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <Bell size={20} />
               Mark all as read
             </button>
           )}
@@ -182,23 +180,13 @@ export default function AdminNotifications() {
               >
                 <div className={`admin-notif-icon ${getIconBg(n.type)}`}>
                   {(n.type === 'donation' || n.type === 'savings') && (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="#E60076" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
+                    <User size={20} />
                   )}
                   {n.type === 'member' && (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="#9810FA" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                      <circle cx="12" cy="7" r="4" stroke="#9810FA" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
+                    <User size={20} />
                   )}
                   {n.type === 'attendance' && (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="#15803D" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                      <line x1="16" y1="2" x2="16" y2="6" stroke="#15803D" strokeWidth="1.8" strokeLinecap="round"/>
-                      <line x1="8" y1="2" x2="8" y2="6" stroke="#15803D" strokeWidth="1.8" strokeLinecap="round"/>
-                      <line x1="3" y1="10" x2="21" y2="10" stroke="#15803D" strokeWidth="1.8" strokeLinecap="round"/>
-                    </svg>
+                    <CalendarDays size={20} />
                   )}
                 </div>
 

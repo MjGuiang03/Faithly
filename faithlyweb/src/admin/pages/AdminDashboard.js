@@ -8,8 +8,9 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 import '../styles/AdminDashboard.css';
-import svgPaths from '../../imports/svg-icons';
+
 import API from '../../utils/api';
+import { Banknote, Heart, Printer, Users } from 'lucide-react';
 
 
 
@@ -230,10 +231,7 @@ export default function AdminDashboard() {
           <div className="adm-stat-top">
             <span className="adm-stat-label">Total Members</span>
             <div className="adm-stat-icon adm-icon-blue">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d={svgPaths.p1d820380} stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d={svgPaths.p161d4800} stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <Users size={20} />
             </div>
           </div>
           <div className="adm-stat-value">{dash(memberStats.total.toLocaleString())}</div>
@@ -244,10 +242,7 @@ export default function AdminDashboard() {
           <div className="adm-stat-top">
             <span className="adm-stat-label">Active Loans</span>
             <div className="adm-stat-icon adm-icon-green">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d={svgPaths.pb47f400}  stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d={svgPaths.p17a13100} stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <Banknote size={20} />
             </div>
           </div>
           <div className="adm-stat-value">{dash(loanStats.active)}</div>
@@ -258,9 +253,7 @@ export default function AdminDashboard() {
           <div className="adm-stat-top">
             <span className="adm-stat-label">Total Donations</span>
             <div className="adm-stat-icon adm-icon-orange">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <Heart size={20} />
             </div>
           </div>
           <div className="adm-stat-value">{loading ? '—' : `₱${(donationStats.total || 0).toLocaleString()}`}</div>
@@ -367,11 +360,7 @@ export default function AdminDashboard() {
             fontSize: '14px', display: 'flex', gap: '8px', alignItems: 'center'
           }}
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="7 10 12 15 17 10" />
-            <line x1="12" y1="15" x2="12" y2="3" />
-          </svg>
+          <Printer size={20} />
           Export to PDF
         </button>
       </div>

@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { toast } from 'sonner';
 import '../styles/LoanApplicationModal.css';
 import API from '../../utils/api';
+import { Banknote, CheckCircle, User, X } from 'lucide-react';
 
 /* ── File → base64 helper ── */
 const fileToBase64 = (file) =>
@@ -25,10 +26,7 @@ const LOAN_TYPES = [
     color: 'blue',
     desc: 'For everyday needs, big purchases, or personal goals.',
     icon: (
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="1.3" />
-        <path d="M10 6.5v4l2.5 2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
+      <Banknote size={20} />
     ),
   },
   {
@@ -42,9 +40,7 @@ const LOAN_TYPES = [
     color: 'amber',
     desc: 'Fast-tracked for urgent and unexpected situations.',
     icon: (
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <path d="M10 2l1.7 5.2H17l-4.3 3.1 1.6 5.2L10 12.5l-4.3 3 1.6-5.2L3 7.2h5.3L10 2z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
-      </svg>
+      <Banknote size={20} />
     ),
   },
   {
@@ -58,11 +54,7 @@ const LOAN_TYPES = [
     color: 'teal',
     desc: 'Quick, low-interest loan for short bridge financing.',
     icon: (
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <rect x="2" y="6" width="16" height="10" rx="2.5" stroke="currentColor" strokeWidth="1.3" />
-        <path d="M6.5 6V4.5a3.5 3.5 0 0 1 7 0V6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-        <path d="M7 11.5h6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-      </svg>
+      <Banknote size={20} />
     ),
   },
 ];
@@ -71,17 +63,11 @@ const fmt = (n) =>
   n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : '₱0.00';
 
 const CheckIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-    <circle cx="8" cy="8" r="7" fill="#dcfce7" stroke="#16a34a" strokeWidth="1.2" />
-    <path d="M5 8.2l2 2 4-4" stroke="#16a34a" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
+  <CheckCircle size={20} />
 );
 
 const XIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-    <circle cx="8" cy="8" r="7" fill="#fef2f2" stroke="#dc2626" strokeWidth="1.2" />
-    <path d="M5.5 5.5l5 5M10.5 5.5l-5 5" stroke="#dc2626" strokeWidth="1.4" strokeLinecap="round" />
-  </svg>
+  <X size={20} />
 );
 
 export default function LoanApplicationModal({
@@ -207,10 +193,7 @@ export default function LoanApplicationModal({
         <div className="user-loan-application-header">
           <h2 className="user-loan-application-title">Apply for Loan</h2>
           <button className="user-loan-application-close-btn" onClick={(e) => { e.stopPropagation(); onClose(); }} type="button">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M15 5L5 15" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M5 5L15 15" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <X size={20} />
           </button>
         </div>
 
@@ -296,12 +279,7 @@ export default function LoanApplicationModal({
                   <label className="user-loan-application-label">Repayment Term</label>
                 </div>
                 <div className="user-loan-application-input-wrapper ula-filled-input">
-                  <svg className="user-loan-application-input-icon-svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path d="M6.66667 1.66667V5" stroke="#99A1AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M13.3333 1.66667V5" stroke="#99A1AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-                    <rect x="2.5" y="3.33333" width="15" height="14.1667" rx="2" stroke="#99A1AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M2.5 8.33333H17.5" stroke="#99A1AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  <User className="user-loan-application-input-icon-svg" size={20} />
                   <select
                     className="user-loan-application-select"
                     style={{ paddingLeft: '40px' }}
@@ -325,11 +303,7 @@ export default function LoanApplicationModal({
           {calc && (
             <div className="ula-calc-card">
               <div className="ula-calc-header">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.2" />
-                  <path d="M8 5v4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-                  <circle cx="8" cy="11.5" r="0.6" fill="currentColor" />
-                </svg>
+                <Banknote size={20} />
                 Loan Calculation Breakdown
               </div>
               <div className="ula-calc-rows">
@@ -399,19 +373,13 @@ export default function LoanApplicationModal({
                 >
                   {selfieFile ? (
                     <>
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="user-loan-upload-icon">
-                        <path d="M20 6L9 17l-5-5" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
+                      <CheckCircle className="user-loan-upload-icon" size={20} />
                       <p className="user-loan-upload-text user-loan-upload-text-done">File selected</p>
                       <p className="user-loan-upload-subtext">{selfieFile.name}</p>
                     </>
                   ) : (
                     <>
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="user-loan-upload-icon">
-                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                        <polyline points="17 8 12 3 7 8" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                        <line x1="12" y1="3" x2="12" y2="15" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
+                      <User className="user-loan-upload-icon" size={20} />
                       <p className="user-loan-upload-text">Click to upload or drag and drop</p>
                       <p className="user-loan-upload-subtext">PNG, JPG</p>
                     </>
@@ -435,19 +403,13 @@ export default function LoanApplicationModal({
                 >
                   {idFile ? (
                     <>
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="user-loan-upload-icon">
-                        <path d="M20 6L9 17l-5-5" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
+                      <CheckCircle className="user-loan-upload-icon" size={20} />
                       <p className="user-loan-upload-text user-loan-upload-text-done">File selected</p>
                       <p className="user-loan-upload-subtext">{idFile.name}</p>
                     </>
                   ) : (
                     <>
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="user-loan-upload-icon">
-                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                        <polyline points="17 8 12 3 7 8" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                        <line x1="12" y1="3" x2="12" y2="15" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
+                      <User className="user-loan-upload-icon" size={20} />
                       <p className="user-loan-upload-text">Click to upload or drag and drop</p>
                       <p className="user-loan-upload-subtext">PNG, JPG</p>
                     </>

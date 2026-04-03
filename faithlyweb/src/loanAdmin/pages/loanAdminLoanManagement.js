@@ -2,11 +2,12 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import LoanAdminSidebar from './loanAdminSidebar';
-import svgPaths from "../../imports/svg-icons";
+
 import useDebounce from '../../hooks/useDebounce';
 import '../styles/loanAdminLoanManagement.css';
 
 import API from '../../utils/api';
+import { Banknote, CheckCircle, Circle, Edit, Search, X, XCircle } from 'lucide-react';
 
 /* ── Loan-type config (mirrors user-side) ── */
 const LOAN_TYPES = [
@@ -274,10 +275,7 @@ export default function LoanAdminLoanManagement() {
 
                 {/* Search */}
                 <div className="loan-admin-mgmt-search">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                        <path d={svgPaths.p319f7900} stroke="#9CA3AF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                        <path d={svgPaths.p14d6c680} stroke="#9CA3AF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                    </svg>
+                    <Search size={20} />
                     <input
                         type="text"
                         placeholder="Search by member name or loan ID..."
@@ -364,10 +362,7 @@ export default function LoanAdminLoanManagement() {
                 <div className="loan-admin-mgmt-modal-overlay" onClick={() => setShowApproveModal(false)}>
                     <div className="loan-admin-mgmt-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="loan-admin-mgmt-modal-icon approve">
-                            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                                <path d={svgPaths.p3800c80} stroke="#00A63E" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.66667" />
-                                <path d={svgPaths.p25f54600} stroke="#00A63E" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.66667" />
-                            </svg>
+                            <CheckCircle size={20} />
                         </div>
                         <h2 className="loan-admin-mgmt-modal-title">Approve Loan?</h2>
                         <p className="loan-admin-mgmt-modal-text">
@@ -392,10 +387,7 @@ export default function LoanAdminLoanManagement() {
                 <div className="loan-admin-mgmt-modal-overlay" onClick={() => setShowRejectModal(false)}>
                     <div className="loan-admin-mgmt-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="loan-admin-mgmt-modal-icon reject">
-                            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                                <path d="M20 12L12 20" stroke="#FF6467" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.66667" />
-                                <path d="M12 12L20 20" stroke="#FF6467" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.66667" />
-                            </svg>
+                            <XCircle size={20} />
                         </div>
                         <h2 className="loan-admin-mgmt-modal-title">Reject Loan?</h2>
                         <p className="loan-admin-mgmt-modal-text">
@@ -449,9 +441,7 @@ export default function LoanAdminLoanManagement() {
                                 <p className="dm-req-id">Request ID: {selectedLoan.loanId}</p>
                             </div>
                             <button className="dm-x-btn" onClick={() => setShowDetailsModal(false)}>
-                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                                    <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                                </svg>
+                                <X size={20} />
                             </button>
                         </div>
 
@@ -501,10 +491,7 @@ export default function LoanAdminLoanManagement() {
                                 <div className="dm-sec-label">Requested loan type</div>
                                 <div className={`dm-loan-pill ${pillClass}`}>
                                     <div className="dm-lt-icon">
-                                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                                            <circle cx="9" cy="9" r="6" stroke="#185fa5" strokeWidth="1.3" />
-                                            <path d="M9 6v3l2 2" stroke="#185fa5" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-                                        </svg>
+                                        <Banknote size={20} />
                                     </div>
                                     <div>
                                         <div className={`dm-lt-name ${pillClass}`}>
@@ -526,9 +513,7 @@ export default function LoanAdminLoanManagement() {
                             {/* Admin — set repayment terms */}
                             <div className="dm-edit-box">
                                 <div className="dm-edit-box-title">
-                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                                        <path d="M9.5 2.5l2 2-7 7H2.5v-2l7-7z" stroke="#1E3A8A" strokeWidth="1.2" strokeLinejoin="round" />
-                                    </svg>
+                                    <Edit size={20} />
                                     Admin — set repayment terms
                                 </div>
                                 <div className="dm-edit-row">
@@ -616,11 +601,7 @@ export default function LoanAdminLoanManagement() {
                                                 <img src={selectedLoan.selfieData} alt="Selfie with ID" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} />
                                             ) : (
                                                 <>
-                                                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                                                        <rect x="3" y="5" width="22" height="18" rx="3" stroke="currentColor" strokeWidth="1.4" />
-                                                        <circle cx="9.5" cy="11.5" r="2.5" stroke="currentColor" strokeWidth="1.4" />
-                                                        <path d="M3 20l6-5 4 4 3-3 6 5" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
-                                                    </svg>
+                                                    <Banknote size={20} />
                                                     <span>{selectedLoan.selfieFileName || 'No file uploaded'}</span>
                                                 </>
                                             )}
@@ -645,11 +626,7 @@ export default function LoanAdminLoanManagement() {
                                                 <img src={selectedLoan.idData} alt="Government ID" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} />
                                             ) : (
                                                 <>
-                                                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                                                        <rect x="3" y="5" width="22" height="18" rx="3" stroke="currentColor" strokeWidth="1.4" />
-                                                        <circle cx="9.5" cy="11.5" r="2.5" stroke="currentColor" strokeWidth="1.4" />
-                                                        <path d="M3 20l6-5 4 4 3-3 6 5" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
-                                                    </svg>
+                                                    <Banknote size={20} />
                                                     <span>{selectedLoan.idFileName || 'No file uploaded'}</span>
                                                 </>
                                             )}
@@ -735,9 +712,7 @@ export default function LoanAdminLoanManagement() {
                                 zIndex: 1101, boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
                             }}
                         >
-                            <svg width="14" height="14" viewBox="0 0 12 12" fill="none">
-                                <path d="M1 1l10 10M11 1L1 11" stroke="#374151" strokeWidth="1.5" strokeLinecap="round" />
-                            </svg>
+                            <Circle size={20} />
                         </button>
                         <img
                             src={viewingImage}

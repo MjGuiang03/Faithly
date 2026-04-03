@@ -7,6 +7,7 @@ import SecLoanReceiptModal from '../components/SecLoanReceiptModal';
 import '../styles/secretaryAdminLoanProcess.css';
 
 import API from '../../utils/api';
+import { Banknote, Search } from 'lucide-react';
 
 export default function SecretaryLoanProcess() {
     const [searchQuery, setSearchQuery] = useState('');
@@ -200,10 +201,7 @@ export default function SecretaryLoanProcess() {
 
                 {/* Search Bar */}
                 <div className="sec-loan-process-search">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                        <path d="M9.16667 15.8333C12.8486 15.8333 15.8333 12.8486 15.8333 9.16667C15.8333 5.48477 12.8486 2.5 9.16667 2.5C5.48477 2.5 2.5 5.48477 2.5 9.16667C2.5 12.8486 5.48477 15.8333 9.16667 15.8333Z" stroke="#9CA3AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M17.5 17.5L13.875 13.875" stroke="#9CA3AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
+                    <Search size={20} />
                     <input
                         type="text"
                         placeholder="Search by member name or loan ID..."
@@ -269,12 +267,7 @@ export default function SecretaryLoanProcess() {
                                                             className="sec-loan-process-btn-receipt"
                                                             onClick={() => handleViewReceipt(loan)}
                                                         >
-                                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-                                                                <polyline points="14 2 14 8 20 8" />
-                                                                <path d="M12 18V12" />
-                                                                <path d="M9 15h6" />
-                                                            </svg>
+                                                            <Banknote size={20} />
                                                             View Receipt
                                                         </button>
                                                     ) : (
@@ -282,9 +275,7 @@ export default function SecretaryLoanProcess() {
                                                             className="sec-loan-process-btn-details"
                                                             onClick={() => handleViewDetails(loan)}
                                                         >
-                                                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                                                <path d="M8 3.33333C4.66667 3.33333 1.81333 5.40667 0.666664 8C1.81333 10.5933 4.66667 12.6667 8 12.6667C11.3333 12.6667 14.1867 10.5933 15.3333 8C14.1867 5.40667 11.3333 3.33333 8 3.33333ZM8 10.6667C6.52666 10.6667 5.33333 9.47333 5.33333 8C5.33333 6.52667 6.52666 5.33333 8 5.33333C9.47333 5.33333 10.6667 6.52667 10.6667 8C10.6667 9.47333 9.47333 10.6667 8 10.6667ZM8 6.66667C7.26666 6.66667 6.66666 7.26667 6.66666 8C6.66666 8.73333 7.26666 9.33333 8 9.33333C8.73333 9.33333 9.33333 8.73333 9.33333 8C9.33333 7.26667 8.73333 6.66667 8 6.66667Z" fill="white" />
-                                                            </svg>
+                                                            <Banknote size={20} />
                                                             View Data
                                                         </button>
                                                     )}

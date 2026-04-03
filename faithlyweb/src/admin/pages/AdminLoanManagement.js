@@ -5,6 +5,7 @@ import useDebounce from '../../hooks/useDebounce';
 import '../styles/AdminLoanManagement.css';
 
 import API from '../../utils/api';
+import { Banknote, Search } from 'lucide-react';
 
 const fmt = (n) =>
   n != null ? `₱${Number(n).toLocaleString('en-PH')}` : '₱0';
@@ -160,10 +161,7 @@ export default function AdminLoanManagement() {
         <div className="admin-loan-search-container">
           <div className="admin-loan-search-wrapper">
             <div className="admin-loan-search-icon">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M9.16667 15.8333C12.8486 15.8333 15.8333 12.8486 15.8333 9.16667C15.8333 5.48477 12.8486 2.5 9.16667 2.5C5.48477 2.5 2.5 5.48477 2.5 9.16667C2.5 12.8486 5.48477 15.8333 9.16667 15.8333Z" stroke="#99A1AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M17.5 17.5L13.875 13.875" stroke="#99A1AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+              <Search size={20} />
             </div>
             <input
               type="text"
@@ -262,10 +260,7 @@ export default function AdminLoanManagement() {
                           onClick={() => navigate(`/admin/loans/${loan._id}`)}
                         >
                           <div className="admin-loan-action-icon">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                              <path d="M0.666667 8C0.666667 8 3.33333 2.66667 8 2.66667C12.6667 2.66667 15.3333 8 15.3333 8C15.3333 8 12.6667 13.3333 8 13.3333C3.33333 13.3333 0.666667 8 0.666667 8Z" stroke="#4A5565" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                              <path d="M8 10C9.10457 10 10 9.10457 10 8C10 6.89543 9.10457 6 8 6C6.89543 6 6 6.89543 6 8C6 9.10457 6.89543 10 8 10Z" stroke="#4A5565" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
+                            <Banknote size={20} />
                           </div>
                         </button>
 
@@ -282,9 +277,7 @@ export default function AdminLoanManagement() {
                                 {isBusy ? (
                                   <div className="admin-loan-spinner admin-loan-spinner-sm" />
                                 ) : (
-                                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                    <path d="M13.3333 4L6 11.3333L2.66667 8" stroke="#00A63E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                  </svg>
+                                  <Banknote size={20} />
                                 )}
                               </div>
                             </button>
@@ -299,10 +292,7 @@ export default function AdminLoanManagement() {
                                 {isBusy ? (
                                   <div className="admin-loan-spinner admin-loan-spinner-sm" />
                                 ) : (
-                                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                    <path d="M12 4L4 12" stroke="#E7000B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                    <path d="M4 4L12 12" stroke="#E7000B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                  </svg>
+                                  <Banknote size={20} />
                                 )}
                               </div>
                             </button>

@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import LoanAdminSidebar from './loanAdminSidebar';
-import svgPaths from "../../imports/svg-icons";
+
 import '../styles/loanAdminNotif.css';
 
 import API from '../../utils/api';
+import { Banknote } from 'lucide-react';
 
 const fmtTimestamp = (ts) => {
     if (!ts) return '';
@@ -118,10 +119,7 @@ export default function LoanAdminNotif() {
 
                     </div>
                     <button className="loan-admin-notif-mark-all" onClick={markAllAsRead}>
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                            <path d={svgPaths.p2ba21180} stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333" />
-                            <path d={svgPaths.p12d41400} stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333" />
-                        </svg>
+                        <Banknote size={20} />
                         Mark all as read
                     </button>
                 </div>
@@ -169,13 +167,7 @@ export default function LoanAdminNotif() {
                                 style={{ cursor: 'pointer' }}
                             >
                                 <div className="loan-admin-notif-card-icon">
-                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                        <path d={svgPaths.p3713e00} stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                                        <path d={svgPaths.pd2076c0} stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                                        <path d="M8.33333 7.5H6.66667" stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                                        <path d="M13.3333 10.8333H6.66667" stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                                        <path d="M13.3333 14.1667H6.66667" stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                                    </svg>
+                                    <Banknote size={20} />
                                 </div>
                                 <div className="loan-admin-notif-card-content">
                                     <div className="loan-admin-notif-card-header">

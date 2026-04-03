@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import API from '../../utils/api';
-import { Eye, EyeOff } from 'lucide-react';
+import { CheckCircle, Eye, EyeOff, User, X, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import svgPaths from "../../imports/svg-icons";
+
 import imgPuacLogo from "../../assets/puaclogo.png";
 import '../styles/Signup.css';
 import VerifyEmailModal from '../components/VerifyEmail';
@@ -299,10 +299,7 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
 
         {/* BACK BUTTON */}
         <button onClick={onClose} className="user-signup-back-btn" type="button">
-          <svg width="16" height="16" fill="none" viewBox="0 0 16 16">
-            <path d={svgPaths.p203476e0} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-            <path d="M12.6667 8H3.33333" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-          </svg>
+          <X size={20} />
         </button>
 
         {/* HEADER */}
@@ -319,10 +316,7 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
             <div className="user-signup-form-group">
               <label htmlFor="firstName" className="user-signup-form-label">First Name:</label>
               <div className="user-signup-input-wrapper">
-                <svg className="user-signup-input-icon" fill="none" viewBox="0 0 20 20">
-                  <path d={svgPaths.p1beb9580} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                  <path d={svgPaths.p32ab0300} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                </svg>
+                <User className="user-signup-input-icon" size={20} />
                 <input
                   id="firstName" name="firstName"
                   value={formData.firstName}
@@ -340,10 +334,7 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
             <div className="user-signup-form-group">
               <label htmlFor="lastName" className="user-signup-form-label">Last Name:</label>
               <div className="user-signup-input-wrapper">
-                <svg className="user-signup-input-icon" fill="none" viewBox="0 0 20 20">
-                  <path d={svgPaths.p1beb9580} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                  <path d={svgPaths.p32ab0300} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                </svg>
+                <User className="user-signup-input-icon" size={20} />
                 <input
                   id="lastName" name="lastName"
                   value={formData.lastName}
@@ -364,10 +355,7 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
             <div className="user-signup-form-group">
               <label htmlFor="email" className="user-signup-form-label">Email:</label>
               <div className="user-signup-input-wrapper">
-                <svg className="user-signup-input-icon" fill="none" viewBox="0 0 20 20">
-                  <path d={svgPaths.p24d83580} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                  <path d={svgPaths.pd919a80} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                </svg>
+                <User className="user-signup-input-icon" size={20} />
                 <input
                   id="email" name="email" type="email"
                   value={formData.email}
@@ -385,9 +373,7 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
             <div className="user-signup-form-group">
               <label htmlFor="phone" className="user-signup-form-label">Phone Number:</label>
               <div className="user-signup-input-wrapper">
-                <svg className="user-signup-input-icon" fill="none" viewBox="0 0 20 20">
-                  <path d={svgPaths.p24c7c480} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                </svg>
+                <User className="user-signup-input-icon" size={20} />
                 <div className="user-signup-phone-input-container">
                   <span className="user-signup-phone-prefix">+63</span>
                   <input
@@ -447,12 +433,7 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
                 Birthday:
               </label>
               <div className="user-signup-input-wrapper">
-                <svg className="user-signup-input-icon" fill="none" viewBox="0 0 20 20">
-                  <path d="M6.66667 1.66667V5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                  <path d="M13.3333 1.66667V5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                  <path d={svgPaths.p1da67b80} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                  <path d="M2.5 8.33333H17.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                </svg>
+                <User className="user-signup-input-icon" size={20} />
                 <input
                   id="birthday" type="date" name="birthday"
                   value={formData.birthday}
@@ -477,14 +458,9 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
             <div className="user-signup-form-group">
               <label className="user-signup-form-label">Community:</label>
               <div className="user-signup-select-wrapper">
-                <svg className="user-signup-select-icon" fill="none" viewBox="0 0 20 20">
-                  <path d={svgPaths.p1beb9580} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                  <path d={svgPaths.p32ab0300} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                </svg>
+                <User className="user-signup-select-icon" size={20} />
                 <CommunitySelect value={formData.community} onChange={handleChange} />
-                <svg className="user-signup-select-dropdown" fill="none" viewBox="0 0 20 20">
-                  <path d={svgPaths.p1ae0b780} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                </svg>
+                <XCircle className="user-signup-select-dropdown" size={20} />
               </div>
               {touched.community && errors.community && (
                 <span className="user-signup-error-text">{errors.community}</span>
@@ -519,10 +495,7 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
             <div className="user-signup-form-group">
               <label htmlFor="password" className="user-signup-form-label">Password:</label>
               <div className="user-signup-input-wrapper">
-                <svg className="user-signup-input-icon" fill="none" viewBox="0 0 20 20">
-                  <path d={svgPaths.p2566d000} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                  <path d={svgPaths.p1bf79e00} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                </svg>
+                <User className="user-signup-input-icon" size={20} />
                 <input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
@@ -542,10 +515,7 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
             <div className="user-signup-form-group">
               <label htmlFor="confirmPassword" className="user-signup-form-label">Confirm Password:</label>
               <div className="user-signup-input-wrapper">
-                <svg className="user-signup-input-icon" fill="none" viewBox="0 0 20 20">
-                  <path d={svgPaths.p2566d000} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                  <path d={svgPaths.p1bf79e00} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                </svg>
+                <CheckCircle className="user-signup-input-icon" size={20} />
                 <input
                   id="confirmPassword"
                   type={showConfirmPassword ? 'text' : 'password'}

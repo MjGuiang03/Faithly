@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import Sidebar from '../components/Sidebar';
-import { ChevronDown, Receipt, X, Download, Share2 } from 'lucide-react';
+import { CheckCircle, ChevronDown, Download, Receipt, Share2, User, Users, X } from 'lucide-react';
 import '../styles/Donation.css';
 import gcashLogo from '../../assets/gcashlogo.png';
 import bank from '../../assets/bank.png';
@@ -185,31 +185,21 @@ export default function Donation() {
             <div className="user-donation-stat-card">
               <div className="user-donation-stat-header">
                 <p className="user-donation-stat-label">Total Donated</p>
-                <svg className="user-donation-stat-icon" fill="none" viewBox="0 0 20 20">
-                  <path d="M17.3667 3.84167C16.941 3.41583 16.4357 3.07803 15.8794 2.84757C15.3231 2.61712 14.7267 2.49854 14.1245 2.49854C13.5224 2.49854 12.9259 2.61712 12.3696 2.84757C11.8133 3.07803 11.308 3.41583 10.8823 3.84167L10.0001 4.72417L9.11793 3.84167C8.25853 2.98227 7.09337 2.49898 5.87593 2.49898C4.65849 2.49898 3.49334 2.98227 2.63393 3.84167C1.77453 4.70108 1.29124 5.86623 1.29124 7.08367C1.29124 8.30111 1.77453 9.46626 2.63393 10.3257L10.0001 17.6917L17.3662 10.3257C17.792 9.89993 18.1298 9.39461 18.3602 8.83831C18.5907 8.28202 18.7092 7.68556 18.7092 7.08334C18.7092 6.48112 18.5907 5.88465 18.3602 5.32836C18.1298 4.77207 17.792 4.26743 17.3662 3.84167H17.3667Z" stroke="#E60076" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                </svg>
+                <Users className="user-donation-stat-icon" size={20} />
               </div>
               {loading ? <div className="user-skeleton" style={{ height: '32px', width: '100px', margin: '8px 0' }}></div> : <p className="user-donation-stat-value user-fade-in">{fmt(stats.totalDonated)}</p>}
             </div>
             <div className="user-donation-stat-card">
               <div className="user-donation-stat-header">
                 <p className="user-donation-stat-label">This Year</p>
-                <svg className="user-donation-stat-icon" fill="none" viewBox="0 0 20 20">
-                  <path d="M10 16.6667V10" stroke="#00A63E" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                  <path d="M6.66667 13.3333L10 10L13.3333 13.3333" stroke="#00A63E" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                </svg>
+                <User className="user-donation-stat-icon" size={20} />
               </div>
               {loading ? <div className="user-skeleton" style={{ height: '32px', width: '100px', margin: '8px 0' }}></div> : <p className="user-donation-stat-value user-fade-in">{fmt(stats.thisYearTotal)}</p>}
             </div>
             <div className="user-donation-stat-card">
               <div className="user-donation-stat-header">
                 <p className="user-donation-stat-label">Total Donations</p>
-                <svg className="user-donation-stat-icon" fill="none" viewBox="0 0 20 20">
-                  <path d="M6.66667 1.66667V5" stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                  <path d="M13.3333 1.66667V5" stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                  <path d="M2.5 8.33333H17.5" stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                  <path d="M15.8333 3.33333H4.16667C3.24619 3.33333 2.5 4.07952 2.5 5V16.6667C2.5 17.5871 3.24619 18.3333 4.16667 18.3333H15.8333C16.7538 18.3333 17.5 17.5871 17.5 16.6667V5C17.5 4.07952 16.7538 3.33333 15.8333 3.33333Z" stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                </svg>
+                <Users className="user-donation-stat-icon" size={20} />
               </div>
               {loading ? <div className="user-skeleton" style={{ height: '32px', width: '60px', margin: '8px 0' }}></div> : <p className="user-donation-stat-value user-fade-in">{stats.totalCount}</p>}
             </div>
@@ -355,9 +345,7 @@ export default function Donation() {
                       >
                         {proofFile ? (
                           <>
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="user-proof-upload-icon">
-                              <path d="M20 6L9 17l-5-5" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
+                            <CheckCircle className="user-proof-upload-icon" size={20} />
                             <p className="user-proof-upload-text user-proof-upload-text--done">File selected</p>
                             <p className="user-proof-upload-subtext">{proofFile.name}</p>
                             <button
@@ -370,11 +358,7 @@ export default function Donation() {
                           </>
                         ) : (
                           <>
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="user-proof-upload-icon">
-                              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                              <polyline points="17 8 12 3 7 8" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                              <line x1="12" y1="3" x2="12" y2="15" stroke="#99A1AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
+                            <User className="user-proof-upload-icon" size={20} />
                             <p className="user-proof-upload-text">Click to upload proof of payment</p>
                             <p className="user-proof-upload-subtext">Screenshot or photo of payment confirmation · PNG, JPG</p>
                           </>
@@ -396,9 +380,7 @@ export default function Donation() {
                 <button className="user-donate-btn" onClick={handleDonate} disabled={submitting}>
                   {submitting ? <span className="btn-spinner" /> : (
                     <>
-                      <svg className="user-donate-icon" fill="none" viewBox="0 0 20 20">
-                        <path d="M17.3667 3.84167C16.941 3.41583 16.4357 3.07803 15.8794 2.84757C15.3231 2.61712 14.7267 2.49854 14.1245 2.49854C13.5224 2.49854 12.9259 2.61712 12.3696 2.84757C11.8133 3.07803 11.308 3.41583 10.8823 3.84167L10.0001 4.72417L9.11793 3.84167C8.25853 2.98227 7.09337 2.49898 5.87593 2.49898C4.65849 2.49898 3.49334 2.98227 2.63393 3.84167C1.77453 4.70108 1.29124 5.86623 1.29124 7.08367C1.29124 8.30111 1.77453 9.46626 2.63393 10.3257L10.0001 17.6917L17.3662 10.3257C17.792 9.89993 18.1298 9.39461 18.3602 8.83831C18.5907 8.28202 18.7092 7.68556 18.7092 7.08334C18.7092 6.48112 18.5907 5.88465 18.3602 5.32836C18.1298 4.77207 17.792 4.26743 17.3662 3.84167H17.3667Z" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                      </svg>
+                      <User className="user-donate-icon" size={20} />
                       Donate Now
                     </>
                   )}
@@ -443,9 +425,7 @@ export default function Donation() {
                       onClick={() => handleOpenReceipt(d)}
                     >
                       <div className="user-donation-history-main">
-                        <svg className="user-donation-history-icon" fill="none" viewBox="0 0 20 20">
-                          <path d="M17.3667 3.84167C16.941 3.41583 16.4357 3.07803 15.8794 2.84757C15.3231 2.61712 14.7267 2.49854 14.1245 2.49854C13.5224 2.49854 12.9259 2.61712 12.3696 2.84757C11.8133 3.07803 11.308 3.41583 10.8823 3.84167L10.0001 4.72417L9.11793 3.84167C8.25853 2.98227 7.09337 2.49898 5.87593 2.49898C4.65849 2.49898 3.49334 2.98227 2.63393 3.84167C1.77453 4.70108 1.29124 5.86623 1.29124 7.08367C1.29124 8.30111 1.77453 9.46626 2.63393 10.3257L10.0001 17.6917L17.3662 10.3257C17.792 9.89993 18.1298 9.39461 18.3602 8.83831C18.5907 8.28202 18.7092 7.68556 18.7092 7.08334C18.7092 6.48112 18.5907 5.88465 18.3602 5.32836C18.1298 4.77207 17.792 4.26743 17.3662 3.84167H17.3667Z" stroke="#E60076" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                        </svg>
+                        <User className="user-donation-history-icon" size={20} />
                         <div className="user-donation-history-info">
                           <h3 className="user-donation-fund">{d.category}</h3>
                           <p className="user-donation-id">{d.donationId}</p>
@@ -478,10 +458,7 @@ export default function Donation() {
           <div className="user-donation-success-modal" onClick={e => e.stopPropagation()}>
             {/* Checkmark icon */}
             <div className="user-donation-success-icon-wrap">
-              <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
-                <circle cx="22" cy="22" r="22" fill="#dcfce7" />
-                <path d="M13 22.5L19.5 29L31 16" stroke="#16a34a" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <CheckCircle size={20} />
             </div>
 
             <h2 className="user-donation-success-title">Thank You!</h2>
@@ -492,9 +469,7 @@ export default function Donation() {
               <p className="user-donation-success-detail-label">Donation Amount</p>
               <p className="user-donation-success-amount">{fmt(successModal.amount)}</p>
               <div className="user-donation-success-category">
-                <svg width="15" height="15" viewBox="0 0 20 20" fill="none">
-                  <path d="M17.3667 3.84167C16.941 3.41583 16.4357 3.07803 15.8794 2.84757C15.3231 2.61712 14.7267 2.49854 14.1245 2.49854C13.5224 2.49854 12.9259 2.61712 12.3696 2.84757C11.8133 3.07803 11.308 3.41583 10.8823 3.84167L10.0001 4.72417L9.11793 3.84167C8.25853 2.98227 7.09337 2.49898 5.87593 2.49898C4.65849 2.49898 3.49334 2.98227 2.63393 3.84167C1.77453 4.70108 1.29124 5.86623 1.29124 7.08367C1.29124 8.30111 1.77453 9.46626 2.63393 10.3257L10.0001 17.6917L17.3662 10.3257C17.792 9.89993 18.1298 9.39461 18.3602 8.83831C18.5907 8.28202 18.7092 7.68556 18.7092 7.08334C18.7092 6.48112 18.5907 5.88465 18.3602 5.32836C18.1298 4.77207 17.792 4.26743 17.3662 3.84167H17.3667Z" stroke="#E60076" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                </svg>
+                <CheckCircle size={20} />
                 <span>{successModal.category}</span>
               </div>
             </div>

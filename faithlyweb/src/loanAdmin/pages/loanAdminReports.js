@@ -3,6 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import LoanAdminSidebar from './loanAdminSidebar';
 import API from '../../utils/api';
 import '../styles/loanAdminReports.css';
+import { Banknote } from 'lucide-react';
 
 const fmt = (n) =>
     n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : '₱0.00';
@@ -79,10 +80,7 @@ export default function LoanAdminReports() {
                             <div className="loan-admin-reports-summary-card green">
                                 <div className="loan-admin-reports-summary-header">
                                     <p className="loan-admin-reports-summary-label">Total Money Received</p>
-                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                        <path d="M8 14.6667V1.33334" stroke="#00A63E" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333" />
-                                        <path d="M11.3333 3.99999L8 1.33333L4.66667 3.99999" stroke="#00A63E" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333" />
-                                    </svg>
+                                    <Banknote size={20} />
                                 </div>
                                 <p className="loan-admin-reports-summary-value">{fmtShort(summary.totalReceived)}</p>
                                 <p className="loan-admin-reports-summary-period">{selectedYear}</p>
@@ -91,10 +89,7 @@ export default function LoanAdminReports() {
                             <div className="loan-admin-reports-summary-card red">
                                 <div className="loan-admin-reports-summary-header">
                                     <p className="loan-admin-reports-summary-label">Total Money Released</p>
-                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                        <path d="M8 1.33334V14.6667" stroke="#FF6467" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333" />
-                                        <path d="M4.66667 12L8 14.6667L11.3333 12" stroke="#FF6467" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333" />
-                                    </svg>
+                                    <Banknote size={20} />
                                 </div>
                                 <p className="loan-admin-reports-summary-value">{fmtShort(summary.totalReleased)}</p>
                                 <p className="loan-admin-reports-summary-period">Loan disbursements</p>
@@ -103,10 +98,7 @@ export default function LoanAdminReports() {
                             <div className="loan-admin-reports-summary-card blue">
                                 <div className="loan-admin-reports-summary-header">
                                     <p className="loan-admin-reports-summary-label">Total Interest</p>
-                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                        <path d="M8 14.6667V1.33334" stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333" />
-                                        <path d="M11.3333 3.99999L8 1.33333L4.66667 3.99999" stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333" />
-                                    </svg>
+                                    <Banknote size={20} />
                                 </div>
                                 <p className="loan-admin-reports-summary-value">{fmtShort(summary.totalInterest)}</p>
                                 <p className="loan-admin-reports-summary-period">Interest earned</p>

@@ -6,6 +6,7 @@ import LoanApplicationModal from '../components/LoanApplicationModal';
 import VerificationModal from '../components/OfficerVerification';
 import '../styles/Loans.css';
 import API from '../../utils/api';
+import { Circle, X, XCircle } from 'lucide-react';
 
 const fmt = (n) =>
   n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : '₱0.00';
@@ -21,10 +22,7 @@ const STATUS_CLASS = {
 };
 
 const LockIcon = () => (
-  <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
-    <rect x="2" y="6" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
-    <path d="M4.5 6V4.5a2.5 2.5 0 0 1 5 0V6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-  </svg>
+  <XCircle size={20} />
 );
 
 export default function Loans() {
@@ -176,13 +174,13 @@ export default function Loans() {
           <div key={lt.name} className="ul-lt-card">
             <div className={`ul-lt-icon ul-lt-icon--${lt.color}`}>
               {lt.color === 'blue' && (
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="6" stroke="#185fa5" strokeWidth="1.3" /><path d="M9 6v3l2 2" stroke="#185fa5" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                <Circle size={20} />
               )}
               {lt.color === 'amber' && (
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2l1.5 4.5H15l-3.75 2.75L12.75 14 9 11.25 5.25 14l1.5-4.75L3 6.5h4.5L9 2z" stroke="#854f0b" strokeWidth="1.3" strokeLinejoin="round" /></svg>
+                <Circle size={20} />
               )}
               {lt.color === 'teal' && (
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="5" width="14" height="9" rx="2" stroke="#0f6e56" strokeWidth="1.3" /><path d="M6 5V4a3 3 0 0 1 6 0v1" stroke="#0f6e56" strokeWidth="1.3" strokeLinecap="round" /><path d="M6 10h6" stroke="#0f6e56" strokeWidth="1.3" strokeLinecap="round" /></svg>
+                <Circle size={20} />
               )}
             </div>
             <div className="ul-lt-name">{lt.name}</div>
@@ -399,10 +397,7 @@ export default function Loans() {
                       {loans.filter(l => l.status === 'active' || l.status === 'pending').length === 0 ? (
                         <div className="ul-empty-state">
                           <div className="ul-empty-icon">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-                              <rect x="3" y="5" width="18" height="14" rx="3" />
-                              <path d="M3 9h18M8 13h2M14 13h2" />
-                            </svg>
+                            <Circle size={20} />
                           </div>
                           <div className="ul-empty-title">No active loan</div>
                           <p className="ul-empty-sub">You haven't taken out a loan yet. Apply now and get funds disbursed directly to your account.</p>
@@ -509,9 +504,9 @@ export default function Loans() {
                             <div key={loan._id} className="ul-history-row" onClick={() => navigate(`/loans/${loan.loanId}`)}>
                               <div className={`ul-hist-icon ul-hist-icon--${loan.status === 'active' || loan.status === 'pending' ? 'active' : 'closed'}`}>
                                 {loan.status === 'active' || loan.status === 'pending' ? (
-                                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="3" stroke="#185fa5" strokeWidth="1.2" /><path d="M5 8h6M5 5.5h4M5 10.5h3" stroke="#185fa5" strokeWidth="1.2" strokeLinecap="round" /></svg>
+                                  <X size={20} />
                                 ) : (
-                                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="3" stroke="currentColor" strokeWidth="1.2" /><path d="M5 8.5l2 2 4-4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                                  <Circle size={20} />
                                 )}
                               </div>
                               <div className="ul-hist-info">

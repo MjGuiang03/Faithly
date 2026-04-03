@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import '../styles/SavingsModal.css';
 import API from '../../utils/api';
+import { CheckCircle, FileText, X } from 'lucide-react';
 
 const fmt = (n) =>
     n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : '₱0.00';
@@ -37,9 +38,7 @@ const GOAL_NAME_OPTIONS = [
 const QUICK_AMOUNTS = [500, 1000, 2000, 5000];
 
 const CloseIcon = () => (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-        <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
+    <X size={20} />
 );
 
 /* ─────────────────────────────────────────────────────────────
@@ -215,10 +214,7 @@ function DepositModal({ goals, onClose }) {
                                 <span className="svm-upload-done-text">✓ {receipt.name}</span>
                             ) : (
                                 <>
-                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ marginBottom: '4px' }}>
-                                        <path d="M10 13V7M7 10l3-3 3 3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-                                        <path d="M3 17a4 4 0 0 1 0-8h.5A5.5 5.5 0 0 1 15.5 7H16a3 3 0 0 1 0 6H3z" stroke="currentColor" strokeWidth="1.3" />
-                                    </svg>
+                                    <CheckCircle size={20} />
                                     <span>Click to upload screenshot or receipt</span>
                                 </>
                             )}
@@ -512,10 +508,7 @@ function QuickDepositModal({ goal, goals, onClose }) {
 
                     {success ? (
                         <div className="svm-success">
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <circle cx="10" cy="10" r="8" fill="#0057B7" />
-                                <path d="M6.5 10.5l2.5 2.5 4.5-4.5" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
+                            <CheckCircle size={20} />
                             ₱{numAmt.toLocaleString('en-PH', { minimumFractionDigits: 2 })} submitted for admin confirmation!
                         </div>
                     ) : (
@@ -616,10 +609,7 @@ function QuickDepositModal({ goal, goals, onClose }) {
                                         <span className="svm-upload-done-text">✓ {receipt.name}</span>
                                     ) : (
                                         <>
-                                            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" style={{ marginBottom: '3px' }}>
-                                                <path d="M10 13V7M7 10l3-3 3 3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-                                                <path d="M3 17a4 4 0 0 1 0-8h.5A5.5 5.5 0 0 1 15.5 7H16a3 3 0 0 1 0 6H3z" stroke="currentColor" strokeWidth="1.3" />
-                                            </svg>
+                                            <FileText size={20} />
                                             <span>Upload receipt</span>
                                         </>
                                     )}
@@ -930,10 +920,7 @@ function TransferModal({ goal, goals, onClose }) {
 
                     {success ? (
                         <div className="svm-success">
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <circle cx="10" cy="10" r="8" fill="#639922" />
-                                <path d="M6.5 10.5l2.5 2.5 4.5-4.5" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
+                            <CheckCircle size={20} />
                             ₱{numAmt.toLocaleString('en-PH', { minimumFractionDigits: 2 })} transferred!
                         </div>
                     ) : (
@@ -1059,4 +1046,4 @@ export default function SavingsModals({ modal, modalData, goals, onClose }) {
         return <TransferModal goal={modalData} goals={goals} onClose={onClose} />;
 
     return null;
-}
+}

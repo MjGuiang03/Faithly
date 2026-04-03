@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 import { useState, useEffect } from 'react';
-import { LayoutGrid, FileText, Heart, Calendar, Building2, Settings, LogOut, Bell, Menu, X, Wallet } from 'lucide-react';
+import { Bell, Building2, Calendar, FileText, Heart, LayoutGrid, LogOut, Menu, Settings, Wallet, X } from 'lucide-react';
 import { toast } from 'sonner';
 import puacLogo from '../../assets/puaclogo.png';
 import '../styles/Sidebar.css';
@@ -336,14 +336,9 @@ export default function Sidebar() {
         title={chatOpen ? 'Close chat' : 'Chat with FaithBot'}
       >
         {chatOpen ? (
-          <svg fill="none" viewBox="0 0 24 24" width="22" height="22">
-            <line x1="18" y1="6" x2="6" y2="18" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
-            <line x1="6" y1="6" x2="18" y2="18" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
-          </svg>
+          <X size={20} />
         ) : (
-          <svg fill="none" viewBox="0 0 24 24" width="24" height="24">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-          </svg>
+          <X size={20} />
         )}
       </button>
 

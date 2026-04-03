@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import svgPaths from '../../imports/svg-icons';
+
 import '../styles/Attendance.css';
 import Sidebar from '../components/Sidebar';
 import API from '../../utils/api';
+import { CalendarDays, CheckCircle, User, Users } from 'lucide-react';
 const PAGE_SIZE = 5;
 
 export default function Attendance() {
@@ -108,12 +109,7 @@ export default function Attendance() {
           <div className="user-attendance-stat-card">
             <div className="user-attendance-stat-header">
               <p className="user-attendance-stat-label">Total Attendance</p>
-              <svg className="user-attendance-stat-icon" fill="none" viewBox="0 0 20 20">
-                <path d="M6.66667 1.66667V5" stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                <path d="M13.3333 1.66667V5" stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                <path d={svgPaths.p1da67b80} stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                <path d="M2.5 8.33333H17.5" stroke="#155DFC" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-              </svg>
+              <Users className="user-attendance-stat-icon" size={20} />
               </div>
               {loading ? <div className="user-skeleton" style={{ height: '32px', width: '60px', margin: '8px 0' }}></div> : <p className="user-attendance-stat-value user-fade-in">{stats.total}</p>}
             </div>
@@ -121,10 +117,7 @@ export default function Attendance() {
           <div className="user-attendance-stat-card">
             <div className="user-attendance-stat-header">
               <p className="user-attendance-stat-label">This Month</p>
-              <svg className="user-attendance-stat-icon" fill="none" viewBox="0 0 20 20">
-                <path d="M16.6667 10L10 3.33333L3.33333 10" stroke="#00A63E" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                <path d="M16.6667 10L10 16.6667L3.33333 10" stroke="#00A63E" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-              </svg>
+              <User className="user-attendance-stat-icon" size={20} />
               </div>
               {loading ? <div className="user-skeleton" style={{ height: '32px', width: '60px', margin: '8px 0' }}></div> : <p className="user-attendance-stat-value user-fade-in">{stats.thisMonth}</p>}
             </div>
@@ -132,12 +125,7 @@ export default function Attendance() {
           <div className="user-attendance-stat-card">
             <div className="user-attendance-stat-header">
               <p className="user-attendance-stat-label">Attendance Rate</p>
-              <svg className="user-attendance-stat-icon" fill="none" viewBox="0 0 20 20">
-                <path d="M6.66667 1.66667V5" stroke="#9810FA" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                <path d="M13.3333 1.66667V5" stroke="#9810FA" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                <path d={svgPaths.p1da67b80} stroke="#9810FA" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                <path d="M2.5 8.33333H17.5" stroke="#9810FA" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-              </svg>
+              <User className="user-attendance-stat-icon" size={20} />
               </div>
               {loading ? <div className="user-skeleton" style={{ height: '32px', width: '60px', margin: '8px 0' }}></div> : <p className="user-attendance-stat-value user-fade-in">{attendanceRate}</p>}
             </div>
@@ -152,16 +140,7 @@ export default function Attendance() {
 
             <div className="user-check-in-method">
               <div className="user-qr-scanner-box">
-                <svg className="user-qr-icon" fill="none" viewBox="0 0 24 24">
-                  <rect width="9" height="9" x="3" y="3" stroke="#155DFC" strokeWidth="2" />
-                  <rect width="9" height="9" x="3" y="12" stroke="#155DFC" strokeWidth="2" />
-                  <rect width="9" height="9" x="12" y="3" stroke="#155DFC" strokeWidth="2" />
-                  <rect width="9" height="9" x="12" y="12" stroke="#155DFC" strokeWidth="2" />
-                  <path d="M6 6h3v3H6z" fill="#155DFC" />
-                  <path d="M6 15h3v3H6z" fill="#155DFC" />
-                  <path d="M15 6h3v3h-3z" fill="#155DFC" />
-                  <path d="M15 15h3v3h-3z" fill="#155DFC" />
-                </svg>
+                <CheckCircle className="user-qr-icon" size={20} />
               </div>
               <div className="user-check-in-method-info">
                 <h3 className="user-check-in-method-title">QR Code Scanner</h3>
@@ -197,12 +176,7 @@ export default function Attendance() {
                 </div>
               ) : upcomingData.length === 0 ? (
                 <div className="user-upcoming-empty">
-                  <svg fill="none" viewBox="0 0 40 40" width="36" height="36">
-                    <path d="M13.3333 3.33333V10" stroke="#d1d5db" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                    <path d="M26.6667 3.33333V10" stroke="#d1d5db" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                    <path d="M5 16.6667H35" stroke="#d1d5db" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                    <rect x="5" y="6.66667" width="30" height="30" rx="2" stroke="#d1d5db" strokeWidth="2" />
-                  </svg>
+                  <User size={20} />
                   <p className="user-upcoming-empty-text">No upcoming services announced yet.</p>
                   <p className="user-upcoming-empty-sub">Check back when your admin posts new schedules.</p>
                 </div>
@@ -221,11 +195,11 @@ export default function Attendance() {
                         <p className="user-upcoming-service-message">{item.message}</p>
                         <div className="user-upcoming-service-meta">
                            <span className="upcoming-meta-item">
-                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                             <User size={20} />
                              {item.branch}
                            </span>
                            <span className="upcoming-meta-item">
-                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                             <CalendarDays size={20} />
                              {new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                            </span>
                         </div>
@@ -288,9 +262,7 @@ export default function Attendance() {
 
       {/* Floating Chat Button */}
       <button className="user-chat-button">
-        <svg fill="none" viewBox="0 0 24 24">
-          <path d={svgPaths.p261dfb00} stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-        </svg>
+        <User size={20} />
       </button>
 
       {/* ── Attendance History Modal ── */}

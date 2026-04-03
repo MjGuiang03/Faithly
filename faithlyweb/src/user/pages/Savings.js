@@ -5,6 +5,7 @@ import Sidebar from '../components/Sidebar';
 import SavingsModals from '../components/SavingsModal';
 import '../styles/Savings.css';
 import API from '../../utils/api';
+import { Circle, Edit, PiggyBank } from 'lucide-react';
 
 const fmt = (n) =>
     n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : '₱0.00';
@@ -24,49 +25,29 @@ const GOAL_COLORS = {
 const GoalIcon = ({ color = 'blue', type = 'default' }) => {
     const stroke = GOAL_COLORS[color]?.pct || '#185fa5';
     if (type === 'house') return (
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <path d="M3 14V8l6-5 6 5v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z" stroke={stroke} strokeWidth="1.3" strokeLinejoin="round" />
-            <path d="M7 14v-4h4v4" stroke={stroke} strokeWidth="1.3" strokeLinejoin="round" />
-        </svg>
+        <PiggyBank size={20} />
     );
     if (type === 'bag') return (
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <rect x="2" y="5" width="14" height="9" rx="2" stroke={stroke} strokeWidth="1.3" />
-            <path d="M6 5V4a3 3 0 0 1 6 0v1" stroke={stroke} strokeWidth="1.3" strokeLinecap="round" />
-            <path d="M6 10h6" stroke={stroke} strokeWidth="1.3" strokeLinecap="round" />
-        </svg>
+        <Circle size={20} />
     );
     if (type === 'star') return (
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <path d="M9 2l1.5 4.5H15l-3.75 2.75L12.75 14 9 11.25 5.25 14l1.5-4.75L3 6.5h4.5L9 2z" stroke={stroke} strokeWidth="1.3" strokeLinejoin="round" />
-        </svg>
+        <Circle size={20} />
     );
     if (type === 'car') return (
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <path d="M2 10l2-4h10l2 4v3H2v-3z" stroke={stroke} strokeWidth="1.3" strokeLinejoin="round" />
-            <circle cx="5" cy="13" r="1.2" stroke={stroke} strokeWidth="1.1" />
-            <circle cx="13" cy="13" r="1.2" stroke={stroke} strokeWidth="1.1" />
-        </svg>
+        <Circle size={20} />
     );
     // default: person/emergency
     return (
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <path d="M9 2a5 5 0 0 1 0 10A5 5 0 0 1 9 2zm0 7V6" stroke={stroke} strokeWidth="1.3" strokeLinecap="round" />
-            <path d="M4 15s1-2 5-2 5 2 5 2" stroke={stroke} strokeWidth="1.3" strokeLinecap="round" />
-        </svg>
+        <Circle size={20} />
     );
 };
 
 const TxnArrowIn = () => (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-        <path d="M7 2v8M3 7l4 4 4-4" stroke="#27500a" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
+    <Circle size={20} />
 );
 
 const TxnArrowOut = () => (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-        <path d="M7 12V4M3 7l4-4 4 4" stroke="#991b1b" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
+    <PiggyBank size={20} />
 );
 
 export default function Savings() {
@@ -233,11 +214,7 @@ export default function Savings() {
         if (!hasGoals) return (
             <div className="sv-goals-empty">
                 <div className="sv-goals-empty-icon">
-                    <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-                        <circle cx="13" cy="13" r="8" stroke="currentColor" strokeWidth="1.5" />
-                        <path d="M13 9v4l2.5 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M7 21s1.5-2 6-2 6 2 6 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                    </svg>
+                    <PiggyBank size={20} />
                 </div>
                 <div className="sv-goals-empty-title">No savings goals yet</div>
                 <p className="sv-goals-empty-sub">Set a goal to start saving — whether it's an emergency fund, a big purchase, or anything in between.</p>
@@ -289,28 +266,21 @@ export default function Savings() {
                                 title="Edit goal"
                                 onClick={() => openEditGoal(goal)}
                             >
-                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                                    <path d="M8.5 2.5l3 3M2 10l-.5 2.5L4 12l8-8-3-3-7 7z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
+                                <Edit size={20} />
                             </button>
                             <button
                                 className="sv-goal-more-btn"
                                 title="Transfer to another goal"
                                 onClick={() => openTransfer(goal)}
                             >
-                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                                    <path d="M2 5h10M9 2l3 3-3 3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                                    <path d="M12 9H2M5 12l-3-3 3-3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
+                                <PiggyBank size={20} />
                             </button>
                             <button
                                 className="sv-goal-more-btn"
                                 title="Quick deposit"
                                 onClick={() => openQuickDep(goal)}
                             >
-                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                                    <path d="M7 2v10M2 7h10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-                                </svg>
+                                <PiggyBank size={20} />
                             </button>
                         </div>
                     );
@@ -325,9 +295,7 @@ export default function Savings() {
         if (transactions.length === 0) return (
             <div className="sv-txn-empty">
                 <div className="sv-txn-empty-icon">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                        <path d="M3 10h14M10 3v14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                    </svg>
+                    <Circle size={20} />
                 </div>
                 <div className="sv-txn-empty-title">No transactions yet</div>
                 <div className="sv-txn-empty-sub">Your deposits and withdrawals will appear here.</div>

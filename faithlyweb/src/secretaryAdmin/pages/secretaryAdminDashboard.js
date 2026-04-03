@@ -4,6 +4,7 @@ import SecretaryAdminSidebar from '../components/secretaryAdminSidebar';
 import '../../admin/styles/AdminDashboard.css';
 import '../styles/secretaryAdminDashboard.css';
 import API from '../../utils/api';
+import { ArrowLeft, Banknote, Circle } from 'lucide-react';
 
 const fmt = (n) => n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 0 })}` : '₱0';
 const COLORS = ['#155DFC', '#00A63E', '#F59E0B'];
@@ -107,7 +108,7 @@ export default function SecretaryAdminDashboard() {
                 <div className="adm-stat-top">
                   <span className="adm-stat-label">Awaiting Processing</span>
                   <div className="adm-stat-icon" style={{ background: '#FEF3C7' }}>
-                    <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.33" stroke="#F59E0B" strokeWidth="1.67"/><path d="M10 5V10L13.33 11.67" stroke="#F59E0B" strokeWidth="1.67" strokeLinecap="round"/></svg>
+                    <ArrowLeft size={20} />
                   </div>
                 </div>
                 <span className="adm-stat-value">{dash(stats.awaiting)}</span>
@@ -117,7 +118,7 @@ export default function SecretaryAdminDashboard() {
                 <div className="adm-stat-top">
                   <span className="adm-stat-label">Processed Today</span>
                   <div className="adm-stat-icon adm-icon-blue">
-                    <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.33" stroke="white" strokeWidth="1.67"/><path d="M6.67 10L8.89 12.22L13.33 7.78" stroke="white" strokeWidth="1.67" strokeLinecap="round"/></svg>
+                    <Circle size={20} />
                   </div>
                 </div>
                 <span className="adm-stat-value">{dash(stats.today)}</span>
@@ -127,7 +128,7 @@ export default function SecretaryAdminDashboard() {
                 <div className="adm-stat-top">
                   <span className="adm-stat-label">This Month</span>
                   <div className="adm-stat-icon adm-icon-blue">
-                    <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><rect x="2" y="3" width="16" height="15" rx="2" stroke="white" strokeWidth="1.67"/><path d="M14 1V5M6 1V5M2 9H18" stroke="white" strokeWidth="1.67" strokeLinecap="round"/></svg>
+                    <Circle size={20} />
                   </div>
                 </div>
                 <span className="adm-stat-value">{dash(stats.month)}</span>
@@ -137,7 +138,7 @@ export default function SecretaryAdminDashboard() {
                 <div className="adm-stat-top">
                   <span className="adm-stat-label">Total Disbursed</span>
                   <div className="adm-stat-icon adm-icon-green">
-                    <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M10 1.67V18.33M14.17 4.17H7.92C7.03 4.17 6.18 4.52 5.56 5.14C4.93 5.77 4.58 6.62 4.58 7.5C4.58 8.38 4.93 9.23 5.56 9.86C6.18 10.48 7.03 10.83 7.92 10.83H12.08C12.97 10.83 13.82 11.18 14.44 11.81C15.07 12.43 15.42 13.28 15.42 14.17C15.42 15.05 15.07 15.9 14.44 16.52C13.82 17.15 12.97 17.5 12.08 17.5H4.58" stroke="white" strokeWidth="1.67" strokeLinecap="round"/></svg>
+                    <Banknote size={20} />
                   </div>
                 </div>
                 <span className="adm-stat-value">{dash(fmt(stats.disbursed))}</span>

@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
-import { Search } from 'lucide-react';
+import { CalendarDays, MapPin, Search, Users } from 'lucide-react';
 import useDebounce from '../../hooks/useDebounce';
 import '../styles/AdminBranches.css';
-import svgPaths from "../../imports/svg-icons";
+
 import API from '../../utils/api';
 
 export default function AdminBranches() {
@@ -84,10 +84,7 @@ export default function AdminBranches() {
         <div className="admin-branch-stat-card">
           <div className="admin-branch-stat-header">
             <span className="admin-branch-stat-label">Total Branches</span>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d={svgPaths.p26ddc800} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d={svgPaths.p35ba4680} stroke="#155DFC" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <MapPin size={20} />
           </div>
           <p className="admin-branch-stat-value">{loading ? '—' : totalCount}</p>
         </div>
@@ -95,12 +92,7 @@ export default function AdminBranches() {
         <div className="admin-branch-stat-card">
           <div className="admin-branch-stat-header">
             <span className="admin-branch-stat-label">Total Members</span>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d={svgPaths.p25397b80} stroke="#00A63E" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d={svgPaths.p2c4f400} stroke="#00A63E" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d={svgPaths.p2241fff0} stroke="#00A63E" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d={svgPaths.pae3c380} stroke="#00A63E" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <Users size={20} />
           </div>
           <p className="admin-branch-stat-value">{loading ? '—' : totalMembers.toLocaleString()}</p>
         </div>
@@ -108,12 +100,7 @@ export default function AdminBranches() {
         <div className="admin-branch-stat-card">
           <div className="admin-branch-stat-header">
             <span className="admin-branch-stat-label">Total Services</span>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M6.66667 1.66667V5" stroke="#9810FA" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M13.3333 1.66667V5" stroke="#9810FA" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <rect x="2.5" y="3.33333" width="15" height="13.3333" rx="1.66667" stroke="#9810FA" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M2.5 8.33333H17.5" stroke="#9810FA" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <CalendarDays size={20} />
           </div>
           <p className="admin-branch-stat-value">—</p>
         </div>
@@ -121,10 +108,7 @@ export default function AdminBranches() {
         <div className="admin-branch-stat-card">
           <div className="admin-branch-stat-header">
             <span className="admin-branch-stat-label">Growth Rate</span>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d={svgPaths.p3c797180} stroke="#E60076" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d={svgPaths.p3ac0b600} stroke="#E60076" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <MapPin size={20} />
           </div>
           <p className="admin-branch-stat-value">—</p>
         </div>
@@ -146,10 +130,7 @@ export default function AdminBranches() {
             <div key={branch._id || branch.id} className="admin-branch-card">
               <div className="admin-branch-card-header">
                 <div className="admin-branch-icon">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d={svgPaths.p27c543b0} stroke="#155DFC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d={svgPaths.p2d59bff0} stroke="#155DFC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  <MapPin size={20} />
                 </div>
                 <div className="admin-branch-card-info">
                   <h3 className="admin-branch-card-name">{branch.name}</h3>

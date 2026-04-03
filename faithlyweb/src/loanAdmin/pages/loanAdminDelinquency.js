@@ -3,6 +3,7 @@ import LoanAdminSidebar from './loanAdminSidebar';
 import '../styles/loanAdminLoanManagement.css';
 import '../styles/loanAdminDelinquency.css';
 import API from '../../utils/api';
+import { Search } from 'lucide-react';
 
 const fmt = (n) => n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : '₱0.00';
 
@@ -119,10 +120,7 @@ export default function LoanAdminDelinquency() {
         <h3 className="dlq-section-title">Flagged Accounts</h3>
 
         <div className="loan-admin-mgmt-search">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M9.16667 15.8333C12.8486 15.8333 15.8333 12.8486 15.8333 9.16667C15.8333 5.48477 12.8486 2.5 9.16667 2.5C5.48477 2.5 2.5 5.48477 2.5 9.16667C2.5 12.8486 5.48477 15.8333 9.16667 15.8333Z" stroke="#9CA3AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M17.5 17.5L13.875 13.875" stroke="#9CA3AF" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+          <Search size={20} />
           <input type="text" placeholder="Search flagged accounts..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
         </div>
 

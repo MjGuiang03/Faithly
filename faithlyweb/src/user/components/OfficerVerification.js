@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Info, Clock, AlertTriangle } from "lucide-react";
+import { AlertTriangle, Clock, Info, X } from 'lucide-react';
 import "../styles/OfficerVerification.css";
 
 import API from '../../utils/api';
@@ -71,9 +71,7 @@ export default function VerificationModal({ isOpen, onClose }) {
       </button>
 
       <div className="user-verification-check-circle">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
-          <path d="M20 6L9 17l-5-5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
+        <X size={20} />
       </div>
 
       <h2 className="user-verification-confirm-title">Verification Submitted!</h2>
