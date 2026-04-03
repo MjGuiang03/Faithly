@@ -158,7 +158,7 @@ export default function AdminDonationsNew() {
       {/* Header */}
       <div className="admin-don-new-header">
         <h1 className="admin-don-new-title">Donations</h1>
-        <p className="admin-don-new-subtitle">Track and manage church donations</p>
+
       </div>
 
       {/* Stats Cards */}

@@ -234,7 +234,7 @@ export default function AdminAttendance() {
       {/* Header */}
       <div className="admin-att-header">
         <h1 className="admin-att-title">Attendance</h1>
-        <p className="admin-att-subtitle">Track and manage service attendance across branches</p>
+
       </div>
 
       {/* Stats Cards */}

@@ -68,25 +68,24 @@
 .admin-members-stats-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 24px;
+  gap: 12px;
   margin-bottom: 24px;
-  height: 105.588px;
 }
 
 .admin-members-stat-card {
   background: white;
   border: 0.8px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 24.8px;
+  border-radius: 12px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
 }
 
 .admin-members-stat-label {
   font-family: 'Inter', 'Arial', sans-serif;
-  font-size: 14px;
-  font-weight: 400;
+  font-size: 13px;
+  font-weight: 500;
   line-height: 20px;
   color: #4a5565;
   margin: 0;
@@ -94,9 +93,9 @@
 
 .admin-members-stat-value {
   font-family: 'Inter', 'Arial', sans-serif;
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
-  line-height: 32px;
+  line-height: 28px;
   margin: 0;
 }
 

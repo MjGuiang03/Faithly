@@ -417,18 +417,18 @@
 .admin-dashboard-main .adm-stats-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  gap: 8px;
   width: 100%;
 }
 
 .adm-stat-card {
   background: white;
-  border-radius: 12px;
-  padding: 14px 16px;
+  border-radius: 10px;
+  padding: 10px 14px;
   border: 1px solid #E5E7EB;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 
@@ -464,7 +464,7 @@
 .adm-icon-orange { background: #EA580C; }
 
 .adm-stat-value {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
   color: #0F172A;
   font-family: 'Inter', sans-serif;

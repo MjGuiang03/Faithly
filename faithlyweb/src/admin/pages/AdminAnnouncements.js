@@ -198,7 +198,7 @@ export default function AdminAnnouncements() {
     <div className="admin-announce-main">
       <div className="admin-announce-header">
         <h1 className="admin-announce-title">Announcements</h1>
-        <p className="admin-announce-subtitle">Post and manage church announcements visible to members</p>
+
       </div>
 
       <div className="admin-announce-grid">

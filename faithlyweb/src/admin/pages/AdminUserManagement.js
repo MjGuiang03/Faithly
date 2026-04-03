@@ -208,7 +208,7 @@ export default function AdminUserManagement() {
       <div className="admin-users-header">
         <div>
           <h1 className="admin-users-title">User Management</h1>
-          <p className="admin-users-subtitle">Manage administrative and staff accounts</p>
+
         </div>
         <button className="admin-users-add-btn" onClick={() => setShowAddModal(true)}>
           <UserPlus size={18} />

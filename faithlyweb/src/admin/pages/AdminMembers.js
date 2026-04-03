@@ -497,7 +497,7 @@ export default function AdminMembers() {
       <div className="admin-members-header-container">
         <div className="admin-members-header-left">
           <h1 className="admin-members-title">Member Management</h1>
-          <p className="admin-members-subtitle">View and manage church members and officers</p>
+
         </div>
         <button className="admin-members-add-btn" onClick={() => setShowAddModal(true)}>
           <UserPlus size={20} />
