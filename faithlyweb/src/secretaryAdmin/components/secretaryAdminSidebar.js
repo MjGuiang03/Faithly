@@ -11,7 +11,6 @@ import '../styles/secretaryAdminSidebar.css';
 import { useTheme } from '../../context/ThemeContext';
 
 import API from '../../utils/api';
-const SEC_ADMIN_READ_KEY = 'faithly_admin_read_notifications';
 
 export default function SecretaryAdminSidebar() {
     const location = useLocation();

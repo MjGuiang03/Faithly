@@ -10,7 +10,6 @@ import '../styles/loanAdminSidebar.css';
 import { useTheme } from '../../context/ThemeContext';
 
 import API from '../../utils/api';
-const LOAN_ADMIN_READ_KEY = 'faithly_admin_read_notifications'; // Uses the same key if they share the notifications endpoint, or a distinct one if needed. Let's use the same
 
 export default function LoanAdminSidebar() {
   const { theme, toggleTheme } = useTheme();

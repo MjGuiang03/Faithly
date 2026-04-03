@@ -11,7 +11,6 @@ import '../styles/AdminSidebar.css';
 import { useTheme } from '../../context/ThemeContext';
 
 import API from '../../utils/api';
-const ADMIN_READ_KEY = 'faithly_admin_read_notifications';
 
 export default function AdminSidebar() {
   const { theme, toggleTheme } = useTheme();
@@ -85,13 +84,10 @@ export default function AdminSidebar() {
     fetchPendingVerifications();
 
     const onUpdate = () => { calcUnread(); fetchPendingVerifications(); };
-    const onStorage = (e) => { if (e.key === ADMIN_READ_KEY) calcUnread(); };
     window.addEventListener('admin-notif-read-update', onUpdate);
-    window.addEventListener('storage', onStorage);
     const intervalId = setInterval(() => { calcUnread(); fetchPendingVerifications(); }, 30000);
     return () => {
       window.removeEventListener('admin-notif-read-update', onUpdate);
-      window.removeEventListener('storage', onStorage);
       clearInterval(intervalId);
     };
   }, []);

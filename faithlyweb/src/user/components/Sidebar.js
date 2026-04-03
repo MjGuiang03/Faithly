@@ -8,7 +8,6 @@ import '../styles/Sidebar.css';
 import Chatbot from './Chatbot';
 
 import API from '../../utils/api';
-const READ_KEY = 'faithly_notif_read';
 
 export default function Sidebar() {
   const navigate = useNavigate();
@@ -194,17 +193,12 @@ export default function Sidebar() {
     };
 
     window.addEventListener('notif-read-update', handleLocalUpdate);
-    window.addEventListener('storage', (e) => {
-      // If another tab or component updates the read key, recalculate
-      if (e.key === READ_KEY) calcUnread();
-    });
 
     // Poll every 30 seconds for new notifications
     const intervalId = setInterval(calcUnread, 30000);
 
     return () => {
       window.removeEventListener('notif-read-update', handleLocalUpdate);
-      window.removeEventListener('storage', calcUnread);
       clearInterval(intervalId);
     };
   }, [profile?.branch]);
