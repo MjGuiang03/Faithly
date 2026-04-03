@@ -20,17 +20,12 @@ const fmtAgo = (date) => {
   return new Date(date).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
 };
 
-const READ_KEY = 'faithly_notif_read';
-const getReadSet = () => new Set(JSON.parse(localStorage.getItem(READ_KEY) || '[]'));
-const saveReadSet = (s, newUnreadCount) => {
-  localStorage.setItem(READ_KEY, JSON.stringify([...s]));
-  window.dispatchEvent(new CustomEvent('notif-read-update', { detail: newUnreadCount }));
-};
+// Persisted read access via db
 
 export default function Notifications() {
   const [activeFilter, setActiveFilter] = useState('all');
   const [rawItems, setRawItems] = useState([]);
-  const [readIds, setReadIds] = useState(getReadSet);
+  const [readIds, setReadIds] = useState(new Set());
   const [loading, setLoading] = useState(true);
   const [detailModal, setDetailModal] = useState(null);
 
@@ -45,21 +40,24 @@ export default function Notifications() {
     const hdrs = { Authorization: `Bearer ${token}` };
 
     try {
-      const [lRes, dRes, aRes, sRes, ppRes] = await Promise.all([
+      const [lRes, dRes, aRes, sRes, ppRes, readRes] = await Promise.all([
         fetch(`${API}/api/loans/my-loans`, { headers: hdrs }),
         fetch(`${API}/api/donations/my-donations`, { headers: hdrs }),
         fetch(`${API}/api/attendance/my-attendance`, { headers: hdrs }),
         fetch(`${API}/api/savings/transactions`, { headers: hdrs }),
         fetch(`${API}/api/loans/my-pending-payments`, { headers: hdrs }),
+        fetch(`${API}/api/read-notifications`, { headers: hdrs }),
       ]);
 
-      const [lData, dData, aData, sData, ppData] = await Promise.all([
+      const [lData, dData, aData, sData, ppData, readData] = await Promise.all([
         lRes.ok ? lRes.json() : { loans: [] },
         dRes.ok ? dRes.json() : { donations: [] },
         aRes.ok ? aRes.json() : { attendance: [] },
         sRes.ok ? sRes.json() : { transactions: [] },
         ppRes.ok ? ppRes.json() : { payments: [] },
+        readRes.ok ? readRes.json() : { readIds: [] },
       ]);
+      setReadIds(new Set(readData.readIds || []));
 
       const items = [];
 
@@ -229,22 +227,35 @@ export default function Notifications() {
       ? notifications.filter((n) => !n.isRead).length
       : notifications.filter((n) => n.type === type && !n.isRead).length;
 
+  const performReadUpdate = async (idsArray) => {
+    try {
+      const token = localStorage.getItem('token');
+      await fetch(`${API}/api/read-notifications`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ ids: idsArray })
+      });
+      // Ping the sidebar so it re-fetches its unread
+      window.dispatchEvent(new Event("admin-notif-read-update"));
+    } catch { /* silent */ }
+  };
+
   const markAsRead = (id) => {
     setReadIds((prev) => {
       const s = new Set(prev);
       s.add(id);
-      // Calculate remaining unread instantly
-      const remainingUnread = notifications.filter(n => !s.has(n.id)).length;
-      saveReadSet(s, remainingUnread);
+      performReadUpdate([id]);
       return s;
     });
   };
 
   const markAllAsRead = () => {
+    const idsToMark = notifications.filter(n => !n.isRead).map(n => n.id);
+    if (idsToMark.length === 0) return;
+    performReadUpdate(idsToMark);
     setReadIds((prev) => {
       const s = new Set(prev);
-      notifications.forEach((n) => s.add(n.id));
-      saveReadSet(s, 0); // 0 remaining since we marked all as read
+      idsToMark.forEach(id => s.add(id));
       return s;
     });
   };

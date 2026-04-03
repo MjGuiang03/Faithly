@@ -52,13 +52,13 @@ export default function AdminSidebar() {
 
     const calcUnread = async () => {
       try {
-        const readIds = new Set(JSON.parse(localStorage.getItem(ADMIN_READ_KEY) || '[]'));
         const res  = await fetch(`${API}/api/admin/notifications`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) return;
         const data = await res.json();
         if (data.success) {
+          const readIds = new Set(data.readIds || []);
           const count = (data.notifications || []).filter(n => !readIds.has(n.id)).length;
           setUnreadCount(count);
         }

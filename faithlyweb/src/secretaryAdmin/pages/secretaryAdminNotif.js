@@ -17,21 +17,21 @@ export default function SecretaryAdminNotif() {
             const token = localStorage.getItem('secretaryToken') || localStorage.getItem('adminToken') || localStorage.getItem('token');
             const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
             
-            const res = await fetch(`${API}/api/admin/loans`, { headers });
+            const res = await fetch(`${API}/api/admin/notifications`, { headers });
             const data = await res.json();
             
-            if (data.success && data.loans) {
-                // Notifications for secretary = loans that are approved but not yet disbursed
-                const notifs = data.loans
-                    .filter(l => l.status === 'active' && !l.disbursed)
-                    .map(l => ({
-                        id: l._id,
-                        loanId: l.loanId,
-                        member: l.memberName,
-                        amount: l.amount,
-                        date: new Date(l.approvedDate || l.appliedDate).toLocaleDateString('en-US'),
-                        time: new Date(l.approvedDate || l.appliedDate).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-                        isRead: false // Locally stored for UI purposes
+            if (data.success && data.notifications) {
+                const readIds = new Set(data.readIds || []);
+                const notifs = data.notifications
+                    .filter(n => n.type === 'loan')
+                    .map(n => ({
+                        id: n.id,
+                        loanId: n.meta?.loanId,
+                        member: n.meta?.memberName,
+                        amount: n.meta?.amount,
+                        date: new Date(n.timestamp).toLocaleDateString('en-US'),
+                        time: new Date(n.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+                        isRead: readIds.has(n.id)
                     }));
                 setNotifications(notifs);
             }
@@ -48,14 +48,29 @@ export default function SecretaryAdminNotif() {
 
     const unreadCount = notifications.filter(n => !n.isRead).length;
 
+    const performReadUpdate = async (idsArray) => {
+        try {
+            const token = localStorage.getItem('secretaryToken') || localStorage.getItem('adminToken') || localStorage.getItem('token');
+            await fetch(`${API}/api/admin/notifications/read`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ ids: idsArray })
+            });
+            window.dispatchEvent(new Event("admin-notif-read-update"));
+        } catch { /* silent */ }
+    };
+
     const handleMarkAsRead = (id) => {
         setNotifications(notifications.map(n =>
             n.id === id ? { ...n, isRead: true } : n
         ));
+        performReadUpdate([id]);
     };
 
     const handleMarkAllAsRead = () => {
+        const ids = notifications.filter(n => !n.isRead).map(n => n.id);
         setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+        if (ids.length > 0) performReadUpdate(ids);
     };
 
     const getFilteredNotifications = () => {

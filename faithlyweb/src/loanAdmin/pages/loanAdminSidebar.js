@@ -40,13 +40,13 @@ export default function LoanAdminSidebar() {
 
     const calcUnread = async () => {
       try {
-        const readIds = new Set(JSON.parse(localStorage.getItem(LOAN_ADMIN_READ_KEY) || '[]'));
         const res  = await fetch(`${API}/api/admin/notifications`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) return;
         const data = await res.json();
         if (data.success) {
+          const readIds = new Set(data.readIds || []);
           const count = (data.notifications || [])
                 .filter(n => n.type === 'loan')  // LoanAdmins only see loan notifications
                 .filter(n => !readIds.has(n.id))
@@ -60,9 +60,6 @@ export default function LoanAdminSidebar() {
 
     const onUpdate = () => calcUnread();
     window.addEventListener('admin-notif-read-update', onUpdate);
-    window.addEventListener('storage', (e) => {
-      if (e.key === LOAN_ADMIN_READ_KEY) calcUnread();
-    });
     
     // Poll every 30 seconds for live updates
     const intervalId = setInterval(calcUnread, 30000);

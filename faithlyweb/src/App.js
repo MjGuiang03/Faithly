@@ -35,6 +35,7 @@ import AdminOfficerVerification from './admin/pages/AdminOfficerVerification';
 import AdminReports from './admin/pages/AdminReports';
 import AdminAnnouncements from './admin/pages/AdminAnnouncements';
 import AdminUserManagement from './admin/pages/AdminUserManagement';
+import AdminLoanManagement from './admin/pages/AdminLoanManagement';
 
 // Loan Admin Pages
 import LoanAdminDashboard from './loanAdmin/pages/loanAdminDashboard';
@@ -100,6 +101,7 @@ export default function App() {
               <Route path="/admin/announcements" element={<AdminAnnouncements />} />
               <Route path="/admin/users" element={<AdminUserManagement />} />
               <Route path="/admin/settings" element={<AdminSettings />} />
+              <Route path="/admin/loans" element={<AdminLoanManagement />} />
             </Route>
 
             {/* ========== LOAN ADMIN ROUTES ========== */}

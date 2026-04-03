@@ -45,10 +45,12 @@ export default function LoanAdminNotif() {
                     return;
                 }
 
+                const readIds = new Set(data.readIds || []);
+
                 // Filter only loan-related notifications
                 const loanNotifs = (data.notifications || [])
                     .filter(n => n.type === 'loan')
-                    .map(n => ({ ...n, isRead: false }));
+                    .map(n => ({ ...n, isRead: readIds.has(n.id) }));
 
                 setNotifications(loanNotifs);
             } catch (err) {
@@ -72,14 +74,29 @@ export default function LoanAdminNotif() {
         return notifications.filter(n => !n.isRead).length;
     };
 
+    const performReadUpdate = async (idsArray) => {
+        try {
+            const token = localStorage.getItem('adminToken');
+            await fetch(`${API}/api/admin/notifications/read`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ ids: idsArray })
+            });
+            window.dispatchEvent(new Event("admin-notif-read-update"));
+        } catch { /* silent */ }
+    };
+
     const markAsRead = (id) => {
         setNotifications(notifications.map(n =>
             n.id === id ? { ...n, isRead: true } : n
         ));
+        performReadUpdate([id]);
     };
 
     const markAllAsRead = () => {
+        const ids = notifications.filter(n => !n.isRead).map(n => n.id);
         setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+        if (ids.length > 0) performReadUpdate(ids);
     };
 
     const filteredNotifications = getFilteredNotifications();

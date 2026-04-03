@@ -5,7 +5,6 @@ import '../styles/AdminNotification.css';
 import svgPaths from "../../imports/svg-icons";
 
 import API from '../../utils/api';
-const STORAGE_KEY = 'faithly_admin_read_notifications';
 const PER_PAGE = 10;
 
 const fmtTime = (date) => {
@@ -16,19 +15,10 @@ const fmtTime = (date) => {
   return `${datePart} ${timePart}`;
 };
 
-const loadReadSet = () => {
-  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')); }
-  catch { return new Set(); }
-};
-
-const saveReadSet = (set) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); window.dispatchEvent(new Event("admin-notif-read-update"));
-};
-
 export default function AdminNotifications() {
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
-  const [readIds,       setReadIds]       = useState(loadReadSet);
+  const [readIds,       setReadIds]       = useState(new Set());
   const [typeFilter,    setTypeFilter]    = useState('all');
   const [page,          setPage]          = useState(1);
   const [loading,       setLoading]       = useState(true);
@@ -44,6 +34,7 @@ export default function AdminNotifications() {
       const data = await res.json();
       if (data.success) {
         setNotifications(data.notifications);
+        setReadIds(new Set(data.readIds || []));
       } else {
         toast.error('Failed to load notifications');
       }
@@ -64,7 +55,7 @@ export default function AdminNotifications() {
     fetchNotifications();
   }, [navigate, fetchNotifications]);
 
-  // Derive isRead from persisted set
+  // Derive isRead from state set
   const enriched = notifications.map(n => ({ ...n, isRead: readIds.has(n.id) }));
 
   const unreadCount = enriched.filter(n => !n.isRead).length;
@@ -77,22 +68,37 @@ export default function AdminNotifications() {
   const totalPages   = Math.ceil(filtered.length / PER_PAGE);
   const paginated    = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
+  const performReadUpdate = async (idsArray) => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      await fetch(`${API}/api/admin/notifications/read`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ ids: idsArray })
+      });
+      // Fire an event in case AdminSidebar wants to re-fetch
+      window.dispatchEvent(new Event("admin-notif-read-update"));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const markAsRead = useCallback((id) => {
     setReadIds(prev => {
       const next = new Set(prev);
       next.add(id);
-      saveReadSet(next);
+      performReadUpdate([id]);
       return next;
     });
   }, []);
 
   const markAllAsRead = useCallback(() => {
-    setReadIds(prev => {
-      const next = new Set(prev);
-      notifications.forEach(n => next.add(n.id));
-      saveReadSet(next);
-      return next;
-    });
+    const allIds = notifications.map(n => n.id);
+    setReadIds(new Set(allIds));
+    performReadUpdate(allIds);
   }, [notifications]);
 
 

@@ -103,24 +103,25 @@ export default function Sidebar() {
 
     const calcUnread = async () => {
       try {
-        const readIds = new Set(JSON.parse(localStorage.getItem(READ_KEY) || '[]'));
-
-        const [lRes, dRes, aRes, sRes, ppRes] = await Promise.all([
+        const [lRes, dRes, aRes, sRes, ppRes, readRes] = await Promise.all([
           fetch(`${API}/api/loans/my-loans`, { headers: { Authorization: `Bearer ${token}` } }),
           fetch(`${API}/api/donations/my-donations`, { headers: { Authorization: `Bearer ${token}` } }),
           fetch(`${API}/api/attendance/my-attendance`, { headers: { Authorization: `Bearer ${token}` } }),
           fetch(`${API}/api/savings/transactions`, { headers: { Authorization: `Bearer ${token}` } }),
           fetch(`${API}/api/loans/my-pending-payments`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${API}/api/read-notifications`, { headers: { Authorization: `Bearer ${token}` } }),
         ]);
 
-        const [lData, dData, aData, sData, ppData] = await Promise.all([
+        const [lData, dData, aData, sData, ppData, readData] = await Promise.all([
           lRes.ok ? lRes.json() : { loans: [] },
           dRes.ok ? dRes.json() : { donations: [] },
           aRes.ok ? aRes.json() : { attendance: [] },
           sRes.ok ? sRes.json() : { transactions: [] },
           ppRes.ok ? ppRes.json() : { payments: [] },
+          readRes.ok ? readRes.json() : { readIds: [] },
         ]);
 
+        const readIds = new Set(readData.readIds || []);
         let count = 0;
 
         /* Loans → notifications */

@@ -223,13 +223,27 @@ export default function AdminDashboard() {
   return (
     <div className="admin-dashboard-main">
       {/* Header */}
-      <div className="admin-dashboard-header">
-        <h1 className="admin-dashboard-title">Dashboard</h1>
+      <div className="admin-dashboard-header" style={{ display: 'flex', justifyContent: 'flex-end', paddingBottom: '12px' }}>
+        <button
+          onClick={() => window.print()}
+          style={{
+            padding: '8px 16px', background: '#1E3A8A', color: 'white', border: 'none',
+            borderRadius: '8px', cursor: 'pointer', fontFamily: 'Inter', fontWeight: 600,
+            fontSize: '14px', display: 'flex', gap: '8px', alignItems: 'center'
+          }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          Export to PDF
+        </button>
       </div>
 
       {/* ── Row 1: 4 Stat Cards ── */}
       <div className="adm-stats-grid">
-        <div className="adm-stat-card blue">
+        <div className="adm-stat-card blue" onClick={() => navigate('/admin/members')} style={{ cursor: 'pointer' }}>
           <div className="adm-stat-top">
             <span className="adm-stat-label">Total Members</span>
             <div className="adm-stat-icon adm-icon-blue">
@@ -243,7 +257,7 @@ export default function AdminDashboard() {
           <div className="adm-stat-sub"><span style={{ color: '#00A63E', fontWeight: 600 }}>+{dash(memberStats.newThisMonth)} new</span> this month</div>
         </div>
 
-        <div className="adm-stat-card green">
+        <div className="adm-stat-card green" onClick={() => navigate('/admin/loans')} style={{ cursor: 'pointer' }}>
           <div className="adm-stat-top">
             <span className="adm-stat-label">Active Loans</span>
             <div className="adm-stat-icon adm-icon-green">
@@ -257,7 +271,7 @@ export default function AdminDashboard() {
           <div className="adm-stat-sub"><span style={{ color: '#D97706', fontWeight: 600 }}>{dash(loanStats.pending)} pending</span></div>
         </div>
 
-        <div className="adm-stat-card orange">
+        <div className="adm-stat-card orange" onClick={() => navigate('/admin/donations')} style={{ cursor: 'pointer' }}>
           <div className="adm-stat-top">
             <span className="adm-stat-label">Total Donations</span>
             <div className="adm-stat-icon adm-icon-orange">
@@ -302,58 +316,61 @@ export default function AdminDashboard() {
         </div>
 
         {/* Members by Branch Bar */}
-        <div className="adm-card adm-card-bar">
+        <div className="adm-card adm-card-bar" style={{ display: 'flex', flexDirection: 'column' }}>
           <div className="adm-card-header">
             <h3 className="adm-card-title">Members by Branch</h3>
           </div>
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={membersByBranch.length > 0 ? membersByBranch : [{ branch: 'No data', count: 0 }]} margin={{ top: 0, right: 8, left: -20, bottom: 20 }}>
+          <div style={{ flex: 1, minHeight: '220px', width: '100%' }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={membersByBranch.length > 0 ? membersByBranch : [{ branch: 'No data', count: 0 }]} margin={{ top: 10, right: 8, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
+                <XAxis dataKey="branch" stroke="#9CA3AF" fontSize={11} angle={-15} textAnchor="end" height={35} tickMargin={5} />
+                <YAxis stroke="#9CA3AF" fontSize={11} />
+                <Tooltip cursor={{ fill: '#F9FAFB' }} />
+                <Bar dataKey="count" fill="#155DFC" radius={[4, 4, 0, 0]} name="Members" barSize={32} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Row 3 & 4: Charts ── */}
+      <div className="adm-charts-row">
+        <div className="adm-card adm-chart-full">
+          <div className="adm-card-header">
+            <h3 className="adm-card-title">Member Growth Trends</h3>
+            <span className="adm-card-sub">Total vs new registrations this year</span>
+          </div>
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart data={growthData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-              <XAxis dataKey="branch" stroke="#9CA3AF" fontSize={11} angle={-15} textAnchor="end" height={50} />
-              <YAxis stroke="#9CA3AF" fontSize={11} />
+              <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
+              <YAxis stroke="#9CA3AF" fontSize={12} />
               <Tooltip />
-              <Bar dataKey="count" fill="#155DFC" radius={[6, 6, 0, 0]} name="Members" barSize={40} />
+              <Legend iconType="circle" wrapperStyle={{ paddingTop: '12px', fontSize: '12px' }} />
+              <Line type="monotone" dataKey="totalMembers" stroke="#155DFC" strokeWidth={2} dot={{ r: 3 }} name="Total Members" />
+              <Line type="monotone" dataKey="newMembers"   stroke="#00A63E" strokeWidth={2} dot={{ r: 3 }} name="New Members" />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="adm-card adm-chart-full">
+          <div className="adm-card-header">
+            <h3 className="adm-card-title">Attendance vs Donations</h3>
+            <span className="adm-card-sub">Correlation by month</span>
+          </div>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={attendVsDonData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+              <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
+              <YAxis stroke="#9CA3AF" fontSize={12} />
+              <Tooltip />
+              <Legend iconType="square" wrapperStyle={{ paddingTop: '12px', fontSize: '12px' }} />
+              <Bar dataKey="attendance" fill="#00A63E" radius={[6, 6, 0, 0]} name="Attendance" />
+              <Bar dataKey="donations"  fill="#155DFC" radius={[6, 6, 0, 0]} name="Donations" />
             </BarChart>
           </ResponsiveContainer>
         </div>
-      </div>
-
-      {/* ── Row 3: Member Growth Trends ── */}
-      <div className="adm-card adm-chart-full">
-        <div className="adm-card-header">
-          <h3 className="adm-card-title">Member Growth Trends</h3>
-          <span className="adm-card-sub">Total vs new registrations this year</span>
-        </div>
-        <ResponsiveContainer width="100%" height={220}>
-          <LineChart data={growthData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-            <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
-            <YAxis stroke="#9CA3AF" fontSize={12} />
-            <Tooltip />
-            <Legend iconType="circle" wrapperStyle={{ paddingTop: '12px', fontSize: '12px' }} />
-            <Line type="monotone" dataKey="totalMembers" stroke="#155DFC" strokeWidth={2} dot={{ r: 3 }} name="Total Members" />
-            <Line type="monotone" dataKey="newMembers"   stroke="#00A63E" strokeWidth={2} dot={{ r: 3 }} name="New Members" />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* ── Row 4: Attendance vs Donations ── */}
-      <div className="adm-card adm-chart-full">
-        <div className="adm-card-header">
-          <h3 className="adm-card-title">Attendance vs Donations</h3>
-          <span className="adm-card-sub">Correlation by month</span>
-        </div>
-        <ResponsiveContainer width="100%" height={220}>
-          <BarChart data={attendVsDonData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-            <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
-            <YAxis stroke="#9CA3AF" fontSize={12} />
-            <Tooltip />
-            <Legend iconType="square" wrapperStyle={{ paddingTop: '12px', fontSize: '12px' }} />
-            <Bar dataKey="attendance" fill="#00A63E" radius={[6, 6, 0, 0]} name="Attendance" />
-            <Bar dataKey="donations"  fill="#155DFC" radius={[6, 6, 0, 0]} name="Donations" />
-          </BarChart>
-        </ResponsiveContainer>
       </div>
     </div>
   );

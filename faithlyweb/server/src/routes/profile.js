@@ -163,4 +163,33 @@ router.put('/upload-photo', authenticateUser, async (req, res) => {
   }
 });
 
+/* ================== NOTIFICATIONS READ STATE ================== */
+router.get('/read-notifications', authenticateUser, async (req, res) => {
+  try {
+    const user = await users.findOne({ email: req.user.email });
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    res.json({ success: true, readIds: user.readNotifications || [] });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to fetch read notifications' });
+  }
+});
+
+router.post('/read-notifications', authenticateUser, async (req, res) => {
+  try {
+    const { ids } = req.body;
+    if (!ids || !Array.isArray(ids)) {
+      return res.status(400).json({ success: false, message: 'Invalid payload' });
+    }
+    await users.updateOne(
+      { email: req.user.email },
+      { $addToSet: { readNotifications: { $each: ids } } }
+    );
+    res.json({ success: true, message: 'Read state updated' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to update read status' });
+  }
+});
+
 export default router;

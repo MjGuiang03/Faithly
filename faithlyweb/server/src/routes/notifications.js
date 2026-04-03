@@ -165,11 +165,33 @@ router.get('/notifications', authenticateAdmin, async (req, res) => {
     res.status(200).json({
       success: true,
       notifications,
+      readIds: req.admin.readNotifications || [],
       total: notifications.length,
     });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Failed to fetch notifications' });
+  }
+});
+
+/* ================== MARK ADMIN NOTIFICATIONS AS READ ================== */
+router.post('/notifications/read', authenticateAdmin, async (req, res) => {
+  try {
+    const { ids } = req.body;
+    if (!ids || !Array.isArray(ids)) {
+      return res.status(400).json({ success: false, message: 'Invalid payload' });
+    }
+    
+    // Admins are stored in admins collection, and req.admin contains the auth
+    const { admins } = await import('../config/db.js');
+    await admins.updateOne(
+      { email: req.admin.email },
+      { $addToSet: { readNotifications: { $each: ids } } }
+    );
+    res.json({ success: true, message: 'Read state updated' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to update read status' });
   }
 });
 

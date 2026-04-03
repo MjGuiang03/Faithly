@@ -592,14 +592,40 @@
   width: 100%;
 }
 
+.adm-charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+}
+
 /* Responsive */
 @media (max-width: 1200px) {
   .admin-dashboard-main .adm-stats-grid { grid-template-columns: repeat(2, 1fr); }
   .adm-analytics-row  { grid-template-columns: 1fr 1fr; }
+  .adm-charts-row { grid-template-columns: 1fr; }
   .adm-summary-col    { display: grid; grid-template-columns: repeat(3, 1fr); }
 }
 
 @media (max-width: 768px) {
   .admin-dashboard-main .adm-stats-grid { grid-template-columns: 1fr; }
   .adm-analytics-row { grid-template-columns: 1fr; }
+  .adm-charts-row { grid-template-columns: 1fr; }
+}
+
+/* ── Print / PDF Export Styles ── */
+@media print {
+  .admin-sidebar { display: none !important; }
+  .admin-dashboard-header button { display: none !important; }
+  .admin-shell, .admin-main, .admin-dashboard-main { 
+    margin: 0 !important; 
+    padding: 0 !important; 
+    width: 100% !important; 
+    background: white !important; 
+  }
+  .adm-card, .adm-stat-card {
+    break-inside: avoid;
+    box-shadow: none !important;
+    border: 1px solid #e5e7eb !important;
+  }
 }
