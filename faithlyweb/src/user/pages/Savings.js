@@ -25,20 +25,20 @@ const GOAL_COLORS = {
 const GoalIcon = ({ color = 'blue', type = 'default' }) => {
     const stroke = GOAL_COLORS[color]?.pct || '#185fa5';
     if (type === 'house') return (
-        <PiggyBank size={20} />
+        <PiggyBank size={20} color={stroke} />
     );
     if (type === 'bag') return (
-        <Circle size={20} />
+        <Circle size={20} color={stroke} />
     );
     if (type === 'star') return (
-        <Circle size={20} />
+        <Circle size={20} color={stroke} />
     );
     if (type === 'car') return (
-        <Circle size={20} />
+        <Circle size={20} color={stroke} />
     );
     // default: person/emergency
     return (
-        <Circle size={20} />
+        <Circle size={20} color={stroke} />
     );
 };
 
