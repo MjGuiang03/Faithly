@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import SavingsModals from '../components/SavingsModal';
 import '../styles/Savings.css';
 import API from '../../utils/api';
-import { Circle, Edit, PiggyBank, Home, ShoppingBag, Star, Car, ShieldAlert, ArrowDownLeft, ArrowUpRight, TrendingUp, Target, Zap, Banknote } from 'lucide-react';
+import { Circle, Edit, PiggyBank, Home, ShoppingBag, Star, Car, ShieldAlert, ArrowDownLeft, ArrowUpRight, TrendingUp, Target, Banknote } from 'lucide-react';
 
 
 const fmt = (n) =>

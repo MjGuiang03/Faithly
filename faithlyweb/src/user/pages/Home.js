@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import VerificationModal from '../components/OfficerVerification';
 import API from '../../utils/api';
 import '../styles/Home.css';
-import { Banknote, CalendarDays, CheckCircle, ChevronRight, Circle, Heart, MapPin, PiggyBank, User, X, XCircle } from 'lucide-react';
+import { Banknote, CalendarDays, CheckCircle, ChevronRight, Circle, Heart, MapPin, PiggyBank, User, X } from 'lucide-react';
 
 
 export default function Home() {

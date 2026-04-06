@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
 // import Sidebar from '../components/Sidebar'; // Moved to UserLayout
-import { Banknote, CheckCircle, ChevronDown, Download, Heart, Receipt, Share2, X, XCircle, Calendar, List, Wallet, TrendingUp, History, CreditCard } from 'lucide-react';
+import { Banknote, CheckCircle, ChevronDown, Download, Heart, Receipt, Share2, X, Wallet, TrendingUp, History, CreditCard } from 'lucide-react';
 import '../styles/Donation.css';
 import gcashLogo from '../../assets/gcashlogo.png';
 import bank from '../../assets/bank.png';

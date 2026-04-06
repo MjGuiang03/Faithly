@@ -5,7 +5,7 @@ import LoanAdminSidebar from './loanAdminSidebar';
 import '../styles/loanAdminLoanManagement.css';
 import '../styles/loanAdminPaymentStatus.css';
 import API from '../../utils/api';
-import { Banknote, FileText, PiggyBank, Search, X } from 'lucide-react';
+import { PiggyBank, Search, X } from 'lucide-react';
 
 
 const fmt = (n) => n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : '₱0.00';

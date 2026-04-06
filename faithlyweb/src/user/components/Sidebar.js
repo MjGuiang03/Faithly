@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 import { useState, useEffect } from 'react';
-import { Bell, Building2, Calendar, FileText, Heart, LayoutGrid, LogOut, Menu, MessageCircle, Settings, Wallet, X } from 'lucide-react';
+import { Bell, Building2, Calendar, FileText, Heart, LayoutGrid, LogOut, Menu, Settings, Wallet, X } from 'lucide-react';
 import { toast } from 'sonner';
 import puacLogo from '../../assets/puaclogo.png';
 import '../styles/Sidebar.css';

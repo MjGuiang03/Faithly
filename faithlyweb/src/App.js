@@ -17,7 +17,7 @@ import Loans from './user/pages/Loans';
 import Donation from './user/pages/Donation';
 import Attendance from './user/pages/Attendance';
 import Branches from './user/pages/Branches';
-import Notifications from './user/pages/Notifications'
+import Notifications from './user/pages/Notifications';
 import Settings from './user/pages/Settings';
 import LoanDetail from './user/pages/LoanDetail';
 import Savings from './user/pages/Savings';

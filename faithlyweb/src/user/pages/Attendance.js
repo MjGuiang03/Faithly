@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import '../styles/Attendance.css';
 // import Sidebar from '../components/Sidebar'; // Moved to UserLayout
 import API from '../../utils/api';
-import { CalendarDays, CheckCircle, MapPin, UserCheck, TrendingUp, Activity } from 'lucide-react';
+import { CalendarDays, CheckCircle, MapPin, UserCheck, Activity } from 'lucide-react';
 
 const PAGE_SIZE = 5;
 

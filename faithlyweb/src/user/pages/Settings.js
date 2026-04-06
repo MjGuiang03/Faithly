@@ -8,7 +8,7 @@ import VerificationModal from '../components/OfficerVerification';
 import { useTheme } from '../../context/ThemeContext';
 
 import API from '../../utils/api';
-import { CalendarDays, Circle, Edit, Mail, Settings as SettingsIcon, User, XCircle } from 'lucide-react';
+import { CalendarDays, Circle, Edit, Mail, User } from 'lucide-react';
 
 
 /* ─── Community options ──────────────────────────────────────────────── */
