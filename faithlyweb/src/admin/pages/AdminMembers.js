@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ChevronLeft, ChevronRight, Edit, Lock, Search, Trash2, User, UserPlus, Users as UsersIcon, XCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Edit, Lock, Search, Trash2, User, UserPlus, Users as UsersIcon, XCircle, X } from 'lucide-react';
 import useDebounce from '../../hooks/useDebounce';
 import '../styles/AdminMembers.css';
 
@@ -77,7 +77,7 @@ function EditModal({ member, onClose, onSave }) {
             <p className="admin-members-modal-subtitle">Update information for {member.fullName || member.name}</p>
           </div>
           <button className="admin-members-modal-close" onClick={onClose}>
-            <Edit size={20} color="#6a7282" />
+            <X size={20} color="#6a7282" />
           </button>
         </div>
 
@@ -186,7 +186,7 @@ function DeleteModal({ member, onClose, onConfirm }) {
             <p className="admin-members-modal-subtitle">This action cannot be undone</p>
           </div>
           <button className="admin-members-modal-close" onClick={onClose}>
-            <Trash2 size={20} color="#6a7282" />
+            <X size={20} color="#6a7282" />
           </button>
         </div>
 
@@ -281,7 +281,7 @@ function AddMemberModal({ onClose, onSave }) {
             <p className="admin-members-modal-subtitle">Register a new member directly</p>
           </div>
           <button className="admin-members-modal-close" onClick={onClose}>
-            <User size={20} color="#6a7282" />
+            <X size={20} color="#6a7282" />
           </button>
         </div>
 

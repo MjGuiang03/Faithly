@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
-import Sidebar from '../components/Sidebar';
+// import Sidebar from '../components/Sidebar'; // Moved to UserLayout
 import SavingsModals from '../components/SavingsModal';
 import '../styles/Savings.css';
 import API from '../../utils/api';
-import { Circle, Edit, PiggyBank } from 'lucide-react';
+import { Circle, Edit, PiggyBank, Home, ShoppingBag, Star, Car, ShieldAlert, ArrowDownLeft, ArrowUpRight, TrendingUp, Target, Zap, Banknote } from 'lucide-react';
 
 
 const fmt = (n) =>
@@ -25,30 +25,21 @@ const GOAL_COLORS = {
 
 const GoalIcon = ({ color = 'blue', type = 'default' }) => {
     const stroke = GOAL_COLORS[color]?.pct || '#185fa5';
-    if (type === 'house') return (
-        <PiggyBank size={18} color={stroke} />
-    );
-    if (type === 'bag') return (
-        <Circle size={18} color={stroke} />
-    );
-    if (type === 'star') return (
-        <Circle size={18} color={stroke} />
-    );
-    if (type === 'car') return (
-        <Circle size={18} color={stroke} />
-    );
-    // default: person/emergency
-    return (
-        <Circle size={18} color={stroke} />
-    );
+    if (type === 'house')     return <Home size={18} color={stroke} />;
+    if (type === 'bag')       return <ShoppingBag size={18} color={stroke} />;
+    if (type === 'star')      return <Star size={18} color={stroke} />;
+    if (type === 'car')       return <Car size={18} color={stroke} />;
+    if (type === 'emergency') return <ShieldAlert size={18} color={stroke} />;
+    // default: piggy bank
+    return <PiggyBank size={18} color={stroke} />;
 };
 
 const TxnArrowIn = () => (
-    <Circle size={14} color="#27500a" />
+    <ArrowDownLeft size={14} color="#27500a" />
 );
 
 const TxnArrowOut = () => (
-    <PiggyBank size={14} color="#991b1b" />
+    <ArrowUpRight size={14} color="#991b1b" />
 );
 
 export default function Savings() {
@@ -327,9 +318,7 @@ export default function Savings() {
     };
 
     return (
-        <div className="home-layout">
-            <Sidebar />
-
+        <>
             <div className="user-main-content">
 
                 {dataLoading && renderSkeleton()}
@@ -367,14 +356,20 @@ export default function Savings() {
                                 {/* Stats */}
                                 <div className="sv-stats">
                                     <div className={`sv-stat-card ${stats.totalSavings > 0 ? 'sv-stat-card--green' : ''}`}>
-                                        <label className="sv-stat-label">Total savings</label>
+                                        <div className="sv-stat-header">
+                                            <label className="sv-stat-label">Total savings</label>
+                                            <PiggyBank size={20} color="#155DFC" />
+                                        </div>
                                         <div className={`sv-stat-value ${stats.totalSavings <= 0 ? 'sv-stat-value--muted' : ''}`}>
                                             {fmt(stats.totalSavings)}
                                         </div>
                                         <div className="sv-stat-sub">{stats.totalSavings > 0 ? 'Current balance' : 'No balance yet'}</div>
                                     </div>
                                     <div className="sv-stat-card">
-                                        <label className="sv-stat-label">This month</label>
+                                        <div className="sv-stat-header">
+                                            <label className="sv-stat-label">This month</label>
+                                            <TrendingUp size={20} color="#155DFC" />
+                                        </div>
                                         <div className={`sv-stat-value ${!stats.thisMonth ? 'sv-stat-value--muted' : ''}`}>
                                             {stats.thisMonth > 0 ? fmt(stats.thisMonth) : '₱0.00'}
                                         </div>
@@ -385,7 +380,10 @@ export default function Savings() {
                                         </div>
                                     </div>
                                     <div className="sv-stat-card">
-                                        <label className="sv-stat-label">Active goals</label>
+                                        <div className="sv-stat-header">
+                                            <label className="sv-stat-label">Active goals</label>
+                                            <Target size={20} color="#155DFC" />
+                                        </div>
                                         <div className={`sv-stat-value ${goals.length <= 0 ? 'sv-stat-value--muted' : ''}`}>
                                             {goals.length > 0 ? stats.activeGoals || goals.filter(g => g.status !== 'completed').length : '—'}
                                         </div>
@@ -396,7 +394,10 @@ export default function Savings() {
                                         </div>
                                     </div>
                                     <div className="sv-stat-card">
-                                        <label className="sv-stat-label">Max loanable</label>
+                                        <div className="sv-stat-header">
+                                            <label className="sv-stat-label">Max loanable</label>
+                                            <Banknote size={20} color="#155DFC" />
+                                        </div>
                                         <div className={`sv-stat-value ${stats.totalSavings <= 0 ? 'sv-stat-value--muted' : ''}`}>
                                             {stats.totalSavings > 0 ? fmt(stats.totalSavings * 2) : '—'}
                                         </div>
@@ -448,13 +449,6 @@ export default function Savings() {
                                                     {i + 1}
                                                 </button>
                                             ))}
-                                            <button
-                                                className="sv-page-btn"
-                                                onClick={() => setTxnPage(p => Math.min(Math.ceil(txnTotal / TXN_LIMIT), p + 1))}
-                                                disabled={txnPage === Math.ceil(txnTotal / TXN_LIMIT)}
-                                            >
-                                                Next
-                                            </button>
                                         </div>
                                     )}
                                 </div>
@@ -470,6 +464,6 @@ export default function Savings() {
                 goals={goals}
                 onClose={closeModal}
             />
-        </div>
+        </>
     );
 }

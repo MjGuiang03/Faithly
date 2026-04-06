@@ -1,7 +1,7 @@
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import Sidebar from '../components/Sidebar';
+// import Sidebar from '../components/Sidebar'; // Moved to UserLayout
 import '../styles/Loandetail.css';
 import API from '../../utils/api';
 import { Banknote, CheckCircle, Printer, Settings, X } from 'lucide-react';
@@ -74,7 +74,7 @@ function PayNowModal({ loan, onClose, onSuccess }) {
             instructions: [
                 `Transfer to Account No. 1234-5678-90 · BDO · Faithly Inc.`,
                 `Use reference: ${loan?.loanId} in the remarks field.`,
-                `Upload your proof of transfer after confirming below.`,
+                `Upload your proof of transfer after confirming below.`
             ],
             needsReceipt: true,
         },
@@ -89,7 +89,7 @@ function PayNowModal({ loan, onClose, onSuccess }) {
             instructions: [
                 `Send to GCash number 0917-XXX-XXXX · Faithly Inc.`,
                 `Use reference: ${loan?.loanId} in the message field.`,
-                `Upload your GCash screenshot after confirming below.`,
+                `Upload your GCash screenshot after confirming below.`
             ],
             needsReceipt: true,
         },
@@ -401,231 +401,225 @@ export default function LoanDetail() {
 
     /* ── Skeleton ── */
     if (loading) return (
-        <div className="home-layout">
-            <Sidebar />
-            <div className="user-main-content">
-                <div className="ld-back-btn" style={{ marginBottom: '20px', opacity: 0.4 }}>
-                    <BackIcon /> Back to My Loans
-                </div>
-                <div className="ld-skeleton" style={{ height: '32px', width: '240px', marginBottom: '20px' }} />
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '12px', marginBottom: '20px' }}>
-                    {[1, 2, 3, 4].map(i => <div key={i} className="ld-skeleton" style={{ height: '72px', borderRadius: '12px' }} />)}
-                </div>
-                <div className="ld-skeleton" style={{ height: '120px', borderRadius: '14px', marginBottom: '16px' }} />
-                <div className="ld-skeleton" style={{ height: '200px', borderRadius: '14px' }} />
+        <div className="user-main-content">
+            <div className="ld-back-btn" style={{ marginBottom: '20px', opacity: 0.4 }}>
+                <BackIcon /> Back to My Loans
             </div>
+            <div className="ld-skeleton" style={{ height: '32px', width: '240px', marginBottom: '20px' }} />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '12px', marginBottom: '20px' }}>
+                {[1, 2, 3, 4].map(i => <div key={i} className="ld-skeleton" style={{ height: '72px', borderRadius: '12px' }} />)}
+            </div>
+            <div className="ld-skeleton" style={{ height: '120px', borderRadius: '14px', marginBottom: '16px' }} />
+            <div className="ld-skeleton" style={{ height: '200px', borderRadius: '14px' }} />
         </div>
     );
 
     return (
-        <div className="home-layout">
-            <Sidebar />
-            <div className="user-main-content">
+        <div className="user-main-content">
 
-                {/* ── Back ── */}
-                <button className="ld-back-btn" onClick={() => navigate('/loans')}>
-                    <BackIcon /> Back to My Loans
-                </button>
+            {/* ── Back ── */}
+            <button className="ld-back-btn" onClick={() => navigate('/loans')}>
+                <BackIcon /> Back to My Loans
+            </button>
 
-                {/* ── Error ── */}
-                {error && (
-                    <div className="user-loans-error-banner">
-                        <span>⚠ {error}</span>
-                        <button onClick={fetchLoan} className="user-loans-retry-btn">Retry</button>
+            {/* ── Error ── */}
+            {error && (
+                <div className="user-loans-error-banner">
+                    <span>⚠ {error}</span>
+                    <button onClick={fetchLoan} className="user-loans-retry-btn">Retry</button>
+                </div>
+            )}
+
+            {loan && (
+                <>
+                    {/* ── Header ── */}
+                    <div className="ld-page-header">
+                        <div>
+                            <div className="ld-page-title-row">
+                                <h1 className="ld-page-title">{loan.loanId}</h1>
+                                <span className={`ld-badge ${STATUS_CLASS[loan.status] || ''}`}>
+                                    {loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}
+                                </span>
+                            </div>
+                            <p className="ld-page-subtitle">{loan.purpose} loan · Applied {fmtDate(loan.appliedDate)}</p>
+                        </div>
+                        {loan.status === 'active' && (
+                            <button className="ld-pay-now-header-btn" onClick={() => setShowPayNow(true)}>
+                                Pay now
+                            </button>
+                        )}
                     </div>
-                )}
 
-                {loan && (
-                    <>
-                        {/* ── Header ── */}
-                        <div className="ld-page-header">
-                            <div>
-                                <div className="ld-page-title-row">
-                                    <h1 className="ld-page-title">{loan.loanId}</h1>
-                                    <span className={`ld-badge ${STATUS_CLASS[loan.status] || ''}`}>
-                                        {loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}
-                                    </span>
-                                </div>
-                                <p className="ld-page-subtitle">{loan.purpose} loan · Applied {fmtDate(loan.appliedDate)}</p>
-                            </div>
-                            {loan.status === 'active' && (
-                                <button className="ld-pay-now-header-btn" onClick={() => setShowPayNow(true)}>
-                                    Pay now
-                                </button>
-                            )}
+                    {/* ── Stats ── */}
+                    <div className="ld-stats">
+                        <div className="ld-stat-card">
+                            <label className="ld-stat-label">Original amount</label>
+                            <div className="ld-stat-value">{fmt(loan.amount)}</div>
+                            <div className="ld-stat-sub">Disbursed in full</div>
                         </div>
-
-                        {/* ── Stats ── */}
-                        <div className="ld-stats">
-                            <div className="ld-stat-card">
-                                <label className="ld-stat-label">Original amount</label>
-                                <div className="ld-stat-value">{fmt(loan.amount)}</div>
-                                <div className="ld-stat-sub">Disbursed in full</div>
-                            </div>
-                            <div className="ld-stat-card">
-                                <label className="ld-stat-label">Remaining balance</label>
-                                <div className="ld-stat-value">{fmt(loan.remainingBalance)}</div>
-                                <div className="ld-stat-sub">
-                                    {loan.remainingBalance > 0
-                                        ? `${Math.round((loan.remainingBalance / loan.amount) * 100)}% outstanding`
-                                        : 'Fully paid'}
-                                </div>
-                            </div>
-                            <div className="ld-stat-card">
-                                <label className="ld-stat-label">Monthly payment</label>
-                                <div className="ld-stat-value">
-                                    {fmt(loan?.upcomingPaymentAmount || loan?.monthlyPayment)}
-                                    {loan?.isLate && <span style={{ fontSize: '11px', color: '#DC2626', background: '#FEE2E2', padding: '2px 6px', borderRadius: '4px', marginLeft: '8px', verticalAlign: 'middle' }}>Late Penalty</span>}
-                                </div>
-                                <div className="ld-stat-sub">Over {loan.termMonths} months</div>
-                            </div>
-                            <div className={`ld-stat-card ${loan.nextPaymentDate && new Date(loan.nextPaymentDate) < new Date() ? 'ld-stat-card--warn' : ''}`}>
-                                <label className="ld-stat-label">Next due date</label>
-                                <div className="ld-stat-value">
-                                    {loan.nextPaymentDate
-                                        ? new Date(loan.nextPaymentDate).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' })
-                                        : loan.status === 'pending' ? 'Pending Approval' : '—'}
-                                </div>
-                                <div className="ld-stat-sub">
-                                    {loan.nextPaymentDate ? `${fmt(loan.upcomingPaymentAmount || loan.monthlyPayment)} due` : loan.status === 'pending' ? 'Starts after disbursement' : 'No upcoming payment'}
-                                </div>
+                        <div className="ld-stat-card">
+                            <label className="ld-stat-label">Remaining balance</label>
+                            <div className="ld-stat-value">{fmt(loan.remainingBalance)}</div>
+                            <div className="ld-stat-sub">
+                                {loan.remainingBalance > 0
+                                    ? `${Math.round((loan.remainingBalance / loan.amount) * 100)}% outstanding`
+                                    : 'Fully paid'}
                             </div>
                         </div>
-
-                        {/* ── Progress ── */}
-                        <div className="ld-section">
-                            <div className="ld-section-head">
-                                <div className="ld-section-title">Repayment progress</div>
+                        <div className="ld-stat-card">
+                            <label className="ld-stat-label">Monthly payment</label>
+                            <div className="ld-stat-value">
+                                {fmt(loan?.upcomingPaymentAmount || loan?.monthlyPayment)}
+                                {loan?.isLate && <span style={{ fontSize: '11px', color: '#DC2626', background: '#FEE2E2', padding: '2px 6px', borderRadius: '4px', marginLeft: '8px', verticalAlign: 'middle' }}>Late Penalty</span>}
                             </div>
-                            <div className="ld-progress-body">
-                                <div className="ld-progress-label">
-                                    <span>{paidCount} of {totalMonths} payments made</span>
-                                    <span>{fmt(paidAmount)} paid · {fmt(loan.remainingBalance)} remaining</span>
-                                </div>
-                                <div className="ld-progress-bar">
-                                    <div className="ld-progress-fill" style={{ width: `${progressPct}%` }} />
-                                </div>
-                                <div className="ld-progress-sub">Loan matures {fmtDate(loan.maturityDate)}</div>
+                            <div className="ld-stat-sub">Over {loan.termMonths} months</div>
+                        </div>
+                        <div className={`ld-stat-card ${loan.nextPaymentDate && new Date(loan.nextPaymentDate) < new Date() ? 'ld-stat-card--warn' : ''}`}>
+                            <label className="ld-stat-label">Next due date</label>
+                            <div className="ld-stat-value">
+                                {loan.nextPaymentDate
+                                    ? new Date(loan.nextPaymentDate).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' })
+                                    : loan.status === 'pending' ? 'Pending Approval' : '—'}
+                            </div>
+                            <div className="ld-stat-sub">
+                                {loan.nextPaymentDate ? `${fmt(loan.upcomingPaymentAmount || loan.monthlyPayment)} due` : loan.status === 'pending' ? 'Starts after disbursement' : 'No upcoming payment'}
                             </div>
                         </div>
+                    </div>
 
-                        {/* ── Loan details ── */}
-                        <div className="ld-section">
-                            <div className="ld-section-head">
-                                <div className="ld-section-title">Loan details</div>
+                    {/* ── Progress ── */}
+                    <div className="ld-section">
+                        <div className="ld-section-head">
+                            <div className="ld-section-title">Repayment progress</div>
+                        </div>
+                        <div className="ld-progress-body">
+                            <div className="ld-progress-label">
+                                <span>{paidCount} of {totalMonths} payments made</span>
+                                <span>{fmt(paidAmount)} paid · {fmt(loan.remainingBalance)} remaining</span>
                             </div>
-                            <div className="ld-details-grid">
-                                <div className="ld-detail-col">
-                                    <div className="ld-detail-row">
-                                        <span className="ld-detail-label">Loan ID</span>
-                                        <span className="ld-detail-val">{loan.loanId}</span>
-                                    </div>
-                                    <div className="ld-detail-row">
-                                        <span className="ld-detail-label">Loan type</span>
-                                        <span className="ld-detail-val">{loan.purpose}</span>
-                                    </div>
-                                    <div className="ld-detail-row">
-                                        <span className="ld-detail-label">Loan term</span>
-                                        <span className="ld-detail-val">{loan.termMonths} months</span>
-                                    </div>
-                                    <div className="ld-detail-row">
-                                        <span className="ld-detail-label">Interest rate</span>
-                                        <span className="ld-detail-val">{loan.interestRate}% per month</span>
-                                    </div>
+                            <div className="ld-progress-bar">
+                                <div className="ld-progress-fill" style={{ width: `${progressPct}%` }} />
+                            </div>
+                            <div className="ld-progress-sub">Loan matures {fmtDate(loan.maturityDate)}</div>
+                        </div>
+                    </div>
+
+                    {/* ── Loan details ── */}
+                    <div className="ld-section">
+                        <div className="ld-section-head">
+                            <div className="ld-section-title">Loan details</div>
+                        </div>
+                        <div className="ld-details-grid">
+                            <div className="ld-detail-col">
+                                <div className="ld-detail-row">
+                                    <span className="ld-detail-label">Loan ID</span>
+                                    <span className="ld-detail-val">{loan.loanId}</span>
                                 </div>
-                                <div className="ld-detail-col ld-detail-col--right">
-                                    <div className="ld-detail-row">
-                                        <span className="ld-detail-label">Applied date</span>
-                                        <span className="ld-detail-val">{fmtDate(loan.appliedDate)}</span>
-                                    </div>
-                                    <div className="ld-detail-row">
-                                        <span className="ld-detail-label">Disbursement date</span>
-                                        <span className="ld-detail-val">{fmtDate(loan.disbursedDate || loan.appliedDate)}</span>
-                                    </div>
-                                    <div className="ld-detail-row">
-                                        <span className="ld-detail-label">Maturity date</span>
-                                        <span className="ld-detail-val">{fmtDate(loan.maturityDate)}</span>
-                                    </div>
-                                    <div className="ld-detail-row">
-                                        <span className="ld-detail-label">Payment frequency</span>
-                                        <span className="ld-detail-val">Monthly</span>
-                                    </div>
+                                <div className="ld-detail-row">
+                                    <span className="ld-detail-label">Loan type</span>
+                                    <span className="ld-detail-val">{loan.purpose}</span>
+                                </div>
+                                <div className="ld-detail-row">
+                                    <span className="ld-detail-label">Loan term</span>
+                                    <span className="ld-detail-val">{loan.termMonths} months</span>
+                                </div>
+                                <div className="ld-detail-row">
+                                    <span className="ld-detail-label">Interest rate</span>
+                                    <span className="ld-detail-val">{loan.interestRate}% per month</span>
+                                </div>
+                            </div>
+                            <div className="ld-detail-col ld-detail-col--right">
+                                <div className="ld-detail-row">
+                                    <span className="ld-detail-label">Applied date</span>
+                                    <span className="ld-detail-val">{fmtDate(loan.appliedDate)}</span>
+                                </div>
+                                <div className="ld-detail-row">
+                                    <span className="ld-detail-label">Disbursement date</span>
+                                    <span className="ld-detail-val">{fmtDate(loan.disbursedDate || loan.appliedDate)}</span>
+                                </div>
+                                <div className="ld-detail-row">
+                                    <span className="ld-detail-label">Maturity date</span>
+                                    <span className="ld-detail-val">{fmtDate(loan.maturityDate)}</span>
+                                </div>
+                                <div className="ld-detail-row">
+                                    <span className="ld-detail-label">Payment frequency</span>
+                                    <span className="ld-detail-val">Monthly</span>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        {/* ── Upcoming payments + Payment History (side by side) ── */}
-                        <div style={{ display: 'grid', gridTemplateColumns: schedule.filter(r => r.status !== 'paid').length > 0 && paymentHistory.length > 0 ? '1fr 1fr' : '1fr', gap: '16px' }}>
-                            {/* Upcoming payments */}
-                            {schedule.filter(r => r.status !== 'paid').length > 0 && (
-                                <div className="ld-section" style={{ margin: 0 }}>
-                                    <div className="ld-section-head">
-                                        <div className="ld-section-title">Upcoming payments</div>
-                                        <button className="ld-view-link" onClick={() => setShowSchedule(true)}>
-                                            View full schedule
-                                        </button>
-                                    </div>
-                                    <div className="ld-preview-list">
-                                        {schedule.filter(r => r.status !== 'paid').slice(0, 3).map((row, i) => {
-                                            const isNext = row.isNext;
-                                            const absIdx = schedule.indexOf(row);
-                                            return (
-                                                <div key={i} className="ld-preview-row">
-                                                    <div className={`ld-sched-num ${isNext ? 'ld-sched-num--due' : ''}`}>
-                                                        {absIdx + 1}
-                                                    </div>
-                                                    <div className="ld-preview-info">
-                                                        <div className="ld-preview-date">{fmtDate(row.dueDate)}</div>
-                                                        <div className="ld-preview-breakdown">
-                                                            Principal {fmt(row.principal)} · Interest {fmt(row.interest)}
-                                                        </div>
-                                                    </div>
-                                                    <div style={{ textAlign: 'right' }}>
-                                                        <div className={`ld-preview-amount ${isNext ? 'ld-preview-amount--warn' : ''}`}>
-                                                            {fmt(row.payment)}
-                                                            {row.isLate && <div style={{ fontSize: '10px', color: '#DC2626', background: '#FEE2E2', padding: '1px 4px', borderRadius: '4px', marginTop: '2px', display: 'inline-block', marginLeft: '6px' }}>3% Penalty</div>}
-                                                        </div>
-                                                        <div className={`ld-preview-status ${isNext ? 'ld-preview-status--due' : 'ld-preview-status--upcoming'}`}>
-                                                            {isNext ? 'Due soon' : 'Upcoming'}
-                                                        </div>
-                                                    </div>
+                    {/* ── Upcoming payments + Payment History (side by side) ── */}
+                    <div style={{ display: 'grid', gridTemplateColumns: schedule.filter(r => r.status !== 'paid').length > 0 && paymentHistory.length > 0 ? '1fr 1fr' : '1fr', gap: '16px' }}>
+                        {/* Upcoming payments */}
+                        {schedule.filter(r => r.status !== 'paid').length > 0 && (
+                            <div className="ld-section" style={{ margin: 0 }}>
+                                <div className="ld-section-head">
+                                    <div className="ld-section-title">Upcoming payments</div>
+                                    <button className="ld-view-link" onClick={() => setShowSchedule(true)}>
+                                        View full schedule
+                                    </button>
+                                </div>
+                                <div className="ld-preview-list">
+                                    {schedule.filter(r => r.status !== 'paid').slice(0, 3).map((row, i) => {
+                                        const isNext = row.isNext;
+                                        const absIdx = schedule.indexOf(row);
+                                        return (
+                                            <div key={i} className="ld-preview-row">
+                                                <div className={`ld-sched-num ${isNext ? 'ld-sched-num--due' : ''}`}>
+                                                    {absIdx + 1}
                                                 </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Payment History */}
-                            {paymentHistory.length > 0 && (
-                                <div className="ld-section" style={{ margin: 0 }}>
-                                    <div className="ld-section-head">
-                                        <div className="ld-section-title">Payment history</div>
-                                    </div>
-                                    <div className="ld-preview-list">
-                                        {paymentHistory.slice(0, 4).map((p, i) => (
-                                            <div key={i} className="ld-preview-row" onClick={() => setHistoryDetail(p)} style={{ cursor: 'pointer' }}>
-                                                <div className="ld-sched-num ld-sched-num--paid">✓</div>
                                                 <div className="ld-preview-info">
-                                                    <div className="ld-preview-date">{fmtDate(p.confirmedAt || p.submittedAt)}</div>
-                                                    <div className="ld-preview-breakdown" style={{ textTransform: 'capitalize' }}>
-                                                        Month #{p.monthNumber} · {p.paymentMethod}
+                                                    <div className="ld-preview-date">{fmtDate(row.dueDate)}</div>
+                                                    <div className="ld-preview-breakdown">
+                                                        Principal {fmt(row.principal)} · Interest {fmt(row.interest)}
                                                     </div>
                                                 </div>
                                                 <div style={{ textAlign: 'right' }}>
-                                                    <div className="ld-preview-amount" style={{ color: '#16A34A' }}>{fmt(p.amount)}</div>
-                                                    <div className="ld-preview-status" style={{ color: '#16A34A', fontSize: '11px' }}>Confirmed</div>
+                                                    <div className={`ld-preview-amount ${isNext ? 'ld-preview-amount--warn' : ''}`}>
+                                                        {fmt(row.payment)}
+                                                        {row.isLate && <div style={{ fontSize: '10px', color: '#DC2626', background: '#FEE2E2', padding: '1px 4px', borderRadius: '4px', marginTop: '2px', display: 'inline-block', marginLeft: '6px' }}>3% Penalty</div>}
+                                                    </div>
+                                                    <div className={`ld-preview-status ${isNext ? 'ld-preview-status--due' : 'ld-preview-status--upcoming'}`}>
+                                                        {isNext ? 'Due soon' : 'Upcoming'}
+                                                    </div>
                                                 </div>
                                             </div>
-                                        ))}
-                                    </div>
+                                        );
+                                    })}
                                 </div>
-                            )}
-                        </div>
+                            </div>
+                        )}
 
-                    </>
-                )}
-            </div>
+                        {/* Payment History */}
+                        {paymentHistory.length > 0 && (
+                            <div className="ld-section" style={{ margin: 0 }}>
+                                <div className="ld-section-head">
+                                    <div className="ld-section-title">Payment history</div>
+                                </div>
+                                <div className="ld-preview-list">
+                                    {paymentHistory.slice(0, 4).map((p, i) => (
+                                        <div key={i} className="ld-preview-row" onClick={() => setHistoryDetail(p)} style={{ cursor: 'pointer' }}>
+                                            <div className="ld-sched-num ld-sched-num--paid">✓</div>
+                                            <div className="ld-preview-info">
+                                                <div className="ld-preview-date">{fmtDate(p.confirmedAt || p.submittedAt)}</div>
+                                                <div className="ld-preview-breakdown" style={{ textTransform: 'capitalize' }}>
+                                                    Month #{p.monthNumber} · {p.paymentMethod}
+                                                </div>
+                                            </div>
+                                            <div style={{ textAlign: 'right' }}>
+                                                <div className="ld-preview-amount" style={{ color: '#16A34A' }}>{fmt(p.amount)}</div>
+                                                <div className="ld-preview-status" style={{ color: '#16A34A', fontSize: '11px' }}>Confirmed</div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                </>
+            )}
 
             {/* ── Modals ── */}
             {showSchedule && (

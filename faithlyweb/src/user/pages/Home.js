@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 
-import Sidebar from '../components/Sidebar';
+// import Sidebar from '../components/Sidebar'; // Moved to UserLayout
 import VerificationModal from '../components/OfficerVerification';
 import API from '../../utils/api';
 import '../styles/Home.css';
@@ -240,6 +240,14 @@ export default function Home() {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
+
+  const renderActivityIcon = (activity) => {
+    if (activity.type === 'loan') return <Banknote size={16} />;
+    if (activity.type === 'donation') return <Heart size={16} />;
+    if (activity.type === 'attendance') return <CalendarDays size={16} />;
+    return <CheckCircle size={16} />;
+  };
+
   // Remove static upcomingEvents
 
 
@@ -249,18 +257,21 @@ export default function Home() {
       description: 'Support the church today',
       className: 'user-action-btn-donate',
       action: () => navigate('/donation'),
-      icon: (
-        <CheckCircle size={20} />
-      )
+      icon: <Heart size={20} color="#155DFC" />
     },
     {
       title: 'Check Attendance',
       description: 'View your attendance record',
       className: 'user-action-btn-attendance',
       action: () => navigate('/attendance'),
-      icon: (
-        <CheckCircle size={20} />
-      )
+      icon: <CalendarDays size={20} color="#155DFC" />
+    },
+    {
+      title: 'View Branches',
+      description: 'Find a branch near you',
+      className: 'user-action-btn-branches',
+      action: () => navigate('/branches'),
+      icon: <MapPin size={20} color="#155DFC" />
     },
   ];
 
@@ -278,10 +289,7 @@ export default function Home() {
   };
 
   return (
-    <div className="user-home-layout">
-      <Sidebar />
-
-      <div className="user-main-content">
+    <>
         <div className="user-home-header-container">
           <div className="user-home-header-left">
             <h1 className="user-home-page-title">Welcome back{user?.fullName ? `, ${user.fullName.split(' ')[0]}` : ''}!</h1>
@@ -323,8 +331,8 @@ export default function Home() {
           {/* Savings — only for verified officers */}
           {isOfficer && (
           <div className="user-stat-card user-stat-purple user-stat-card-clickable" onClick={() => navigate('/savings')} style={{ cursor: 'pointer', position: 'relative' }}>
-            <div className="user-stat-icon-box">
-              <PiggyBank className="user-stat-icon" size={20} color="white" />
+            <div className="user-stat-icon-box" style={{ background: 'rgba(21, 93, 252, 0.1)' }}>
+              <PiggyBank className="user-stat-icon" size={20} color="#155DFC" />
             </div>
             <div className="user-stat-content">
               <p className="user-stat-label">Total Savings</p>
@@ -354,8 +362,8 @@ export default function Home() {
           {/* Active Loans — only for verified officers */}
           {isOfficer && (
           <div className="user-stat-card user-stat-blue user-stat-card-clickable" onClick={() => navigate('/loans')} style={{ cursor: 'pointer', position: 'relative' }}>
-            <div className="user-stat-icon-box">
-              <Banknote className="user-stat-icon" size={20} color="white" />
+            <div className="user-stat-icon-box" style={{ background: 'rgba(21, 93, 252, 0.1)' }}>
+              <Banknote className="user-stat-icon" size={20} color="#155DFC" />
             </div>
             <div className="user-stat-content">
               <p className="user-stat-label">Active Loans</p>
@@ -384,8 +392,8 @@ export default function Home() {
 
           {/* Total Donated */}
           <div className="user-stat-card user-stat-green user-stat-card-clickable" onClick={() => navigate('/donation')} style={{ cursor: 'pointer' }}>
-            <div className="user-stat-icon-box">
-              <Heart className="user-stat-icon" size={20} color="white" />
+            <div className="user-stat-icon-box" style={{ background: 'rgba(21, 93, 252, 0.1)' }}>
+              <Heart className="user-stat-icon" size={20} color="#155DFC" />
             </div>
             <div className="user-stat-content">
               <p className="user-stat-label">Total Donated</p>
@@ -396,8 +404,8 @@ export default function Home() {
 
           {/* Services Attended */}
           <div className="user-stat-card user-stat-navy user-stat-card-clickable" onClick={() => navigate('/attendance')} style={{ cursor: 'pointer' }}>
-            <div className="user-stat-icon-box">
-              <CalendarDays className="user-stat-icon" size={20} color="white" />
+            <div className="user-stat-icon-box" style={{ background: 'rgba(21, 93, 252, 0.1)' }}>
+              <CalendarDays className="user-stat-icon" size={20} color="#155DFC" />
             </div>
             <div className="user-stat-content">
               <p className="user-stat-label">Services Attended</p>
@@ -534,7 +542,7 @@ export default function Home() {
                 <div key={index} className={`user-activity-hcard user-activity-hcard-${activity.type}`}>
                   <div className="user-activity-hcard-header">
                     <div className={`user-activity-hcard-icon user-activity-hcard-icon-${activity.status || activity.type}`}>
-                      <XCircle size={16} />
+                      {renderActivityIcon(activity)}
                     </div>
                     <span className="user-activity-hcard-title">{activity.title}</span>
                   </div>
@@ -548,8 +556,6 @@ export default function Home() {
             </div>
           )}
         </div>
-
-      </div>
 
       {/* "Are you an officer?" Confirmation Modal */}
       {showAskOfficerModal && (
@@ -661,6 +667,6 @@ export default function Home() {
         </div>
       )}
 
-    </div>
+    </>
   );
 }

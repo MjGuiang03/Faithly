@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import Sidebar from '../components/Sidebar';
-import { Banknote, CheckCircle, ChevronDown, Download, Heart, Receipt, Share2, X, XCircle } from 'lucide-react';
+// import Sidebar from '../components/Sidebar'; // Moved to UserLayout
+import { Banknote, CheckCircle, ChevronDown, Download, Heart, Receipt, Share2, X, XCircle, Calendar, List, Wallet, TrendingUp, History, CreditCard } from 'lucide-react';
 import '../styles/Donation.css';
 import gcashLogo from '../../assets/gcashlogo.png';
 import bank from '../../assets/bank.png';
@@ -170,284 +170,281 @@ export default function Donation() {
 
   return (
     <>
-      <div className="user-home-layout">
-        <Sidebar />
-        <div className="user-main-content user-donation-main">
+      <div className="user-main-content user-donation-main">
 
-          {/* Header */}
-          <div className="user-donation-page-header">
-            <h1 className="user-donation-page-title">Donations</h1>
-            <p className="user-donation-page-subtitle">Support the church and track your giving</p>
+        {/* Header */}
+        <div className="user-donation-page-header">
+          <h1 className="user-donation-page-title">Donations</h1>
+          <p className="user-donation-page-subtitle">Support the church and track your giving</p>
+        </div>
+
+        {/* Stats */}
+        <div className="user-donations-stats">
+          <div className="user-donation-stat-card">
+            <div className="user-donation-stat-header">
+              <p className="user-donation-stat-label">Total Donated</p>
+              <Wallet className="user-donation-stat-icon" size={20} color="#155DFC" />
+            </div>
+            {loading ? <div className="user-skeleton" style={{ height: '32px', width: '100px', margin: '8px 0' }}></div> : <p className="user-donation-stat-value user-fade-in">{fmt(stats.totalDonated)}</p>}
           </div>
-
-          {/* Stats */}
-          <div className="user-donations-stats">
-            <div className="user-donation-stat-card">
-              <div className="user-donation-stat-header">
-                <p className="user-donation-stat-label">Total Donated</p>
-                <Heart className="user-donation-stat-icon" size={20} color="#E60076" />
-              </div>
-              {loading ? <div className="user-skeleton" style={{ height: '32px', width: '100px', margin: '8px 0' }}></div> : <p className="user-donation-stat-value user-fade-in">{fmt(stats.totalDonated)}</p>}
+          <div className="user-donation-stat-card">
+            <div className="user-donation-stat-header">
+              <p className="user-donation-stat-label">This Year</p>
+              <TrendingUp className="user-donation-stat-icon" size={20} color="#155DFC" />
             </div>
-            <div className="user-donation-stat-card">
-              <div className="user-donation-stat-header">
-                <p className="user-donation-stat-label">This Year</p>
-                <Heart className="user-donation-stat-icon" size={20} color="#00A63E" />
-              </div>
-              {loading ? <div className="user-skeleton" style={{ height: '32px', width: '100px', margin: '8px 0' }}></div> : <p className="user-donation-stat-value user-fade-in">{fmt(stats.thisYearTotal)}</p>}
-            </div>
-            <div className="user-donation-stat-card">
-              <div className="user-donation-stat-header">
-                <p className="user-donation-stat-label">Total Donations</p>
-                <Heart className="user-donation-stat-icon" size={20} color="#155DFC" />
-              </div>
-              {loading ? <div className="user-skeleton" style={{ height: '32px', width: '60px', margin: '8px 0' }}></div> : <p className="user-donation-stat-value user-fade-in">{stats.totalCount}</p>}
-            </div>
+            {loading ? <div className="user-skeleton" style={{ height: '32px', width: '100px', margin: '8px 0' }}></div> : <p className="user-donation-stat-value user-fade-in">{fmt(stats.thisYearTotal)}</p>}
           </div>
+          <div className="user-donation-stat-card">
+            <div className="user-donation-stat-header">
+              <p className="user-donation-stat-label">Total Donations</p>
+              <History className="user-donation-stat-icon" size={20} color="#155DFC" />
+            </div>
+            {loading ? <div className="user-skeleton" style={{ height: '32px', width: '60px', margin: '8px 0' }}></div> : <p className="user-donation-stat-value user-fade-in">{stats.totalCount}</p>}
+          </div>
+        </div>
 
-          {/* Two-column grid */}
-          <div className="user-donations-content-grid">
+        {/* Two-column grid */}
+        <div className="user-donations-content-grid">
 
-            {/* Left: Make a Donation */}
-            <div className="user-donation-form-card">
-              <div className="user-card-header-row">
-                <h2 className="user-donation-section-title">Make a Donation</h2>
-              </div>
-              <div className="user-donation-form">
+          {/* Left: Make a Donation */}
+          <div className="user-donation-form-card">
+            <div className="user-card-header-row">
+              <h2 className="user-donation-section-title">Make a Donation</h2>
+            </div>
+            <div className="user-donation-form">
 
-                {/* Amount */}
-                <div className="user-donation-form-group">
-                  <label className="user-donation-form-label">Donation Amount</label>
-                  <div className="user-amount-input-wrapper">
-                    <span className="user-currency-symbol">₱</span>
-                    <input
-                      type="number"
-                      className="user-amount-input"
-                      placeholder="Enter amount"
-                      value={donationAmount}
-                      onChange={(e) => { setDonationAmount(e.target.value); setFormError(''); }}
+              {/* Amount */}
+              <div className="user-donation-form-group">
+                <label className="user-donation-form-label">Donation Amount</label>
+                <div className="user-amount-input-wrapper">
+                  <span className="user-currency-symbol">₱</span>
+                  <input
+                    type="number"
+                    className="user-amount-input"
+                    placeholder="Enter amount"
+                    value={donationAmount}
+                    onChange={(e) => { setDonationAmount(e.target.value); setFormError(''); }}
+                    disabled={submitting}
+                  />
+                </div>
+                <div className="user-quick-amounts" style={{ marginTop: '20px', marginBottom: '8px' }}>
+                  {QUICK_AMOUNTS.map((q) => (
+                    <button
+                      key={q}
+                      className={`user-quick-amount-btn${Number(donationAmount) === q ? ' user-quick-amount-active' : ''}`}
+                      onClick={() => { setDonationAmount(String(q)); setFormError(''); }}
                       disabled={submitting}
-                    />
-                  </div>
-                  <div className="user-quick-amounts" style={{ marginTop: '20px', marginBottom: '8px' }}>
-                    {QUICK_AMOUNTS.map((q) => (
-                      <button
-                        key={q}
-                        className={`user-quick-amount-btn${Number(donationAmount) === q ? ' user-quick-amount-active' : ''}`}
-                        onClick={() => { setDonationAmount(String(q)); setFormError(''); }}
-                        disabled={submitting}
-                      >
-                        ₱{q}
-                      </button>
+                    >
+                      ₱{q}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Category */}
+              <div className="user-donation-form-group">
+                <label className="user-donation-form-label">Donation Category</label>
+                <div className="user-select-wrapper">
+                  <select
+                    className="user-donation-form-select user-category-select"
+                    value={donationCategory}
+                    onChange={(e) => { setDonationCategory(e.target.value); setFormError(''); }}
+                    disabled={submitting}
+                  >
+                    <option value="" disabled>Select a category</option>
+                    {CATEGORIES.map((c) => (
+                      <option key={c.name} value={c.name}>{c.name}</option>
                     ))}
-                  </div>
+                  </select>
+                  <ChevronDown className="user-select-icon" size={18} />
+                </div>
+              </div>
+
+              {/* Payment Method */}
+              <div className="user-donation-form-group">
+                <label className="user-donation-form-label">Payment Method</label>
+                <div className="user-payment-methods">
+                  <button
+                    className={`user-payment-method-btn${paymentMethod === 'GCash' ? ' active' : ''}`}
+                    onClick={() => setPaymentMethod(paymentMethod === 'GCash' ? '' : 'GCash')}
+                    disabled={submitting}
+                  >
+                    <GCashIcon />
+                    <span>GCash</span>
+                  </button>
+                  <button
+                    className={`user-payment-method-btn${paymentMethod === 'Bank' ? ' active' : ''}`}
+                    onClick={() => setPaymentMethod(paymentMethod === 'Bank' ? '' : 'Bank')}
+                    disabled={submitting}
+                  >
+                    <BankIcon />
+                    <span>Bank Transfer</span>
+                  </button>
                 </div>
 
-                {/* Category */}
-                <div className="user-donation-form-group">
-                  <label className="user-donation-form-label">Donation Category</label>
-                  <div className="user-select-wrapper">
-                    <select
-                      className="user-donation-form-select user-category-select"
-                      value={donationCategory}
-                      onChange={(e) => { setDonationCategory(e.target.value); setFormError(''); }}
-                      disabled={submitting}
-                    >
-                      <option value="" disabled>Select a category</option>
-                      {CATEGORIES.map((c) => (
-                        <option key={c.name} value={c.name}>{c.name}</option>
-                      ))}
-                    </select>
-                    <ChevronDown className="user-select-icon" size={18} />
-                  </div>
-                </div>
-
-                {/* Payment Method */}
-                <div className="user-donation-form-group">
-                  <label className="user-donation-form-label">Payment Method</label>
-                  <div className="user-payment-methods">
-                    <button
-                      className={`user-payment-method-btn${paymentMethod === 'GCash' ? ' active' : ''}`}
-                      onClick={() => setPaymentMethod(paymentMethod === 'GCash' ? '' : 'GCash')}
-                      disabled={submitting}
-                    >
-                      <GCashIcon />
-                      <span>GCash</span>
-                    </button>
-                    <button
-                      className={`user-payment-method-btn${paymentMethod === 'Bank' ? ' active' : ''}`}
-                      onClick={() => setPaymentMethod(paymentMethod === 'Bank' ? '' : 'Bank')}
-                      disabled={submitting}
-                    >
-                      <BankIcon />
-                      <span>Bank Transfer</span>
-                    </button>
-                  </div>
-
-                  {/* ── Payment Account & Proof Wrapper ── */}
-                  <div className={`user-payment-info-wrapper ${paymentMethod !== '' ? 'expanded' : ''}`}>
-                      <div className="user-payment-info-box" style={{ display: paymentMethod === 'Bank' ? 'none' : 'block' }}>
-                        <div className="user-payment-info-header">
-                          <img src={gcashLogo} alt="GCash" style={{ width: 50, height: 25, objectFit: 'contain' }} />
-                          <span className="user-payment-info-title">GCash Account Details</span>
-                        </div>
-                        <div className="user-payment-info-content">
-                          <div className="user-payment-info-details">
-                            <div className="user-payment-info-row">
-                              <span className="user-payment-info-label">Account Name</span>
-                              <span className="user-payment-info-value">Faithly Church Ministry</span>
-                            </div>
-                            <div className="user-payment-info-row">
-                              <span className="user-payment-info-label">GCash Number</span>
-                              <span className="user-payment-info-value user-payment-info-value--mono">0917 123 4567</span>
-                            </div>
+                {/* ── Payment Account & Proof Wrapper ── */}
+                <div className={`user-payment-info-wrapper ${paymentMethod !== '' ? 'expanded' : ''}`}>
+                    <div className="user-payment-info-box" style={{ display: paymentMethod === 'Bank' ? 'none' : 'block' }}>
+                      <div className="user-payment-info-header">
+                        <img src={gcashLogo} alt="GCash" style={{ width: 50, height: 25, objectFit: 'contain' }} />
+                        <span className="user-payment-info-title">GCash Account Details</span>
+                      </div>
+                      <div className="user-payment-info-content">
+                        <div className="user-payment-info-details">
+                          <div className="user-payment-info-row">
+                            <span className="user-payment-info-label">Account Name</span>
+                            <span className="user-payment-info-value">Faithly Church Ministry</span>
                           </div>
-                          <div className="user-payment-qr-wrap">
-                            <img src={gcashQr} alt="GCash QR Code" className="user-payment-qr-img" />
-                            <span className="user-payment-qr-label">Scan to pay</span>
+                          <div className="user-payment-info-row">
+                            <span className="user-payment-info-label">GCash Number</span>
+                            <span className="user-payment-info-value user-payment-info-value--mono">0917 123 4567</span>
+                          </div>
+                        </div>
+                        <div className="user-payment-qr-wrap">
+                          <img src={gcashQr} alt="GCash QR Code" className="user-payment-qr-img" />
+                          <span className="user-payment-qr-label">Scan to pay</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="user-payment-info-box" style={{ display: paymentMethod === 'Bank' ? 'block' : 'none' }}>
+                      <div className="user-payment-info-header">
+                        <img src={bank} alt="Bank" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+                        <span className="user-payment-info-title">Bank Transfer Details</span>
+                      </div>
+                      <div className="user-payment-info-content">
+                        <div className="user-payment-info-details">
+                          <div className="user-payment-info-row">
+                            <span className="user-payment-info-label">Bank Name</span>
+                            <span className="user-payment-info-value">BDO Unibank</span>
+                          </div>
+                          <div className="user-payment-info-row">
+                            <span className="user-payment-info-label">Account Name</span>
+                            <span className="user-payment-info-value">Faithly Church Ministry Inc.</span>
+                          </div>
+                          <div className="user-payment-info-row">
+                            <span className="user-payment-info-label">Account Number</span>
+                            <span className="user-payment-info-value user-payment-info-value--mono">0012 3456 7890</span>
+                          </div>
+                          <div className="user-payment-info-row">
+                            <span className="user-payment-info-label">Branch</span>
+                            <span className="user-payment-info-value">BDO Main Branch</span>
                           </div>
                         </div>
                       </div>
+                    </div>
 
-                      <div className="user-payment-info-box" style={{ display: paymentMethod === 'Bank' ? 'block' : 'none' }}>
-                        <div className="user-payment-info-header">
-                          <img src={bank} alt="Bank" style={{ width: 28, height: 28, objectFit: 'contain' }} />
-                          <span className="user-payment-info-title">Bank Transfer Details</span>
-                        </div>
-                        <div className="user-payment-info-content">
-                          <div className="user-payment-info-details">
-                            <div className="user-payment-info-row">
-                              <span className="user-payment-info-label">Bank Name</span>
-                              <span className="user-payment-info-value">BDO Unibank</span>
-                            </div>
-                            <div className="user-payment-info-row">
-                              <span className="user-payment-info-label">Account Name</span>
-                              <span className="user-payment-info-value">Faithly Church Ministry Inc.</span>
-                            </div>
-                            <div className="user-payment-info-row">
-                              <span className="user-payment-info-label">Account Number</span>
-                              <span className="user-payment-info-value user-payment-info-value--mono">0012 3456 7890</span>
-                            </div>
-                            <div className="user-payment-info-row">
-                              <span className="user-payment-info-label">Branch</span>
-                              <span className="user-payment-info-value">BDO Main Branch</span>
-                            </div>
-                          </div>
-                        </div>
+                  {/* ── Proof of Payment ── */}
+                  <div className="user-donation-form-group" style={{ marginTop: '16px' }}>
+                    <label className="user-donation-form-label">Proof of Payment</label>
+                    <label
+                      htmlFor="donation-proof-upload"
+                      className={`user-proof-upload-box ${proofFile ? 'user-proof-upload-box--done' : ''}`}
+                    >
+                      {proofFile ? (
+                        <>
+                          <CheckCircle className="user-proof-upload-icon" size={24} color="#16a34a" />
+                          <p className="user-proof-upload-text user-proof-upload-text--done">File selected</p>
+                          <p className="user-proof-upload-subtext">{proofFile.name}</p>
+                          <button
+                            type="button"
+                            className="user-proof-remove-btn"
+                            onClick={(e) => { e.preventDefault(); setProofFile(null); }}
+                          >
+                            Remove
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <Banknote className="user-proof-upload-icon" size={24} color="#99A1AF" />
+                          <p className="user-proof-upload-text">Click to upload proof of payment</p>
+                          <p className="user-proof-upload-subtext">Screenshot or photo of payment confirmation · PNG, JPG</p>
+                        </>
+                      )}
+                      <input
+                        type="file"
+                        id="donation-proof-upload"
+                        accept="image/png, image/jpeg"
+                        onChange={(e) => setProofFile(e.target.files[0] || null)}
+                        hidden
+                      />
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {formError && <p className="user-donation-form-error">{formError}</p>}
+
+              <button className="user-donate-btn" onClick={handleDonate} disabled={submitting}>
+                {submitting ? <span className="btn-spinner" /> : (
+                  <>
+                    <CreditCard className="user-donate-icon" size={20} color="white" />
+                    Donate Now
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Right: Donation History (Preview) */}
+          <div className="user-donation-history-card">
+            <div className="user-card-header-row">
+              <h2 className="user-donation-section-title">Donation History</h2>
+              <button className="user-view-history-btn" onClick={handleOpenHistory}>View History</button>
+            </div>
+
+            {loading && (
+              <div className="user-donation-history-list">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="user-donation-history-item" style={{ padding: '16px' }}>
+                    <div className="user-donation-history-main" style={{ width: '100%' }}>
+                      <div className="user-skeleton user-skeleton-circle" style={{ width: '32px', height: '32px', flexShrink: 0 }}></div>
+                      <div style={{ flex: 1, marginLeft: '12px' }}>
+                        <div className="user-skeleton" style={{ height: '14px', width: '30%', marginBottom: '6px' }}></div>
+                        <div className="user-skeleton" style={{ height: '12px', width: '50%' }}></div>
                       </div>
+                      <div className="user-skeleton" style={{ height: '16px', width: '60px' }}></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
-                    {/* ── Proof of Payment ── */}
-                    <div className="user-donation-form-group" style={{ marginTop: '16px' }}>
-                      <label className="user-donation-form-label">Proof of Payment</label>
-                      <label
-                        htmlFor="donation-proof-upload"
-                        className={`user-proof-upload-box ${proofFile ? 'user-proof-upload-box--done' : ''}`}
-                      >
-                        {proofFile ? (
-                          <>
-                            <CheckCircle className="user-proof-upload-icon" size={24} color="#16a34a" />
-                            <p className="user-proof-upload-text user-proof-upload-text--done">File selected</p>
-                            <p className="user-proof-upload-subtext">{proofFile.name}</p>
-                            <button
-                              type="button"
-                              className="user-proof-remove-btn"
-                              onClick={(e) => { e.preventDefault(); setProofFile(null); }}
-                            >
-                              Remove
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <Banknote className="user-proof-upload-icon" size={24} color="#99A1AF" />
-                            <p className="user-proof-upload-text">Click to upload proof of payment</p>
-                            <p className="user-proof-upload-subtext">Screenshot or photo of payment confirmation · PNG, JPG</p>
-                          </>
+            {!loading && donationHistory.length === 0 && (
+              <p className="user-donations-empty-text">No donations yet.</p>
+            )}
+
+              {!loading && donationHistory.length > 0 && (
+              <div className="user-donation-history-list user-fade-in">
+                {donationHistory.slice(0, 5).map((d) => (
+                  <div
+                    key={d._id || d.donationId}
+                    className="user-donation-history-item user-clickable"
+                    onClick={() => handleOpenReceipt(d)}
+                  >
+                    <div className="user-donation-history-main">
+                      <Heart className="user-donation-history-icon" size={20} color="#155DFC" />
+                      <div className="user-donation-history-info">
+                        <h3 className="user-donation-fund">{d.category}</h3>
+                        <p className="user-donation-id">{d.donationId}</p>
+                        <p className="user-donation-details">
+                          {fmtDate(d.createdAt || d.date)} · {d.method || d.paymentMethod}
+                        </p>
+                        {d.type === 'Recurring' && (
+                          <span className="user-recurring-badge">Recurring</span>
                         )}
-                        <input
-                          type="file"
-                          id="donation-proof-upload"
-                          accept="image/png, image/jpeg"
-                          onChange={(e) => setProofFile(e.target.files[0] || null)}
-                          hidden
-                        />
-                      </label>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                      <p className="user-donation-history-amount">{fmt(d.amount)}</p>
+                      <span className={`user-donation-status-badge user-donation-status-${d.status || 'pending'}`}>
+                        {d.status === 'confirmed' ? 'Confirmed' : d.status === 'rejected' ? 'Rejected' : 'Pending'}
+                      </span>
                     </div>
                   </div>
-                </div>
-
-                {formError && <p className="user-donation-form-error">{formError}</p>}
-
-                <button className="user-donate-btn" onClick={handleDonate} disabled={submitting}>
-                  {submitting ? <span className="btn-spinner" /> : (
-                    <>
-                      <XCircle className="user-donate-icon" size={20} color="white" />
-                      Donate Now
-                    </>
-                  )}
-                </button>
+                ))}
               </div>
-            </div>
-
-            {/* Right: Donation History (Preview) */}
-            <div className="user-donation-history-card">
-              <div className="user-card-header-row">
-                <h2 className="user-donation-section-title">Donation History</h2>
-                <button className="user-view-history-btn" onClick={handleOpenHistory}>View History</button>
-              </div>
-
-              {loading && (
-                <div className="user-donation-history-list">
-                  {[1, 2, 3].map(i => (
-                    <div key={i} className="user-donation-history-item" style={{ padding: '16px' }}>
-                      <div className="user-donation-history-main" style={{ width: '100%' }}>
-                        <div className="user-skeleton user-skeleton-circle" style={{ width: '32px', height: '32px', flexShrink: 0 }}></div>
-                        <div style={{ flex: 1, marginLeft: '12px' }}>
-                          <div className="user-skeleton" style={{ height: '14px', width: '30%', marginBottom: '6px' }}></div>
-                          <div className="user-skeleton" style={{ height: '12px', width: '50%' }}></div>
-                        </div>
-                        <div className="user-skeleton" style={{ height: '16px', width: '60px' }}></div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {!loading && donationHistory.length === 0 && (
-                <p className="user-donations-empty-text">No donations yet.</p>
-              )}
-
-                {!loading && donationHistory.length > 0 && (
-                <div className="user-donation-history-list user-fade-in">
-                  {donationHistory.slice(0, 5).map((d) => (
-                    <div
-                      key={d._id || d.donationId}
-                      className="user-donation-history-item user-clickable"
-                      onClick={() => handleOpenReceipt(d)}
-                    >
-                      <div className="user-donation-history-main">
-                        <Heart className="user-donation-history-icon" size={20} color="#E60076" />
-                        <div className="user-donation-history-info">
-                          <h3 className="user-donation-fund">{d.category}</h3>
-                          <p className="user-donation-id">{d.donationId}</p>
-                          <p className="user-donation-details">
-                            {fmtDate(d.createdAt || d.date)} · {d.method || d.paymentMethod}
-                          </p>
-                          {d.type === 'Recurring' && (
-                            <span className="user-recurring-badge">Recurring</span>
-                          )}
-                        </div>
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-                        <p className="user-donation-history-amount">{fmt(d.amount)}</p>
-                        <span className={`user-donation-status-badge user-donation-status-${d.status || 'pending'}`}>
-                          {d.status === 'confirmed' ? 'Confirmed' : d.status === 'rejected' ? 'Rejected' : 'Pending'}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            )}
           </div>
         </div>
       </div>

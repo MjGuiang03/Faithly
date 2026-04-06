@@ -1,9 +1,9 @@
 import { useAuth } from '../../context/AuthContext';
 
 import '../styles/Branches.css';
-import Sidebar from '../components/Sidebar';
+// import Sidebar from '../components/Sidebar'; // Moved to UserLayout
 import { useState, useMemo, useEffect } from 'react';
-import { ChevronRight, MapPin, Search, User } from 'lucide-react';
+import { ChevronRight, MapPin, Search, User, Globe, Map, CalendarDays } from 'lucide-react';
 
 
 // ─── Branch data ordered North → South ───────────────────────────────────────
@@ -233,9 +233,7 @@ export default function Branches() {
       : totalBranches;
 
   return (
-    <div className="user-home-layout">
-      <Sidebar />
-
+    <>
       <div className="user-main-content">
 
         {/* ── My Community Banner ─────────────────────────────── */}
@@ -269,13 +267,16 @@ export default function Branches() {
         {/* ── Stats ──────────────────────────────────────────── */}
         <div className="user-branches-stats">
           {[
-            { label: 'Total Branches', value: totalBranches },
-            { label: 'Regions', value: totalRegions },
-            { label: 'Provinces', value: totalProvinces },
-            { label: 'Weekly Services', value: totalServices },
+            { label: 'Total Branches', value: totalBranches, icon: <MapPin size={20} color="#155DFC" /> },
+            { label: 'Regions', value: totalRegions, icon: <Globe size={20} color="#155DFC" /> },
+            { label: 'Provinces', value: totalProvinces, icon: <Map size={20} color="#155DFC" /> },
+            { label: 'Weekly Services', value: totalServices, icon: <CalendarDays size={20} color="#155DFC" /> },
           ].map(s => (
             <div key={s.label} className="user-branch-stat-card">
-              <p className="user-branch-stat-label">{s.label}</p>
+              <div className="user-branch-stat-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <p className="user-branch-stat-label" style={{ margin: 0 }}>{s.label}</p>
+                {s.icon}
+              </div>
               <p className="user-branch-stat-value">{s.value}</p>
             </div>
           ))}
@@ -488,10 +489,6 @@ export default function Branches() {
           </div>
         </>
       )}
-
-      <button className="user-chat-button">
-        <User size={20} color="white" />
-      </button>
-    </div>
+    </>
   );
 }

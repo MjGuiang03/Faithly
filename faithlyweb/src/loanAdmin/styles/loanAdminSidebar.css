@@ -54,12 +54,12 @@
 }
 
 .loan-admin-sidebar-logo-text h1 {
-  font-size: 16px;
-  font-weight: bold;
+  font-size: 1.55rem;
+  font-weight: 600;
   margin: 0;
   color: white;
-  font-family: 'Arial', sans-serif;
-  line-height: 24px;
+  font-family: 'Cormorant Garamond', serif;
+  letter-spacing: 0.02em;
 }
 
 .loan-admin-sidebar-logo-text p {
@@ -117,7 +117,7 @@
 
 /* ── Profile / sign-out footer ── */
 .loan-admin-sidebar-profile {
-  padding: 24px; /* Enhanced breathing room */
+  padding: 16px 20px;
   border-top: 0.8px solid rgba(255, 255, 255, 0.12);
   flex-shrink: 0;
 }
@@ -179,7 +179,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 24px; /* Enhanced breathing room */
+  padding: 10px 16px;
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.12);
   color: rgba(255, 255, 255, 0.72);
@@ -391,7 +391,7 @@
 
 /* ── Theme Toggle (Switch Style) ── */
 .loan-admin-sidebar-theme-toggle {
-  padding: 24px; /* Enhanced breathing room */
+  padding: 16px 20px;
   margin-top: auto;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   flex-shrink: 0;
@@ -401,9 +401,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px; /* Enhanced breathing room */
+  padding: 12px 16px;
   background: rgba(255, 255, 255, 0.04);
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
 .loan-theme-switch-label {
@@ -432,7 +432,7 @@
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
   background-color: rgba(255, 255, 255, 0.15);
-  border-radius: 2px;
+  border-radius: 34px;
   transition: 0.3s;
 }
 

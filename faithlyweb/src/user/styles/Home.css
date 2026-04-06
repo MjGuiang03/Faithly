@@ -276,96 +276,36 @@
   flex-shrink: 0;
 }
 
-/* Savings stat — purple */
-.user-stat-purple {
+/* Unified Stat Cards */
+.user-stat-card {
   background: var(--card);
   border-radius: 12px;
 }
 
-.user-stat-purple .user-stat-icon-box {
-  background: #7c3aed;
+.user-stat-purple .user-stat-icon-box,
+.user-stat-blue .user-stat-icon-box,
+.user-stat-green .user-stat-icon-box,
+.user-stat-navy .user-stat-icon-box,
+.user-stat-orange .user-stat-icon-box {
+  background: #EEF2FF;
 }
 
-.user-stat-purple .user-stat-icon {
-  stroke: white;
+.user-stat-purple .user-stat-icon,
+.user-stat-blue .user-stat-icon,
+.user-stat-green .user-stat-icon,
+.user-stat-navy .user-stat-icon,
+.user-stat-orange .user-stat-icon {
+  stroke: #155DFC;
 }
 
 .user-stat-purple .user-stat-label,
-.user-stat-purple .user-stat-value {
-  color: var(--foreground);
-}
-
-/* Loans stat — blue */
-.user-stat-blue {
-  background: var(--card);
-  border-radius: 12px;
-}
-
-.user-stat-blue .user-stat-icon-box {
-  background: #1d4ed8;
-}
-
-.user-stat-blue .user-stat-icon {
-  stroke: white;
-}
-
+.user-stat-purple .user-stat-value,
 .user-stat-blue .user-stat-label,
-.user-stat-blue .user-stat-value {
-  color: var(--foreground);
-}
-
-/* Donations stat — green */
-.user-stat-green {
-  background: var(--card);
-  border-radius: 12px;
-}
-
-.user-stat-green .user-stat-icon-box {
-  background: #16a34a;
-}
-
-.user-stat-green .user-stat-icon {
-  stroke: white;
-}
-
+.user-stat-blue .user-stat-value,
 .user-stat-green .user-stat-label,
-.user-stat-green .user-stat-value {
-  color: var(--foreground);
-}
-
-/* Attendance stat — dark navy */
-.user-stat-navy {
-  background: var(--card);
-  border-radius: 12px;
-}
-
-.user-stat-navy .user-stat-icon-box {
-  background: #1e3a8a;
-}
-
-.user-stat-navy .user-stat-icon {
-  stroke: white;
-}
-
+.user-stat-green .user-stat-value,
 .user-stat-navy .user-stat-label,
-.user-stat-navy .user-stat-value {
-  color: var(--foreground);
-}
-
-/* Announcements stat — orange */
-.user-stat-orange {
-  background: var(--card);
-  border-radius: 12px;
-}
-
-.user-stat-orange .user-stat-icon-box {
-  background: #ffedd5;
-}
-
-.user-stat-orange .user-stat-icon {
-  stroke: #F97316;
-}
-
+.user-stat-navy .user-stat-value,
 .user-stat-orange .user-stat-label,
 .user-stat-orange .user-stat-value {
   color: var(--foreground);

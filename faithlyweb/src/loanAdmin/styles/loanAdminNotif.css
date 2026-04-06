@@ -108,7 +108,7 @@
 .loan-admin-notif-filter.active {
     background: #1E3A8A;
     color: #ffffff;
-    /* box-shadow removed for flat layout */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }
 
 .loan-admin-notif-filter-count {
@@ -118,7 +118,7 @@
     font-size: 11px;
     font-weight: 600;
     padding: 1px 6px;
-    border-radius: 2px;
+    border-radius: 999px;
     min-width: 18px;
     height: 18px;
     display: flex;
@@ -141,8 +141,8 @@
 .loan-admin-notif-card {
     background: #ffffff;
     border: 1px solid #E5E7EB;
-    border-radius: 2px;
-    padding: 20px;
+    border-radius: 12px;
+    padding: 16px;
     display: flex;
     gap: 16px;
     transition: all 0.2s;
@@ -162,7 +162,7 @@
     width: 44px;
     height: 44px;
     background: #EEF2FF;
-    border-radius: 2px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;

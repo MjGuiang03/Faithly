@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import Sidebar from '../components/Sidebar';
+// import Sidebar from '../components/Sidebar'; // Moved to UserLayout
 
 import '../styles/Notifications.css';
 import API from '../../utils/api';
@@ -265,28 +265,28 @@ export default function Notifications() {
   /* ── UI helpers ── */
   const getIcon = (type) => {
     if (type === 'payment_pending') return (
-      <div className="user-notif-icon" style={{ background: '#FFF7ED', border: '1px solid #FED7AA', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        <Banknote size={18} color="#EA580C" />
+      <div className="user-notif-icon" style={{ background: '#EEF2FF', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <Banknote size={18} color="#155DFC" />
       </div>
     );
     if (type === 'loan') return (
       <div className="user-notif-icon user-notif-icon-loan">
-        <Heart size={18} color="#B45309" />
+        <Banknote size={18} color="#155DFC" />
       </div>
     );
     if (type === 'donation') return (
       <div className="user-notif-icon user-notif-icon-donation">
-        <Heart size={18} color="#BE185D" />
+        <Heart size={18} color="#155DFC" />
       </div>
     );
     if (type === 'savings') return (
-      <div className="user-notif-icon" style={{ background: '#DCFCE7', border: '1px solid #86EFAC', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        <CalendarDays size={18} color="#16A34A" />
+      <div className="user-notif-icon" style={{ background: '#EEF2FF', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <CalendarDays size={18} color="#155DFC" />
       </div>
     );
     if (type === 'attendance') return (
       <div className="user-notif-icon user-notif-icon-attendance">
-        <CalendarDays size={18} color="#1D4ED8" />
+        <CalendarDays size={18} color="#155DFC" />
       </div>
     );
     return null;
@@ -334,8 +334,7 @@ export default function Notifications() {
             : 'Attendance';
 
   return (
-    <div className="user-home-layout">
-      <Sidebar />
+    <>
       <div className="user-main-content">
 
         {/* Header */}
@@ -344,7 +343,7 @@ export default function Notifications() {
             <div className="user-notifications-title-row">
               <h1 className="user-notifications-page-title">Notifications</h1>
               {unreadCount('all') > 0 && (
-                <span className="user-notifications-count-pill">{unreadCount('all')}</span>
+                <span className="user-notifications-count-pill" style={{ backgroundColor: '#EF4444' }}>{unreadCount('all')}</span>
               )}
             </div>
           </div>
@@ -370,7 +369,7 @@ export default function Notifications() {
             >
               {label}
               {unreadCount(key) > 0 && (
-                <span className="user-notif-filter-pill">{unreadCount(key)}</span>
+                <span className="user-notif-filter-pill" style={{ backgroundColor: '#EF4444' }}>{unreadCount(key)}</span>
               )}
             </button>
           ))}
@@ -423,7 +422,10 @@ export default function Notifications() {
                     setDetailModal(n);
                   }
                 }}
-                style={{ cursor: 'pointer' }}
+                style={{
+                  cursor: 'pointer',
+                  backgroundColor: n.isRead ? '#ffffff' : 'rgba(21, 93, 252, 0.10)', // 10% blue
+                }}
               >
                 {getIcon(n.type)}
                 <div className="user-notif-body">
@@ -583,6 +585,6 @@ export default function Notifications() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

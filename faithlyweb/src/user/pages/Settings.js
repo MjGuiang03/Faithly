@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 
 import '../styles/Settings.css';
-import Sidebar from '../components/Sidebar';
+// import Sidebar from '../components/Sidebar'; // Moved to UserLayout
 import VerifyEmailModal from '../components/VerifyEmail';
 import VerificationModal from '../components/OfficerVerification';
 import { useTheme } from '../../context/ThemeContext';
@@ -219,9 +219,7 @@ export default function Settings() {
      RENDER
   ════════════════════════════════════════════════════════════════════ */
   return (
-    <div className="user-home-layout">
-      <Sidebar />
-
+    <>
       {/* Email OTP Modal */}
       {showEmailOtp && (
         <VerifyEmailModal
@@ -489,11 +487,6 @@ export default function Settings() {
           </div>
         </div>
       </div>
-
-      {/* Floating Chat Button */}
-      <button className="user-chat-button">
-        <SettingsIcon size={20} color="white" />
-      </button>
-    </div>
+    </>
   );
 }

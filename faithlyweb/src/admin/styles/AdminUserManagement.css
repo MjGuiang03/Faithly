@@ -379,8 +379,8 @@
 
 .admin-users-input,
 .admin-users-select {
-  padding: 24px; /* Enhanced breathing room */
-  border-radius: 2px;
+  padding: 10px 14px;
+  border-radius: 8px;
   border: 1.5px solid #e2e8f0;
   font-size: 14px;
   color: #1e293b;
@@ -404,8 +404,8 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 24px; /* Enhanced breathing room */
-  border-radius: 2px;
+  padding: 8px 16px;
+  border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;

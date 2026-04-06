@@ -5,7 +5,7 @@ import LoanAdminSidebar from './loanAdminSidebar';
 import '../styles/loanAdminLoanManagement.css';
 import '../styles/loanAdminPaymentStatus.css';
 import API from '../../utils/api';
-import { Banknote, FileText, PiggyBank, Search } from 'lucide-react';
+import { Banknote, FileText, PiggyBank, Search, X } from 'lucide-react';
 
 
 const fmt = (n) => n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : '₱0.00';
@@ -707,7 +707,7 @@ export default function LoanAdminPaymentStatus() {
             <div className="loan-admin-mgmt-modal-header">
               <h2 className="loan-admin-mgmt-modal-title">Loan Payment Progress</h2>
               <button className="loan-admin-mgmt-modal-close" onClick={() => setSelectedLoan(null)}>
-                <Banknote size={12} />
+                <X size={16} />
               </button>
             </div>
             <div style={{ padding: '20px 24px' }}>
@@ -762,7 +762,7 @@ export default function LoanAdminPaymentStatus() {
             <div className="loan-admin-mgmt-modal-header">
               <h2 className="loan-admin-mgmt-modal-title">Payment Details</h2>
               <button className="loan-admin-mgmt-modal-close" onClick={() => setSelectedPayment(null)}>
-                <Banknote size={12} />
+                <X size={16} />
               </button>
             </div>
             <div style={{ padding: '20px 24px' }}>
@@ -817,7 +817,7 @@ export default function LoanAdminPaymentStatus() {
             <div className="loan-admin-mgmt-modal-header">
               <h2 className="loan-admin-mgmt-modal-title">Savings Deposit Details</h2>
               <button className="loan-admin-mgmt-modal-close" onClick={() => setSelectedSavings(null)}>
-                <Banknote size={12} />
+                <X size={16} />
               </button>
             </div>
             <div style={{ padding: '20px 24px' }}>
@@ -862,7 +862,7 @@ export default function LoanAdminPaymentStatus() {
               cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
               zIndex: 1101, boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
             }}>
-              <FileText size={14} color="#374151" />
+              <X size={16} color="#374151" />
             </button>
             <img src={viewingImage} alt="Proof" style={{ maxWidth: '90vw', maxHeight: '90vh', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }} />
           </div>
@@ -879,7 +879,7 @@ export default function LoanAdminPaymentStatus() {
                 <p style={{ fontSize: '13px', color: '#6B7280', margin: '4px 0 0', fontFamily: 'Inter' }}>Process payments or deposits directly on behalf of a user.</p>
               </div>
               <button className="loan-admin-mgmt-modal-close" onClick={() => setShowWalkinModal(false)}>
-                <Banknote size={12} />
+                <X size={16} />
               </button>
             </div>
 

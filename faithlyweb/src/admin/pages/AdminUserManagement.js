@@ -354,7 +354,7 @@ export default function AdminUserManagement() {
               <div className="admin-users-modal-actions">
                 <button type="button" className="admin-users-btn secondary" onClick={() => setShowAddModal(false)}>Cancel</button>
                 <button type="submit" className="admin-users-btn primary" disabled={createLoading}>
-                  {createLoading ? <span className="btn-spinner" /> : <><UserPlus size={16} /> Create Account</>}
+                  {createLoading ? <span className="btn-spinner" /> : 'Create Account'}
                 </button>
               </div>
             </form>

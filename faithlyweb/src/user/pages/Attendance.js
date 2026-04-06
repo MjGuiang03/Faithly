@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 
 import '../styles/Attendance.css';
-import Sidebar from '../components/Sidebar';
+// import Sidebar from '../components/Sidebar'; // Moved to UserLayout
 import API from '../../utils/api';
-import { CalendarDays, CheckCircle, MapPin } from 'lucide-react';
+import { CalendarDays, CheckCircle, MapPin, UserCheck, TrendingUp, Activity } from 'lucide-react';
 
 const PAGE_SIZE = 5;
 
@@ -95,9 +95,7 @@ export default function Attendance() {
   };
 
   return (
-    <div className="user-home-layout">
-      <Sidebar />
-
+    <>
       <div className="user-main-content">
         {/* Header */}
         <div className="user-attendance-page-header">
@@ -110,7 +108,7 @@ export default function Attendance() {
           <div className="user-attendance-stat-card">
             <div className="user-attendance-stat-header">
               <p className="user-attendance-stat-label">Total Attendance</p>
-              <CalendarDays className="user-attendance-stat-icon" size={20} color="#155DFC" />
+              <UserCheck className="user-attendance-stat-icon" size={20} color="#155DFC" />
               </div>
               {loading ? <div className="user-skeleton" style={{ height: '32px', width: '60px', margin: '8px 0' }}></div> : <p className="user-attendance-stat-value user-fade-in">{stats.total}</p>}
             </div>
@@ -118,7 +116,7 @@ export default function Attendance() {
           <div className="user-attendance-stat-card">
             <div className="user-attendance-stat-header">
               <p className="user-attendance-stat-label">This Month</p>
-              <CalendarDays className="user-attendance-stat-icon" size={20} color="#00A63E" />
+              <CalendarDays className="user-attendance-stat-icon" size={20} color="#155DFC" />
               </div>
               {loading ? <div className="user-skeleton" style={{ height: '32px', width: '60px', margin: '8px 0' }}></div> : <p className="user-attendance-stat-value user-fade-in">{stats.thisMonth}</p>}
             </div>
@@ -126,7 +124,7 @@ export default function Attendance() {
           <div className="user-attendance-stat-card">
             <div className="user-attendance-stat-header">
               <p className="user-attendance-stat-label">Attendance Rate</p>
-              <CalendarDays className="user-attendance-stat-icon" size={20} color="#9810FA" />
+              <Activity className="user-attendance-stat-icon" size={20} color="#155DFC" />
               </div>
               {loading ? <div className="user-skeleton" style={{ height: '32px', width: '60px', margin: '8px 0' }}></div> : <p className="user-attendance-stat-value user-fade-in">{attendanceRate}</p>}
             </div>
@@ -261,11 +259,6 @@ export default function Attendance() {
 
       </div>
 
-      {/* Floating Chat Button */}
-      <button className="user-chat-button">
-        <CalendarDays size={20} color="white" />
-      </button>
-
       {/* ── Attendance History Modal ── */}
       {isHistoryModalOpen && (
         <div className="user-attendance-modal-overlay" onClick={() => setIsHistoryModalOpen(false)}>
@@ -330,6 +323,6 @@ export default function Attendance() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

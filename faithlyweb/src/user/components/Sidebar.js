@@ -5,7 +5,7 @@ import { Bell, Building2, Calendar, FileText, Heart, LayoutGrid, LogOut, Menu, M
 import { toast } from 'sonner';
 import puacLogo from '../../assets/puaclogo.png';
 import '../styles/Sidebar.css';
-import Chatbot from './Chatbot';
+// import Chatbot from './Chatbot'; // Moved to UserLayout
 
 import API from '../../utils/api';
 
@@ -15,7 +15,7 @@ export default function Sidebar() {
   const { user, profile, signOut } = useAuth();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [chatOpen, setChatOpen] = useState(false);
+  // chatOpen state moved to UserLayout
   const [verificationStatus, setVerificationStatus] = useState(() => localStorage.getItem('verificationStatus') || null);
   const [collapsed, setCollapsed] = useState(() => {
     return localStorage.getItem('sidebar_collapsed') === 'true';
@@ -327,23 +327,6 @@ export default function Sidebar() {
           </div>
         </div>
       )}
-
-      {/* Floating Chat Button */}
-      <button
-        className={`user-chat-button ${chatOpen ? 'user-chat-button--open' : ''}`}
-        onClick={() => setChatOpen(prev => !prev)}
-        aria-label={chatOpen ? 'Close chat' : 'Open chat'}
-        title={chatOpen ? 'Close chat' : 'Chat with FaithBot'}
-      >
-        {chatOpen ? (
-          <X size={22} color="white" />
-        ) : (
-          <MessageCircle size={24} color="white" />
-        )}
-      </button>
-
-      {/* Chatbot */}
-      <Chatbot isOpen={chatOpen} onClose={() => setChatOpen(false)} />
 
     </>
   );

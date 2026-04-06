@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './user/components/ProtectedRoute';
 import AdminProtectedRoute from './admin/pages/AdminProtectedRoute';
+import UserLayout from './user/components/UserLayout';
 
 // Regular User Pages
 import Welcome from './user/pages/Welcome';
@@ -131,15 +132,23 @@ export default function App() {
             <Route path="/secretary-admin/settings" element={<AdminProtectedRoute><SecretaryAdminSettings /></AdminProtectedRoute>} />
 
             {/* ========== USER ROUTES ========== */}
-            <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-            <Route path="/loans" element={<ProtectedRoute><Loans /></ProtectedRoute>} />
-            <Route path="/donation" element={<ProtectedRoute><Donation /></ProtectedRoute>} />
-            <Route path="/attendance" element={<ProtectedRoute><Attendance /></ProtectedRoute>} />
-            <Route path="/branches" element={<ProtectedRoute><Branches /></ProtectedRoute>} />
-            <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
-            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-            <Route path="/savings" element={<ProtectedRoute><Savings /></ProtectedRoute>} />
-            <Route path="/loans/:loanId" element={<ProtectedRoute><LoanDetail /></ProtectedRoute>} />
+            <Route
+              element={
+                <ProtectedRoute>
+                  <UserLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route path="/home" element={<Home />} />
+              <Route path="/loans" element={<Loans />} />
+              <Route path="/donation" element={<Donation />} />
+              <Route path="/attendance" element={<Attendance />} />
+              <Route path="/branches" element={<Branches />} />
+              <Route path="/notifications" element={<Notifications />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/savings" element={<Savings />} />
+              <Route path="/loans/:loanId" element={<LoanDetail />} />
+            </Route>
 
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />

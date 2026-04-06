@@ -29,7 +29,7 @@
 }
 
 .user-notifications-count-pill {
-  background: var(--primary);
+  background: #EF4444;
   color: white;
   font-family: 'Inter', sans-serif;
   font-size: 11px;
@@ -110,7 +110,7 @@
 }
 
 .user-notif-filter-pill {
-  background: var(--primary);
+  background: #EF4444;
   color: white;
   font-family: 'Inter', sans-serif;
   font-size: 11px;
@@ -186,15 +186,15 @@
 }
 
 .user-notif-icon-loan {
-  background: var(--gold-tint);
+  background: #EEF2FF;
 }
 
 .user-notif-icon-donation {
-  background: #fce7f3;
+  background: #EEF2FF;
 }
 
 .user-notif-icon-attendance {
-  background: var(--blue-tint);
+  background: #EEF2FF;
 }
 
 /* Card body */
