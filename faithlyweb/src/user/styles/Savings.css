@@ -150,6 +150,14 @@
     color: #3b6d11;
 }
 
+.sv-stat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 4px;
+}
+
 .sv-stat-value {
     font-size: 20px;
     font-weight: 700;
@@ -285,6 +293,22 @@
 .sv-goal-info {
     flex: 1;
     min-width: 0;
+}
+
+.sv-goal-clickable-data {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: 1;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s;
+    margin: -6px -10px;
+    padding: 6px 10px;
+}
+
+.sv-goal-clickable-data:hover {
+    background: rgba(30, 58, 138, 0.04);
 }
 
 .sv-goal-name {

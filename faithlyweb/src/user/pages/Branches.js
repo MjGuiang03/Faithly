@@ -1,7 +1,6 @@
 import { useAuth } from '../../context/AuthContext';
 
 import '../styles/Branches.css';
-// import Sidebar from '../components/Sidebar'; // Moved to UserLayout
 import { useState, useMemo, useEffect } from 'react';
 import { ChevronRight, MapPin, Search, User, Globe, Map, CalendarDays } from 'lucide-react';
 
@@ -234,7 +233,7 @@ export default function Branches() {
 
   return (
     <>
-      <div className="user-main-content">
+      <div className="user-branches-container">
 
         {/* ── My Community Banner ─────────────────────────────── */}
         {userBranch && (

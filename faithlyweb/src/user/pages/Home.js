@@ -2,11 +2,10 @@ import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 
-// import Sidebar from '../components/Sidebar'; // Moved to UserLayout
-import VerificationModal from '../components/OfficerVerification';
 import API from '../../utils/api';
 import '../styles/Home.css';
-import { Banknote, CalendarDays, CheckCircle, ChevronRight, Circle, Heart, MapPin, PiggyBank, User, X } from 'lucide-react';
+import { Banknote, CalendarDays, CheckCircle, ChevronRight, Heart, MapPin, PiggyBank, Wallet, FileText, X, Bell, Circle } from 'lucide-react';
+import { isOfficerPosition } from '../../utils/officerPositions';
 
 
 export default function Home() {
@@ -27,28 +26,9 @@ export default function Home() {
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [allAnnouncements, setAllAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
-
   /* User interaction modals */
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showAllEvents, setShowAllEvents] = useState(false);
-
-  /* Officer verification */
-  const [verificationStatus, setVerificationStatus] = useState(null);
-  const [officerCardDismissed, setOfficerCardDismissed] = useState(
-    () => localStorage.getItem('officer_card_dismissed') === 'true'
-  );
-  const [isDismissing, setIsDismissing] = useState(false);
-  const [showVerifyModal, setShowVerifyModal] = useState(false);
-  const [showAskOfficerModal, setShowAskOfficerModal] = useState(false);
-
-  const handleDismissOfficerCard = (e) => {
-    e.stopPropagation();
-    setIsDismissing(true);
-    setTimeout(() => {
-      localStorage.setItem('officer_card_dismissed', 'true');
-      setOfficerCardDismissed(true);
-    }, 300); // Wait for the 300ms CSS slide-out animation to finish
-  };
 
   const token = localStorage.getItem('token');
 
@@ -185,6 +165,9 @@ export default function Home() {
 
       activities.sort((a, b) => b.date - a.date);
       setRecentActivity(activities.slice(0, 8));
+
+
+
     } catch (err) {
       console.error('Failed to fetch dashboard data:', err);
     } finally {
@@ -197,48 +180,9 @@ export default function Home() {
     fetchAllData();
   }, [token, fetchAllData]);
 
-  /* Fetch officer verification status */
-  useEffect(() => {
-    const t = localStorage.getItem('token');
-    if (!t) return;
-    (async () => {
-      try {
-        const res = await fetch(`${API}/api/verification/status`, {
-          headers: { Authorization: `Bearer ${t}` },
-        });
-        const data = await res.json();
-        if (res.ok && data.success) setVerificationStatus(data.verificationStatus);
-        else setVerificationStatus('unverified');
-      } catch {
-        setVerificationStatus('unverified');
-      }
-    })();
-  }, []);
+  const isOfficer = isOfficerPosition(profile?.position);
 
-  const isOfficer = verificationStatus === 'verified';
 
-  const handleVerifyModalClose = async () => {
-    setShowVerifyModal(false);
-    try {
-      const t = localStorage.getItem('token');
-      const res = await fetch(`${API}/api/verification/status`, {
-        headers: { Authorization: `Bearer ${t}` },
-      });
-      const data = await res.json();
-      if (res.ok && data.success) setVerificationStatus(data.verificationStatus);
-    } catch {}
-  };
-
-  const formatTimeAgo = (date) => {
-    const diff = Date.now() - date.getTime();
-    const mins = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
-    if (mins < 60) return `${mins}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    if (days < 7) return `${days}d ago`;
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  };
 
 
   const renderActivityIcon = (activity) => {
@@ -246,6 +190,17 @@ export default function Home() {
     if (activity.type === 'donation') return <Heart size={16} />;
     if (activity.type === 'attendance') return <CalendarDays size={16} />;
     return <CheckCircle size={16} />;
+  };
+
+  const formatTimeAgo = (date) => {
+    const diff = Date.now() - new Date(date).getTime();
+    const mins = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+    if (mins < 60) return `${mins}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    if (days < 7) return `${days}d ago`;
+    return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
   // Remove static upcomingEvents
@@ -257,76 +212,40 @@ export default function Home() {
       description: 'Support the church today',
       className: 'user-action-btn-donate',
       action: () => navigate('/donation'),
-      icon: <Heart size={20} color="#155DFC" />
+      icon: <Heart size={20} color="currentColor" />
     },
     {
       title: 'Check Attendance',
       description: 'View your attendance record',
       className: 'user-action-btn-attendance',
       action: () => navigate('/attendance'),
-      icon: <CalendarDays size={20} color="#155DFC" />
+      icon: <CalendarDays size={20} color="currentColor" />
     },
-    {
-      title: 'View Branches',
-      description: 'Find a branch near you',
-      className: 'user-action-btn-branches',
-      action: () => navigate('/branches'),
-      icon: <MapPin size={20} color="#155DFC" />
-    },
+    ...(isOfficer ? [
+      {
+        title: 'Manage Savings',
+        description: 'View and save for your goals',
+        className: 'user-action-btn-savings',
+        action: () => navigate('/savings'),
+        icon: <Wallet size={20} color="currentColor" />
+      },
+      {
+        title: 'Loan Services',
+        description: 'See history and apply for loans',
+        className: 'user-action-btn-loans',
+        action: () => navigate('/loans'),
+        icon: <FileText size={20} color="currentColor" />
+      }
+    ] : [])
   ];
 
-  const [currentTime, setCurrentTime] = useState(new Date());
 
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const formatTimePill = (date) => {
-    const dateStr = date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-    const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-    return `${dateStr} · ${timeStr}`;
-  };
 
   return (
-    <>
-        <div className="user-home-header-container">
-          <div className="user-home-header-left">
-            <h1 className="user-home-page-title">Welcome back{user?.fullName ? `, ${user.fullName.split(' ')[0]}` : ''}!</h1>
-          </div>
-
-          <div className="user-home-header-right">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontFamily: `'Inter', sans-serif`, color: '#111827', fontSize: '22px', fontWeight: '700' }}>
-              <span>{formatTimePill(currentTime)}</span>
-            </div>
-          </div>
-        </div>
+    <div className="user-home-content-wrapper">
 
         {/* Stats Grid */}
-        <div className={`user-stats-grid ${!isOfficer && officerCardDismissed ? 'user-stats-grid--half' : ''}`}>
-          
-          {/* Officer Prompt Card — shown for non-officers when not dismissed */}
-          {!isOfficer && !officerCardDismissed && (
-            <div className={`user-stat-card user-officer-prompt-card ${isDismissing ? 'user-officer-prompt-card-dismissing' : ''}`} style={{ gridColumn: 'span 2' }}>
-              <button
-                className="user-officer-prompt-close"
-                onClick={handleDismissOfficerCard}
-                title="Dismiss"
-              >
-                <X size={14} />
-              </button>
-              <div className="user-officer-prompt-body" onClick={() => setShowAskOfficerModal(true)} style={{ cursor: 'pointer' }}>
-                <div className="user-stat-icon-box user-officer-prompt-icon-box">
-                  <User className="user-stat-icon" size={20} color="#2563EB" />
-                </div>
-                <div className="user-stat-content">
-                  <p className="user-stat-label" style={{ color: '#111827', fontWeight: 600 }}>Are you an officer?</p>
-                  <p className="user-officer-prompt-text" style={{ color: '#4B5563' }}>Verify your officer status to unlock Savings & Loans features</p>
-                  <span className="user-officer-prompt-link">Get Verified →</span>
-                </div>
-              </div>
-            </div>
-          )}
+        <div className="user-stats-grid">
 
           {/* Savings — only for verified officers */}
           {isOfficer && (
@@ -557,27 +476,7 @@ export default function Home() {
           )}
         </div>
 
-      {/* "Are you an officer?" Confirmation Modal */}
-      {showAskOfficerModal && (
-        <div className="user-logout-modal-overlay" style={{ zIndex: 1100 }}>
-          <div className="user-logout-modal-content" style={{ maxWidth: 420, textAlign: 'center' }}>
-            <div style={{ width: 48, height: 48, borderRadius: 12, background: '#dbeafe', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
-              <Circle size={24} color="#2563eb" />
-            </div>
-            <h2 className="user-logout-modal-title" style={{ marginBottom: 8 }}>Are you an officer?</h2>
-            <p className="user-logout-modal-message" style={{ marginBottom: 20 }}>
-              Officer verification unlocks access to Savings &amp; Loans features. Only verified church officers may proceed.
-            </p>
-            <div className="user-logout-modal-actions">
-              <button className="user-logout-modal-cancel" onClick={() => setShowAskOfficerModal(false)} style={{ whiteSpace: 'nowrap' }}>No, I'm a member</button>
-              <button className="user-logout-modal-confirm" onClick={() => { setShowAskOfficerModal(false); setShowVerifyModal(true); }} style={{ whiteSpace: 'nowrap', minWidth: '150px' }}>Yes, verify me</button>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* Officer Verification Modal */}
-      <VerificationModal isOpen={showVerifyModal} onClose={handleVerifyModalClose} />
 
       {/* ── Event Detail Modal ── */}
       {selectedEvent && (
@@ -667,6 +566,6 @@ export default function Home() {
         </div>
       )}
 
-    </>
+    </div>
   );
 }

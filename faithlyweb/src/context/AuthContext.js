@@ -6,7 +6,6 @@ const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
 
 
-console.log('🔥 API URL:', API);
 
 const safeJSON = async (res) => {
   const text = await res.text();

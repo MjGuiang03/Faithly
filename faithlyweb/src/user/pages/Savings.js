@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
-// import Sidebar from '../components/Sidebar'; // Moved to UserLayout
 import SavingsModals from '../components/SavingsModal';
 import '../styles/Savings.css';
 import API from '../../utils/api';
 import { Circle, Edit, PiggyBank, Home, ShoppingBag, Star, Car, ShieldAlert, ArrowDownLeft, ArrowUpRight, TrendingUp, Target, Banknote } from 'lucide-react';
+import { isOfficerPosition } from '../../utils/officerPositions';
 
 
 const fmt = (n) =>
@@ -43,8 +43,16 @@ const TxnArrowOut = () => (
 );
 
 export default function Savings() {
-    useNavigate();
-    useAuth();
+    const navigate = useNavigate();
+    const { user } = useAuth();
+
+    // Redirect non-officers away from Savings
+    const isOfficer = isOfficerPosition(user?.position);
+    useEffect(() => {
+      if (user && !isOfficer) {
+        navigate('/home', { replace: true });
+      }
+    }, [user, isOfficer, navigate]);
 
     /* ── modal state ── */
     const [modal, setModal] = useState(null); // 'deposit' | 'newGoal' | 'quickDeposit' | 'editGoal' | 'transfer'
@@ -225,55 +233,33 @@ export default function Savings() {
                     const isDone = goal.status === 'completed' || pct >= 100;
                     return (
                         <div key={goal._id} className="sv-goal-row">
-                            <div className="sv-goal-icon" style={{ background: colors.bg }}>
-                                <GoalIcon color={colorKey} type={goal.iconType || 'default'} />
-                            </div>
-                            <div className="sv-goal-info">
-                                <div className="sv-goal-name">{goal.name}</div>
-                                <div className="sv-goal-detail">
-                                    Target {fmt(goal.targetAmount)}
-                                    {goal.monthlyContribution > 0 && ` · Monthly ${fmt(goal.monthlyContribution)}`}
-                                    {isDone && ' · Completed'}
-                                    {goal.targetDate && !isDone && ` · Due ${fmtDate(goal.targetDate)}`}
-                                </div>
-                                <div className="sv-goal-bar-wrap">
-                                    <div className="sv-goal-bar-track">
-                                        <div
-                                            className="sv-goal-bar-fill"
-                                            style={{ width: `${Math.max(isDone ? 100 : 2, pct)}%`, background: colors.bar }}
-                                        />
+                            <div className="sv-goal-clickable-data" onClick={() => { setModal('goalInfo'); setModalData(goal); }}>
+                                <div className="sv-goal-info">
+                                    <div className="sv-goal-name">{goal.name}</div>
+                                    <div className="sv-goal-detail">
+                                        Target {fmt(goal.targetAmount)}
+                                        {goal.monthlyContribution > 0 && ` · Monthly ${fmt(goal.monthlyContribution)}`}
+                                        {isDone && ' · Completed'}
+                                        {goal.targetDate && !isDone && ` · Due ${fmtDate(goal.targetDate)}`}
+                                    </div>
+                                    <div className="sv-goal-bar-wrap">
+                                        <div className="sv-goal-bar-track">
+                                            <div
+                                                className="sv-goal-bar-fill"
+                                                style={{ width: `${Math.max(isDone ? 100 : 2, pct)}%`, background: colors.bar }}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
+                                <div className="sv-goal-right">
+                                    <div className="sv-goal-saved">{fmt(goal.savedAmount)}</div>
+                                    <div className="sv-goal-target">of {fmt(goal.targetAmount)}</div>
+                                    {isDone
+                                        ? <div className="sv-goal-pct sv-goal-pct--done">Completed</div>
+                                        : <div className="sv-goal-pct" style={{ color: colors.pct }}>{pct}%</div>
+                                    }
+                                </div>
                             </div>
-                            <div className="sv-goal-right">
-                                <div className="sv-goal-saved">{fmt(goal.savedAmount)}</div>
-                                <div className="sv-goal-target">of {fmt(goal.targetAmount)}</div>
-                                {isDone
-                                    ? <div className="sv-goal-pct sv-goal-pct--done">Completed</div>
-                                    : <div className="sv-goal-pct" style={{ color: colors.pct }}>{pct}%</div>
-                                }
-                            </div>
-                            <button
-                                className="sv-goal-more-btn"
-                                title="Edit goal"
-                                onClick={() => openEditGoal(goal)}
-                            >
-                                <Edit size={14} />
-                            </button>
-                            <button
-                                className="sv-goal-more-btn"
-                                title="Transfer to another goal"
-                                onClick={() => openTransfer(goal)}
-                            >
-                                <PiggyBank size={14} />
-                            </button>
-                            <button
-                                className="sv-goal-more-btn"
-                                title="Quick deposit"
-                                onClick={() => openQuickDep(goal)}
-                            >
-                                <PiggyBank size={14} />
-                            </button>
                         </div>
                     );
                 })}
@@ -319,7 +305,7 @@ export default function Savings() {
 
     return (
         <>
-            <div className="user-main-content">
+            <div className="user-savings-container">
 
                 {dataLoading && renderSkeleton()}
 
@@ -463,6 +449,18 @@ export default function Savings() {
                 modalData={modalData}
                 goals={goals}
                 onClose={closeModal}
+                onEdit={(goal) => {
+                    setModal('editGoal');
+                    setModalData(goal);
+                }}
+                onTransfer={(goal) => {
+                    setModal('transfer');
+                    setModalData(goal);
+                }}
+                onQuickDeposit={(goal) => {
+                    setModal('quickDeposit');
+                    setModalData(goal);
+                }}
             />
         </>
     );

@@ -191,19 +191,25 @@ router.post('/savings/deposit', authenticateUser, async (req, res) => {
 router.get('/savings/transactions', authenticateUser, async (req, res) => {
   try {
     const email = req.user.email;
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
+    const { page = 1, limit = 10, goalId } = req.query;
+    const p = parseInt(page);
+    const l = parseInt(limit);
+    const skip = (p - 1) * l;
 
-    const totalCount = await savingsTransactions.countDocuments({ email });
+    const query = { email };
+    if (goalId && ObjectId.isValid(goalId)) {
+      query.goalId = new ObjectId(goalId);
+    }
+
+    const totalCount = await savingsTransactions.countDocuments(query);
     const transactions = await savingsTransactions
-      .find({ email })
+      .find(query)
       .sort({ date: -1 })
       .skip(skip)
-      .limit(limit)
+      .limit(l)
       .toArray();
 
-    res.json({ success: true, transactions, totalCount, currentPage: page });
+    res.json({ success: true, transactions, totalCount, currentPage: p });
   } catch (err) {
     console.error('Savings transactions error:', err);
     res.status(500).json({ success: false, message: 'Failed to fetch transactions' });

@@ -44,22 +44,24 @@ router.post('/verification/submit', authenticateUser, async (req, res) => {
 });
 
 /* ================== USER - GET VERIFICATION STATUS ================== */
+const OFFICER_POSITIONS = [
+  'Deacon','Local Evangelist','District Evangelist','National Evangelist',
+  'Assistant Priest','Priest','Elder','District Elder',
+  'Bishop','District Bishop','National Bishop','Apostle',
+];
+
 router.get('/verification/status', authenticateUser, async (req, res) => {
   try {
     const email = req.user.email;
     const user  = await users.findOne({ email });
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
-    const verification = await verifications.findOne({ email }, { sort: { submittedAt: -1 } });
+    // Derive officer status from position field (single source of truth)
+    const pos = (user.position || '').trim();
+    const isOfficer = OFFICER_POSITIONS.some(p => p.toLowerCase() === pos.toLowerCase());
+    const verificationStatus = isOfficer ? 'verified' : 'unverified';
 
-    let verificationStatus = user.verificationStatus || 'unverified';
-
-    if ((verificationStatus === 'pending' || verificationStatus === 'rejected') && !verification) {
-      await users.updateOne({ email }, { $set: { verificationStatus: 'unverified' } });
-      verificationStatus = 'unverified';
-    }
-
-    res.status(200).json({ success: true, verificationStatus, verification: verification || null });
+    res.status(200).json({ success: true, verificationStatus, verification: null });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Failed to fetch verification status' });

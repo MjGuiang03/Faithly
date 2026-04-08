@@ -112,29 +112,27 @@ export default function SecretaryAdminNotif() {
 
 
 
-                {/* Filter Tabs */}
-                <div className="sec-admin-notif-filters">
-                    <button
-                        className={`sec-admin-notif-filter-btn ${activeFilter === 'all' ? 'active' : ''}`}
-                        onClick={() => setActiveFilter('all')}
-                    >
-                        All
-                    </button>
-                    <button
-                        className={`sec-admin-notif-filter-btn ${activeFilter === 'unread' ? 'active' : ''}`}
-                        onClick={() => setActiveFilter('unread')}
-                    >
-                        Unread
-                        {unreadCount > 0 && (
-                            <span className="sec-admin-notif-filter-badge">{unreadCount}</span>
-                        )}
-                    </button>
-                    <button
-                        className={`sec-admin-notif-filter-btn ${activeFilter === 'read' ? 'active' : ''}`}
-                        onClick={() => setActiveFilter('read')}
-                    >
-                        Read
-                    </button>
+                {/* Filter Tabs matching Admin Design */}
+                <div className="admin-notif-tabs" style={{ marginBottom: '24px' }}>
+                    {[
+                        { key: 'all',    label: 'All' },
+                        { key: 'unread', label: 'Unread' },
+                        { key: 'read',   label: 'Read' }
+                    ].map(({ key, label }) => {
+                        const count = key === 'unread' ? unreadCount : 0;
+                        return (
+                            <button
+                                key={key}
+                                className={`admin-notif-tab${activeFilter === key ? ' admin-notif-tab-active' : ''}`}
+                                onClick={() => setActiveFilter(key)}
+                            >
+                                {label}
+                                {count > 0 && (
+                                    <span className="admin-notif-tab-badge">{count}</span>
+                                )}
+                            </button>
+                        );
+                    })}
                 </div>
 
                 {/* Notifications List */}

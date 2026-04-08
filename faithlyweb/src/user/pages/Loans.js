@@ -1,13 +1,12 @@
 import { useNavigate } from 'react-router';
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
-// import Sidebar from '../components/Sidebar'; // Moved to UserLayout
 import LoanApplicationModal from '../components/LoanApplicationModal';
-import VerificationModal from '../components/OfficerVerification';
 import '../styles/Loans.css';
 
 import API from '../../utils/api';
 import { Banknote, Circle, Lock as LockIcon, X, Wallet, ShieldAlert, Clock } from 'lucide-react';
+import { isOfficerPosition } from '../../utils/officerPositions';
 
 const fmt = (n) =>
   n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 0 })}` : '₱0';
@@ -37,32 +36,46 @@ export default function Loans() {
   const [page,         setPage]         = useState(1);
   const [totalCount,   setTotalCount]   = useState(0);
 
-  const [isLoanModalOpen,   setIsLoanModalOpen]   = useState(false);
-  const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
+  const [totalSavings, setTotalSavings] = useState(0);
+  const [isLoanModalOpen, setIsLoanModalOpen] = useState(false);
 
   /* ── Verification & Active Loan Logic ── */
   const profile = user;
-  const verificationStatus = profile?.verificationStatus || 'unverified';
-  const isVerified = verificationStatus === 'verified';
+  const isVerified = isOfficerPosition(profile?.position);
   const hasActiveLoan = loans.some(l => l.status === 'active' || l.status === 'pending' || l.status === 'overdue');
   const nextDueLoan = loans.find(l => l.status === 'active' && l.nextPaymentDate);
-  const totalSavings = profile?.totalSavings || 0;
+
+  // Redirect non-officers away from this page
+  useEffect(() => {
+    if (profile && !isVerified) {
+      navigate('/home', { replace: true });
+    }
+  }, [profile, isVerified, navigate]);
 
   const fetchAll = useCallback(async () => {
     setDataLoading(true);
     const token = localStorage.getItem('token');
+    const headers = { Authorization: `Bearer ${token}` };
     try {
-      const res = await fetch(`${API}/api/loans/my-loans?page=${page}&limit=${LIMIT}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setLoans(data.loans || []);
-        setStats(data.stats || { totalBorrowed: 0, remainingBalance: 0, activeCount: 0 });
-        setTotalCount(data.pagination?.totalItems || 0);
+      const [loansRes, statsRes] = await Promise.all([
+        fetch(`${API}/api/loans/my-loans?page=${page}&limit=${LIMIT}`, { headers }),
+        fetch(`${API}/api/savings/stats`, { headers }),
+      ]);
+      
+      const loansData = await loansRes.json();
+      const statsData = await statsRes.json();
+
+      if (loansRes.ok && loansData.success) {
+        setLoans(loansData.loans || []);
+        setStats(loansData.stats || { totalBorrowed: 0, remainingBalance: 0, activeCount: 0 });
+        setTotalCount(loansData.pagination?.totalItems || 0);
         setError(null);
       } else {
-        setError(data.message || 'Failed to fetch loans');
+        setError(loansData.message || 'Failed to fetch loans');
+      }
+
+      if (statsRes.ok && statsData.success) {
+        setTotalSavings(statsData.totalSavings || 0);
       }
     } catch {
       setError('Connection failure');
@@ -75,25 +88,35 @@ export default function Loans() {
 
   const handleApplyClick = () => {
     if (!isVerified) {
-      setIsVerifyModalOpen(true);
+      navigate('/settings');
+    } else if (totalSavings < 1000) {
+      // Should already be handled by UI disabling, but adding as fallback
+      setError('Insufficient savings to apply for a loan.');
     } else {
       setIsLoanModalOpen(true);
     }
   };
 
   const handleLoanClose = () => { setIsLoanModalOpen(false); fetchAll(); };
-  const handleVerificationClose = () => setIsVerifyModalOpen(false);
 
-  const renderLockedBanner = () => (
-    <div className="ul-locked-banner">
+
+  const renderLockedNotice = () => (
+    <div className="ul-locked-banner user-fade-in">
       <div className="ul-locked-content">
-        <div className="ul-locked-icon"><LockIcon size={20} /></div>
+        <div className="ul-locked-icon">
+          <LockIcon size={20} />
+        </div>
         <div className="ul-locked-text">
-          <p className="ul-locked-title">Officer Verification Required</p>
-          <p className="ul-locked-sub">Only verified church officers can apply for loans. Please complete your verification in Settings.</p>
+          <h3 className="ul-locked-title">Loan Application Locked</h3>
+          <p className="ul-locked-sub">
+            To apply for a loan, you must have a minimum savings balance of <strong>₱1,000</strong>.
+            Please fund your savings account first.
+          </p>
         </div>
       </div>
-      <button className="ul-locked-action-btn" onClick={() => navigate('/settings')}>Get Verified</button>
+      <button className="ul-locked-action-btn" onClick={() => navigate('/savings')}>
+        Open / Fund Savings
+      </button>
     </div>
   );
 
@@ -110,21 +133,46 @@ export default function Loans() {
       <div className="ul-section-head">
         <div className="ul-section-title">Available loan types</div>
       </div>
-      <div className="ul-loan-types-grid">
+      <div className="ul-loan-types">
         {[
-          { type: 'Personal Loan', term: 'Up to 24 months', rate: '5% p.a.', icon: <Wallet size={20} color="#155DFC" /> },
-          { type: 'Emergency Loan', term: 'Up to 12 months', rate: '3% p.a.', icon: <ShieldAlert size={20} color="#155DFC" /> },
-          { type: 'Short-term Loan', term: 'Up to 6 months', rate: '2% p.a.', icon: <Clock size={20} color="#155DFC" /> }
+          {
+            type: 'Personal Loan',
+            description: 'For any personal need such as education, home improvement, or family expenses.',
+            term: '3 - 12 months',
+            rate: '2% / month',
+            maxAmount: 'Up to 2× savings',
+            icon: <Wallet size={20} color="#1E3A8A" />,
+            variant: 'blue'
+          },
+          {
+            type: 'Emergency Loan',
+            description: 'For urgent and unforeseen situations such as medical emergencies or calamities.',
+            term: '1 - 6 months',
+            rate: '1.5% / month',
+            maxAmount: 'Up to 1.5× savings',
+            icon: <ShieldAlert size={20} color="#B45309" />,
+            variant: 'amber'
+          },
+          {
+            type: 'Short-term Loan',
+            description: 'Quick cash for immediate needs with faster processing and shorter repayment.',
+            term: '1 - 3 months',
+            rate: '1% / month',
+            maxAmount: 'Up to 1× savings',
+            icon: <Clock size={20} color="#0D7E6A" />,
+            variant: 'teal'
+          }
         ].map(lt => (
-          <div key={lt.type} className="ul-loan-type-card">
-            <div className="ul-lt-header">
-              <div className="ul-lt-icon" style={{ background: 'rgba(21, 93, 252, 0.1)' }}>{lt.icon}</div>
-              <p className="ul-lt-title">{lt.type}</p>
+          <div key={lt.type} className="ul-lt-card">
+            <div className={`ul-lt-icon ul-lt-icon--${lt.variant}`}>{lt.icon}</div>
+            <div>
+              <p className="ul-lt-name">{lt.type}</p>
+              <p className="ul-lt-desc">{lt.description}</p>
             </div>
             <hr className="ul-lt-divider" />
             <div className="ul-lt-row"><span className="ul-lt-key">Term</span><span className="ul-lt-val">{lt.term}</span></div>
             <div className="ul-lt-row"><span className="ul-lt-key">Interest rate</span><span className="ul-lt-val">{lt.rate}</span></div>
-            <div className="ul-lt-row"><span className="ul-lt-key">Amount basis</span><span className="ul-lt-val">Savings balance</span></div>
+            <div className="ul-lt-row"><span className="ul-lt-key">Max loanable</span><span className="ul-lt-val">{lt.maxAmount}</span></div>
           </div>
         ))}
       </div>
@@ -132,7 +180,7 @@ export default function Loans() {
   );
 
   const renderPageSkeleton = () => (
-    <div className="ul-main-content">
+    <div className="ul-page-container">
       <div className="ul-page-header">
         <div>
           <div className="ul-skeleton" style={{ height: '26px', width: '120px', marginBottom: '8px' }} />
@@ -141,7 +189,7 @@ export default function Loans() {
         <div className="ul-skeleton" style={{ height: '38px', width: '140px', borderRadius: '10px' }} />
       </div>
       <div className="ul-skeleton" style={{ height: '42px', borderRadius: '0 8px 8px 0', marginBottom: '20px' }} />
-      <div className="ul-stats" style={{ marginBottom: '20px' }}>
+      <div className="ul-stats-grid" style={{ marginBottom: '20px' }}>
         {[1, 2, 3].map(i => (
           <div key={i} className="ul-stat-card" style={{ gap: '8px' }}>
             <div className="ul-skeleton" style={{ height: '11px', width: '60%' }} />
@@ -156,7 +204,7 @@ export default function Loans() {
   return (
     <>
       {dataLoading ? renderPageSkeleton() : (
-        <div className="ul-main-content">
+        <div className="ul-page-container">
           {/* Header */}
           <div className="ul-page-header">
             <div>
@@ -164,45 +212,36 @@ export default function Loans() {
               <p className="ul-page-subtitle">Manage your loan applications and payments</p>
             </div>
 
-            {isVerified && !hasActiveLoan ? (
-              <button className="ul-apply-btn" onClick={handleApplyClick}>
+            {isVerified && !hasActiveLoan && totalSavings >= 1000 ? (
+              <button className="ul-apply-btn user-fade-in" onClick={handleApplyClick}>
                 + Apply for Loan
               </button>
+            ) : isVerified && !hasActiveLoan && totalSavings < 1000 ? (
+              <div className="ul-apply-btn-disabled" title="You need at least ₱1,000 in savings to apply for a loan">
+                <LockIcon size={16} /> Apply for Loan
+              </div>
             ) : isVerified && hasActiveLoan ? (
               <div className="ul-apply-btn-disabled" title="You already have an active or pending loan">
-                <LockIcon /> Apply for Loan
+                <LockIcon size={16} /> Apply for Loan
               </div>
-            ) : (
-              <button
-                className="ul-apply-btn ul-apply-btn--locked"
-                onClick={handleApplyClick}
-                title={
-                  verificationStatus === 'pending' ? 'Your verification is under review'
-                    : verificationStatus === 'rejected' ? 'Verification rejected — resubmit below'
-                      : 'Officer verification required'
-                }
-              >
-                <LockIcon />
-                {verificationStatus === 'pending' ? 'Verification Pending' : 'Apply for Loan'}
-              </button>
-            )}
+            ) : null}
           </div>
 
           {/* Error */}
           {error && (
-            <div className="user-loans-error-banner">
+            <div className="ul-error-banner">
               <span>Error {error}</span>
-              <button onClick={fetchAll} className="user-loans-retry-btn">Retry</button>
+              <button onClick={fetchAll} className="ul-retry-btn">Retry</button>
             </div>
           )}
 
           {!error && (
             <>
-              {!isVerified && renderLockedBanner()}
+              {isVerified && totalSavings < 1000 && renderLockedNotice()}
               {isVerified && hasActiveLoan && renderPolicyBar()}
 
               {/* Stats */}
-              <div className="ul-stats">
+              <div className="ul-stats-grid">
                 <div className="ul-stat-card">
                   <label className="ul-stat-label">Total Borrowed</label>
                   <div className="ul-stat-value">{fmt(stats.totalBorrowed)}</div>
@@ -217,7 +256,7 @@ export default function Loans() {
                       : '—'}
                   </div>
                 </div>
-                <div className={`ul-stat-card ${nextDueLoan && nextDueLoan.nextPaymentDate && new Date(nextDueLoan.nextPaymentDate) < new Date() ? 'ul-stat-card--warn' : ''}`}>
+                <div className={`ul-stat-card ${nextDueLoan && nextDueLoan.nextPaymentDate && new Date(nextDueLoan.nextPaymentDate) < new Date() ? 'ul-stat-card--overdue' : ''}`}>
                   {nextDueLoan ? (
                     <>
                       <label className="ul-stat-label">Next Payment</label>
@@ -247,7 +286,13 @@ export default function Loans() {
                       </div>
                       <div className="ul-empty-title">No active loan</div>
                       <p className="ul-empty-sub">You haven't taken out a loan yet. Apply now and get funds disbursed directly to your account.</p>
-                      <button className="ul-empty-apply-btn" onClick={handleApplyClick}>Apply for a loan</button>
+                      {totalSavings >= 1000 ? (
+                        <button className="ul-empty-apply-btn user-fade-in" onClick={handleApplyClick}>Apply for a loan</button>
+                      ) : (
+                        <div className="ul-empty-apply-btn-disabled" title="You need at least ₱1,000 in savings to apply for a loan">
+                          <LockIcon size={14} /> Apply for a loan
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="ul-loans-list user-fade-in">
@@ -410,7 +455,7 @@ export default function Loans() {
         existingLoanBalance={stats.remainingBalance || 0}
         hasOverdueLoans={loans.some(l => l.status === 'overdue')}
       />
-      <VerificationModal isOpen={isVerifyModalOpen} onClose={handleVerificationClose} />
+
     </>
   );
 }

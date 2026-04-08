@@ -47,7 +47,10 @@ router.post('/register',
   async (req, res) => {
     try {
       console.log('📝 Registration payload:', req.body);
-      const { email, password, fullName, phone, branch, position, gender, birthday } = req.body;
+      const { email, password, fullName, phone, branch, position, gender, birthday, role, churchId } = req.body;
+
+      // Determine position based on role selection
+      const finalPosition = (role === 'officer' && position) ? position : 'Member';
 
       const existingUser = await users.findOne({ email });
       if (existingUser) {
@@ -63,7 +66,8 @@ router.post('/register',
 
       const passwordHash = await bcrypt.hash(password, 10);
       await pendingRegistrations.insertOne({
-        email, passwordHash, fullName, phone, branch, position, gender, birthday,
+        email, passwordHash, fullName, phone, branch, position: finalPosition,
+        churchId: churchId || null, gender, birthday,
         isVerified: false, failedLoginAttempts: 0, lockUntil: null,
         isPermanentlyLocked: false, createdAt: new Date()
       });
@@ -259,6 +263,7 @@ router.post('/login',
           : {
               email: account.email, fullName: account.fullName, full_name: account.fullName,
               phone: account.phone, branch: account.branch, position: account.position,
+              churchId: account.churchId || null,
               gender: account.gender, birthday: account.birthday, created_at: account.createdAt,
               role: 'user'
             }

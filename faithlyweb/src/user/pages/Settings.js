@@ -2,13 +2,11 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 
 import '../styles/Settings.css';
-// import Sidebar from '../components/Sidebar'; // Moved to UserLayout
 import VerifyEmailModal from '../components/VerifyEmail';
-import VerificationModal from '../components/OfficerVerification';
 import { useTheme } from '../../context/ThemeContext';
 
 import API from '../../utils/api';
-import { CalendarDays, Circle, Edit, Mail, User, XCircle } from 'lucide-react';
+import { CalendarDays, Circle, Edit, Mail, User, XCircle, ChevronDown, ChevronUp } from 'lucide-react';
 
 
 /* ─── Community options ──────────────────────────────────────────────── */
@@ -51,11 +49,6 @@ export default function Settings() {
   const [showEmailOtp, setShowEmailOtp] = useState(false);
   const [pendingEmail, setPendingEmail] = useState('');
 
-  /* ── Officer Verification ────────────────────────────────────────────── */
-  const [verificationStatus,  setVerificationStatus]  = useState(null);
-  const [showVerifyModal,     setShowVerifyModal]      = useState(false);
-  const [showAskOfficerModal, setShowAskOfficerModal]  = useState(false);
-
   /* ── Other settings ──────────────────────────────────────────────────── */
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [smsNotifications,   setSmsNotifications]   = useState(false);
@@ -63,23 +56,8 @@ export default function Settings() {
   /* ── Collapsible info ────────────────────────────────────────────────── */
   const [infoExpanded, setInfoExpanded] = useState(false);
 
-  /* ── Fetch verification status on mount ──────────────────────────────── */
-  useEffect(() => {
-    const fetchVerification = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const res   = await fetch(`${API}/api/verification/status`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data  = await res.json();
-        if (res.ok && data.success) setVerificationStatus(data.verificationStatus);
-        else setVerificationStatus('unverified');
-      } catch {
-        setVerificationStatus('unverified');
-      }
-    };
-    fetchVerification();
-  }, []);
+  /* ── Derived role from profile ───────────────────────────────────────── */
+  const isOfficer = profile?.role === 'officer';
 
   /* ── Handlers ────────────────────────────────────────────────────────── */
   const handleEditChange = (field, value) => {
@@ -164,16 +142,6 @@ export default function Settings() {
     setEmailNotifications(true); setSmsNotifications(false);
   };
 
-  /* Re-fetch verification after modal closes */
-  const handleVerifyModalClose = async () => {
-    setShowVerifyModal(false);
-    try {
-      const token = localStorage.getItem('token');
-      const res   = await fetch(`${API}/api/verification/status`, { headers: { Authorization: `Bearer ${token}` } });
-      const data  = await res.json();
-      if (res.ok && data.success) setVerificationStatus(data.verificationStatus);
-    } catch {}
-  };
 
   /* ── Derived display values ──────────────────────────────────────────── */
   const displayName      = profile?.fullName || 'Member';
@@ -190,30 +158,6 @@ export default function Settings() {
     ? (() => { try { return new Date(dateOfBirthRaw).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }); } catch { return dateOfBirthRaw; } })()
     : 'Not set';
 
-  /* ── Verification badge ──────────────────────────────────────────────── */
-  const renderVerificationBadge = () => {
-    if (verificationStatus === null || verificationStatus === 'verified') return null;
-    const STATUS = {
-      verified:   { cls: 'user-pi-verify-pill--verified',   label: 'Officer Verified',       actionLabel: null },
-      pending:    { cls: 'user-pi-verify-pill--pending',     label: 'Verification Pending',   actionLabel: null },
-      rejected:   { cls: 'user-pi-verify-pill--rejected',    label: 'Verification Rejected',  actionLabel: 'Resubmit' },
-      unverified: { cls: 'user-pi-verify-pill--unverified',  label: 'Are you an officer?',    actionLabel: 'Get verified' },
-    };
-    const { cls, label, actionLabel } = STATUS[verificationStatus] || STATUS.unverified;
-    return (
-      <div className={`user-pi-verify-pill ${cls}`}>
-        <span className="user-pi-verify-pill__label">{label}</span>
-        {actionLabel && (
-          <>
-            <span className="user-pi-verify-pill__sep" aria-hidden="true" />
-            <button className="user-pi-verify-pill__action" onClick={() => setShowAskOfficerModal(true)}>
-              {actionLabel}
-            </button>
-          </>
-        )}
-      </div>
-    );
-  };
 
   /* ════════════════════════════════════════════════════════════════════
      RENDER
@@ -231,33 +175,9 @@ export default function Settings() {
         />
       )}
 
-      {/* "Are you an officer?" Confirmation Modal */}
-      {showAskOfficerModal && (
-        <div className="user-logout-modal-overlay" style={{ zIndex: 1100 }}>
-          <div className="user-logout-modal-content" style={{ maxWidth: 380, textAlign: 'center' }}>
-            <div style={{ width: 48, height: 48, borderRadius: 12, background: '#dbeafe', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
-              <Circle size={24} color="#2563eb" />
-            </div>
-            <h2 className="user-logout-modal-title" style={{ marginBottom: 8 }}>Are you an officer?</h2>
-            <p className="user-logout-modal-message" style={{ marginBottom: 20 }}>
-              Officer verification unlocks access to Savings &amp; Loans features. Only verified church officers may proceed.
-            </p>
-            <div className="user-logout-modal-actions">
-              <button className="user-logout-modal-cancel" onClick={() => setShowAskOfficerModal(false)}>No, I'm a member</button>
-              <button className="user-logout-modal-confirm" onClick={() => { setShowAskOfficerModal(false); setShowVerifyModal(true); }}>Yes, verify me</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Officer Verification Modal */}
-      <VerificationModal
-        isOpen={showVerifyModal}
-        onClose={handleVerifyModalClose}
-      />
 
       {/* Main Content */}
-      <div className="user-main-content">
+      <div className="user-settings-page-wrapper">
         <div className="user-settings-page-header">
           <h1 className="user-settings-page-title">Settings</h1>
           <p className="user-settings-page-subtitle">Manage your account preferences</p>
@@ -302,12 +222,11 @@ export default function Settings() {
                 <span className="user-pi-card-name">{displayName}</span>
                 <div className="user-pi-card-badges">
                   <span className="user-pi-badge user-pi-badge-member">
-                    {verificationStatus === 'verified' ? 'Officer' : 'Member'}
+                    {isOfficer ? 'Officer' : 'Member'}
                   </span>
                   <span className="user-pi-badge user-pi-badge-level">
-                    {verificationStatus === 'verified' ? 'Level 2' : 'Level 1'}
+                    {isOfficer ? 'Level 2' : 'Level 1'}
                   </span>
-                  {renderVerificationBadge()}
                 </div>
               </div>
 
@@ -317,7 +236,7 @@ export default function Settings() {
                 onClick={() => setInfoExpanded(prev => !prev)}
                 title={infoExpanded ? 'Collapse' : 'Expand'}
               >
-                <Edit size={18} color="white" />
+                {infoExpanded ? <ChevronUp size={18} color="white" /> : <ChevronDown size={18} color="white" />}
               </button>
 
             </div>

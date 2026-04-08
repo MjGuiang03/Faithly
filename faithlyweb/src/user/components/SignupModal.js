@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import API from '../../utils/api';
-import { ArrowLeft, CalendarDays, CheckCircle, ChevronDown, Eye, EyeOff, Lock, Mail, Phone, User } from 'lucide-react';
+import { ArrowLeft, CalendarDays, ChevronDown, Eye, EyeOff, Phone } from 'lucide-react';
 import { toast } from 'sonner';
 
 import imgPuacLogo from "../../assets/puaclogo.png";
@@ -120,6 +120,36 @@ const validators = {
     if (!value) return 'Confirm password is required';
     if (value !== password) return 'Passwords do not match';
     return '';
+  },
+  officerPosition(value) {
+    if (!value) return 'Please select your position';
+    return '';
+  },
+  churchId(value, position) {
+    if (!value) return 'Church ID is required';
+    if (!/^\d{2}-\d{2}-\d{2}$/.test(value)) return 'Format must be XX-XX-XX (e.g. 00-00-01)';
+    const POSITION_RANGES = {
+      'Deacon':              { prefix: '00-00' },
+      'Local Evangelist':    { prefix: '00-01' },
+      'District Evangelist': { prefix: '00-02' },
+      'National Evangelist': { prefix: '00-03' },
+      'Assistant Priest':    { prefix: '00-04' },
+      'Priest':              { prefix: '00-05' },
+      'Elder':               { prefix: '00-06' },
+      'District Elder':      { prefix: '00-06' },
+      'Bishop':              { prefix: '00-07' },
+      'District Bishop':     { prefix: '00-08' },
+      'National Bishop':     { prefix: '00-09' },
+      'Apostle':             { prefix: '00-10' },
+    };
+    const range = POSITION_RANGES[position];
+    if (!range) return 'Select a valid position first';
+    const parts = value.split('-');
+    const idPrefix = parts[0] + '-' + parts[1];
+    if (idPrefix !== range.prefix) {
+      return `Church ID must start with ${range.prefix} for ${position}`;
+    }
+    return '';
   }
 };
 
@@ -178,7 +208,8 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
   const [formData, setFormData] = useState({
     firstName: '', lastName: '', email: '', phone: '',
     gender: '', birthday: '', community: '',
-    password: '', confirmPassword: ''
+    password: '', confirmPassword: '',
+    role: 'member', officerPosition: '', churchId: ''
   });
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
@@ -208,6 +239,8 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
       error = validators.confirmPassword(value, password);
     } else if (name === 'firstName' || name === 'lastName') {
       error = validators.name(value, name === 'firstName' ? 'First name' : 'Last name');
+    } else if (name === 'churchId') {
+      error = validators.churchId(value, formData.officerPosition);
     } else if (validators[name]) {
       error = validators[name](value);
     }
@@ -226,6 +259,9 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
     if (name === 'phone') {
       sanitized = value.replace(/\D/g, '').slice(0, 10);
     }
+    if (name === 'churchId') {
+      sanitized = value.replace(/[^\d-]/g, '').slice(0, 8);
+    }
     if (name === 'birthday' && sanitized) {
       const age = calculateAge(sanitized);
       setCalculatedAge(age >= 0 && age <= MAX_AGE ? age : null);
@@ -235,6 +271,11 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
       const updated = { ...prev, [name]: sanitized };
       if (name === 'password' && prev.confirmPassword) {
         validateField('confirmPassword', prev.confirmPassword, sanitized);
+      }
+      // Re-validate churchId when position changes
+      if (name === 'officerPosition' && prev.churchId) {
+        const churchIdErr = validators.churchId(prev.churchId, sanitized);
+        setErrors(p => ({ ...p, churchId: churchIdErr }));
       }
       return updated;
     });
@@ -264,8 +305,13 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
         birthday: formData.birthday,
         gender: formData.gender,
         branch: formData.community,
-        password: formData.password
+        password: formData.password,
+        role: formData.role,
       };
+      if (formData.role === 'officer') {
+        submitData.position = formData.officerPosition;
+        submitData.churchId = formData.churchId;
+      }
       const response = await fetch(`${API}/api/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -286,12 +332,21 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
 
   const hasPasswordErrors = Array.isArray(errors.password) && errors.password.length > 0;
 
+  const isOfficerFieldsValid = formData.role === 'member' || (
+    formData.officerPosition && formData.churchId &&
+    !errors.officerPosition && !errors.churchId
+  );
+
   const isFormValid =
     formData.firstName && formData.lastName && formData.email &&
     formData.phone && formData.birthday && formData.gender &&
     formData.community && formData.password && formData.confirmPassword &&
-    Object.values(errors).every(err => Array.isArray(err) ? err.length === 0 : !err) &&
-    isAllAgreed;
+    Object.entries(errors).every(([key, err]) => {
+      // Skip officer fields validation when role is member
+      if (formData.role === 'member' && (key === 'officerPosition' || key === 'churchId')) return true;
+      return Array.isArray(err) ? err.length === 0 : !err;
+    }) &&
+    isAllAgreed && isOfficerFieldsValid;
 
   return (
     <div className="user-signup-modal-overlay">
@@ -316,12 +371,11 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
             <div className="user-signup-form-group">
               <label htmlFor="firstName" className="user-signup-form-label">First Name:</label>
               <div className="user-signup-input-wrapper">
-                <User className="user-signup-input-icon" size={20} />
                 <input
                   id="firstName" name="firstName"
                   value={formData.firstName}
                   onChange={handleChange} onBlur={handleBlur}
-                  className={`user-signup-form-input${touched.firstName && errors.firstName ? ' user-input-error' : (touched.firstName && !errors.firstName ? ' user-input-success' : '')}`}
+                  className={`user-signup-form-input user-signup-form-input--no-icon${touched.firstName && errors.firstName ? ' user-input-error' : (touched.firstName && !errors.firstName ? ' user-input-success' : '')}`}
                   placeholder="Enter your first name"
                   autoComplete="given-name"
                 />
@@ -334,12 +388,11 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
             <div className="user-signup-form-group">
               <label htmlFor="lastName" className="user-signup-form-label">Last Name:</label>
               <div className="user-signup-input-wrapper">
-                <User className="user-signup-input-icon" size={20} />
                 <input
                   id="lastName" name="lastName"
                   value={formData.lastName}
                   onChange={handleChange} onBlur={handleBlur}
-                  className={`user-signup-form-input${touched.lastName && errors.lastName ? ' user-input-error' : (touched.lastName && !errors.lastName ? ' user-input-success' : '')}`}
+                  className={`user-signup-form-input user-signup-form-input--no-icon${touched.lastName && errors.lastName ? ' user-input-error' : (touched.lastName && !errors.lastName ? ' user-input-success' : '')}`}
                   placeholder="Enter your last name"
                   autoComplete="family-name"
                 />
@@ -355,12 +408,11 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
             <div className="user-signup-form-group">
               <label htmlFor="email" className="user-signup-form-label">Email:</label>
               <div className="user-signup-input-wrapper">
-                <Mail className="user-signup-input-icon" size={20} />
                 <input
                   id="email" name="email" type="email"
                   value={formData.email}
                   onChange={handleChange} onBlur={handleBlur}
-                  className={`user-signup-form-input${touched.email && errors.email ? ' user-input-error' : (touched.email && !errors.email ? ' user-input-success' : '')}`}
+                  className={`user-signup-form-input user-signup-form-input--no-icon${touched.email && errors.email ? ' user-input-error' : (touched.email && !errors.email ? ' user-input-success' : '')}`}
                   placeholder="your.email@example.com"
                   autoComplete="email"
                 />
@@ -458,7 +510,6 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
             <div className="user-signup-form-group">
               <label className="user-signup-form-label">Community:</label>
               <div className="user-signup-select-wrapper">
-                <ChevronDown className="user-signup-select-icon" size={20} />
                 <CommunitySelect value={formData.community} onChange={handleChange} />
                 <ChevronDown className="user-signup-select-dropdown" size={20} />
               </div>
@@ -467,6 +518,87 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
               )}
             </div>
           </div>
+
+          {/* ROW 3.5: Role Selection */}
+          <div className="user-signup-form-group">
+            <label className="user-signup-form-label">I am a:</label>
+            <div className="user-role-radio-group">
+              {[
+                { value: 'member', label: 'Member' },
+                { value: 'officer', label: 'Officer' },
+              ].map(({ value, label }) => (
+                <label
+                  key={value}
+                  className={`user-role-radio-card${formData.role === value ? ' user-role-radio-card--selected' : ''}`}
+                >
+                  <input
+                    type="radio"
+                    name="role"
+                    value={value}
+                    checked={formData.role === value}
+                    onChange={handleChange}
+                    className="user-role-radio-input"
+                  />
+                  <span className="user-role-radio-dot" />
+                  <span className="user-role-radio-text">{label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Officer Fields — conditional */}
+          {formData.role === 'officer' && (
+            <div className="user-signup-officer-fields">
+              <div className="user-signup-form-row">
+                <div className="user-signup-form-group">
+                  <label htmlFor="officerPosition" className="user-signup-form-label">Position:</label>
+                  <div className="user-signup-select-wrapper">
+                    <select
+                      id="officerPosition" name="officerPosition"
+                      value={formData.officerPosition}
+                      onChange={handleChange} onBlur={handleBlur}
+                      className={`user-signup-form-select${touched.officerPosition && errors.officerPosition ? ' user-input-error' : ''}`}
+                    >
+                      <option value="">Select your position</option>
+                      <option value="Deacon">Deacon</option>
+                      <option value="Local Evangelist">Local Evangelist</option>
+                      <option value="District Evangelist">District Evangelist</option>
+                      <option value="National Evangelist">National Evangelist</option>
+                      <option value="Assistant Priest">Assistant Priest</option>
+                      <option value="Priest">Priest</option>
+                      <option value="Elder">Elder</option>
+                      <option value="District Elder">District Elder</option>
+                      <option value="Bishop">Bishop</option>
+                      <option value="District Bishop">District Bishop</option>
+                      <option value="National Bishop">National Bishop</option>
+                      <option value="Apostle">Apostle</option>
+                    </select>
+                    <ChevronDown className="user-signup-select-dropdown" size={20} />
+                  </div>
+                  {touched.officerPosition && errors.officerPosition && (
+                    <span className="user-signup-error-text">{errors.officerPosition}</span>
+                  )}
+                </div>
+
+                <div className="user-signup-form-group">
+                  <label htmlFor="churchId" className="user-signup-form-label">Church ID:</label>
+                  <div className="user-signup-input-wrapper">
+                    <input
+                      id="churchId" name="churchId"
+                      value={formData.churchId}
+                      onChange={handleChange} onBlur={handleBlur}
+                      className={`user-signup-form-input user-signup-form-input--no-icon${touched.churchId && errors.churchId ? ' user-input-error' : (touched.churchId && !errors.churchId && formData.churchId ? ' user-input-success' : '')}`}
+                      placeholder="00-00-00"
+                      autoComplete="off"
+                    />
+                  </div>
+                  {touched.churchId && errors.churchId && (
+                    <span className="user-signup-error-text">{errors.churchId}</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Password Requirements Box */}
           <div className="user-password-requirements-box">
@@ -495,14 +627,13 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
             <div className="user-signup-form-group">
               <label htmlFor="password" className="user-signup-form-label">Password:</label>
               <div className="user-signup-input-wrapper">
-                <Lock className="user-signup-input-icon" size={20} />
                 <input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   name="password"
                   value={formData.password}
                   onChange={handleChange} onBlur={handleBlur}
-                  className={`user-signup-form-input${touched.password && hasPasswordErrors ? ' user-input-error' : (touched.password && !hasPasswordErrors && formData.password ? ' user-input-success' : '')}`}
+                  className={`user-signup-form-input user-signup-form-input--no-icon${touched.password && hasPasswordErrors ? ' user-input-error' : (touched.password && !hasPasswordErrors && formData.password ? ' user-input-success' : '')}`}
                   placeholder="Create a password"
                   autoComplete="new-password"
                 />
@@ -515,14 +646,13 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
             <div className="user-signup-form-group">
               <label htmlFor="confirmPassword" className="user-signup-form-label">Confirm Password:</label>
               <div className="user-signup-input-wrapper">
-                <CheckCircle className="user-signup-input-icon" size={20} />
                 <input
                   id="confirmPassword"
                   type={showConfirmPassword ? 'text' : 'password'}
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange} onBlur={handleBlur}
-                  className={`user-signup-form-input${touched.confirmPassword && errors.confirmPassword ? ' user-input-error' : (touched.confirmPassword && !errors.confirmPassword && formData.confirmPassword ? ' user-input-success' : '')}`}
+                  className={`user-signup-form-input user-signup-form-input--no-icon${touched.confirmPassword && errors.confirmPassword ? ' user-input-error' : (touched.confirmPassword && !errors.confirmPassword && formData.confirmPassword ? ' user-input-success' : '')}`}
                   placeholder="Confirm your password"
                   autoComplete="new-password"
                 />
@@ -545,7 +675,7 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
               onClick={(e) => {
                 e.preventDefault();
                 if (!isAllAgreed) {
-                  toast.info('Please read and agree to the Terms and Privacy Policy below to proceed.');
+                  toast.info('You must read and agree to the Terms and Privacy Policy before proceeding.');
                 }
               }}
               className="user-signup-checkbox"

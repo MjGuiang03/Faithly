@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { toast } from 'sonner';
 import {
   LayoutGrid, Bell, Users, Heart,
@@ -11,15 +11,17 @@ import '../styles/AdminSidebar.css';
 import { useTheme } from '../../context/ThemeContext';
 
 import API from '../../utils/api';
+import { processNewNotifications } from '../../utils/desktopNotify';
 
 export default function AdminSidebar() {
   const { theme, toggleTheme } = useTheme();
   const navigate  = useNavigate();
   const location  = useLocation();
   const [unreadCount, setUnreadCount] = useState(0);
+  const prevNotifIdsRef = useRef(new Set());
   const [pendingVerificationsCount, setPendingVerificationsCount] = useState(0);
   const [isMembersOpen,  setIsMembersOpen]  = useState(() =>
-    location.pathname.startsWith('/admin/members') || location.pathname.startsWith('/admin/officerverification')
+    location.pathname.startsWith('/admin/members')
   );
   const [isFinanceOpen,  setIsFinanceOpen]  = useState(() =>
     location.pathname.startsWith('/admin/donations') || location.pathname.startsWith('/admin/attendance')
@@ -58,34 +60,29 @@ export default function AdminSidebar() {
         const data = await res.json();
         if (data.success) {
           const readIds = new Set(data.readIds || []);
-          const count = (data.notifications || []).filter(n => !readIds.has(n.id)).length;
+          const allNotifs = data.notifications || [];
+          const count = allNotifs.filter(n => !readIds.has(n.id)).length;
           setUnreadCount(count);
+
+          /* ── Desktop push notifications ── */
+          const unreadNotifs = allNotifs.filter(n => !readIds.has(n.id));
+          prevNotifIdsRef.current = processNewNotifications(
+            prevNotifIdsRef.current,
+            unreadNotifs,
+            '/admin/notification',
+            (path) => { window.location.href = path; }
+          );
         }
       } catch { /* silent */ }
     };
 
     calcUnread();
     
-    const fetchPendingVerifications = async () => {
-      try {
-        const token = localStorage.getItem('adminToken');
-        if (!token) return;
-        const res = await fetch(`${API}/api/admin/verifications?status=pending`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) return;
-        const data = await res.json();
-        if (data.success) {
-          setPendingVerificationsCount(data.stats?.pending || 0);
-        }
-      } catch { /* silent */ }
-    };
 
-    fetchPendingVerifications();
 
-    const onUpdate = () => { calcUnread(); fetchPendingVerifications(); };
+    const onUpdate = () => { calcUnread(); };
     window.addEventListener('admin-notif-read-update', onUpdate);
-    const intervalId = setInterval(() => { calcUnread(); fetchPendingVerifications(); }, 30000);
+    const intervalId = setInterval(() => { calcUnread(); }, 30000);
     return () => {
       window.removeEventListener('admin-notif-read-update', onUpdate);
       clearInterval(intervalId);
@@ -133,7 +130,7 @@ export default function AdminSidebar() {
         <div className={`admin-sidebar-dropdown ${isMembersOpen ? 'open' : ''}`}>
           <button
             onClick={() => setIsMembersOpen(!isMembersOpen)}
-            className={`admin-sidebar-nav-button ${isGroupActive('/admin/members', '/admin/officerverification', '/admin/branches') ? 'active' : ''}`}
+            className={`admin-sidebar-nav-button ${isGroupActive('/admin/members', '/admin/branches') ? 'active' : ''}`}
           >
             <Users size={20} />
             <span>People</span>
@@ -151,16 +148,7 @@ export default function AdminSidebar() {
                 <span>Member List</span>
               </button>
               <button
-                onClick={() => navigate('/admin/officerverification')}
-                className={`admin-sidebar-sub-button ${isActive('/admin/officerverification') ? 'active' : ''}`}
-              >
-                <span>Officer Verification</span>
-                {pendingVerificationsCount > 0 && (
-                  <span className="sidebar-notif-badge">{pendingVerificationsCount}</span>
-                )}
-              </button>
-              <button
-                onClick={() => navigate('/admin/branches')}
+                onClick={ () => navigate( '/admin/branches' ) }
                 className={`admin-sidebar-sub-button ${isActive('/admin/branches') ? 'active' : ''}`}
               >
                 <span>Branches</span>

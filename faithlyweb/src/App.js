@@ -32,7 +32,7 @@ import AdminAttendance from './admin/pages/AdminAttendance';
 import AdminBranches from './admin/pages/AdminBranches';
 import AdminSettings from './admin/pages/AdminSettings';
 import AdminNotifications from './admin/pages/AdminNotification';
-import AdminOfficerVerification from './admin/pages/AdminOfficerVerification';
+
 import AdminReports from './admin/pages/AdminReports';
 import AdminAnnouncements from './admin/pages/AdminAnnouncements';
 import AdminUserManagement from './admin/pages/AdminUserManagement';
@@ -93,7 +93,7 @@ export default function App() {
             >
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
               <Route path="/admin/notification" element={<AdminNotifications />} />
-              <Route path="/admin/officerverification" element={<AdminOfficerVerification />} />
+
               <Route path="/admin/members" element={<AdminMembers />} />
               <Route path="/admin/donations" element={<AdminDonations />} />
               <Route path="/admin/attendance" element={<AdminAttendance />} />

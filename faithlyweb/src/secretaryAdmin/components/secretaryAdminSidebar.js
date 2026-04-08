@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import {
@@ -11,6 +11,8 @@ import '../styles/secretaryAdminSidebar.css';
 import { useTheme } from '../../context/ThemeContext';
 
 import API from '../../utils/api';
+import { processNewNotifications } from '../../utils/desktopNotify';
+import NotificationPrompt from '../../components/NotificationPrompt';
 
 export default function SecretaryAdminSidebar() {
     const location = useLocation();
@@ -19,6 +21,7 @@ export default function SecretaryAdminSidebar() {
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     const currentPath = location.pathname;
     const [unreadCount, setUnreadCount] = useState(0);
+    const prevNotifIdsRef = useRef(new Set());
 
     /* ── Fetch admin unread count ── */
     useEffect(() => {
@@ -34,8 +37,18 @@ export default function SecretaryAdminSidebar() {
                 const data = await res.json();
                 if (data.success) {
                     const readIds = new Set(data.readIds || []);
-                    const count = (data.notifications || []).filter(n => !readIds.has(n.id)).length;
+                    const allNotifs = data.notifications || [];
+                    const count = allNotifs.filter(n => !readIds.has(n.id)).length;
                     setUnreadCount(count);
+
+                    /* ── Desktop push notifications ── */
+                    const unreadNotifs = allNotifs.filter(n => !readIds.has(n.id));
+                    prevNotifIdsRef.current = processNewNotifications(
+                      prevNotifIdsRef.current,
+                      unreadNotifs,
+                      '/secretary-admin/notifications',
+                      (path) => { window.location.href = path; }
+                    );
                 }
             } catch { /* silent */ }
         };
@@ -148,6 +161,7 @@ export default function SecretaryAdminSidebar() {
                     </div>
                 </div>
             )}
+            <NotificationPrompt />
         </div>
     );
 }

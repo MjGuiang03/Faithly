@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
-// import Sidebar from '../components/Sidebar'; // Moved to UserLayout
-import { Banknote, CheckCircle, ChevronDown, Download, Heart, Receipt, Share2, X, Wallet, TrendingUp, History, CreditCard } from 'lucide-react';
+import { Banknote, CalendarDays, CheckCircle, ChevronDown, Download, Heart, Receipt, Share2, X } from 'lucide-react';
 import '../styles/Donation.css';
 import gcashLogo from '../../assets/gcashlogo.png';
 import bank from '../../assets/bank.png';
@@ -170,7 +169,7 @@ export default function Donation() {
 
   return (
     <>
-      <div className="user-main-content user-donation-main">
+      <div className="user-donations-container">
 
         {/* Header */}
         <div className="user-donation-page-header">
@@ -183,21 +182,21 @@ export default function Donation() {
           <div className="user-donation-stat-card">
             <div className="user-donation-stat-header">
               <p className="user-donation-stat-label">Total Donated</p>
-              <Wallet className="user-donation-stat-icon" size={20} color="#155DFC" />
+              <Banknote className="user-donation-stat-icon" size={20} color="#155DFC" />
             </div>
             {loading ? <div className="user-skeleton" style={{ height: '32px', width: '100px', margin: '8px 0' }}></div> : <p className="user-donation-stat-value user-fade-in">{fmt(stats.totalDonated)}</p>}
           </div>
           <div className="user-donation-stat-card">
             <div className="user-donation-stat-header">
               <p className="user-donation-stat-label">This Year</p>
-              <TrendingUp className="user-donation-stat-icon" size={20} color="#155DFC" />
+              <CalendarDays className="user-donation-stat-icon" size={20} color="#155DFC" />
             </div>
             {loading ? <div className="user-skeleton" style={{ height: '32px', width: '100px', margin: '8px 0' }}></div> : <p className="user-donation-stat-value user-fade-in">{fmt(stats.thisYearTotal)}</p>}
           </div>
           <div className="user-donation-stat-card">
             <div className="user-donation-stat-header">
               <p className="user-donation-stat-label">Total Donations</p>
-              <History className="user-donation-stat-icon" size={20} color="#155DFC" />
+              <Heart className="user-donation-stat-icon" size={20} color="#155DFC" />
             </div>
             {loading ? <div className="user-skeleton" style={{ height: '32px', width: '60px', margin: '8px 0' }}></div> : <p className="user-donation-stat-value user-fade-in">{stats.totalCount}</p>}
           </div>
@@ -378,7 +377,7 @@ export default function Donation() {
               <button className="user-donate-btn" onClick={handleDonate} disabled={submitting}>
                 {submitting ? <span className="btn-spinner" /> : (
                   <>
-                    <CreditCard className="user-donate-icon" size={20} color="white" />
+                    <Heart className="user-donate-icon" size={20} color="white" />
                     Donate Now
                   </>
                 )}

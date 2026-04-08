@@ -109,7 +109,7 @@ export default function LoanAdminDashboard() {
 
         {/* Row 1 — 4 Stat Cards */}
         <div className="adm-stats-grid">
-          <div className="adm-stat-card" style={{ borderTop: '3px solid #F59E0B' }}>
+          <div className="adm-stat-card">
             <div className="adm-stat-top">
               <span className="adm-stat-label">Pending Review</span>
               <div className="adm-stat-icon" style={{ background: '#FEF3C7' }}>
@@ -119,7 +119,7 @@ export default function LoanAdminDashboard() {
             <span className="adm-stat-value">{dash(stats.pending)}</span>
           </div>
 
-          <div className="adm-stat-card" style={{ borderTop: '3px solid #00A63E' }}>
+          <div className="adm-stat-card">
             <div className="adm-stat-top">
               <span className="adm-stat-label">Approved Loans</span>
               <div className="adm-stat-icon" style={{ background: '#DCFCE7' }}>
@@ -129,7 +129,7 @@ export default function LoanAdminDashboard() {
             <span className="adm-stat-value">{dash(stats.active)}</span>
           </div>
 
-          <div className="adm-stat-card" style={{ borderTop: '3px solid #155DFC' }}>
+          <div className="adm-stat-card">
             <div className="adm-stat-top">
               <span className="adm-stat-label">Total This Month</span>
               <div className="adm-stat-icon adm-icon-blue">
@@ -139,7 +139,7 @@ export default function LoanAdminDashboard() {
             <span className="adm-stat-value">{dash(stats.totalThisMonth)}</span>
           </div>
 
-          <div className="adm-stat-card" style={{ borderTop: '3px solid #1E293B' }}>
+          <div className="adm-stat-card">
             <div className="adm-stat-top">
               <span className="adm-stat-label">Total Disbursed</span>
               <div className="adm-stat-icon adm-icon-navy">
@@ -149,7 +149,7 @@ export default function LoanAdminDashboard() {
             <span className="adm-stat-value">{dash(fmt(stats.totalDisbursed))}</span>
           </div>
 
-          <div className="adm-stat-card" style={{ borderTop: '3px solid #8B5CF6' }}>
+          <div className="adm-stat-card">
             <div className="adm-stat-top">
               <span className="adm-stat-label">Total Savings</span>
               <div className="adm-stat-icon" style={{ background: '#EDE9FE' }}>

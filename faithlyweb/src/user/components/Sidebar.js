@@ -1,35 +1,21 @@
 import { useNavigate, useLocation } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 import { useState, useEffect } from 'react';
-import { Bell, Building2, Calendar, FileText, Heart, LayoutGrid, LogOut, Menu, Settings, Wallet, X } from 'lucide-react';
+import { Building2, Calendar, FileText, Heart, LayoutGrid, LogOut, Menu, Settings, Wallet, X } from 'lucide-react';
 import { toast } from 'sonner';
 import puacLogo from '../../assets/puaclogo.png';
 import '../styles/Sidebar.css';
-// import Chatbot from './Chatbot'; // Moved to UserLayout
 
-import API from '../../utils/api';
+import { isOfficerPosition } from '../../utils/officerPositions';
 
-export default function Sidebar() {
+export default function Sidebar({ collapsed, setCollapsed, toggleCollapsed }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, profile, signOut } = useAuth();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
-  // chatOpen state moved to UserLayout
-  const [verificationStatus, setVerificationStatus] = useState(() => localStorage.getItem('verificationStatus') || null);
-  const [collapsed, setCollapsed] = useState(() => {
-    return localStorage.getItem('sidebar_collapsed') === 'true';
-  });
+  
+  // collapsed state moved to UserLayout
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
-  // ONLY way to change collapsed manually — the toggle button
-  const toggleCollapsed = () => {
-    setCollapsed(prev => {
-      const next = !prev;
-      localStorage.setItem('sidebar_collapsed', String(next));
-      return next;
-    });
-  };
 
   // Auto-collapse on small screens
   useEffect(() => {
@@ -73,141 +59,10 @@ export default function Sidebar() {
 
   const isActive = (path) => location.pathname === path;
 
-  /* ── Fetch officer verification status ── */
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    (async () => {
-      try {
-        const res = await fetch(`${API}/api/verification/status`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        if (res.ok && data.success) {
-          setVerificationStatus(data.verificationStatus);
-          localStorage.setItem('verificationStatus', data.verificationStatus);
-        } else {
-          setVerificationStatus('unverified');
-          localStorage.setItem('verificationStatus', 'unverified');
-        }
-      } catch {
-        setVerificationStatus('unverified');
-      }
-    })();
-  }, []);
-
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    const calcUnread = async () => {
-      try {
-        const [lRes, dRes, aRes, sRes, ppRes, readRes] = await Promise.all([
-          fetch(`${API}/api/loans/my-loans`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${API}/api/donations/my-donations`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${API}/api/attendance/my-attendance`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${API}/api/savings/transactions`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${API}/api/loans/my-pending-payments`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${API}/api/read-notifications`, { headers: { Authorization: `Bearer ${token}` } }),
-        ]);
-
-        const [lData, dData, aData, sData, ppData, readData] = await Promise.all([
-          lRes.ok ? lRes.json() : { loans: [] },
-          dRes.ok ? dRes.json() : { donations: [] },
-          aRes.ok ? aRes.json() : { attendance: [] },
-          sRes.ok ? sRes.json() : { transactions: [] },
-          ppRes.ok ? ppRes.json() : { payments: [] },
-          readRes.ok ? readRes.json() : { readIds: [] },
-        ]);
-
-        const readIds = new Set(readData.readIds || []);
-        let count = 0;
-
-        /* Loans → notifications */
-        (lData.loans || []).forEach((l) => {
-          /* Special: awaiting member approval */
-          if (l.status === 'awaiting_member_approval' && l.modifiedTerms) {
-            if (!readIds.has(`loan-terms-${l._id}`)) count++;
-          }
-
-          if (l.statusHistory && l.statusHistory.length > 0) {
-            l.statusHistory.forEach((history) => {
-              let idStr = '';
-              if (history.status === 'pending') idStr = `loan-pending-${l._id}`;
-              else if (history.status === 'approved') idStr = `loan-approved-${l._id}`;
-              else if (history.status === 'rejected') idStr = `loan-rejected-${l._id}`;
-              else if (history.status === 'processed') idStr = `loan-processed-${l._id}`;
-              else if (history.status === 'payment_confirmed') idStr = `loan-payment-${l._id}-${history.monthNumber || history.date}`;
-
-              if (idStr && !readIds.has(idStr)) count++;
-            });
-          } else {
-            let idStr = '';
-            if (l.status === 'approved' || l.status === 'active') idStr = `loan-approved-${l._id}`;
-            else if (l.status === 'pending') idStr = `loan-pending-${l._id}`;
-            else if (l.status === 'rejected') idStr = `loan-rejected-${l._id}`;
-            else if (l.status === 'completed') idStr = `loan-done-${l._id}`;
-
-            if (idStr && !readIds.has(idStr)) count++;
-          }
-
-          /* Payment reminder */
-          if ((l.status === 'active') && l.nextPaymentDate) {
-            if (!readIds.has(`loan-reminder-${l._id}`)) count++;
-          }
-        });
-
-        /* Pending Payments  */
-        (ppData.payments || []).forEach((p) => {
-          if (!readIds.has(`payment-pending-${p._id}`)) count++;
-        });
-
-        /* Donations  */
-        (dData.donations || []).forEach((d) => {
-          if (!readIds.has(`donation-${d._id}`)) count++;
-        });
-
-        /* Savings  */
-        (sData.transactions || []).filter(t => t.type === 'deposit').forEach((s) => {
-          if (!readIds.has(`savings-${s._id}`)) count++;
-        });
-
-        /* Attendance  */
-        (aData.attendance || []).forEach((a) => {
-          if (!readIds.has(`attendance-${a._id}`)) count++;
-        });
-
-        setUnreadCount(count);
-      } catch { /* silent */ }
-    };
-
-    calcUnread();
-
-    // Fast-path: When Notifications.js updates, it sends the exact new count via `detail`
-    const handleLocalUpdate = (e) => {
-      if (e.detail !== undefined) {
-        setUnreadCount(e.detail);
-      } else {
-        calcUnread();
-      }
-    };
-
-    window.addEventListener('notif-read-update', handleLocalUpdate);
-
-    // Poll every 30 seconds for new notifications
-    const intervalId = setInterval(calcUnread, 30000);
-
-    return () => {
-      window.removeEventListener('notif-read-update', handleLocalUpdate);
-      clearInterval(intervalId);
-    };
-  }, [profile?.branch]);
-
-  const isOfficer = verificationStatus === 'verified';
+  const isOfficer = isOfficerPosition(profile?.position);
 
   const allNavItems = [
     { path: '/home', icon: <LayoutGrid size={20} />, label: 'Home' },
-    { path: '/notifications', icon: <Bell size={20} />, label: 'Notifications', badge: unreadCount },
     { path: '/savings', icon: <Wallet size={20} />, label: 'Savings', officerOnly: true },
     { path: '/loans', icon: <FileText size={20} />, label: 'Loans', officerOnly: true },
     { path: '/donation', icon: <Heart size={20} />, label: 'Donations' },
@@ -224,17 +79,16 @@ export default function Sidebar() {
         <div className="user-sidebar-mobile-overlay" onClick={() => setCollapsed(true)} />
       )}
 
-      {isMobile && collapsed && (
-        <button
-          className="user-sidebar-mobile-toggle-btn"
-          onClick={toggleCollapsed}
-          title="Open Menu"
-        >
-          <Menu size={24} />
-        </button>
-      )}
-
       <div className={`user-sidebar ${collapsed ? 'user-sidebar-collapsed' : ''}`}>
+        {isMobile && !collapsed && (
+          <button 
+            className="user-sidebar-close-mobile" 
+            onClick={() => setCollapsed(true)}
+            aria-label="Close sidebar"
+          >
+            <X size={24} color="white" />
+          </button>
+        )}
 
         {/* Logo + Toggle button inside */}
         <div className="user-sidebar-logo">
@@ -259,7 +113,7 @@ export default function Sidebar() {
 
         {/* Navigation — clicking these ONLY navigates, never touches collapsed */}
         <div className="user-sidebar-nav">
-          {navItems.map(({ path, icon, label, badge }) => (
+          {navItems.map(({ path, icon, label }) => (
             <button
               key={path}
               onClick={() => handleNavClick(path)}
@@ -268,11 +122,6 @@ export default function Sidebar() {
             >
               <span className="user-sidebar-nav-icon">{icon}</span>
               {!collapsed && <span>{label}</span>}
-              {badge > 0 && (
-                <span className="user-sidebar-notif-badge">
-                  {badge > 99 ? '99+' : badge}
-                </span>
-              )}
             </button>
           ))}
         </div>

@@ -1,15 +1,12 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 
 import '../styles/Attendance.css';
-// import Sidebar from '../components/Sidebar'; // Moved to UserLayout
 import API from '../../utils/api';
-import { CalendarDays, CheckCircle, MapPin, UserCheck, Activity } from 'lucide-react';
+import { CalendarDays, CheckCircle, MapPin, Activity } from 'lucide-react';
 
 const PAGE_SIZE = 5;
 
 export default function Attendance() {
-  // const navigate = useNavigate();
-
   const [attendanceData, setAttendanceData] = useState([]);
   const [upcomingData,   setUpcomingData]   = useState([]);
   const [stats,          setStats]          = useState({ total: 0, thisMonth: 0 });
@@ -96,7 +93,7 @@ export default function Attendance() {
 
   return (
     <>
-      <div className="user-main-content">
+      <div className="user-attendance-container">
         {/* Header */}
         <div className="user-attendance-page-header">
           <h1 className="user-attendance-page-title">Attendance Tracking</h1>
@@ -108,7 +105,7 @@ export default function Attendance() {
           <div className="user-attendance-stat-card">
             <div className="user-attendance-stat-header">
               <p className="user-attendance-stat-label">Total Attendance</p>
-              <UserCheck className="user-attendance-stat-icon" size={20} color="#155DFC" />
+              <CheckCircle className="user-attendance-stat-icon" size={20} color="#155DFC" />
               </div>
               {loading ? <div className="user-skeleton" style={{ height: '32px', width: '60px', margin: '8px 0' }}></div> : <p className="user-attendance-stat-value user-fade-in">{stats.total}</p>}
             </div>

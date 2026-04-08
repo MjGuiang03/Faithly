@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import '../styles/SavingsModal.css';
 import API from '../../utils/api';
-import { CheckCircle, FileText, X } from 'lucide-react';
+import { CheckCircle, FileText, X, ArrowDownRight, ArrowUpLeft, Repeat, History, Calendar, Target, TrendingUp } from 'lucide-react';
 
 
 const fmt = (n) =>
@@ -16,13 +16,6 @@ const GOAL_COLORS = [
     { key: 'pink', hex: '#d4537e', label: 'Pink' },
 ];
 
-const GOAL_ICONS = [
-    { key: 'default', label: 'Person' },
-    { key: 'house', label: 'House' },
-    { key: 'bag', label: 'Briefcase' },
-    { key: 'star', label: 'Star' },
-    { key: 'car', label: 'Car' },
-];
 
 const GOAL_NAME_OPTIONS = [
     { value: 'Vacation Fund', label: '  Vacation Fund' },
@@ -258,7 +251,7 @@ function NewGoalModal({ onClose }) {
     const [nameOption, setNameOption] = useState('');
     const [customName, setCustomName] = useState('');
     const [targetAmount, setTarget] = useState('');
-    const [startDate, setStartDate] = useState('');
+    const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
     const [targetDate, setDate] = useState('');
     const [dateError, setDateError] = useState('');
     const [monthly, setMonthly] = useState('');
@@ -269,13 +262,38 @@ function NewGoalModal({ onClose }) {
 
     const isOthers = nameOption === 'others';
     const resolvedName = isOthers ? customName.trim() : nameOption;
+    const today = new Date().toISOString().split('T')[0];
 
     const handleDates = (start, end) => {
-        if (start && end && end <= start) {
-            setDateError('End date must be after start date.');
+        if (start && end) {
+            const s = new Date(start);
+            const e = new Date(end);
+            const minTarget = new Date(s);
+            // Must be at least 1 month forward
+            minTarget.setMonth(s.getMonth() + 1);
+            if (e < minTarget) {
+                setDateError('Target date must be at least 1 month from start date.');
+            } else {
+                setDateError('');
+            }
         } else {
             setDateError('');
         }
+    };
+
+    const handleNameChange = (val) => {
+        setNameOption(val);
+        setCustomName('');
+        
+        // Auto-match icon
+        const mapping = {
+            'Vacation Fund': 'star',
+            'Emergency Fund': 'emergency',
+            'House / Down Payment': 'house',
+            'Car Purchase': 'car',
+            'Education Fund': 'bag'
+        };
+        setIcon(mapping[val] || 'default');
     };
 
     const handleSubmit = async () => {
@@ -329,7 +347,7 @@ function NewGoalModal({ onClose }) {
                         <select
                             className="svm-select"
                             value={nameOption}
-                            onChange={e => { setNameOption(e.target.value); setCustomName(''); }}
+                            onChange={e => handleNameChange(e.target.value)}
                         >
                             <option value="" disabled>Select a goal…</option>
                             {GOAL_NAME_OPTIONS.map(o => (
@@ -370,6 +388,7 @@ function NewGoalModal({ onClose }) {
                                 className="svm-input"
                                 type="date"
                                 value={startDate}
+                                min={new Date().toISOString().split('T')[0]}
                                 onChange={e => { setStartDate(e.target.value); handleDates(e.target.value, targetDate); }}
                             />
                         </div>
@@ -379,6 +398,12 @@ function NewGoalModal({ onClose }) {
                                 className={`svm-input${dateError ? ' svm-input--error' : ''}`}
                                 type="date"
                                 value={targetDate}
+                                min={(() => {
+                                    if (!startDate) return today;
+                                    const d = new Date(startDate);
+                                    d.setMonth(d.getMonth() + 1);
+                                    return d.toISOString().split('T')[0];
+                                })()}
                                 onChange={e => { setDate(e.target.value); handleDates(startDate, e.target.value); }}
                             />
                         </div>
@@ -400,32 +425,18 @@ function NewGoalModal({ onClose }) {
                         </div>
                     </div>
 
-                    <div className="svm-field-row">
-                        <div className="svm-field">
-                            <label className="svm-label">Color</label>
-                            <div className="svm-color-row">
-                                {GOAL_COLORS.map(c => (
-                                    <button
-                                        key={c.key}
-                                        className={`svm-color-dot ${color === c.key ? 'svm-color-dot--selected' : ''}`}
-                                        style={{ background: c.hex }}
-                                        title={c.label}
-                                        onClick={() => setColor(c.key)}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-                        <div className="svm-field">
-                            <label className="svm-label">Icon</label>
-                            <select
-                                className="svm-select"
-                                value={iconType}
-                                onChange={e => setIcon(e.target.value)}
-                            >
-                                {GOAL_ICONS.map(i => (
-                                    <option key={i.key} value={i.key}>{i.label}</option>
-                                ))}
-                            </select>
+                    <div className="svm-field">
+                        <label className="svm-label">Color</label>
+                        <div className="svm-color-row">
+                            {GOAL_COLORS.map(c => (
+                                <button
+                                    key={c.key}
+                                    className={`svm-color-dot ${color === c.key ? 'svm-color-dot--selected' : ''}`}
+                                    style={{ background: c.hex }}
+                                    title={c.label}
+                                    onClick={() => setColor(c.key)}
+                                />
+                            ))}
                         </div>
                     </div>
                 </div>
@@ -645,8 +656,8 @@ function EditGoalModal({ goal, onClose }) {
     const [customName, setCustomName] = useState(!matchedPreset ? (goal?.name || '') : '');
     const [target, setTarget] = useState(String(goal?.targetAmount || ''));
     const [monthly, setMonthly] = useState(String(goal?.monthlyContribution || ''));
-    const [startDate, setStartDate] = useState(goal?.startDate ? goal.startDate.slice(0, 7) : '');
-    const [targetDate, setDate] = useState(goal?.targetDate ? goal.targetDate.slice(0, 7) : '');
+    const [startDate, setStartDate] = useState(goal?.startDate ? goal.startDate.slice(0, 10) : new Date().toISOString().split('T')[0]);
+    const [targetDate, setDate] = useState(goal?.targetDate ? goal.targetDate.slice(0, 10) : '');
     const [dateError, setDateError] = useState('');
     const [color, setColor] = useState(goal?.color || 'blue');
     const [iconType, setIcon] = useState(goal?.iconType || 'default');
@@ -656,13 +667,38 @@ function EditGoalModal({ goal, onClose }) {
 
     const isOthers = nameOption === 'others';
     const resolvedName = isOthers ? customName.trim() : nameOption;
+    const today = new Date().toISOString().split('T')[0];
 
     const handleDates = (start, end) => {
-        if (start && end && end <= start) {
-            setDateError('End date must be after start date.');
+        if (start && end) {
+            const s = new Date(start);
+            const e = new Date(end);
+            const minTarget = new Date(s);
+            // Must be at least 1 month forward
+            minTarget.setMonth(s.getMonth() + 1);
+            if (e < minTarget) {
+                setDateError('Target date must be at least 1 month from start date.');
+            } else {
+                setDateError('');
+            }
         } else {
             setDateError('');
         }
+    };
+
+    const handleNameChange = (val) => {
+        setNameOption(val);
+        setCustomName('');
+        
+        // Auto-match icon
+        const mapping = {
+            'Vacation Fund': 'star',
+            'Emergency Fund': 'emergency',
+            'House / Down Payment': 'house',
+            'Car Purchase': 'car',
+            'Education Fund': 'bag'
+        };
+        setIcon(mapping[val] || 'default');
     };
 
     const handleSave = async () => {
@@ -732,7 +768,7 @@ function EditGoalModal({ goal, onClose }) {
                         <select
                             className="svm-select"
                             value={nameOption}
-                            onChange={e => { setNameOption(e.target.value); if (e.target.value !== 'others') setCustomName(''); }}
+                            onChange={e => handleNameChange(e.target.value)}
                         >
                             <option value="" disabled>Select a goal…</option>
                             {GOAL_NAME_OPTIONS.map(o => (
@@ -771,6 +807,7 @@ function EditGoalModal({ goal, onClose }) {
                                 className="svm-input"
                                 type="date"
                                 value={startDate}
+                                min={new Date().toISOString().split('T')[0]}
                                 onChange={e => { setStartDate(e.target.value); handleDates(e.target.value, targetDate); }}
                             />
                         </div>
@@ -780,6 +817,12 @@ function EditGoalModal({ goal, onClose }) {
                                 className={`svm-input${dateError ? ' svm-input--error' : ''}`}
                                 type="date"
                                 value={targetDate}
+                                min={(() => {
+                                    if (!startDate) return today;
+                                    const d = new Date(startDate);
+                                    d.setMonth(d.getMonth() + 1);
+                                    return d.toISOString().split('T')[0];
+                                })()}
                                 onChange={e => { setDate(e.target.value); handleDates(startDate, e.target.value); }}
                             />
                         </div>
@@ -800,32 +843,18 @@ function EditGoalModal({ goal, onClose }) {
                         </div>
                     </div>
 
-                    <div className="svm-field-row">
-                        <div className="svm-field">
-                            <label className="svm-label">Color</label>
-                            <div className="svm-color-row">
-                                {GOAL_COLORS.map(c => (
-                                    <button
-                                        key={c.key}
-                                        className={`svm-color-dot ${color === c.key ? 'svm-color-dot--selected' : ''}`}
-                                        style={{ background: c.hex }}
-                                        title={c.label}
-                                        onClick={() => setColor(c.key)}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-                        <div className="svm-field">
-                            <label className="svm-label">Icon</label>
-                            <select
-                                className="svm-select"
-                                value={iconType}
-                                onChange={e => setIcon(e.target.value)}
-                            >
-                                {GOAL_ICONS.map(i => (
-                                    <option key={i.key} value={i.key}>{i.label}</option>
-                                ))}
-                            </select>
+                    <div className="svm-field">
+                        <label className="svm-label">Color</label>
+                        <div className="svm-color-row">
+                            {GOAL_COLORS.map(c => (
+                                <button
+                                    key={c.key}
+                                    className={`svm-color-dot ${color === c.key ? 'svm-color-dot--selected' : ''}`}
+                                    style={{ background: c.hex }}
+                                    title={c.label}
+                                    onClick={() => setColor(c.key)}
+                                />
+                            ))}
                         </div>
                     </div>
 
@@ -1019,9 +1048,140 @@ function TransferModal({ goal, goals, onClose }) {
 }
 
 /* ─────────────────────────────────────────────────────────────
+   3.5 GOAL INFO MODAL (Read-only + history)
+───────────────────────────────────────────────────────────── */
+function GoalInfoModal({ goal, onClose, onEdit, onTransfer, onQuickDeposit }) {
+    const [transactions, setTransactions] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (!goal) return;
+        const fetchHistory = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`${API}/api/savings/transactions?goalId=${goal._id}&limit=50`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    setTransactions(data.transactions || []);
+                }
+            } catch (err) {
+                console.error('Failed to fetch goal history:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchHistory();
+    }, [goal._id]);
+
+    const fmtDateShort = (d) => {
+        if (!d) return '';
+        const date = new Date(d);
+        return date.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
+    };
+
+    if (!goal) return null;
+
+    return (
+        <div className="svm-overlay" onClick={onClose}>
+            <div className="svm-modal" onClick={e => e.stopPropagation()}>
+                <div className="svm-modal-head">
+                    <div className="svm-modal-title-row">
+                        <div className="svm-modal-title">{goal.name}</div>
+                        <div className="svm-modal-goal-tag">Goal Details & History</div>
+                    </div>
+                    <button className="svm-close-btn" onClick={onClose}><CloseIcon /></button>
+                </div>
+
+                <div className="svm-modal-body">
+                    <div className="svm-info-grid">
+                        <div className="svm-info-item">
+                            <span className="svm-info-label">Current Balance</span>
+                            <span className="svm-info-value">{fmt(goal.savedAmount)}</span>
+                        </div>
+                        <div className="svm-info-item">
+                            <span className="svm-info-label">Target Amount</span>
+                            <span className="svm-info-value">{fmt(goal.targetAmount)}</span>
+                        </div>
+                        <div className="svm-info-item">
+                            <span className="svm-info-label">Monthly Goal</span>
+                            <span className="svm-info-value">{goal.monthlyContribution > 0 ? fmt(goal.monthlyContribution) : '—'}</span>
+                        </div>
+                        <div className="svm-info-item">
+                            <span className="svm-info-label">Target Date</span>
+                            <span className="svm-info-value">{goal.targetDate ? fmtDateShort(goal.targetDate) : 'No target'}</span>
+                        </div>
+                    </div>
+
+                    <div className="svm-history-section">
+                        <div className="svm-history-head">
+                            <History size={16} />
+                            Transaction History
+                        </div>
+
+                        <div className="svm-history-list">
+                            {loading ? (
+                                <div className="svm-history-empty">Loading history...</div>
+                            ) : transactions.length === 0 ? (
+                                <div className="svm-history-empty">No transactions yet for this goal.</div>
+                            ) : (
+                                transactions.map(txn => {
+                                    const isPos = txn.type === 'deposit';
+                                    const isNeg = txn.type === 'withdrawal';
+                                    const isTransfer = txn.source === 'Transfer';
+                                    
+                                    let Icon = ArrowDownRight;
+                                    let iconClass = 'svm-hist-icon--deposit';
+                                    if (isNeg) { Icon = ArrowUpLeft; iconClass = 'svm-hist-icon--withdrawal'; }
+                                    if (isTransfer) { Icon = Repeat; iconClass = 'svm-hist-icon--transfer'; }
+
+                                    return (
+                                        <div key={txn._id} className="svm-history-row">
+                                            <div className={`svm-hist-icon-wrap ${iconClass}`}>
+                                                <Icon size={16} />
+                                            </div>
+                                            <div className="svm-hist-main">
+                                                <div className="svm-hist-type">
+                                                    {txn.type === 'withdrawal' ? 'Withdrawal' : 'Deposit'}
+                                                    {isTransfer && ' (Transfer)'}
+                                                </div>
+                                                <div className="svm-hist-date">{fmtDateShort(txn.date)}</div>
+                                            </div>
+                                            <div className="svm-hist-right">
+                                                <div className={`svm-hist-amt ${isPos ? 'svm-hist-amt--pos' : 'svm-hist-amt--neg'}`}>
+                                                    {isPos ? '+' : '-'}{fmt(txn.amount)}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="svm-modal-footer">
+                    <button className="svm-btn-cancel" style={{ flex: 1 }} onClick={onClose}>Close</button>
+                    <button className="svm-btn-submit" style={{ flex: 1.2, background: '#639922' }} onClick={() => onQuickDeposit(goal)}>
+                        Deposit
+                    </button>
+                    <button className="svm-btn-submit" style={{ flex: 1.2 }} onClick={() => onTransfer(goal)}>
+                        Transfer
+                    </button>
+                    <button className="svm-btn-submit" style={{ flex: 1.2, background: 'var(--secondary)', color: 'var(--foreground)', border: '0.8px solid var(--border)' }} onClick={() => onEdit(goal)}>
+                        Edit
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+/* ─────────────────────────────────────────────────────────────
    ROOT EXPORT  — renders whichever modal is active
 ───────────────────────────────────────────────────────────── */
-export default function SavingsModals({ modal, modalData, goals, onClose }) {
+export default function SavingsModals({ modal, modalData, goals, onClose, onEdit, onTransfer, onQuickDeposit }) {
     /* lock body scroll when a modal is open */
     useEffect(() => {
         if (modal) document.body.style.overflow = 'hidden';
@@ -1042,6 +1202,9 @@ export default function SavingsModals({ modal, modalData, goals, onClose }) {
 
     if (modal === 'editGoal')
         return <EditGoalModal goal={modalData} onClose={onClose} />;
+
+    if (modal === 'goalInfo')
+        return <GoalInfoModal goal={modalData} onClose={onClose} onEdit={onEdit} onTransfer={onTransfer} onQuickDeposit={onQuickDeposit} />;
 
     if (modal === 'transfer')
         return <TransferModal goal={modalData} goals={goals} onClose={onClose} />;

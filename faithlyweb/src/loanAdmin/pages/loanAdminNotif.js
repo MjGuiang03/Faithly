@@ -125,29 +125,27 @@ export default function LoanAdminNotif() {
                     </button>
                 </div>
 
-                {/* Filter Tabs */}
-                <div className="loan-admin-notif-filters">
-                    <button
-                        className={`loan-admin-notif-filter ${activeFilter === 'all' ? 'active' : ''}`}
-                        onClick={() => setActiveFilter('all')}
-                    >
-                        All
-                    </button>
-                    <button
-                        className={`loan-admin-notif-filter ${activeFilter === 'unread' ? 'active' : ''}`}
-                        onClick={() => setActiveFilter('unread')}
-                    >
-                        Unread
-                        {getUnreadCount() > 0 && (
-                            <span className="loan-admin-notif-filter-count">{getUnreadCount()}</span>
-                        )}
-                    </button>
-                    <button
-                        className={`loan-admin-notif-filter ${activeFilter === 'read' ? 'active' : ''}`}
-                        onClick={() => setActiveFilter('read')}
-                    >
-                        Read
-                    </button>
+                {/* Filter Tabs matching Admin Design */}
+                <div className="admin-notif-tabs" style={{ marginBottom: '24px' }}>
+                    {[
+                        { key: 'all',    label: 'All' },
+                        { key: 'unread', label: 'Unread' },
+                        { key: 'read',   label: 'Read' }
+                    ].map(({ key, label }) => {
+                        const count = key === 'unread' ? getUnreadCount() : 0;
+                        return (
+                            <button
+                                key={key}
+                                className={`admin-notif-tab${activeFilter === key ? ' admin-notif-tab-active' : ''}`}
+                                onClick={() => setActiveFilter(key)}
+                            >
+                                {label}
+                                {count > 0 && (
+                                    <span className="admin-notif-tab-badge">{count}</span>
+                                )}
+                            </button>
+                        );
+                    })}
                 </div>
 
                 {/* Notifications List */}

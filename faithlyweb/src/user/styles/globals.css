@@ -4,7 +4,7 @@
   --font-size: 16px;
 
   /* ── PUAC Light Mode ── */
-  --background: #F5F6F8;
+  --background: #F0F2F5;
   --foreground: #111318;
   --card: #FFFFFF;
   --card-foreground: #1E2332;
@@ -27,6 +27,7 @@
   --input-border: #CDD2DE;
   --switch-background: #CDD2DE;
   --ring: #1E3A8A;
+  --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 
   /* PUAC Brand Tokens */
   --gold: #F5C800;
@@ -49,7 +50,7 @@
   --chart-4: #2A50B8;
   --chart-5: #7A5F00;
 
-  --radius: 0.625rem;
+  --radius: 12px;
 
   /* Sidebar */
   --sidebar: #1E3A8A;
@@ -66,9 +67,9 @@
 
 .dark {
   /* ── PUAC Dark Mode — soft warm gray, NOT black ── */
-  --background: #2C2F36;
+  --background: #161922;
   --foreground: #F0F2F8;
-  --card: #363940;
+  --card: #1E2130;
   --card-foreground: #D8DCE8;
   --popover: #363940;
   --popover-foreground: #D8DCE8;
@@ -89,6 +90,7 @@
   --input-border: #555960;
   --switch-background: #555960;
   --ring: #7090D0;
+  --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 
   /* PUAC Brand Tokens — gold unchanged, red slightly brightened */
   --gold: #F5C800;
@@ -194,12 +196,11 @@
   min-width: 0;
   box-sizing: border-box;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  padding: 12px 24px 32px 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  padding: 0;
+  background: #F0F2F5; /* Ensure gray background for content area */
   overflow-y: auto;
   overflow-x: hidden;
+  min-height: 100vh;
 }
 
 .user-home-layout {
@@ -226,11 +227,24 @@
   .user-main-content,
   .user-sidebar-collapsed~.user-main-content {
     margin-left: 0 !important;
-    padding: 16px !important;
-    padding-top: 64px !important;
+    margin-left: 0 !important;
+    padding: 0 !important;
     width: 100% !important;
   }
 }
+
+.user-page-container {
+  padding: 24px 32px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .user-page-container {
+    padding: 16px;
+  }
+}
+
 
 /* ── Typography base ── */
 @layer base {

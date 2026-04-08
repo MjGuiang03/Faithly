@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import AdminSidebar from '../pages/AdminSidebar';
+import NotificationPrompt from '../../components/NotificationPrompt';
 import '../styles/AdminSidebar.css';
 import '../styles/AdminLayout.css';
 
@@ -12,6 +13,7 @@ export default function AdminLayout() {
           <Outlet />
         </div>
       </main>
+      <NotificationPrompt />
     </div>
   );
 }

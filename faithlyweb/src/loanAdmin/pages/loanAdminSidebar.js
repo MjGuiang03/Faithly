@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { toast } from 'sonner';
 import {
   LayoutGrid, Bell, FileText, CreditCard, AlertTriangle, Settings, LogOut,
@@ -10,12 +10,15 @@ import '../styles/loanAdminSidebar.css';
 import { useTheme } from '../../context/ThemeContext';
 
 import API from '../../utils/api';
+import { processNewNotifications } from '../../utils/desktopNotify';
+import NotificationPrompt from '../../components/NotificationPrompt';
 
 export default function LoanAdminSidebar() {
   const { theme, toggleTheme } = useTheme();
   const navigate  = useNavigate();
   const location  = useLocation();
   const [unreadCount, setUnreadCount] = useState(0);
+  const prevNotifIdsRef = useRef(new Set());
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [paymentsOpen, setPaymentsOpen] = useState(
     location.pathname.startsWith('/loan-admin/payments')
@@ -46,11 +49,18 @@ export default function LoanAdminSidebar() {
         const data = await res.json();
         if (data.success) {
           const readIds = new Set(data.readIds || []);
-          const count = (data.notifications || [])
-                .filter(n => n.type === 'loan')  // LoanAdmins only see loan notifications
-                .filter(n => !readIds.has(n.id))
-                .length;
+          const loanNotifs = (data.notifications || []).filter(n => n.type === 'loan');
+          const count = loanNotifs.filter(n => !readIds.has(n.id)).length;
           setUnreadCount(count);
+
+          /* ── Desktop push notifications ── */
+          const unreadNotifs = loanNotifs.filter(n => !readIds.has(n.id));
+          prevNotifIdsRef.current = processNewNotifications(
+            prevNotifIdsRef.current,
+            unreadNotifs,
+            '/loan-admin/notifications',
+            (path) => { window.location.href = path; }
+          );
         }
       } catch { /* silent */ }
     };
@@ -214,6 +224,7 @@ export default function LoanAdminSidebar() {
           </div>
         </div>
       )}
+      <NotificationPrompt />
     </div>
   );
 }

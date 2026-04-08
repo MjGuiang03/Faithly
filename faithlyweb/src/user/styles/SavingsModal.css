@@ -752,3 +752,135 @@
         width: 100%;
     }
 }
+
+/* ── Goal Info Modal ─────────────────────────────────────── */
+.svm-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    background: rgba(30, 58, 138, 0.05);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 8px;
+}
+
+.svm-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.svm-info-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-family: 'Inter', sans-serif;
+}
+
+.svm-info-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--foreground);
+    font-family: 'Inter', sans-serif;
+}
+
+.svm-history-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.svm-history-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--foreground);
+    font-family: 'Inter', sans-serif;
+}
+
+.svm-history-list {
+    display: flex;
+    flex-direction: column;
+    max-height: 280px;
+    overflow-y: auto;
+    border: 0.8px solid var(--border);
+    border-radius: 10px;
+    background: var(--card);
+}
+
+.svm-history-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-bottom: 0.8px solid var(--border);
+}
+
+.svm-history-row:last-child {
+    border-bottom: none;
+}
+
+.svm-hist-icon-wrap {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.svm-hist-icon--deposit { background: #eaf3de; color: #27500a; }
+.svm-hist-icon--withdrawal { background: #fee2e2; color: #991b1b; }
+.svm-hist-icon--transfer { background: #e6f1fb; color: #0c447c; }
+
+.svm-hist-main {
+    flex: 1;
+    min-width: 0;
+}
+
+.svm-hist-type {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--foreground);
+    font-family: 'Inter', sans-serif;
+}
+
+.svm-hist-date {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+}
+
+.svm-hist-right {
+    text-align: right;
+}
+
+.svm-hist-amt {
+    font-size: 13px;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+}
+
+.svm-hist-amt--pos { color: #27500a; }
+.svm-hist-amt--neg { color: #991b1b; }
+
+.svm-history-empty {
+    padding: 32px 20px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+    font-style: italic;
+}
+
+@media (max-width: 480px) {
+    .svm-info-grid {
+        grid-template-columns: 1fr;
+    }
+}

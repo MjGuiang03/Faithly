@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ChevronLeft, ChevronRight, Edit, Lock, Search, Trash2, User, UserPlus, Users as UsersIcon, XCircle, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Edit, Lock, Search, Trash2, User, UserPlus, Users as UsersIcon, XCircle, X, MoreVertical, Eye } from 'lucide-react';
 import useDebounce from '../../hooks/useDebounce';
 import '../styles/AdminMembers.css';
 
@@ -33,6 +33,7 @@ function EditModal({ member, onClose, onSave }) {
     phone:    member.phone    || '',
     branch:   member.branch   || '',
     position: member.position || '',
+    newPassword: '', // Added for editing password
   });
   const [adminPassword, setAdminPassword] = useState('');
   const [showPassword,  setShowPassword]  = useState(false);
@@ -94,19 +95,83 @@ function EditModal({ member, onClose, onSave }) {
           </div>
           <div className="admin-members-form-grid-2col">
             <div className="admin-members-form-group">
-              <label className="admin-members-form-label">Branch</label>
-              <input className="admin-members-form-input" name="branch" value={form.branch} onChange={handleChange} />
+              <label className="admin-members-form-label">Community</label>
+              <select className="admin-members-form-input" name="branch" value={form.branch} onChange={handleChange}>
+                <option value="Bulacan Main">Bulacan Main</option>
+                <optgroup label="Kalinga">
+                  <option>Tabuk</option><option>Zapote</option><option>Bliss</option>
+                  <option>Libanon</option><option>Batong Buhay</option><option>Balatoc</option><option>Lat-nog</option>
+                </optgroup>
+                <optgroup label="Isabela"><option>Santiago City</option></optgroup>
+                <optgroup label="Abra">
+                  <option>Lamao</option><option>Lingey</option><option>Cabaruyan</option><option>Ducligan</option>
+                  <option>Gangal</option><option>Bila-Bila</option><option>Naguillian</option><option>Ud-udiao</option>
+                  <option>Villa Conchita</option><option>Ay-yeng Manabo</option><option>Dao-angan</option>
+                  <option>Kilong-olao</option><option>Bao-yan</option><option>Amti</option><option>Danac</option>
+                  <option>Bengued</option><option>Sappaac</option><option>Saccaang</option>
+                </optgroup>
+                <optgroup label="Benguet"><option>Baguio</option></optgroup>
+                <optgroup label="Rizal"><option>Montalban</option></optgroup>
+                <optgroup label="NCR">
+                  <option>Valenzuela City</option><option>Tandang Sora, Quezon City</option>
+                  <option>COA, Quezon City</option><option>Payatas, Quezon City</option><option>Malaria, Caloocan</option>
+                </optgroup>
+                <optgroup label="Bulacan">
+                  <option>Meycauayan City</option><option>Camalig</option><option>San Jose Del Monte</option>
+                </optgroup>
+                <optgroup label="Tarlac">
+                  <option>Pacpaco, San Manuel</option><option>Victoria</option>
+                </optgroup>
+                <optgroup label="Nueva Ecija"><option>Bambanaba, Cuyapo</option></optgroup>
+                <optgroup label="Pangasinan">
+                  <option>Dagupan</option><option>Mangatarem</option><option>Laoak Langka</option>
+                  <option>Orbiztondo</option><option>Malasiqui, Bolaoit</option><option>Taloyan</option>
+                  <option>Binmaley</option><option>San Carlos</option><option>Manaoag</option>
+                  <option>Pozorrubio</option><option>Alcala</option>
+                </optgroup>
+                <optgroup label="Agusan Del Norte">
+                  <option>Butuan City</option><option>RTR</option><option>Jabonga, Bangonay</option>
+                  <option>Kasiklan</option><option>San Mateo</option><option>Fatima Kim.13</option>
+                  <option>Bayugan</option><option>Ibuan</option><option>Balubo</option>
+                </optgroup>
+                <optgroup label="Cebu">
+                  <option>Mandaue</option><option>Liloan</option><option>Calero</option><option>Compostela</option>
+                </optgroup>
+                <optgroup label="Surigao Del Norte">
+                  <option>Alegria</option><option>Bonifacio</option><option>Matin-ao</option><option>Ipil</option>
+                </optgroup>
+                <optgroup label="Surigao Del Sur"><option>Kinabigtasan, Tago</option></optgroup>
+              </select>
             </div>
             <div className="admin-members-form-group">
               <label className="admin-members-form-label">Church Position</label>
               <select className="admin-members-form-input" name="position" value={form.position} onChange={handleChange}>
                 <option value="Member">Member</option>
-                <option value="Pastor">Pastor</option>
-                <option value="Secretary">Secretary</option>
                 <option value="Deacon">Deacon</option>
-                <option value="Admin">Admin</option>
+                <option value="Local Evangelist">Local Evangelist</option>
+                <option value="District Evangelist">District Evangelist</option>
+                <option value="National Evangelist">National Evangelist</option>
+                <option value="Assistant Priest">Assistant Priest</option>
+                <option value="Priest">Priest</option>
+                <option value="Elder">Elder</option>
+                <option value="District Elder">District Elder</option>
+                <option value="Bishop">Bishop</option>
+                <option value="District Bishop">District Bishop</option>
+                <option value="National Bishop">National Bishop</option>
+                <option value="Apostle">Apostle</option>
               </select>
             </div>
+          </div>
+          <div className="admin-members-form-group" style={{ marginBottom: 20 }}>
+            <label className="admin-members-form-label">New Password (optional)</label>
+            <input
+              className="admin-members-form-input"
+              type="text"
+              name="newPassword"
+              value={form.newPassword}
+              onChange={handleChange}
+              placeholder="Enter new password to change"
+            />
           </div>
           <p className="admin-members-admin-confirm-title">Confirm Changes</p>
           <div className="admin-members-form-row" style={{ marginBottom: 0 }}>
@@ -308,7 +373,7 @@ function AddMemberModal({ onClose, onSave }) {
               <input className="admin-members-form-input" type="text" name="phone" value={form.phone} onChange={handleChange} placeholder="+63XXXXXXXXXX" />
             </div>
             <div className="admin-members-form-group">
-              <label className="admin-members-form-label">Branch</label>
+              <label className="admin-members-form-label">Community</label>
               <select className="admin-members-form-input" name="branch" value={form.branch} onChange={handleChange}>
                 <option value="Bulacan Main">Bulacan Main</option>
                 <optgroup label="Kalinga">
@@ -362,13 +427,18 @@ function AddMemberModal({ onClose, onSave }) {
               <label className="admin-members-form-label">Position / Role</label>
               <select className="admin-members-form-input" name="position" value={form.position} onChange={handleChange}>
                 <option value="Member">Member</option>
-                <option value="Pastor">Pastor</option>
                 <option value="Deacon">Deacon</option>
-                <option value="Secretary">Secretary</option>
-                <option value="Treasurer">Treasurer</option>
+                <option value="Local Evangelist">Local Evangelist</option>
+                <option value="District Evangelist">District Evangelist</option>
+                <option value="National Evangelist">National Evangelist</option>
+                <option value="Assistant Priest">Assistant Priest</option>
+                <option value="Priest">Priest</option>
                 <option value="Elder">Elder</option>
-                <option value="Worship Leader">Worship Leader</option>
-                <option value="Youth Leader">Youth Leader</option>
+                <option value="District Elder">District Elder</option>
+                <option value="Bishop">Bishop</option>
+                <option value="District Bishop">District Bishop</option>
+                <option value="National Bishop">National Bishop</option>
+                <option value="Apostle">Apostle</option>
               </select>
             </div>
           </div>
@@ -402,7 +472,15 @@ export default function AdminMembers() {
   const [loadingMembers, setLoadingMembers] = useState(true);
   const [editMember,     setEditMember]     = useState(null);
   const [deleteMember,   setDeleteMember]   = useState(null);
+  const [viewMember,     setViewMember]     = useState(null);
   const [showAddModal,   setShowAddModal]   = useState(false);
+  const [openDropdownId, setOpenDropdownId] = useState(null);
+
+  useEffect(() => {
+    const handleClickOutside = () => setOpenDropdownId(null);
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
 
   const debouncedSearchMembers  = useDebounce(searchMembers,  400);
 
@@ -457,6 +535,57 @@ export default function AdminMembers() {
       {editMember   && <EditModal   member={editMember}   onClose={() => setEditMember(null)}   onSave={()    => { setEditMember(null);   fetchMembers(); }} />}
       {deleteMember && <DeleteModal member={deleteMember} onClose={() => setDeleteMember(null)} onConfirm={() => { setDeleteMember(null); fetchMembers(); }} />}
       {showAddModal && <AddMemberModal onClose={() => setShowAddModal(false)} onSave={() => { setShowAddModal(false); fetchMembers(); }} />}
+      {viewMember   && (
+        <div className="admin-members-modal-overlay" onClick={() => setViewMember(null)}>
+          <div className="admin-members-modal" onClick={e => e.stopPropagation()}>
+            <div className="admin-members-modal-header">
+              <div className="admin-members-modal-header-icon" style={{ background: '#e7f0ff' }}><Eye size={20} color="#155DFC" /></div>
+              <div className="admin-members-modal-header-text">
+                <p className="admin-members-modal-title">View Member</p>
+                <p className="admin-members-modal-subtitle">Details for {viewMember.fullName || viewMember.name}</p>
+              </div>
+              <button className="admin-members-modal-close" onClick={() => setViewMember(null)}>
+                <X size={20} color="#6a7282" />
+              </button>
+            </div>
+            <div className="admin-members-modal-body">
+               <div className="admin-members-delete-member-card">
+                <div className="admin-members-avatar">
+                  <User size={20} color="#155DFC" />
+                </div>
+                <div>
+                  <p className="admin-members-delete-name">{viewMember.fullName || viewMember.name}</p>
+                  <p className="admin-members-delete-email">{viewMember.email}</p>
+                </div>
+              </div>
+              <div className="admin-members-form-grid-2col" style={{ marginTop: '20px' }}>
+                <div>
+                  <span className="admin-members-form-label" style={{ color: '#6B7280', marginBottom: 4 }}>Phone</span>
+                  <p style={{ margin: 0, fontWeight: 500, color: '#111827' }}>{viewMember.phone || '—'}</p>
+                </div>
+                <div>
+                  <span className="admin-members-form-label" style={{ color: '#6B7280', marginBottom: 4 }}>Community</span>
+                  <p style={{ margin: 0, fontWeight: 500, color: '#111827' }}>{viewMember.branch || '—'}</p>
+                </div>
+                <div>
+                  <span className="admin-members-form-label" style={{ color: '#6B7280', marginBottom: 4 }}>Position</span>
+                  <p style={{ margin: 0, fontWeight: 500, color: '#111827', textTransform: 'capitalize' }}>{viewMember.position || 'Member'}</p>
+                </div>
+                <div>
+                  <span className="admin-members-form-label" style={{ color: '#6B7280', marginBottom: 4 }}>Member ID</span>
+                  <p style={{ margin: 0, fontWeight: 500, color: '#111827' }}>{viewMember.memberId || '—'}</p>
+                </div>
+                {(viewMember.churchId || (viewMember.position !== 'member' && viewMember.position)) && (
+                  <div>
+                    <span className="admin-members-form-label" style={{ color: '#6B7280', marginBottom: 4 }}>Church ID</span>
+                    <p style={{ margin: 0, fontWeight: 500, color: '#111827' }}>{viewMember.churchId || '—'}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Header */}
       <div className="admin-members-header-container">
@@ -537,7 +666,7 @@ export default function AdminMembers() {
                 <th>Member ID</th>
                 <th>Name</th>
                 <th>Contact</th>
-                <th>Branch</th>
+                <th>Community</th>
                 <th>Position</th>
                 <th>Status</th>
                 <th>Actions</th>
@@ -573,10 +702,30 @@ export default function AdminMembers() {
                     <td style={{ color: '#374151' }}>{m.branch || 'Bulacan Main'}</td>
                     <td style={{ color: '#374151', textTransform: 'capitalize' }}>{m.position || 'Member'}</td>
                     <td><span className={`ps-status-badge ${m.status?.toLowerCase() === 'active' ? 'on-track' : 'default'}`}>{m.status || 'Active'}</span></td>
-                    <td>
-                      <div className="admin-members-actions" style={{ display: 'flex', gap: '8px' }}>
-                        <button className="admin-members-action-btn admin-members-action-edit" onClick={() => setEditMember(m)}><IconEdit /></button>
-                        <button className="admin-members-action-btn admin-members-action-delete" onClick={() => setDeleteMember(m)}><IconTrash /></button>
+                    <td style={{ position: 'relative' }}>
+                      <div className="admin-members-actions" style={{ display: 'flex', justifyContent: 'center' }}>
+                        <button 
+                          className="admin-members-action-dots" 
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            setOpenDropdownId(openDropdownId === m._id ? null : m._id); 
+                          }}
+                        >
+                          <MoreVertical size={20} color="#6B7280" />
+                        </button>
+                        {openDropdownId === m._id && (
+                          <div className="admin-members-dropdown-menu" onClick={(e) => e.stopPropagation()}>
+                            <button className="admin-members-dropdown-item" onClick={() => { setOpenDropdownId(null); setViewMember(m); }}>
+                              <Eye size={16} /> View
+                            </button>
+                            <button className="admin-members-dropdown-item" onClick={() => { setOpenDropdownId(null); setEditMember(m); }}>
+                              <Edit size={16} /> Edit
+                            </button>
+                            <button className="admin-members-dropdown-item admin-members-dropdown-item-danger" onClick={() => { setOpenDropdownId(null); setDeleteMember(m); }}>
+                              <Trash2 size={16} /> Delete
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </td>
                   </tr>

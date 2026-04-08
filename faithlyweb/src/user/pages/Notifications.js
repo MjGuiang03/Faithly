@@ -1,6 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-// import Sidebar from '../components/Sidebar'; // Moved to UserLayout
-
 import '../styles/Notifications.css';
 import API from '../../utils/api';
 import { Banknote, Bell, CalendarDays, Circle, Heart } from 'lucide-react';
@@ -335,7 +333,7 @@ export default function Notifications() {
 
   return (
     <>
-      <div className="user-main-content">
+      <div className="user-notifications-container">
 
         {/* Header */}
         <div className="user-notifications-page-header">

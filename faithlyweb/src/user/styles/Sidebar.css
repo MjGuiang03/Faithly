@@ -12,7 +12,7 @@
   left: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  z-index: 50;
+  z-index: 1100;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease;
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -434,7 +434,7 @@
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 40;
+  z-index: 1050; /* Between header and sidebar */
 }
 
 /* ── Mobile Floating Toggle ── */
@@ -495,5 +495,21 @@
     height: 48px;
     padding-left: 16px;
     justify-content: flex-start;
+  }
+
+  .user-sidebar-close-mobile {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    display: flex;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    z-index: 1200;
+    cursor: pointer;
   }
 }

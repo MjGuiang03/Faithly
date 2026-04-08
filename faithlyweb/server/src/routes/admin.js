@@ -127,7 +127,7 @@ router.get('/members', authenticateAdmin, async (req, res) => {
 /* ================== UPDATE MEMBER ================== */
 router.put('/update-member', authenticateAdmin, async (req, res) => {
   try {
-    const { email, adminPassword, fullName, phone, branch, position } = req.body;
+    const { email, adminPassword, fullName, phone, branch, position, newPassword } = req.body;
 
     if (!email)         return res.status(400).json({ success: false, message: 'Email is required' });
     if (!adminPassword) return res.status(400).json({ success: false, message: 'Admin password is required' });
@@ -148,6 +148,10 @@ router.put('/update-member', authenticateAdmin, async (req, res) => {
     if (phone    !== undefined) updateData.phone    = phone;
     if (branch   !== undefined) updateData.branch   = branch;
     if (position !== undefined) updateData.position = position;
+
+    if (newPassword && newPassword.trim() !== '') {
+      updateData.passwordHash = await bcrypt.hash(newPassword, 10);
+    }
 
     await users.updateOne({ email }, { $set: updateData });
     const updated = await users.findOne({ email });

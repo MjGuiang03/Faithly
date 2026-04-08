@@ -105,7 +105,7 @@ export default function SecretaryAdminDashboard() {
           <>
             {/* Row 1 — 4 Stat Cards */}
             <div className="adm-stats-grid" style={{ width: '100%', gridTemplateColumns: 'repeat(4, 1fr)' }}>
-              <div className="adm-stat-card" style={{ borderTop: '3px solid #F59E0B' }}>
+              <div className="adm-stat-card">
                 <div className="adm-stat-top">
                   <span className="adm-stat-label">Awaiting Processing</span>
                   <div className="adm-stat-icon" style={{ background: '#FEF3C7' }}>
@@ -115,7 +115,7 @@ export default function SecretaryAdminDashboard() {
                 <span className="adm-stat-value">{dash(stats.awaiting)}</span>
               </div>
 
-              <div className="adm-stat-card" style={{ borderTop: '3px solid #155DFC' }}>
+              <div className="adm-stat-card">
                 <div className="adm-stat-top">
                   <span className="adm-stat-label">Processed Today</span>
                   <div className="adm-stat-icon adm-icon-blue">
@@ -125,7 +125,7 @@ export default function SecretaryAdminDashboard() {
                 <span className="adm-stat-value">{dash(stats.today)}</span>
               </div>
 
-              <div className="adm-stat-card" style={{ borderTop: '3px solid #155DFC' }}>
+              <div className="adm-stat-card">
                 <div className="adm-stat-top">
                   <span className="adm-stat-label">This Month</span>
                   <div className="adm-stat-icon adm-icon-blue">
@@ -135,7 +135,7 @@ export default function SecretaryAdminDashboard() {
                 <span className="adm-stat-value">{dash(stats.month)}</span>
               </div>
 
-              <div className="adm-stat-card" style={{ borderTop: '3px solid #00A63E' }}>
+              <div className="adm-stat-card">
                 <div className="adm-stat-top">
                   <span className="adm-stat-label">Total Disbursed</span>
                   <div className="adm-stat-icon adm-icon-green">
@@ -206,19 +206,19 @@ export default function SecretaryAdminDashboard() {
                 </div>
               </div>
               <div className="adm-stats-grid" style={{ gap: '10px', width: '100%', gridTemplateColumns: 'repeat(4, 1fr)' }}>
-                <div className="adm-summary-card" style={{ borderLeft: '3px solid #00A63E' }}>
+                <div className="adm-summary-card">
                   <span className="adm-summary-label">Total Received</span>
                   <span className="adm-summary-value green">₱{reportStats.totalReceived.toLocaleString()}</span>
                 </div>
-                <div className="adm-summary-card" style={{ borderLeft: '3px solid #EF4444' }}>
+                <div className="adm-summary-card">
                   <span className="adm-summary-label">Total Released</span>
                   <span className="adm-summary-value" style={{ color: '#EF4444' }}>₱{reportStats.totalReleased.toLocaleString()}</span>
                 </div>
-                <div className="adm-summary-card" style={{ borderLeft: '3px solid #155DFC' }}>
+                <div className="adm-summary-card">
                   <span className="adm-summary-label">Processed</span>
                   <span className="adm-summary-value blue">₱{reportStats.totalProcessed.toLocaleString()}</span>
                 </div>
-                <div className="adm-summary-card" style={{ borderLeft: '3px solid #8B5CF6' }}>
+                <div className="adm-summary-card">
                   <span className="adm-summary-label">Processing Rate</span>
                   <span className="adm-summary-value" style={{ color: '#8B5CF6' }}>{reportStats.processingRate}%</span>
                 </div>
