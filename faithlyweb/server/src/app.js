@@ -23,14 +23,6 @@ const app = express();
 // 0. Trust proxy (Required for express-rate-limit on Render)
 app.set('trust proxy', 1);
 
-// Debugging middleware to see incoming origins in Render logs
-app.use((req, res, next) => {
-  if (req.method === 'OPTIONS' || req.url.startsWith('/api')) {
-    console.log(`DEBUG: ${req.method} ${req.url} | Origin: ${req.headers.origin}`);
-  }
-  next();
-});
-
 // 1. Move CORS to the very top so even error/limited responses get headers
 const allowedOrigins = [
   'http://localhost:3000',
