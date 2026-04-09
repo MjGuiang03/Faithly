@@ -22,14 +22,16 @@ export const otpLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 5,
   keyGenerator: (req) => req.ip + '_' + (req.body.email ? req.body.email.toLowerCase() : ''),
-  message: { message: 'Too many OTP attempts. Please try again later.' }
+  message: { message: 'Too many OTP attempts. Please try again later.' },
+  validate: { keyGenerator: false }
 });
 
 export const resendOtpLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 3,
   keyGenerator: (req) => req.ip + '_' + (req.body.email ? req.body.email.toLowerCase() : ''),
-  message: { message: 'Too many resend requests. Please wait before trying again.' }
+  message: { message: 'Too many resend requests. Please wait before trying again.' },
+  validate: { keyGenerator: false }
 });
 
 export const resetRequestLimiter = rateLimit({
