@@ -23,19 +23,25 @@ const app = express();
 // 0. Trust proxy (Required for express-rate-limit on Render)
 app.set('trust proxy', 1);
 
-// 1. Move CORS to the very top so even error/limited responses get headers
+// 1. Robust CORS configuration
 app.use(cors({
-  origin: true, // Automatically reflect origin
+  origin: [
+    'https://puacfaithly.com',
+    'https://www.puacfaithly.com',
+    'http://localhost:3000'
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+  optionsSuccessStatus: 200 // Mandatory for some older browsers/proxies to not drop CORS headers
 }));
 
 /* ================== GLOBAL MIDDLEWARE ================== */
-// app.use(globalLimiter); // Temporarily disabled to rule out throttling-related CORS issues
+// app.use(globalLimiter); 
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
-  crossOriginOpenerPolicy: { policy: "unsafe-none" }
+  crossOriginOpenerPolicy: { policy: "unsafe-none" },
+  crossOriginEmbedderPolicy: false // Often causes issues with fonts/images and preflights
 }));
 app.use(mongoSanitize());
 app.use(express.json({ limit: '10mb' }));

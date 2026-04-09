@@ -383,7 +383,7 @@
 /* ── Filled style for amounts ── */
 .ula-filled-input .user-loan-application-input,
 .ula-filled-input .user-loan-application-select {
-  background: var(--secondary);
+  background-color: var(--secondary);
   border-color: transparent;
   padding-top: 10px;
   padding-bottom: 10px;
