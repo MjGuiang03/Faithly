@@ -23,6 +23,14 @@ const app = express();
 // 0. Trust proxy (Required for express-rate-limit on Render)
 app.set('trust proxy', 1);
 
+// Debugging middleware to see incoming origins in Render logs
+app.use((req, res, next) => {
+  if (req.method === 'OPTIONS' || req.url.startsWith('/api')) {
+    console.log(`DEBUG: ${req.method} ${req.url} | Origin: ${req.headers.origin}`);
+  }
+  next();
+});
+
 // 1. Move CORS to the very top so even error/limited responses get headers
 const allowedOrigins = [
   'http://localhost:3000',
@@ -35,21 +43,19 @@ const allowedOrigins = [
 ].filter(Boolean);
 
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin) || allowedOrigins.some(url => origin && url && origin.startsWith(url))) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: allowedOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept'],
+  optionsSuccessStatus: 200
 }));
 
 /* ================== GLOBAL MIDDLEWARE ================== */
 app.use(globalLimiter);
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  crossOriginOpenerPolicy: { policy: "unsafe-none" }
+}));
 app.use(mongoSanitize());
 app.use(express.json({ limit: '10mb' }));
 
