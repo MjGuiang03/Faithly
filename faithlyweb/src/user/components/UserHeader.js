@@ -27,6 +27,14 @@ export default function UserHeader({ toggleSidebar, collapsed }) {
 
     try {
       const res = await fetch(`${API}/api/notifications/feed`, { headers });
+      
+      // Safety guard for non-JSON responses (like 404 pages)
+      const contentType = res.headers.get("content-type");
+      if (!res.ok || !contentType || !contentType.includes("application/json")) {
+        console.warn('Notifications feed not ready or 404. Waiting for next poll.');
+        return;
+      }
+
       const data = await res.json();
       if (!data.success) throw new Error(data.message || 'Failed to fetch feed');
 

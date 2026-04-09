@@ -14,7 +14,10 @@ requiredEnv.forEach(env => {
 
 let client;
 try {
-  client = new MongoClient(process.env.MONGODB_URI);
+  client = new MongoClient(process.env.MONGODB_URI, {
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000,
+  });
   await client.connect();
   console.log('✅ Connected to MongoDB');
 } catch (error) {

@@ -73,6 +73,15 @@ export default function Savings() {
         try {
             if (txnPage === 1) {
                 const res = await fetch(`${API}/api/savings/overview?txnLimit=${TXN_LIMIT}`, { headers });
+                
+                // Safety guard
+                const contentType = res.headers.get("content-type");
+                if (!res.ok || !contentType || !contentType.includes("application/json")) {
+                    setError('Connection issue or backend update pending. Please try again in 1 minute.');
+                    setDataLoading(false);
+                    return;
+                }
+
                 if (res.status === 401) {
                     localStorage.removeItem('token');
                     window.location.href = '/';
