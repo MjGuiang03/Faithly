@@ -791,4 +791,132 @@ router.post('/create-member', authenticateAdmin, async (req, res) => {
   }
 });
 
-export default router;
+
+/* ================== ADMIN - GET DSS ANALYSIS ================== */
+router.get('/loans/:id/dss-analysis', authenticateAdmin, async (req, res) => {
+  try {
+    const { ObjectId } = await import('mongodb');
+    const { id } = req.params;
+    
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, message: 'Invalid Loan ID' });
+    }
+
+    const loan = await loans.findOne({ _id: new ObjectId(id) });
+    if (!loan) return res.status(404).json({ success: false, message: 'Loan not found' });
+
+    const user = await users.findOne({ email: loan.email });
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    // 1. Eligibility Check
+    const officerPositions = [
+        'Deacon','Local Evangelist','District Evangelist','National Evangelist',
+        'Assistant Priest','Priest','Elder','District Elder',
+        'Bishop','District Bishop','National Bishop','Apostle',
+    ];
+    const isOfficer = officerPositions.some(p => p.toLowerCase() === (user.position || '').trim().toLowerCase());
+    const isVerified = user.verificationStatus === 'verified' || user.isVerified === true;
+
+    // - Savings >= ₱2,500
+    const userGoals = await savingsGoals.find({ email: loan.email }).toArray();
+    const totalSavings = userGoals.reduce((sum, g) => sum + (g.savedAmount || 0), 0);
+    const savingsOk = totalSavings >= 2500;
+
+    // - No overdue or unpaid loans (excluding current)
+    const otherLoans = await loans.find({ email: loan.email, _id: { $ne: new ObjectId(id) } }).toArray();
+    const hasOverdue = otherLoans.some(l => l.isLate === true);
+    const unpaidLoans = otherLoans.filter(l => l.status === 'active' || l.remainingBalance > 0);
+
+    // - Information is valid (Selfie + ID) -- Using the files metadata or path
+    const infoValid = !!(loan.selfieData || loan.selfieFileName) && !!(loan.idData || loan.idFileName);
+
+    // 2. Loan Capacity
+    const LOAN_CONFIG = {
+        'personal':   { multiplier: 2,   min: 5000 },
+        'emergency':  { multiplier: 1.5, min: 5000 },
+        'short-term': { multiplier: 1,   min: 5000 }
+    };
+    const config = LOAN_CONFIG[loan.loanType] || LOAN_CONFIG['personal'];
+    const currentBalance = unpaidLoans.reduce((sum, l) => sum + (l.remainingBalance || 0), 0);
+    
+    // Formula: (Savings * Multiplier) - Balance
+    const maxLoanable = Math.max(0, (totalSavings * config.multiplier) - currentBalance);
+    const requestedOk = loan.amount <= maxLoanable && loan.amount >= config.min;
+
+    // 3. Risk Level
+    const payments = await loanPayments.find({ email: loan.email, status: 'confirmed' }).toArray();
+    const historyLate = payments.some(p => p.isLate);
+    const currentlyLate = loan.isLate || hasOverdue;
+
+    let riskTier = 'Low Risk';
+    let riskColor = 'green';
+    let riskLevel = 1;
+
+    if (currentlyLate) {
+        riskTier = 'High Risk';
+        riskColor = 'red';
+        riskLevel = 3;
+    } else if (historyLate) {
+        riskTier = 'Moderate Risk';
+        riskColor = 'yellow';
+        riskLevel = 2;
+    }
+
+    // 4. Recommendation
+    const eligible = isOfficer && isVerified && savingsOk && !hasOverdue && infoValid && requestedOk;
+    let recommendationText = "";
+    
+    if (eligible) {
+        recommendationText = "Based on the member's savings and repayment history, this application appears eligible for approval.";
+    } else if (!isOfficer || !isVerified) {
+        recommendationText = "This application may be declined: Applicant is not a verified officer.";
+    } else if (!savingsOk) {
+        recommendationText = "This application may be declined: Insufficient savings (below ₱2,500).";
+    } else if (hasOverdue) {
+        recommendationText = "The system recommends closer review — this member has an active delinquency record.";
+    } else if (!requestedOk) {
+        if (loan.amount < config.min) {
+            recommendationText = `Minimum loan amount is ₱${config.min.toLocaleString()}.`;
+        } else {
+            recommendationText = "Amount exceeds calculated loan capacity based on savings and existing balance.";
+        }
+    } else {
+        recommendationText = "The system recommends reviewing missing documentation or historical profile.";
+    }
+
+    res.json({
+        success: true,
+        analysis: {
+            eligibility: {
+                isOfficer: isOfficer && isVerified,
+                savingsOk,
+                noOverdue: !hasOverdue,
+                infoValid
+            },
+            capacity: {
+                totalSavings,
+                multiplier: config.multiplier,
+                currentBalance,
+                maxLoanable,
+                requestedOk,
+                requestedAmount: loan.amount
+            },
+            risk: {
+                tier: riskTier,
+                color: riskColor,
+                level: riskLevel,
+                hasHistoryLate: historyLate
+            },
+            recommendation: recommendationText,
+            isEligible: eligible
+        }
+    });
+
+  } catch (err) {
+    console.error('DSS Analysis Error:', err);
+    res.status(500).json({ success: false, message: 'DSS Analysis failed' });
+  }
+});
+
+export default router;
+

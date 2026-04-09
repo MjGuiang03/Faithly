@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import LoanAdminSidebar from './loanAdminSidebar';
+import DSSPanel from '../components/DSSPanel';
 
 import useDebounce from '../../hooks/useDebounce';
 import '../styles/loanAdminLoanManagement.css';
@@ -73,6 +74,10 @@ export default function LoanAdminLoanManagement() {
     const [approvedAmount, setApprovedAmount] = useState('');
     const [repaymentTerm, setRepaymentTerm] = useState('');
     const [viewingImage, setViewingImage] = useState(null);
+
+    /* ── DSS Analysis state ── */
+    const [dssAnalysis, setDssAnalysis] = useState(null);
+    const [dssLoading, setDssLoading] = useState(false);
 
     /* ── Fetch loans from API ── */
     const fetchLoans = useCallback(async () => {
@@ -210,6 +215,21 @@ export default function LoanAdminLoanManagement() {
             const data = await res.json();
             if (res.ok) setMemberSavings(data.totalSavings || 0);
         } catch { /* silent */ }
+
+        /* ── Fetch DSS Analysis ── */
+        setDssLoading(true);
+        try {
+            const token = localStorage.getItem('adminToken');
+            const res = await fetch(`${API}/api/admin/loans/${loan._id}/dss-analysis`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const data = await res.json();
+            if (res.ok) setDssAnalysis(data.analysis);
+        } catch (err) {
+            console.error('DSS Analysis Error:', err);
+        } finally {
+            setDssLoading(false);
+        }
     };
 
     /* ── Derived loan-type info ── */
@@ -510,6 +530,9 @@ export default function LoanAdminLoanManagement() {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* ── DSS Panel ── */}
+                            <DSSPanel analysis={dssAnalysis} loading={dssLoading} />
 
                             {/* Admin — set repayment terms */}
                             <div className="dm-edit-box">
