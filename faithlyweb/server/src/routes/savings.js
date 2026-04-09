@@ -6,6 +6,58 @@ import { authenticateUser } from '../middleware/auth.js';
 
 const router = Router();
 
+/* ================== GET SAVINGS OVERVIEW (Unified) ================== */
+router.get('/savings/overview', authenticateUser, async (req, res) => {
+  try {
+    const email = req.user.email;
+    const { txnLimit = 5 } = req.query;
+
+    // 1. Fetch Goals
+    const goals = await savingsGoals.find({ email }).sort({ createdAt: -1 }).toArray();
+    const totalSavings = goals.reduce((sum, g) => sum + (g.savedAmount || 0), 0);
+
+    // 2. This month's deposits
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthDeposits = await savingsTransactions.aggregate([
+      { $match: { email, type: 'deposit', status: 'confirmed', date: { $gte: monthStart } } },
+      { $group: { _id: null, total: { $sum: '$amount' } } },
+    ]).toArray();
+    const thisMonth = monthDeposits[0]?.total || 0;
+
+    // 3. Active Loans (for max loanable calculation)
+    const activeLoans = await loans.find({ email, status: 'active' }).toArray();
+    const existingBalance = activeLoans.reduce((sum, l) => sum + (l.remainingBalance || l.amount || 0), 0);
+    const maxLoanable = Math.max(0, totalSavings * 2 - existingBalance);
+
+    // 4. Recent Transactions
+    const transactions = await savingsTransactions
+      .find({ email })
+      .sort({ date: -1 })
+      .limit(parseInt(txnLimit))
+      .toArray();
+    
+    const txnTotal = await savingsTransactions.countDocuments({ email });
+
+    res.json({
+      success: true,
+      stats: {
+        totalSavings,
+        thisMonth,
+        activeGoals: goals.filter(g => g.status !== 'completed').length,
+        completedGoals: goals.filter(g => g.status === 'completed').length,
+        maxLoanable
+      },
+      goals,
+      transactions,
+      txnTotal
+    });
+  } catch (err) {
+    console.error('Savings overview error:', err);
+    res.status(500).json({ success: false, message: 'Failed to fetch savings overview' });
+  }
+});
+
 /* ================== GET SAVINGS STATS ================== */
 router.get('/savings/stats', authenticateUser, async (req, res) => {
   try {

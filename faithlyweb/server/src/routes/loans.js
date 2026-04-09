@@ -427,6 +427,21 @@ router.put('/admin/loans/:id/process', authenticateAdmin, async (req, res) => {
 });
 
 
+/* ================== USER - MY PENDING PAYMENTS ================== */
+router.get('/loans/my-pending-payments', authenticateUser, async (req, res) => {
+    try {
+        const email = req.user.email;
+        const payments = await loanPayments
+            .find({ email, status: 'pending' })
+            .sort({ submittedAt: -1 })
+            .toArray();
+        res.json({ success: true, payments });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Failed to fetch pending payments' });
+    }
+});
+
 /* ================== USER - GET SINGLE LOAN ================== */
 router.get('/loans/:id', authenticateUser, async (req, res) => {
   try {
@@ -676,20 +691,6 @@ router.get('/loans/:id/payment-history', authenticateUser, async (req, res) => {
     }
 });
 
-/* ================== USER - MY PENDING PAYMENTS ================== */
-router.get('/loans/my-pending-payments', authenticateUser, async (req, res) => {
-    try {
-        const email = req.user.email;
-        const payments = await loanPayments
-            .find({ email, status: 'pending' })
-            .sort({ submittedAt: -1 })
-            .toArray();
-        res.json({ success: true, payments });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ success: false, message: 'Failed to fetch pending payments' });
-    }
-});
 
 
 /* ================== ADMIN - LOAN REPORTS ================== */

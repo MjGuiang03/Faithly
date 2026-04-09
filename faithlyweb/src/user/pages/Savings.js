@@ -71,25 +71,33 @@ export default function Savings() {
         if (!token) { if (showLoader) setDataLoading(false); return; }
         const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
         try {
-            const [goalsRes, txnRes, statsRes] = await Promise.all([
-                fetch(`${API}/api/savings/goals`, { headers }),
-                fetch(`${API}/api/savings/transactions?page=${txnPage}&limit=${TXN_LIMIT}`, { headers }),
-                fetch(`${API}/api/savings/stats`, { headers }),
-            ]);
-            if ([goalsRes, txnRes, statsRes].some(r => r.status === 401)) {
-                localStorage.removeItem('token');
-                window.location.href = '/';
-                return;
+            if (txnPage === 1) {
+                const res = await fetch(`${API}/api/savings/overview?txnLimit=${TXN_LIMIT}`, { headers });
+                if (res.status === 401) {
+                    localStorage.removeItem('token');
+                    window.location.href = '/';
+                    return;
+                }
+                const data = await res.json();
+                if (data.success) {
+                    setGoals(data.goals || []);
+                    setTransactions(data.transactions || []);
+                    setTxnTotal(data.txnTotal || 0);
+                    setStats(data.stats || {});
+                }
+            } else {
+                const res = await fetch(`${API}/api/savings/transactions?page=${txnPage}&limit=${TXN_LIMIT}`, { headers });
+                if (res.status === 401) {
+                    localStorage.removeItem('token');
+                    window.location.href = '/';
+                    return;
+                }
+                const data = await res.json();
+                if (data.success) {
+                    setTransactions(data.transactions || []);
+                    setTxnTotal(data.totalCount || 0);
+                }
             }
-            const [goalsData, txnData, statsData] = await Promise.all([
-                goalsRes.json(), txnRes.json(), statsRes.json(),
-            ]);
-            if (goalsData.success) setGoals(goalsData.goals || []);
-            if (txnData.success) {
-                setTransactions(txnData.transactions || []);
-                setTxnTotal(txnData.totalCount || 0);
-            }
-            if (statsData.success) setStats(statsData.stats || {});
         } catch {
             setError('Network error. Please try again.');
         } finally {

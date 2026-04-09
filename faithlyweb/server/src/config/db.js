@@ -67,6 +67,7 @@ await announcements.createIndex({ createdAt: -1 });
 await savingsGoals.createIndex({ email: 1 });
 await savingsTransactions.createIndex({ email: 1 });
 await savingsTransactions.createIndex({ date: -1 });
+await savingsTransactions.createIndex({ email: 1, type: 1, status: 1, date: -1 });
 
 
 /* ================== CREATE DEFAULT ADMINS ================== */

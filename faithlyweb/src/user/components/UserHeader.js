@@ -26,46 +26,36 @@ export default function UserHeader({ toggleSidebar, collapsed }) {
     const headers = { Authorization: `Bearer ${token}` };
 
     try {
-      const [readRes, ppNotifRes, loansRes, donationsRes, attendanceRes] = await Promise.all([
-        fetch(`${API}/api/read-notifications`, { headers }),
-        fetch(`${API}/api/loans/my-pending-payments`, { headers }),
-        fetch(`${API}/api/loans/my-loans`, { headers }),
-        fetch(`${API}/api/donations/my-donations`, { headers }),
-        fetch(`${API}/api/attendance/my-attendance`, { headers }),
-      ]);
+      const res = await fetch(`${API}/api/notifications/feed`, { headers });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message || 'Failed to fetch feed');
 
-      const [readData, ppNotifData, loansData, donationsData, attendanceData] = await Promise.all([
-        readRes.ok ? readRes.json() : { readIds: [] },
-        ppNotifRes.ok ? ppNotifRes.json() : { payments: [] },
-        loansRes.ok ? loansRes.json() : { success: false, loans: [] },
-        donationsRes.ok ? donationsRes.json() : { success: false, donations: [] },
-        attendanceRes.ok ? attendanceRes.json() : { success: false, attendance: [] },
-      ]);
+      const { readIds: readIdsFromData, payments, loans: loansDataFeed, donations: donationsDataFeed, attendance: attendanceDataFeed } = data;
 
-      const currentReadIds = new Set(readData.readIds || []);
+      const currentReadIds = new Set(readIdsFromData || []);
       setReadIds(currentReadIds);
 
       const items = [];
-      if (loansData.success) {
-        (loansData.loans || []).forEach(l => {
+      if (loansDataFeed) {
+        loansDataFeed.forEach(l => {
           if (l.status === 'awaiting_member_approval') {
             items.push({ id: `loan-terms-${l._id}`, type: 'loan', title: 'Terms Modified', message: `Review proposed terms for loan ${l.loanId}.`, timestamp: l.updatedAt });
           }
           if (l.status === 'approved') items.push({ id: `loan-app-${l._id}`, type: 'loan', title: 'Loan Approved', message: `Your loan ${l.loanId} has been approved.`, timestamp: l.updatedAt });
         });
       }
-      if (ppNotifData.payments) {
-        ppNotifData.payments.forEach(p => {
+      if (payments) {
+        payments.forEach(p => {
           items.push({ id: `payment-pending-${p._id}`, type: 'payment_pending', title: 'Payment Submitted', message: `Month #${p.monthNumber} payment for ${p.loanId} is pending.`, timestamp: p.submittedAt });
         });
       }
-      if (donationsData.success) {
-        donationsData.donations.filter(d => d.status === 'confirmed').forEach(d => {
+      if (donationsDataFeed) {
+        donationsDataFeed.filter(d => d.status === 'confirmed').forEach(d => {
           items.push({ id: `don-${d._id}`, type: 'donation', title: 'Donation Received', message: `₱${d.amount.toLocaleString()} donation confirmed.`, timestamp: d.updatedAt });
         });
       }
-      if (attendanceData.success) {
-        attendanceData.attendance.slice(0, 5).forEach(a => {
+      if (attendanceDataFeed) {
+        attendanceDataFeed.slice(0, 5).forEach(a => {
           items.push({ id: `att-${a._id}`, type: 'attendance', title: 'Attendance Recorded', message: `Attended ${a.service || 'Sunday Service'}.`, timestamp: a.createdAt });
         });
       }
@@ -80,7 +70,7 @@ export default function UserHeader({ toggleSidebar, collapsed }) {
 
   useEffect(() => {
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 60000); // Poll every minute
+    const interval = setInterval(fetchNotifications, 120000); // Poll every 2 minutes
     return () => clearInterval(interval);
   }, [fetchNotifications]);
 
