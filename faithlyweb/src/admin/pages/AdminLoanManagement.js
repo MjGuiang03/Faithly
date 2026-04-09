@@ -18,13 +18,13 @@ const fmtDate = (d) => {
   });
 };
 
-const STATUSES = ['all', 'pending', 'active', 'completed', 'rejected'];
+const STATUSES = ['all', 'pending', 'approved', 'active', 'completed', 'rejected'];
 
 export default function AdminLoanManagement() {
   const navigate = useNavigate();
 
   const [loans,        setLoans]        = useState([]);
-  const [stats,        setStats]        = useState({ pending: 0, active: 0, completed: 0, totalDisbursed: 0 });
+  const [stats,        setStats]        = useState({ pending: 0, approved: 0, active: 0, completed: 0, totalDisbursed: 0 });
   const [searchTerm,   setSearchTerm]   = useState('');
   const debouncedSearch = useDebounce(searchTerm, 400);
   const [statusFilter, setStatusFilter] = useState('all');
@@ -65,7 +65,7 @@ export default function AdminLoanManagement() {
       }
 
       setLoans(data.loans  || []);
-      setStats(data.stats  || { pending: 0, active: 0, completed: 0, totalDisbursed: 0 });
+      setStats(data.stats  || { pending: 0, approved: 0, active: 0, completed: 0, totalDisbursed: 0 });
     } catch (err) {
       toast.error('Network error. Could not load loans.');
     } finally {
@@ -142,6 +142,10 @@ export default function AdminLoanManagement() {
         <div className="admin-loan-stat-card">
           <p className="admin-loan-stat-label">Pending Review</p>
           <p className="admin-loan-stat-value">{stats.pending}</p>
+        </div>
+        <div className="admin-loan-stat-card">
+          <p className="admin-loan-stat-label">Awaiting Disbursement</p>
+          <p className="admin-loan-stat-value">{stats.approved || 0}</p>
         </div>
         <div className="admin-loan-stat-card">
           <p className="admin-loan-stat-label">Active Loans</p>

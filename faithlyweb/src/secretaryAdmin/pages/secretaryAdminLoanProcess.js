@@ -31,9 +31,9 @@ export default function SecretaryLoanProcess() {
             const data = await res.json();
             
             if (data.success && data.loans) {
-                // Show only active loans for processing
-                const activeLoans = data.loans.filter(l => l.status === 'active');
-                setLoans(activeLoans);
+                // Show approved loans awaiting disbursement
+                const awaitingDisbursement = data.loans.filter(l => l.status === 'approved' || (l.status === 'active' && !l.disbursed));
+                setLoans(awaitingDisbursement);
             }
         } catch (err) {
             console.error(err);

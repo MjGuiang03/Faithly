@@ -211,6 +211,7 @@ router.get('/admin/loans', authenticateAdmin, async (req, res) => {
 
     const stats = {
       pending:        await loans.countDocuments({ status: 'pending' }),
+      approved:       await loans.countDocuments({ status: 'approved' }),
       active:         await loans.countDocuments({ status: 'active' }),
       completed:      await loans.countDocuments({ status: 'completed' }),
       rejected:       await loans.countDocuments({ status: 'rejected' }),
@@ -288,7 +289,7 @@ router.put('/admin/loans/:id/approve', authenticateAdmin, async (req, res) => {
     await loans.updateOne(
       { _id: new ObjectId(id) },
       { 
-        $set: { status: 'active', approvedDate: new Date(), updatedAt: new Date() },
+        $set: { status: 'approved', approvedDate: new Date(), updatedAt: new Date() },
         $push: { statusHistory: { status: 'approved', date: new Date() } }
       }
     );
@@ -395,9 +396,9 @@ router.put('/admin/loans/:id/process', authenticateAdmin, async (req, res) => {
     const loan = await loans.findOne({ _id: new ObjectId(id) });
     if (!loan) return res.status(404).json({ success: false, message: 'Loan not found' });
 
-    // Ensure the loan is approved/active and hasn't already been disbursed
-    if (loan.status !== 'active') {
-      return res.status(400).json({ success: false, message: 'Only active loans can be processed' });
+    // Ensure the loan is approved and hasn't already been disbursed
+    if (loan.status !== 'approved' && loan.status !== 'active') {
+      return res.status(400).json({ success: false, message: 'Only approved loans can be processed for disbursement' });
     }
     if (loan.disbursed) {
       return res.status(400).json({ success: false, message: 'This loan has already been disbursed' });
@@ -407,6 +408,7 @@ router.put('/admin/loans/:id/process', authenticateAdmin, async (req, res) => {
       { _id: new ObjectId(id) },
       { 
         $set: { 
+          status: 'active',
           disbursed: true, 
           disbursementDate: new Date(), 
           paymentMethod,
@@ -415,7 +417,7 @@ router.put('/admin/loans/:id/process', authenticateAdmin, async (req, res) => {
           proofFileName: proofFileName || null,
           updatedAt: new Date() 
         },
-        $push: { statusHistory: { status: 'processed', date: new Date() } }
+        $push: { statusHistory: { status: 'active', date: new Date() } }
       }
     );
 

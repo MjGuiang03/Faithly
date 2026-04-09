@@ -43,7 +43,7 @@ export default function Loans() {
   /* ── Verification & Active Loan Logic ── */
   const profile = user;
   const isVerified = isOfficerPosition(profile?.position);
-  const hasActiveLoan = loans.some(l => l.status === 'active' || l.status === 'pending' || l.status === 'overdue');
+  const hasActiveLoan = loans.some(l => ['active', 'pending', 'approved', 'overdue', 'awaiting_member_approval'].includes(l.status));
   const nextDueLoan = loans.find(l => l.status === 'active' && l.nextPaymentDate);
 
   // Redirect non-officers away from this page
@@ -257,7 +257,7 @@ export default function Loans() {
                 <div className="ul-stat-card">
                   <label className="ul-stat-label">Total Borrowed</label>
                   <div className="ul-stat-value">{fmt(stats.totalBorrowed)}</div>
-                  <div className="ul-stat-sub">{stats.activeCount > 0 ? `${stats.activeCount} active loan` : 'No loans yet'}</div>
+                  <div className="ul-stat-sub">{stats.activeCount > 0 ? `${stats.activeCount} active loan(s)` : loans.some(l => l.status === 'approved') ? 'Awaiting disbursement' : 'No loans yet'}</div>
                 </div>
                 <div className="ul-stat-card">
                   <label className="ul-stat-label">Remaining Balance</label>
@@ -291,7 +291,7 @@ export default function Loans() {
                     <div className="ul-section-title">Active loan</div>
                   </div>
 
-                  {loans.filter(l => l.status === 'active' || l.status === 'pending').length === 0 ? (
+                  {loans.filter(l => ['active', 'pending', 'approved', 'awaiting_member_approval', 'overdue'].includes(l.status)).length === 0 ? (
                     <div className="ul-empty-state">
                       <div className="ul-empty-icon" style={{ background: 'rgba(21, 93, 252, 0.1)' }}>
                         <Banknote size={24} color="#155DFC" />
@@ -308,7 +308,7 @@ export default function Loans() {
                     </div>
                   ) : (
                     <div className="ul-loans-list user-fade-in">
-                      {loans.filter(l => l.status === 'active' || l.status === 'pending').slice(0, 1).map((loan) => (
+                      {loans.filter(l => ['active', 'pending', 'approved', 'awaiting_member_approval', 'overdue'].includes(l.status)).slice(0, 1).map((loan) => (
                         <div key={loan._id} className="ul-loan-card">
                           <div className="ul-loan-card-top">
                             <div>
@@ -370,6 +370,11 @@ export default function Loans() {
                             {loan.status === 'active' && (
                               <button className="ul-action-btn ul-action-btn--primary" onClick={() => navigate(`/loans/${loan.loanId}?pay=true`)}>
                                 Pay now
+                              </button>
+                            )}
+                            {loan.status === 'approved' && (
+                              <button className="ul-action-btn" disabled title="Awaiting secretary disbursement" style={{ opacity: 0.6, cursor: 'not-allowed' }}>
+                                Awaiting disbursement
                               </button>
                             )}
                           </div>
