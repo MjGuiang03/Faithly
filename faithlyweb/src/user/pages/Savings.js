@@ -44,6 +44,11 @@ export default function Savings() {
       }
     }, [user, isOfficer, navigate]);
 
+    // Initial data fetch
+    useEffect(() => {
+        fetchAll();
+    }, [fetchAll]);
+
     /* ── modal state ── */
     const [modal, setModal] = useState(null); // 'deposit' | 'newGoal' | 'quickDeposit' | 'editGoal' | 'transfer'
     const [modalData, setModalData] = useState(null);

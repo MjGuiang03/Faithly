@@ -24,23 +24,12 @@ const app = express();
 app.set('trust proxy', 1);
 
 // 1. Move CORS to the very top so even error/limited responses get headers
-// 1. Manual CORS Middleware (Ensures headers even if server is under heavy load or has errors)
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  // Reflect the origin if it exists
-  if (origin) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
-  
-  // Handle Preflight
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-  next();
-});
+app.use(cors({
+  origin: true, // Automatically reflect origin
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
+}));
 
 /* ================== GLOBAL MIDDLEWARE ================== */
 // app.use(globalLimiter); // Temporarily disabled to rule out throttling-related CORS issues
