@@ -24,26 +24,26 @@ const app = express();
 app.set('trust proxy', 1);
 
 // 1. Move CORS to the very top so even error/limited responses get headers
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://localhost:3001',
-  'http://127.0.0.1:3000',
-  'https://puacfaithly.com',
-  'https://www.puacfaithly.com',
-  'https://faithly-frontend.vercel.app',
-  process.env.FRONTEND_URL
-].filter(Boolean);
-
-app.use(cors({
-  origin: true, // Reflect the request origin
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
-  optionsSuccessStatus: 200
-}));
+// 1. Manual CORS Middleware (Ensures headers even if server is under heavy load or has errors)
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  // Reflect the origin if it exists
+  if (origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+  
+  // Handle Preflight
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  next();
+});
 
 /* ================== GLOBAL MIDDLEWARE ================== */
-app.use(globalLimiter);
+// app.use(globalLimiter); // Temporarily disabled to rule out throttling-related CORS issues
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
   crossOriginOpenerPolicy: { policy: "unsafe-none" }
