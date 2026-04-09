@@ -143,9 +143,9 @@ export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, o
       const role = result.role || 'user';
       if (role === 'admin') {
         navigate('/admin/dashboard');
-      } else if (role === 'loanAdmin') {
+      } else if (role === 'loanAdmin' || role === 'loan') {
         navigate('/loan-admin/dashboard');
-      } else if (role === 'secretaryAdmin') {
+      } else if (role === 'secretaryAdmin' || role === 'secretary') {
         navigate('/secretary-admin/dashboard');
       } else {
         navigate('/home');

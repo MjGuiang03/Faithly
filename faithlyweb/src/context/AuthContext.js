@@ -92,7 +92,9 @@ export const AuthProvider = ({ children }) => {
 
       // For admin roles, also populate legacy admin keys so existing
       // admin dashboard pages (which read localStorage directly) keep working
-      if (role === 'admin' || role === 'loanAdmin' || role === 'secretaryAdmin') {
+      const isAdminRole = ['admin', 'loanAdmin', 'secretaryAdmin', 'loan', 'secretary'].includes(role);
+      
+      if (isAdminRole) {
         localStorage.setItem('adminToken', data.token);
         localStorage.setItem('adminEmail', data.user.email);
         localStorage.setItem('adminRole', role);

@@ -23,17 +23,16 @@ const app = express();
 // 0. Trust proxy (Required for express-rate-limit on Render)
 app.set('trust proxy', 1);
 
-// 1. ABSOLUTE TOP MANIFOLD: Guarantees CORS headers before anything else
+// 1. ABSOLUTE TOP MANIFOLD: Reflect origin dynamically to solve persistent CORS blocks
 app.use((req, res, next) => {
-  const allowedOrigins = [
-    'https://puacfaithly.com',
-    'https://www.puacfaithly.com',
-    'http://localhost:3000'
-  ];
   const origin = req.headers.origin;
   
-  if (allowedOrigins.includes(origin)) {
+  // Reflect the incoming origin exactly if it exists
+  if (origin) {
     res.setHeader('Access-Control-Allow-Origin', origin);
+  } else {
+    // Fallback for requests without Origin header (e.g. direct server-to-server)
+    res.setHeader('Access-Control-Allow-Origin', 'https://puacfaithly.com');
   }
   
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -48,12 +47,8 @@ app.use((req, res, next) => {
 });
 
 /* ================== GLOBAL MIDDLEWARE ================== */
-// app.use(globalLimiter); 
-app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" },
-  crossOriginOpenerPolicy: { policy: "unsafe-none" },
-  crossOriginEmbedderPolicy: false
-}));
+// Temporarily disabled Helmet to rule out low-level header stripping
+// app.use(helmet({ ... }));
 app.use(mongoSanitize());
 app.use(express.json({ limit: '10mb' }));
 

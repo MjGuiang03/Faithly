@@ -190,9 +190,11 @@ router.post('/login',
       const { password } = req.body;
 
       /* ---- 1. Fetch Concurrently (Timing Mitigation) ---- */
+      // Use case-insensitive regex to handle legacy accounts with mixed-case emails
+      const emailRegex = new RegExp(`^${email}$`, 'i');
       const [admin, user] = await Promise.all([
-        admins.findOne({ email }),
-        users.findOne({ email })
+        admins.findOne({ email: emailRegex }),
+        users.findOne({ email: emailRegex })
       ]);
       const account = admin || user;
       const isAdminType = !!admin;
@@ -243,8 +245,13 @@ router.post('/login',
         });
       }
 
-      /* ---- 5. Issue Token ---- */
-      const role = isAdminType ? account.role : 'user';
+      /* ---- 5. Issue Token & Normalize Roles ---- */
+      let role = isAdminType ? account.role : 'user';
+
+      // Normalize internal role names to match frontend expectations
+      if (role === 'loan') role = 'loanAdmin';
+      if (role === 'secretary') role = 'secretaryAdmin';
+
       const audience = isAdminType ? 'faithly-admin' : 'faithly-users';
 
       const token = jwt.sign(
