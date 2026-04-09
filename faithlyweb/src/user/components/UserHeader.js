@@ -38,7 +38,7 @@ export default function UserHeader({ toggleSidebar, collapsed }) {
       const data = await res.json();
       if (!data.success) throw new Error(data.message || 'Failed to fetch feed');
 
-      const { readIds: readIdsFromData, payments, loans: loansDataFeed, donations: donationsDataFeed, attendance: attendanceDataFeed } = data;
+      const { readIds: readIdsFromData, payments, loans: loansDataFeed, donations: donationsDataFeed, attendance: attendanceDataFeed, savings: savingsDataFeed } = data;
 
       const currentReadIds = new Set(readIdsFromData || []);
       setReadIds(currentReadIds);
@@ -65,6 +65,19 @@ export default function UserHeader({ toggleSidebar, collapsed }) {
       if (attendanceDataFeed) {
         attendanceDataFeed.slice(0, 5).forEach(a => {
           items.push({ id: `att-${a._id}`, type: 'attendance', title: 'Attendance Recorded', message: `Attended ${a.service || 'Sunday Service'}.`, timestamp: a.createdAt });
+        });
+      }
+      if (savingsDataFeed) {
+        savingsDataFeed.filter(s => s.type === 'deposit').forEach(s => {
+          items.push({ 
+            id: `sav-${s._id}`, 
+            type: 'savings', 
+            title: s.status === 'confirmed' ? 'Savings Validated' : 'Savings Deposit', 
+            message: s.status === 'confirmed' 
+              ? `Your deposit of ₱${s.amount.toLocaleString()} is now confirmed.` 
+              : `A deposit of ₱${s.amount.toLocaleString()} has been recorded.`, 
+            timestamp: s.date || s.createdAt 
+          });
         });
       }
 
@@ -188,6 +201,7 @@ export default function UserHeader({ toggleSidebar, collapsed }) {
                         {item.type === 'loan' ? <Banknote size={18} color="#155DFC" /> : 
                          item.type === 'donation' ? <Heart size={18} color="#155DFC" /> :
                          item.type === 'attendance' ? <CalendarDays size={18} color="#155DFC" /> :
+                         item.type === 'savings' ? <Banknote size={18} color="#155DFC" /> :
                          <Circle size={10} color="#155DFC" />}
                       </div>
                       <div className="user-header-notif-content">

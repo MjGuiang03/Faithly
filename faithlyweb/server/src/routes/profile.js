@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { users, otps, loans, loanPayments, donations, attendance } from '../config/db.js';
+import { users, otps, loans, loanPayments, donations, attendance, savingsTransactions } from '../config/db.js';
 import { authenticateUser } from '../middleware/auth.js';
 import { sendOTP, generateOTP } from '../utils/email.js';
 
@@ -198,21 +198,23 @@ router.get('/notifications/feed', authenticateUser, async (req, res) => {
     const email = req.user.email;
     const limit = 10;
 
-    const [userReq, pendingPayments, userLoans, userDonations, userAttendance] = await Promise.all([
+    const [userReq, pendingPayments, userLoans, userDonations, userAttendance, userSavings] = await Promise.all([
       users.findOne({ email }),
       loanPayments.find({ email, status: 'pending' }).sort({ submittedAt: -1 }).limit(limit).toArray(),
       loans.find({ email }).sort({ updatedAt: -1 }).limit(limit).toArray(),
       donations.find({ email }).sort({ updatedAt: -1 }).limit(limit).toArray(),
       attendance.find({ email }).sort({ createdAt: -1 }).limit(limit).toArray(),
+      savingsTransactions.find({ email }).sort({ date: -1 }).limit(limit).toArray(),
     ]);
 
     res.json({
       success: true,
       readIds: userReq?.readNotifications || [],
-      payments: pendingPayments,
-      loans: userLoans,
-      donations: userDonations,
-      attendance: userAttendance
+      payments:   pendingPayments,
+      loans:      userLoans,
+      donations:  userDonations,
+      attendance: userAttendance,
+      savings:    userSavings
     });
   } catch (err) {
     console.error('Notification feed error:', err);

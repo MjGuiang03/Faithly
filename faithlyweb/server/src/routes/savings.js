@@ -79,6 +79,13 @@ router.get('/savings/stats', authenticateUser, async (req, res) => {
     const activeGoals = goals.filter(g => g.status !== 'completed').length;
     const completedGoals = goals.filter(g => g.status === 'completed').length;
 
+    // Pending savings calculation
+    const pendingDeposits = await savingsTransactions.aggregate([
+      { $match: { email, type: 'deposit', status: 'pending' } },
+      { $group: { _id: null, total: { $sum: '$amount' } } },
+    ]).toArray();
+    const pendingSavings = pendingDeposits[0]?.total || 0;
+
     // Max loanable (2x savings)
     const activeLoans = await loans.find({ email, status: 'active' }).toArray();
     const existingBalance = activeLoans.reduce((sum, l) => sum + (l.remainingBalance || l.amount || 0), 0);
@@ -86,7 +93,7 @@ router.get('/savings/stats', authenticateUser, async (req, res) => {
 
     res.json({
       success: true,
-      stats: { totalSavings, thisMonth, activeGoals, completedGoals, maxLoanable },
+      stats: { totalSavings, pendingSavings, thisMonth, activeGoals, completedGoals, maxLoanable },
     });
   } catch (err) {
     console.error('Savings stats error:', err);

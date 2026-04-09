@@ -299,7 +299,14 @@ export default function Savings() {
                             </div>
                             <div className="sv-txn-info">
                                 <div className="sv-txn-label">{txn.description || (isIn ? 'Deposit' : 'Withdrawal')}{txn.goalName ? ` — ${txn.goalName}` : ''}</div>
-                                <div className="sv-txn-date">{fmtDate(txn.date)}{txn.source ? ` · ${txn.source}` : ''}</div>
+                                <div className="sv-txn-date-row">
+                                    <span className="sv-txn-date">{fmtDate(txn.date)}{txn.source ? ` · ${txn.source}` : ''}</span>
+                                    {isIn && (
+                                        <span className={`sv-txn-status-badge sv-txn-status--${txn.status || 'pending'}`}>
+                                            {txn.status === 'confirmed' ? 'Validated' : txn.status === 'rejected' ? 'Rejected' : 'Pending'}
+                                        </span>
+                                    )}
+                                </div>
                             </div>
                             <div className={`sv-txn-amt ${isIn ? 'sv-txn-amt--in' : 'sv-txn-amt--out'}`}>
                                 {isIn ? '+' : '-'}{fmt(txn.amount)}

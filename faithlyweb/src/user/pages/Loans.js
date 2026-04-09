@@ -37,6 +37,7 @@ export default function Loans() {
   const [totalCount,   setTotalCount]   = useState(0);
 
   const [totalSavings, setTotalSavings] = useState(0);
+  const [pendingSavings, setPendingSavings] = useState(0);
   const [isLoanModalOpen, setIsLoanModalOpen] = useState(false);
 
   /* ── Verification & Active Loan Logic ── */
@@ -75,7 +76,8 @@ export default function Loans() {
       }
 
       if (statsRes.ok && statsData.success) {
-        setTotalSavings(statsData.totalSavings || 0);
+        setTotalSavings(statsData.stats?.totalSavings || 0);
+        setPendingSavings(statsData.stats?.pendingSavings || 0);
       }
     } catch {
       setError('Connection failure');
@@ -110,8 +112,18 @@ export default function Loans() {
           <h3 className="ul-locked-title">Loan Application Locked</h3>
           <p className="ul-locked-sub">
             To apply for a loan, you must have a minimum savings balance of <strong>₱1,000</strong>.
-            Please fund your savings account first.
           </p>
+          <div style={{ marginTop: '8px', fontSize: '13px', display: 'flex', gap: '16px', opacity: 0.9 }}>
+            <span><strong>Confirmed:</strong> ₱{Number(totalSavings).toLocaleString()}</span>
+            {pendingSavings > 0 && (
+              <span style={{ color: '#F59E0B' }}><strong>Pending:</strong> ₱{Number(pendingSavings).toLocaleString()}</span>
+            )}
+          </div>
+          {pendingSavings > 0 && totalSavings < 1000 && (
+            <p className="ul-locked-sub" style={{ marginTop: '4px', fontStyle: 'italic', fontSize: '12px' }}>
+              Your loan application will be unlocked once your pending deposits are confirmed by an admin.
+            </p>
+          )}
         </div>
       </div>
       <button className="ul-locked-action-btn" onClick={() => navigate('/savings')}>
