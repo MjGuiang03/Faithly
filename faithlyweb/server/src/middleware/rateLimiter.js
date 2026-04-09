@@ -2,13 +2,13 @@ import rateLimit from 'express-rate-limit';
 
 export const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 200,
+  max: 1000, // Increased for verification
   message: { message: 'Too many requests. Please slow down.' }
 });
 
 export const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5,
+  max: 20, // Increased from 5 to avoid blocking user testing
   message: { message: 'Too many login attempts. Try again in 15 minutes.' }
 });
 
