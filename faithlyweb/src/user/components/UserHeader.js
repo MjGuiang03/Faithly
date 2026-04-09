@@ -2,13 +2,12 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 import { Bell, Banknote, Heart, CalendarDays, Circle, X, Menu } from 'lucide-react';
-import puacLogo from '../../assets/puaclogo.png';
 import API from '../../utils/api';
 import '../styles/UserHeader.css';
 
 export default function UserHeader({ toggleSidebar, collapsed }) {
   const navigate = useNavigate();
-  const { user, profile } = useAuth();
+  const { profile } = useAuth();
   const token = localStorage.getItem('token');
 
 

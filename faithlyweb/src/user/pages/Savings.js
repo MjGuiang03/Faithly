@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import SavingsModals from '../components/SavingsModal';
 import '../styles/Savings.css';
 import API from '../../utils/api';
-import { Circle, Edit, PiggyBank, Home, ShoppingBag, Star, Car, ShieldAlert, ArrowDownLeft, ArrowUpRight, TrendingUp, Target, Banknote } from 'lucide-react';
+import { Circle, PiggyBank, Home, ShoppingBag, Star, Car, ShieldAlert, ArrowDownLeft, ArrowUpRight, TrendingUp, Target, Banknote } from 'lucide-react';
 import { isOfficerPosition } from '../../utils/officerPositions';
 
 
@@ -23,16 +23,6 @@ const GOAL_COLORS = {
     pink: { bg: '#fbeaf0', bar: '#d4537e', text: '#4b1528', pct: '#993556' },
 };
 
-const GoalIcon = ({ color = 'blue', type = 'default' }) => {
-    const stroke = GOAL_COLORS[color]?.pct || '#185fa5';
-    if (type === 'house')     return <Home size={18} color={stroke} />;
-    if (type === 'bag')       return <ShoppingBag size={18} color={stroke} />;
-    if (type === 'star')      return <Star size={18} color={stroke} />;
-    if (type === 'car')       return <Car size={18} color={stroke} />;
-    if (type === 'emergency') return <ShieldAlert size={18} color={stroke} />;
-    // default: piggy bank
-    return <PiggyBank size={18} color={stroke} />;
-};
 
 const TxnArrowIn = () => (
     <ArrowDownLeft size={14} color="#27500a" />
@@ -107,13 +97,8 @@ export default function Savings() {
         }
     }, [txnPage]);
 
-    useEffect(() => { fetchAll(true); }, [fetchAll]);
-
     const openDeposit = () => setModal('deposit');
     const openNewGoal = () => setModal('newGoal');
-    const openQuickDep = (goal) => { setModalData(goal); setModal('quickDeposit'); };
-    const openEditGoal = (goal) => { setModalData(goal); setModal('editGoal'); };
-    const openTransfer = (goal) => { setModalData(goal); setModal('transfer'); };
     const closeModal = () => { setModal(null); setModalData(null); fetchAll(false); };
 
     const hasGoals = goals.length > 0;

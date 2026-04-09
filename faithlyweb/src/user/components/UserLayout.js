@@ -4,7 +4,7 @@ import Sidebar from './Sidebar';
 import UserHeader from './UserHeader';
 import Chatbot from './Chatbot';
 import NotificationPrompt from '../../components/NotificationPrompt';
-import { MessageCircle, X, Menu } from 'lucide-react';
+import { MessageCircle, X } from 'lucide-react';
 import { useEffect } from 'react';
 
 export default function UserLayout() {

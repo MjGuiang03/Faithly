@@ -39,7 +39,7 @@ export default function Sidebar({ collapsed, setCollapsed, toggleCollapsed }) {
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [setCollapsed]);
 
   const handleNavClick = (path) => {
     navigate(path);

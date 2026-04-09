@@ -4,13 +4,13 @@ import { useAuth } from '../../context/AuthContext';
 
 import API from '../../utils/api';
 import '../styles/Home.css';
-import { Banknote, CalendarDays, CheckCircle, ChevronRight, Heart, MapPin, PiggyBank, Wallet, FileText, X, Bell, Circle } from 'lucide-react';
+import { Banknote, CalendarDays, CheckCircle, ChevronRight, Heart, MapPin, PiggyBank, Wallet, FileText } from 'lucide-react';
 import { isOfficerPosition } from '../../utils/officerPositions';
 
 
 export default function Home() {
   const navigate = useNavigate();
-  const { user, profile } = useAuth();
+  const { profile } = useAuth();
 
   const [loanStats, setLoanStats] = useState({ activeCount: 0, remainingBalance: 0 });
   const [activeLoansList, setActiveLoansList] = useState([]);

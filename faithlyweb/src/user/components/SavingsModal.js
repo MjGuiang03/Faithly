@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import '../styles/SavingsModal.css';
 import API from '../../utils/api';
-import { CheckCircle, FileText, X, ArrowDownRight, ArrowUpLeft, Repeat, History, Calendar, Target, TrendingUp } from 'lucide-react';
+import { CheckCircle, FileText, X, ArrowDownRight, ArrowUpLeft, Repeat, History } from 'lucide-react';
 
 
 const fmt = (n) =>
@@ -1073,7 +1073,7 @@ function GoalInfoModal({ goal, onClose, onEdit, onTransfer, onQuickDeposit }) {
             }
         };
         fetchHistory();
-    }, [goal._id]);
+    }, [goal._id, goal]);
 
     const fmtDateShort = (d) => {
         if (!d) return '';

@@ -19,7 +19,6 @@ export default function AdminSidebar() {
   const location  = useLocation();
   const [unreadCount, setUnreadCount] = useState(0);
   const prevNotifIdsRef = useRef(new Set());
-  const [pendingVerificationsCount, setPendingVerificationsCount] = useState(0);
   const [isMembersOpen,  setIsMembersOpen]  = useState(() =>
     location.pathname.startsWith('/admin/members')
   );
