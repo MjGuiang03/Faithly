@@ -1,4 +1,8 @@
 import { MongoClient } from 'mongodb';
+import dns from 'dns';
+
+// Force Google DNS to resolve MongoDB SRV records (fixes Render ETIMEOUT issues)
+dns.setServers(['8.8.8.8', '8.8.4.4']);
 import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 dotenv.config();
