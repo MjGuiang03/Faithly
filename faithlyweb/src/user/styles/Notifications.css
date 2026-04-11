@@ -57,13 +57,18 @@
   background: var(--card);
   border: 1px solid var(--border-strong);
   border-radius: 10px;
-  padding: 9px 20px;
+  padding: 0 16px;
+  height: 46px; /* Matched to filter bar */
   font-family: 'Inter', sans-serif;
   font-size: 13px;
   color: var(--foreground);
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition: all 0.15s;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
   flex-shrink: 0;
 }
 
@@ -73,6 +78,15 @@
 }
 
 /* ── Filter tabs ── */
+/* Row for Filters + Button */
+.user-notif-controls-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
 .user-notif-filters {
   display: flex;
   gap: 4px;
@@ -81,23 +95,28 @@
   border-radius: 12px;
   padding: 4px;
   width: fit-content;
+  height: 46px; /* Balanced height */
+  align-items: center;
+  box-sizing: border-box;
 }
 
 .user-notif-filter-btn {
   background: transparent;
   border: none;
   border-radius: 9px;
-  padding: 8px 16px;
+  height: 38px; /* Fills container nicely with padding */
+  padding: 0 16px;
   font-family: 'Inter', sans-serif;
   font-size: 13px;
   color: var(--text-secondary);
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 7px;
   white-space: nowrap;
-  transition: background 0.15s, color 0.15s;
-  line-height: 20px;
+  transition: all 0.15s;
+  box-sizing: border-box;
 }
 
 .user-notif-filter-btn:hover {

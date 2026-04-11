@@ -3,7 +3,7 @@ import SecretaryAdminSidebar from '../components/secretaryAdminSidebar';
 import '../styles/secretaryAdminNotif.css';
 
 import API from '../../utils/api';
-import { Bell, Circle } from 'lucide-react';
+import { Bell, Circle, Banknote } from 'lucide-react';
 
 
 export default function SecretaryAdminNotif() {
@@ -91,58 +91,55 @@ export default function SecretaryAdminNotif() {
             <SecretaryAdminSidebar />
 
             <div className="sec-admin-notif-content">
-                {/* Header */}
+                {/* ── Page Header ── */}
                 <div className="sec-admin-notif-header">
                     <div className="sec-admin-notif-header-left">
                         <h1 className="sec-admin-notif-title">Notifications</h1>
                         {unreadCount > 0 && (
-                            <div className="sec-admin-notif-badge">{unreadCount} New</div>
+                            <div className="sec-admin-notif-badge">{unreadCount}</div>
                         )}
                     </div>
-                    {unreadCount > 0 && (
-                        <button
-                            className="sec-admin-notif-mark-all"
-                            onClick={handleMarkAllAsRead}
-                        >
-                            <Circle size={20} color="#155DFC" />
-                            Mark all as read
-                        </button>
-                    )}
+                    <p className="sec-admin-notif-subtitle">
+                        Process disbursement notifications for approved loan applications.
+                    </p>
                 </div>
 
+                {/* Filters + Action Row */}
+                <div className="admin-notif-controls-row">
+                    <div className="admin-notif-tabs">
+                        {[
+                            { key: 'all',    label: 'All' },
+                            { key: 'unread', label: 'Unread' },
+                            { key: 'read',   label: 'Read' }
+                        ].map(({ key, label }) => {
+                            const count = key === 'unread' ? unreadCount : 0;
+                            return (
+                                <button
+                                    key={key}
+                                    className={`admin-notif-tab${activeFilter === key ? ' admin-notif-tab-active' : ''}`}
+                                    onClick={() => setActiveFilter(key)}
+                                >
+                                    {label}
+                                    {count > 0 && (
+                                        <span className="admin-notif-tab-badge">{count}</span>
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </div>
 
-
-                {/* Filter Tabs matching Admin Design */}
-                <div className="admin-notif-tabs" style={{ marginBottom: '24px' }}>
-                    {[
-                        { key: 'all',    label: 'All' },
-                        { key: 'unread', label: 'Unread' },
-                        { key: 'read',   label: 'Read' }
-                    ].map(({ key, label }) => {
-                        const count = key === 'unread' ? unreadCount : 0;
-                        return (
-                            <button
-                                key={key}
-                                className={`admin-notif-tab${activeFilter === key ? ' admin-notif-tab-active' : ''}`}
-                                onClick={() => setActiveFilter(key)}
-                            >
-                                {label}
-                                {count > 0 && (
-                                    <span className="admin-notif-tab-badge">{count}</span>
-                                )}
-                            </button>
-                        );
-                    })}
+                    <button className="sec-admin-notif-mark-all" onClick={handleMarkAllAsRead}>
+                        Mark all as read
+                    </button>
                 </div>
 
-                {/* Notifications List */}
+                {/* ── List ── */}
                 <div className="sec-admin-notif-list">
                     {loading ? (
-                        <div style={{ padding: '40px', textAlign: 'center', color: '#6B7280' }}>Loading notifications...</div>
+                        <p style={{ color: '#9CA3AF', fontSize: 13, padding: '40px 0', textAlign: 'center', fontFamily: 'Inter' }}>Loading notifications…</p>
                     ) : filteredNotifications.length === 0 ? (
                         <div className="sec-admin-notif-empty">
-                            <Bell size={48} color="#D1D5DB" />
-                            <p className="sec-admin-notif-empty-text">No notifications found</p>
+                            <p className="sec-admin-notif-empty-text">No notifications found.</p>
                         </div>
                     ) : (
                         filteredNotifications.map(notification => (
@@ -153,42 +150,30 @@ export default function SecretaryAdminNotif() {
                                     if (!notification.isRead) handleMarkAsRead(notification.id);
                                     setDetailModal(notification);
                                 }}
-                                style={{ cursor: 'pointer' }}
                             >
-                                <div className="sec-admin-notif-card-content">
-                                    <div className="sec-admin-notif-card-icon">
-                                        <Circle size={20} color="#155DFC" />
+                                <div className="sec-admin-notif-card-icon">
+                                    <Banknote size={20} color="#155DFC" />
+                                </div>
+
+                                <div className="sec-admin-notif-card-body">
+                                    <div className="sec-admin-notif-card-header">
+                                        <h3 className="sec-admin-notif-card-title">Loan Approved</h3>
+                                        {!notification.isRead && (
+                                            <div className="sec-admin-notif-unread-dot"></div>
+                                        )}
                                     </div>
 
-                                    <div className="sec-admin-notif-card-body">
-                                        <div className="sec-admin-notif-card-header">
-                                            <h3 className="sec-admin-notif-card-title">Loan Approved</h3>
-                                            {!notification.isRead && (
-                                                <div className="sec-admin-notif-unread-dot"></div>
-                                            )}
-                                        </div>
+                                    <p className="sec-admin-notif-card-message">
+                                        Loan LN-{notification.loanId} for {notification.member} (₱{Number(notification.amount).toLocaleString()}) has been approved. Please process the disbursement.
+                                    </p>
 
-                                        <p className="sec-admin-notif-card-message">
-                                            Loan LN-{notification.loanId} for {notification.member} (₱{Number(notification.amount).toLocaleString()}) has been approved by the Loan Admin. Please process the disbursement.
-                                        </p>
-
-                                        <div className="sec-admin-notif-card-footer">
-                                            <p className="sec-admin-notif-card-timestamp">{notification.date} {notification.time}</p>
-
-                                            {notification.isRead ? (
-                                                <span className="sec-admin-notif-status-badge read">Read</span>
-                                            ) : (
-                                                <div className="sec-admin-notif-card-actions">
-                                                    <span className="sec-admin-notif-status-badge unread">Unread</span>
-                                                    <button
-                                                        className="sec-admin-notif-mark-read"
-                                                        onClick={() => handleMarkAsRead(notification.id)}
-                                                    >
-                                                        Mark as read
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
+                                    <div className="sec-admin-notif-card-footer">
+                                        <span className="sec-admin-notif-card-timestamp">{notification.date} {notification.time}</span>
+                                        {!notification.isRead ? (
+                                            <span className="sec-admin-notif-status-badge">New</span>
+                                        ) : (
+                                            <span className="sec-admin-notif-status-badge read">Read</span>
+                                        )}
                                     </div>
                                 </div>
                             </div>

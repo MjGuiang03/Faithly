@@ -38,7 +38,7 @@ const DSSPanel = ({ analysis, loading }) => {
           </div>
           <div className="dss-check-item">
             {eligibility.savingsOk ? <CheckCircle className="icon pass" size={18} /> : <XCircle className="icon fail" size={18} />}
-            <span>Savings ≥ ₱2,500 ({fmt(capacity.totalSavings)})</span>
+            <span>Savings ≥ ₱1,000 ({fmt(capacity.totalSavings)})</span>
           </div>
           <div className="dss-check-item">
             {eligibility.noOverdue ? <CheckCircle className="icon pass" size={18} /> : <XCircle className="icon fail" size={18} />}
@@ -71,7 +71,7 @@ const DSSPanel = ({ analysis, loading }) => {
             ></div>
           </div>
           <p className="dss-capacity-hint">
-            Limit: {capacity.multiplier}x Savings - Existing Balance ({fmt(capacity.currentBalance)})
+            Limit: {capacity.multiplier}x Savings
           </p>
         </div>
       </div>

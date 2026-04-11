@@ -40,21 +40,23 @@ export default function Notifications() {
     const hdrs = { Authorization: `Bearer ${token}` };
 
     try {
-      const [lRes, dRes, aRes, sRes, ppRes, readRes] = await Promise.all([
+      const [lRes, dRes, aRes, sRes, ppRes, annRes, readRes] = await Promise.all([
         fetch(`${API}/api/loans/my-loans`, { headers: hdrs }),
         fetch(`${API}/api/donations/my-donations`, { headers: hdrs }),
         fetch(`${API}/api/attendance/my-attendance`, { headers: hdrs }),
         fetch(`${API}/api/savings/transactions`, { headers: hdrs }),
         fetch(`${API}/api/loans/my-pending-payments`, { headers: hdrs }),
+        fetch(`${API}/api/admin/announcements`, { headers: hdrs }),
         fetch(`${API}/api/read-notifications`, { headers: hdrs }),
       ]);
 
-      const [lData, dData, aData, sData, ppData, readData] = await Promise.all([
+      const [lData, dData, aData, sData, ppData, annData, readData] = await Promise.all([
         lRes.ok ? lRes.json() : { loans: [] },
         dRes.ok ? dRes.json() : { donations: [] },
         aRes.ok ? aRes.json() : { attendance: [] },
         sRes.ok ? sRes.json() : { transactions: [] },
         ppRes.ok ? ppRes.json() : { payments: [] },
+        annRes.ok ? annRes.json() : { announcements: [] },
         readRes.ok ? readRes.json() : { readIds: [] },
       ]);
       setReadIds(new Set(readData.readIds || []));
@@ -203,6 +205,17 @@ export default function Notifications() {
         });
       });
 
+      /* Announcements → notifications */
+      (annData.announcements || []).forEach((ann) => {
+        items.push({
+          id: `ann-${ann._id}`,
+          type: 'announcement',
+          timestamp: ann.createdAt || ann.date,
+          title: ann.title,
+          message: ann.body || ann.message || '',
+        });
+      });
+
       /* Sort newest first */
       items.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
       setRawItems(items);
@@ -287,6 +300,11 @@ export default function Notifications() {
         <CalendarDays size={18} color="#155DFC" />
       </div>
     );
+    if (type === 'announcement') return (
+      <div className="user-notif-icon" style={{ background: '#EEF2FF', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <Bell size={18} color="#155DFC" />
+      </div>
+    );
     return null;
   };
 
@@ -329,6 +347,7 @@ export default function Notifications() {
       : type === 'donation' ? 'Donation'
         : type === 'savings' ? 'Savings'
           : type === 'payment_pending' ? 'Payment'
+            : type === 'announcement' ? 'Announcement'
             : 'Attendance';
 
   return (
@@ -345,32 +364,36 @@ export default function Notifications() {
               )}
             </div>
           </div>
+        </div>
+
+        {/* Controls Row: Filters + Mark All */}
+        <div className="user-notif-controls-row">
+          <div className="user-notif-filters">
+            {[
+              { key: 'all', label: 'All' },
+              { key: 'attendance', label: 'Attendance' },
+              { key: 'loan', label: 'Loan Transaction' },
+              { key: 'payment_pending', label: 'Pending Payments' },
+              { key: 'donation', label: 'Donations' },
+              { key: 'savings', label: 'Savings' },
+              { key: 'announcement', label: 'Announcements' },
+            ].map(({ key, label }) => (
+              <button
+                key={key}
+                className={`user-notif-filter-btn${activeFilter === key ? ' active' : ''}`}
+                onClick={() => setActiveFilter(key)}
+              >
+                {label}
+                {unreadCount(key) > 0 && (
+                  <span className="user-notif-filter-pill" style={{ backgroundColor: '#EF4444' }}>{unreadCount(key)}</span>
+                )}
+              </button>
+            ))}
+          </div>
+
           <button className="user-notifications-mark-all-btn" onClick={markAllAsRead}>
             Mark all as read
           </button>
-        </div>
-
-        {/* Filter Tabs */}
-        <div className="user-notif-filters">
-          {[
-            { key: 'all', label: 'All' },
-            { key: 'attendance', label: 'Attendance' },
-            { key: 'loan', label: 'Loan Transaction' },
-            { key: 'payment_pending', label: 'Pending Payments' },
-            { key: 'donation', label: 'Donations' },
-            { key: 'savings', label: 'Savings' },
-          ].map(({ key, label }) => (
-            <button
-              key={key}
-              className={`user-notif-filter-btn${activeFilter === key ? ' active' : ''}`}
-              onClick={() => setActiveFilter(key)}
-            >
-              {label}
-              {unreadCount(key) > 0 && (
-                <span className="user-notif-filter-pill" style={{ backgroundColor: '#EF4444' }}>{unreadCount(key)}</span>
-              )}
-            </button>
-          ))}
         </div>
 
         {/* List */}

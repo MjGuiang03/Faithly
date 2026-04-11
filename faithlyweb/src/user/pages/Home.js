@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 
 import API from '../../utils/api';
 import '../styles/Home.css';
-import { Banknote, CalendarDays, CheckCircle, ChevronRight, Heart, MapPin, PiggyBank, Wallet, FileText } from 'lucide-react';
+import { Banknote, CalendarDays, CheckCircle, ChevronRight, Heart, MapPin, PiggyBank, Wallet, FileText, Megaphone } from 'lucide-react';
 import { isOfficerPosition } from '../../utils/officerPositions';
 
 
@@ -102,6 +102,7 @@ export default function Home() {
             : (vis === 'branches' && Array.isArray(branches) && branches.length > 0)
               ? branches.join(', ')
               : vis;
+          const timeLabel = ann.eventDate ? new Date(ann.eventDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : '';
           return {
             ...ann,
             day: d.getDate().toString(),
@@ -110,6 +111,7 @@ export default function Home() {
             body: text.length > 80 ? text.substring(0, 80) + '...' : text,
             fullBody: text,
             dateObj: d,
+            time: timeLabel,
             category: ann.category || 'General',
             branch: branchLabel,
             tag: ann.category || 'General',
@@ -124,12 +126,22 @@ export default function Home() {
       const activities = [];
 
       if (loansData.success && loansData.loans?.length) {
+        const STATUS_TEXT = {
+          pending:    'Pending review',
+          approved:   'Approved',
+          active:     'Active',
+          completed:  'Completed',
+          rejected:   'Rejected',
+          overdue:    'Overdue',
+          awaiting_member_approval: 'Review requested',
+        };
+
         loansData.loans.slice(0, 5).forEach(loan => {
           activities.push({
             type: 'loan',
-            title: `Loan ${loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}`,
+            title: `Loan ${STATUS_TEXT[loan.status] || loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}`,
             loanId: loan.loanId,
-            amount: `₱${loan.amount.toLocaleString()}`,
+            amount: `₱${Number(loan.amount).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
             date: new Date(loan.appliedDate),
             status: loan.status,
           });
@@ -145,7 +157,7 @@ export default function Home() {
               type: 'donation',
               title: 'Donation Made',
               category: donation.category,
-              amount: `₱${donation.amount.toLocaleString()}`,
+              amount: `₱${Number(donation.amount).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
               date: new Date(donation.createdAt),
             });
         });
@@ -255,8 +267,8 @@ export default function Home() {
             </div>
             <div className="user-stat-content">
               <p className="user-stat-label">Total Savings</p>
-              {loading ? <div className="user-skeleton" style={{ height: '24px', width: '80px', marginTop: '4px' }}></div> : <p className="user-stat-value user-fade-in">{`₱${(savingsStats.totalSavings || 0).toLocaleString()}`}</p>}
-              {!loading && <p className="user-stat-subtext user-stat-subtext-green">+₱{(savingsStats.thisMonth || 0).toLocaleString()} this month</p>}
+              {loading ? <div className="user-skeleton" style={{ height: '24px', width: '80px', marginTop: '4px' }}></div> : <p className="user-stat-value user-fade-in">{`₱${Number(savingsStats.totalSavings || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</p>}
+              {!loading && <p className="user-stat-subtext user-stat-subtext-green">+₱{Number(savingsStats.thisMonth || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} this month</p>}
             </div>
 
             {/* Hover Tooltip */}
@@ -266,7 +278,7 @@ export default function Home() {
                 {savingsGoalsList.slice(0, 3).map(goal => (
                   <div key={goal._id} className="user-loan-hover-item">
                     <span className="user-loan-hover-id">{goal.name}</span>
-                    <span className="user-loan-hover-amount">₱{(goal.savedAmount || 0).toLocaleString()}</span>
+                    <span className="user-loan-hover-amount">₱{Number(goal.savedAmount || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
                 ))}
                 {savingsGoalsList.length > 3 && (
@@ -297,7 +309,7 @@ export default function Home() {
                 {activeLoansList.slice(0, 1).map(loan => (
                   <div key={loan._id} className="user-loan-hover-item">
                     <span className="user-loan-hover-id">{loan.loanId}</span>
-                    <span className="user-loan-hover-amount">₱{loan.amount.toLocaleString()}</span>
+                    <span className="user-loan-hover-amount">₱{Number(loan.amount).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
                 ))}
                 {activeLoansList.length > 1 && (
@@ -316,7 +328,7 @@ export default function Home() {
             </div>
             <div className="user-stat-content">
               <p className="user-stat-label">Total Donated</p>
-              {loading ? <div className="user-skeleton" style={{ height: '24px', width: '80px', marginTop: '4px' }}></div> : <p className="user-stat-value user-fade-in">{`₱${(donationStats.totalDonated || 0).toLocaleString()}`}</p>}
+              {loading ? <div className="user-skeleton" style={{ height: '24px', width: '80px', marginTop: '4px' }}></div> : <p className="user-stat-value user-fade-in">{`₱${Number(donationStats.totalDonated || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</p>}
               {!loading && <p className="user-stat-subtext">{monthlyDonationCount} contribution{monthlyDonationCount !== 1 ? 's' : ''} this month</p>}
             </div>
           </div>
@@ -423,7 +435,10 @@ export default function Home() {
                         <span className="user-event-title">{evt.title}</span>
                         <span className="user-event-tag" style={{ color: c.color, background: c.bg }}>{evt.category}</span>
                       </div>
-                      <span className="user-event-time">{evt.body}</span>
+                      <div className="user-event-time">
+                        {evt.time && <span style={{ fontWeight: 600, color: c.color, marginRight: '6px' }}>{evt.time}</span>}
+                        {evt.body}
+                      </div>
                       <div className="user-event-meta-row">
                         <span className="user-event-branch">
                           <MapPin size={12} />
@@ -482,34 +497,91 @@ export default function Home() {
       {selectedEvent && (
         <div className="user-event-detail-overlay" onClick={() => setSelectedEvent(null)}>
           <div className="user-event-detail-content" onClick={e => e.stopPropagation()}>
-            <div className="user-event-detail-header">
-              <span className="user-event-detail-tag">{selectedEvent.category}</span>
-              <button className="user-event-close-btn" onClick={() => setSelectedEvent(null)}>×</button>
-            </div>
-            <h2 className="user-event-detail-title">{selectedEvent.title}</h2>
-            <div className="user-event-detail-meta">
-              <div className="user-event-meta-item">
-                <CalendarDays size={16} />
-                {selectedEvent.dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+            <button className="user-event-modal-close-abs" onClick={() => setSelectedEvent(null)}>×</button>
+            
+            <div className={`ann-card ann-card-modal ann-card-${selectedEvent.template || 'banner'}`}>
+              {/* Template: Banner Top */}
+              {(selectedEvent.template === 'banner' || !selectedEvent.template) && (
+                <div className="ann-banner">
+                  {selectedEvent.images && selectedEvent.images.length > 0 ? (
+                    <div className="ann-slider">
+                      {selectedEvent.images.map((img, i) => (
+                        <img 
+                          key={i}
+                          src={img} 
+                          alt="" 
+                          onClick={() => window.open(img, '_blank')}
+                          title="Click to view full image"
+                        />
+                      ))}
+                    </div>
+                  ) : selectedEvent.image ? (
+                    <img 
+                      src={selectedEvent.image} 
+                      alt="" 
+                      onClick={() => window.open(selectedEvent.image, '_blank')}
+                      title="Click to view full image"
+                    />
+                  ) : (
+                    <div className="ann-banner-placeholder"><Megaphone size={32} color="#1E3A8A" /></div>
+                  )}
+                  {selectedEvent.images?.length > 1 && (
+                    <div className="ann-slider-count">{selectedEvent.images.length} photos</div>
+                  )}
+                </div>
+              )}
+
+              {/* Template: Side Image */}
+              {selectedEvent.template === 'side' && (
+                <div className="ann-side-img">
+                  {selectedEvent.images && selectedEvent.images.length > 0 ? (
+                    <div className="ann-slider">
+                      {selectedEvent.images.map((img, i) => (
+                        <img 
+                          key={i}
+                          src={img} 
+                          alt="" 
+                          onClick={() => window.open(img, '_blank')}
+                          title="Click to view full image"
+                        />
+                      ))}
+                    </div>
+                  ) : selectedEvent.image ? (
+                    <img 
+                      src={selectedEvent.image} 
+                      alt="" 
+                      onClick={() => window.open(selectedEvent.image, '_blank')}
+                      title="Click to view full image"
+                    />
+                  ) : (
+                    <div className="ann-banner-placeholder"><Megaphone size={24} color="#1E3A8A" /></div>
+                  )}
+                </div>
+              )}
+
+              <div className="ann-body ann-body-modal">
+                <div className="ann-header-row">
+                  <span className="ann-cat">{selectedEvent.category}</span>
+                </div>
+                
+                <h2 className="ann-title ann-title-modal">{selectedEvent.title}</h2>
+                
+                <div className="ann-msg ann-msg-modal">
+                  {selectedEvent.fullBody}
+                </div>
+
+                <div className="ann-meta ann-meta-modal">
+                  <span>
+                    <CalendarDays size={14} /> 
+                    {selectedEvent.dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                    {selectedEvent.time && ` at ${selectedEvent.time}`}
+                  </span>
+                  <span>
+                    <MapPin size={14} /> 
+                    {selectedEvent.branch}
+                  </span>
+                </div>
               </div>
-              <div className="user-event-meta-item">
-                <CalendarDays size={16} />
-                {selectedEvent.branch}
-              </div>
-            </div>
-            {/* Admin-uploaded event image */}
-            {selectedEvent.image && (
-              <div style={{ borderRadius: '10px', overflow: 'hidden', margin: '12px 0', maxHeight: '280px' }}>
-                <img
-                  src={selectedEvent.image}
-                  alt={selectedEvent.title}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                  onError={(e) => { e.target.style.display = 'none'; }}
-                />
-              </div>
-            )}
-            <div className="user-event-detail-body">
-              <p>{selectedEvent.fullBody}</p>
             </div>
           </div>
         </div>

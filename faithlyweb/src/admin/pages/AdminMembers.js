@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ChevronLeft, ChevronRight, Edit, Lock, Search, Trash2, User, UserPlus, Users as UsersIcon, XCircle, X, MoreVertical, Eye } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Edit, Lock, Search, Trash2, User, UserPlus, Users as UsersIcon, XCircle, X, MoreVertical, Eye, CreditCard, CheckCircle2 } from 'lucide-react';
 import useDebounce from '../../hooks/useDebounce';
 import '../styles/AdminMembers.css';
+import React from 'react';
 
 import API from '../../utils/api';
 /* ─── query-string builder ──────────────────────────────────────────────── */
@@ -122,7 +123,7 @@ function EditModal({ member, onClose, onSave }) {
                 <optgroup label="Tarlac">
                   <option>Pacpaco, San Manuel</option><option>Victoria</option>
                 </optgroup>
-                <optgroup label="Nueva Ecija"><option>Bambanaba, Cuyapo</option></optgroup>
+                <optgroup label="Nueva Ecija"><option>Bambanaba,巧Cuyapo</option></optgroup>
                 <optgroup label="Pangasinan">
                   <option>Dagupan</option><option>Mangatarem</option><option>Laoak Langka</option>
                   <option>Orbiztondo</option><option>Malasiqui, Bolaoit</option><option>Taloyan</option>
@@ -400,7 +401,7 @@ function AddMemberModal({ onClose, onSave }) {
                 <optgroup label="Tarlac">
                   <option>Pacpaco, San Manuel</option><option>Victoria</option>
                 </optgroup>
-                <optgroup label="Nueva Ecija"><option>Bambanaba, Cuyapo</option></optgroup>
+                <optgroup label="Nueva Ecija"><option>Bambanaba,巧Cuyapo</option></optgroup>
                 <optgroup label="Pangasinan">
                   <option>Dagupan</option><option>Mangatarem</option><option>Laoak Langka</option>
                   <option>Orbiztondo</option><option>Malasiqui, Bolaoit</option><option>Taloyan</option>
@@ -456,6 +457,101 @@ function AddMemberModal({ onClose, onSave }) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   LINK RFID MODAL
+═══════════════════════════════════════════════════════════════════════════ */
+function LinkRFIDModal({ member, onClose, onSave }) {
+  const [rfidCode, setRfidCode] = useState('');
+  const [saving, setSaving] = useState(false);
+  const rfidBuffer = useRef('');
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
+      if (e.key === 'Enter') {
+        const code = rfidBuffer.current.trim();
+        rfidBuffer.current = '';
+        if (code) setRfidCode(code);
+      } else if (e.key.length === 1) {
+        rfidBuffer.current += e.key;
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const handleLink = async () => {
+    if (!rfidCode) return toast.error('Please scan an RFID card first');
+    setSaving(true);
+    try {
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+      const res = await fetch(`${API}/api/admin/update-member-rfid`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ email: member.email, rfidCardId: rfidCode })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message);
+      toast.success(data.message);
+      onSave();
+    } catch (err) {
+      toast.error(err.message || 'Failed to link RFID card');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="admin-members-modal-overlay" onClick={onClose}>
+      <div className="admin-members-modal admin-members-modal-sm" onClick={e => e.stopPropagation()}>
+        <div className="admin-members-modal-header">
+          <div className="admin-members-modal-header-icon" style={{ background: '#F0F9FF', color: '#0284C7' }}><CreditCard size={20} /></div>
+          <div className="admin-members-modal-header-text">
+            <p className="admin-members-modal-title">Link RFID Card</p>
+            <p className="admin-members-modal-subtitle">Assign card to {member.fullName || member.name}</p>
+          </div>
+          <button className="admin-members-modal-close" onClick={onClose}><X size={20} color="#6a7282" /></button>
+        </div>
+
+        <div className="admin-members-modal-body" style={{ textAlign: 'center', padding: '40px 24px' }}>
+          {rfidCode ? (
+            <div className="rfid-success-zone">
+              <div style={{ color: '#059669', marginBottom: '16px' }}><CheckCircle2 size={48} style={{ margin: '0 auto' }} /></div>
+              <p style={{ fontWeight: 600, fontSize: '18px', color: '#111827', margin: '0 0 8px 0' }}>Card Detected!</p>
+              <p style={{ fontFamily: 'monospace', background: '#F3F4F6', padding: '8px', borderRadius: '4px', display: 'inline-block' }}>{rfidCode}</p>
+              <p style={{ fontSize: '14px', color: '#6B7280', marginTop: '16px' }}>Click "Link Card" to confirm assignment.</p>
+            </div>
+          ) : (
+            <div className="rfid-waiting-zone">
+              <div className="admin-att-scanner-panel active" style={{ border: 'none', background: 'transparent', padding: 0, justifyContent: 'center', marginBottom: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <div className="pulse-indicator" style={{ width: '64px', height: '64px', background: '#D1D5DB', borderRadius: '50%' }}></div>
+              </div>
+              <p style={{ fontWeight: 500, color: '#374151' }}>Waiting for RFID Scan...</p>
+              <p style={{ fontSize: '13px', color: '#6B7280', marginTop: '8px' }}>Please tap the physical card on the reader now.</p>
+            </div>
+          )}
+        </div>
+
+        <div className="admin-members-modal-footer">
+          <button className="admin-members-btn admin-members-btn-cancel" onClick={onClose} disabled={saving} style={{ padding: '8px 16px', borderRadius: '4px', border: '1px solid #D1D5DB', background: 'white', cursor: 'pointer' }}>Cancel</button>
+          <button 
+            className="admin-members-btn admin-members-btn-save" 
+            onClick={handleLink} 
+            disabled={saving || !rfidCode}
+            style={{ 
+               padding: '8px 16px', borderRadius: '4px', border: 'none', 
+               background: !rfidCode ? '#9CA3AF' : '#155DFC', color: 'white', cursor: !rfidCode ? 'not-allowed' : 'pointer' 
+            }}
+          >
+            {saving ? <span className="btn-spinner" /> : 'Link Card'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
    MAIN PAGE
 ═══════════════════════════════════════════════════════════════════════════ */
 const ITEMS_PER_PAGE = 5;
@@ -474,6 +570,7 @@ export default function AdminMembers() {
   const [deleteMember,   setDeleteMember]   = useState(null);
   const [viewMember,     setViewMember]     = useState(null);
   const [showAddModal,   setShowAddModal]   = useState(false);
+  const [enrollRFIDMember, setEnrollRFIDMember] = useState(null);
   const [openDropdownId, setOpenDropdownId] = useState(null);
 
   useEffect(() => {
@@ -535,6 +632,8 @@ export default function AdminMembers() {
       {editMember   && <EditModal   member={editMember}   onClose={() => setEditMember(null)}   onSave={()    => { setEditMember(null);   fetchMembers(); }} />}
       {deleteMember && <DeleteModal member={deleteMember} onClose={() => setDeleteMember(null)} onConfirm={() => { setDeleteMember(null); fetchMembers(); }} />}
       {showAddModal && <AddMemberModal onClose={() => setShowAddModal(false)} onSave={() => { setShowAddModal(false); fetchMembers(); }} />}
+      {enrollRFIDMember && <LinkRFIDModal member={enrollRFIDMember} onClose={() => setEnrollRFIDMember(null)} onSave={() => { setEnrollRFIDMember(null); fetchMembers(); }} />}
+
       {viewMember   && (
         <div className="admin-members-modal-overlay" onClick={() => setViewMember(null)}>
           <div className="admin-members-modal" onClick={e => e.stopPropagation()}>
@@ -572,9 +671,14 @@ export default function AdminMembers() {
                   <p style={{ margin: 0, fontWeight: 500, color: '#111827', textTransform: 'capitalize' }}>{viewMember.position || 'Member'}</p>
                 </div>
                 <div>
-                  <span className="admin-members-form-label" style={{ color: '#6B7280', marginBottom: 4 }}>Member ID</span>
+                  <p className="admin-members-form-label" style={{ color: '#6B7280', marginBottom: 4 }}>Member ID</p>
                   <p style={{ margin: 0, fontWeight: 500, color: '#111827' }}>{viewMember.memberId || '—'}</p>
                 </div>
+                <div>
+                  <p className="admin-members-form-label" style={{ color: '#6B7280', marginBottom: 4 }}>RFID Card ID</p>
+                  <p style={{ margin: 0, fontWeight: 500, color: '#111827', fontFamily: 'monospace' }}>{viewMember.rfidCardId || 'Not Linked'}</p>
+                </div>
+
                 {(viewMember.churchId || (viewMember.position !== 'member' && viewMember.position)) && (
                   <div>
                     <span className="admin-members-form-label" style={{ color: '#6B7280', marginBottom: 4 }}>Church ID</span>
@@ -720,6 +824,9 @@ export default function AdminMembers() {
                             </button>
                             <button className="admin-members-dropdown-item" onClick={() => { setOpenDropdownId(null); setEditMember(m); }}>
                               <Edit size={16} /> Edit
+                            </button>
+                            <button className="admin-members-dropdown-item" onClick={() => { setOpenDropdownId(null); setEnrollRFIDMember(m); }}>
+                              <CreditCard size={16} /> Link RFID
                             </button>
                             <button className="admin-members-dropdown-item admin-members-dropdown-item-danger" onClick={() => { setOpenDropdownId(null); setDeleteMember(m); }}>
                               <Trash2 size={16} /> Delete

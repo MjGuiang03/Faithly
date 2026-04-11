@@ -6,102 +6,247 @@ import { authenticateAdmin } from '../middleware/auth.js';
 
 const router = Router();
 
-/* ================== USER - CHECK IN ================== */
-router.post('/attendance/checkin', authenticateUser, async (req, res) => {
-  try {
-    const email = req.user.email;
-    const { service, branch, method } = req.body;
+/* ================== ADMIN - SESSIONS ================== */
 
-    if (!service || !branch) {
-      return res.status(400).json({ success: false, message: 'Service and branch are required' });
+// Start a new session
+router.post('/admin/attendance/sessions/start', authenticateAdmin, async (req, res) => {
+  try {
+    const { branch, serviceType, date, time, gracePeriod } = req.body;
+    
+    if (!branch || !serviceType || !date || !time) {
+      return res.status(400).json({ success: false, message: 'Branch, Service Type, Date, and Time are required' });
     }
 
-    const user = await users.findOne({ email });
-    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    // Check if there is already an active session for this branch/service
+    const active = await attendanceSessions.findOne({ branch, serviceType, status: 'active' });
+    if (active) {
+       return res.status(400).json({ success: false, message: 'There is already an active session for this branch and service type.' });
+    }
 
-    const count    = await attendance.countDocuments();
-    const recordId = `A-${new Date().getFullYear()}-${String(count + 1).padStart(3, '0')}`;
-    const now      = new Date();
+    const { ObjectId } = await import('mongodb');
+    
+    const count = await attendanceSessions.countDocuments();
+    const sessionId = `SESS-${new Date().getFullYear()}-${String(count + 1).padStart(4, '0')}`;
+    
+    // Parse the start time properly to compute grace period exactly.
+    // Assuming date is YYYY-MM-DD and time is HH:mm
+    const startDateTimeStr = `${date}T${time}:00`;
+    const startDateTime = new Date(startDateTimeStr);
 
-    const newRecord = {
-      recordId, email, member: user.fullName, service, branch,
-      method:    method || 'QR',
-      date:      now.toLocaleDateString('en-US'),
-      time:      now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-      createdAt: now
+    if (isNaN(startDateTime.getTime())) {
+         return res.status(400).json({ success: false, message: 'Invalid Date/Time format provided.' });
+    }
+
+    const grace = parseInt(gracePeriod) || 0; // standard 0 grace minutes
+    
+    const newSession = {
+      sessionId,
+      branch,
+      serviceType,
+      date,
+      time,
+      startDateTime,
+      gracePeriodMinutes: grace,
+      status: 'active',
+      startedAt: new Date(),
+      startedBy: req.admin.email,
+      endedAt: null,
+      stats: { total: 0, present: 0, late: 0, absent: 0 }
     };
 
-    await attendance.insertOne(newRecord);
-    res.status(201).json({ success: true, message: 'Attendance recorded successfully', recordId });
+    const run = await attendanceSessions.insertOne(newSession);
+
+    res.status(201).json({ success: true, message: 'Session started successfully', session: { ...newSession, _id: run.insertedId } });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ success: false, message: 'Failed to record attendance' });
+    res.status(500).json({ success: false, message: 'Failed to start session' });
   }
 });
 
-/* ================== USER - GET MY ATTENDANCE ================== */
-router.get('/attendance/my-attendance', authenticateUser, async (req, res) => {
+// End an active session
+router.post('/admin/attendance/sessions/:id/end', authenticateAdmin, async (req, res) => {
   try {
-    const email  = req.user.email;
-    const { search } = req.query;
-    const page   = parseInt(req.query.page) || 1;
-    const limit  = parseInt(req.query.limit) || 10;
-    const skip   = (page - 1) * limit;
+    const { ObjectId } = await import('mongodb');
+    const sessionId = req.params.id; // Expecting the friendly SESS- id or Object ID
 
-    const findQuery = { email };
-    if (search) {
-      findQuery.$or = [
-        { service:  { $regex: search, $options: 'i' } },
-        { branch:   { $regex: search, $options: 'i' } },
-        { recordId: { $regex: search, $options: 'i' } }
-      ];
+    let query = {};
+    if (sessionId.startsWith('SESS-')) {
+       query = { sessionId, status: 'active' };
+    } else {
+       query = { _id: new ObjectId(sessionId), status: 'active' };
     }
 
-    const totalCount = await attendance.countDocuments(findQuery);
-    const userAttendance = await attendance.find(findQuery)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .toArray();
+    const session = await attendanceSessions.findOne(query);
+    if (!session) {
+      return res.status(404).json({ success: false, message: 'Active session not found' });
+    }
 
-    const now = new Date();
-    const allUserAttendance = await attendance.find(findQuery).toArray();
-    const thisMonth = allUserAttendance.filter(a =>
-      new Date(a.createdAt).getMonth() === now.getMonth() &&
-      new Date(a.createdAt).getFullYear() === now.getFullYear()
+    // 1. End the session
+    await attendanceSessions.updateOne(
+       { _id: session._id },
+       { $set: { status: 'ended', endedAt: new Date() } }
     );
 
-    res.status(200).json({
-      success: true,
-      attendance: userAttendance,
-      totalCount,
-      totalPages: Math.ceil(totalCount / limit),
-      currentPage: page,
-      stats: { total: allUserAttendance.length, thisMonth: thisMonth.length }
+    // 2. Mark all other registered members of this branch as ABSENT
+    // Get all members for this branch
+    const branchMembers = await users.find({ branch: session.branch, isDeleted: { $ne: true } }).toArray();
+    
+    // Get all who checked in this session
+    const checkedIn = await attendance.find({ sessionId: session.sessionId }).toArray();
+    const checkedInEmails = new Set(checkedIn.map(a => a.email));
+
+    const absentees = branchMembers.filter(m => !checkedInEmails.has(m.email));
+    
+    const now = new Date();
+    const count = await attendance.countDocuments();
+    let absRecords = [];
+    
+    absentees.forEach((m, idx) => {
+        absRecords.push({
+            recordId: `A-${now.getFullYear()}-${String(count + idx + 1).padStart(5, '0')}`,
+            sessionId: session.sessionId,
+            email: m.email,
+            member: m.fullName || m.name,
+            service: session.serviceType,
+            branch: session.branch,
+            method: 'None',
+            status: 'Absent',
+            date: now.toLocaleDateString('en-US'),
+            time: '--:--',
+            createdAt: now,
+            rfidCardId: m.rfidCardId || null
+        });
     });
+
+    if (absRecords.length > 0) {
+        await attendance.insertMany(absRecords);
+    }
+    
+    // Update session stats
+    const updatedPres = await attendance.countDocuments({ sessionId: session.sessionId, status: 'Present' });
+    const updatedLate = await attendance.countDocuments({ sessionId: session.sessionId, status: 'Late' });
+    const updatedAbs = await attendance.countDocuments({ sessionId: session.sessionId, status: 'Absent' });
+
+    await attendanceSessions.updateOne(
+        { _id: session._id },
+        { $set: { stats: { total: updatedPres + updatedLate + updatedAbs, present: updatedPres, late: updatedLate, absent: updatedAbs } } }
+    );
+
+    res.status(200).json({ success: true, message: 'Session ended successfully', stats: { total: updatedPres + updatedLate + updatedAbs, present: updatedPres, late: updatedLate, absent: updatedAbs } });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ success: false, message: 'Failed to fetch attendance' });
+    res.status(500).json({ success: false, message: 'Failed to end session' });
   }
 });
 
-/* ================== ADMIN - GET ALL ATTENDANCE ================== */
+// Get active sessions
+router.get('/admin/attendance/sessions/active', authenticateAdmin, async (req, res) => {
+    try {
+       const sessions = await attendanceSessions.find({ status: 'active' }).toArray();
+       res.status(200).json({ success: true, sessions });
+    } catch (err) {
+       console.error(err);
+       res.status(500).json({ success: false, message: 'Failed to fetch active sessions' });
+    }
+});
+
+
+/* ================== RECORD / LOG TAP ================== */
+router.post('/admin/attendance/log-tap', authenticateAdmin, async (req, res) => {
+  try {
+     const { cardId, minLevelSessionId, method } = req.body;
+     
+     if (!cardId && method !== 'Manual') {
+         return res.status(400).json({ success: false, message: 'RFID Data required' });
+     }
+
+     if (!minLevelSessionId) {
+         return res.status(400).json({ success: false, message: 'Session required to log attendance' });
+     }
+
+     // Find the session
+     const session = await attendanceSessions.findOne({ sessionId: minLevelSessionId, status: 'active' });
+     if (!session) {
+         return res.status(404).json({ success: false, message: 'Active session not found' });
+     }
+
+     // Find user
+     let user = null;
+     if (method === 'Manual') {
+        const { memberId } = req.body;
+        if (!memberId) return res.status(400).json({ success: false, message: 'Member ID required for manual entry' });
+        user = await users.findOne({ memberId });
+     } else {
+        user = await users.findOne({ rfidCardId: cardId });
+     }
+
+     if (!user) {
+         return res.status(404).json({ success: false, message: 'User not found / Unregistered Card' });
+     }
+
+     // Check if they already checked in to THIS session
+     const existing = await attendance.findOne({ sessionId: session.sessionId, email: user.email });
+     if (existing) {
+          // Send back green success still, but message "already clocked in"
+         return res.status(200).json({ success: true, alreadyLogged: true, message: 'Already recorded for this session', user: { name: user.fullName, branch: user.branch } });
+     }
+
+     const now = new Date();
+     
+     // Determine Present vs Late
+     // If the check-in is past the start time + grace period
+     const startPlusGrace = new Date(session.startDateTime.getTime() + (session.gracePeriodMinutes * 60000));
+     const isLate = now > startPlusGrace;
+     const status = isLate ? 'Late' : 'Present';
+
+     const count = await attendance.countDocuments();
+     const recordId = `A-${now.getFullYear()}-${String(count + 1).padStart(5, '0')}`;
+
+     const newRecord = {
+         recordId, 
+         sessionId: session.sessionId,
+         email: user.email, 
+         member: user.fullName || user.name, 
+         service: session.serviceType, 
+         branch: session.branch, // record the session's branch, even if user is from another
+         userBranch: user.branch,
+         method: method || 'RFID',
+         rfidCardId: user.rfidCardId || cardId || null,
+         status,
+         date: now.toLocaleDateString('en-US'),
+         time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+         createdAt: now
+     };
+
+     await attendance.insertOne(newRecord);
+
+     res.status(201).json({ success: true, message: `Checked in as ${status}`, record: newRecord });
+
+  } catch(err) {
+     console.error(err);
+     res.status(500).json({ success: false, message: 'Failed to record tap' });
+  }
+});
+
+
+/* ================== ADMIN - GET ALL ATTENDANCE W/ STATS ================== */
 router.get('/admin/attendance', authenticateAdmin, async (req, res) => {
   try {
-    const { search, service, branch, method } = req.query;
+    const { search, service, branch, status, session } = req.query;
     const page  = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip  = (page - 1) * limit;
 
     const query = {};
     if (service) query.service = service;
-    if (branch)  query.branch  = branch;
-    if (method)  query.method  = method;
+    if (branch && branch !== 'all')  query.branch  = branch;
+    if (status && status !== 'all')  query.status  = status;
+    if (session) query.sessionId = session;
     if (search) {
       query.$or = [
         { member:   { $regex: search, $options: 'i' } },
         { recordId: { $regex: search, $options: 'i' } },
-        { email:    { $regex: search, $options: 'i' } }
+        { rfidCardId: { $regex: search, $options: 'i'} }
       ];
     }
 
@@ -112,13 +257,41 @@ router.get('/admin/attendance', authenticateAdmin, async (req, res) => {
       .limit(limit)
       .toArray();
 
-    // Stats calculations still often need more context, but let's optimize where possible
-    const statsQuery = {}; // Base for stats
-    const totalStatsCount = await attendance.countDocuments(statsQuery);
     
-    const now        = new Date();
+    const now = new Date();
+    const todayStr = now.toLocaleDateString('en-US');
+
+    // Stats calculations
+    // 1. Total attendance today (Pres + Late)
+    const totalToday = await attendance.countDocuments({ 
+        date: todayStr, 
+        status: { $in: ['Present', 'Late'] } 
+    });
+
+    const lateToday = await attendance.countDocuments({
+        date: todayStr,
+        status: 'Late'
+    });
+
+    // 2. Services this week (Sessions started this week)
     const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const thisWeekCount = await attendance.countDocuments({ ...statsQuery, createdAt: { $gte: oneWeekAgo } });
+    const servicesThisWeek = await attendanceSessions.countDocuments({
+        startedAt: { $gte: oneWeekAgo }
+    });
+
+    // 3. Average Attendance per Session (from stats, over past 30 days)
+    const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const recentSessions = await attendanceSessions.find({
+        startedAt: { $gte: oneMonthAgo },
+        status: 'ended' // Only ended sessions have final valid stats
+    }).toArray();
+
+    let totalRecentAttenders = 0;
+    recentSessions.forEach(s => {
+        totalRecentAttenders += (s.stats.present + s.stats.late);
+    });
+
+    const avgAttendance = recentSessions.length > 0 ? Math.round(totalRecentAttenders / recentSessions.length) : 0;
 
     res.status(200).json({
       success: true,
@@ -126,12 +299,32 @@ router.get('/admin/attendance', authenticateAdmin, async (req, res) => {
       totalCount,
       totalPages: Math.ceil(totalCount / limit),
       currentPage: page,
-      stats: { total: totalStatsCount, thisWeek: thisWeekCount }
+      stats: { 
+          totalToday, 
+          servicesThisWeek,
+          avgAttendance,
+          lateToday
+      }
     });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Failed to fetch attendance' });
   }
+});
+
+/* ================== CHECK USER RFID EXISTS ================== */
+router.post('/admin/attendance/check-card', authenticateAdmin, async (req, res) => {
+     try {
+         const { cardId } = req.body;
+         const user = await users.findOne({ rfidCardId: cardId });
+         if (user) {
+              return res.status(200).json({ success: true, user: { name: user.fullName, memberId: user.memberId } });
+         } else {
+              return res.status(200).json({ success: false, message: 'Card not registered' });
+         }
+     } catch (err) {
+         res.status(500).json({ success: false });
+     }
 });
 
 export default router;

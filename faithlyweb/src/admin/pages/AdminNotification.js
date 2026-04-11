@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import '../styles/AdminNotification.css';
 
 import API from '../../utils/api';
-import { CalendarDays, Heart, PlusCircle } from 'lucide-react';
+import { CalendarDays, Heart, PlusCircle, Banknote } from 'lucide-react';
 
 const PER_PAGE = 10;
 
@@ -112,94 +112,83 @@ export default function AdminNotifications() {
 
   return (
     <div className="admin-notif-main">
-      {/* Header */}
+      {/* ── Header ── */}
       <div className="admin-notif-header">
         <div className="admin-notif-title-row">
           <div className="admin-notif-title-group">
             <h1 className="admin-notif-title">Notifications</h1>
             {unreadCount > 0 && (
-              <span className="admin-notif-badge">{unreadCount} New</span>
+              <span className="admin-notif-badge">{unreadCount}</span>
             )}
           </div>
-          {unreadCount > 0 && (
-            <button className="admin-notif-mark-all-btn" onClick={markAllAsRead}>
-              <PlusCircle size={20} color="#155DFC" />
-              Mark all as read
-            </button>
-          )}
         </div>
         <p className="admin-notif-subtitle">
-          Member registrations, donations, savings deposits, and attendance check-ins
+          Manage member registrations, donations, savings deposits, and attendance check-ins.
         </p>
       </div>
 
-      {/* Filter Tabs matching User Design */}
-      <div className="admin-notif-tabs" style={{ margin: '0 24px 16px', overflowX: 'auto', flexWrap: 'nowrap', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', display: 'flex' }}>
-        {[
-          { key: 'all',        label: 'All' },
-          { key: 'member',     label: 'Members' },
-          { key: 'donation',   label: 'Donations' },
-          { key: 'savings',    label: 'Savings' },
-          { key: 'attendance', label: 'Attendance' },
-          { key: 'loan',       label: 'Loans' }
-        ].map(({ key, label }) => {
-          const count = enriched.filter(n => (key === 'all' ? true : n.type === key) && !n.isRead).length;
-          return (
-            <button
-              key={key}
-              className={`admin-notif-tab${typeFilter === key ? ' admin-notif-tab-active' : ''}`}
-              onClick={() => { setTypeFilter(key); setPage(1); }}
-            >
-              {label}
-              {count > 0 && (
-                <span className="admin-notif-tab-badge">{count}</span>
-              )}
-            </button>
-          );
-        })}
+      {/* ── Filter Controls Row ── */}
+      <div className="admin-notif-controls-row">
+        <div className="admin-notif-tabs">
+          {[
+            { key: 'all',        label: 'All' },
+            { key: 'member',     label: 'Members' },
+            { key: 'donation',   label: 'Donations' },
+            { key: 'savings',    label: 'Savings' },
+            { key: 'attendance', label: 'Attendance' },
+            { key: 'loan',       label: 'Loans' }
+          ].map(({ key, label }) => {
+            const count = enriched.filter(n => (key === 'all' ? true : n.type === key) && !n.isRead).length;
+            return (
+              <button
+                key={key}
+                className={`admin-notif-tab${typeFilter === key ? ' admin-notif-tab-active' : ''}`}
+                onClick={() => { setTypeFilter(key); setPage(1); }}
+              >
+                {label}
+                {count > 0 && <span className="admin-notif-tab-badge">{count}</span>}
+              </button>
+            );
+          })}
+        </div>
+        
+        <button className="admin-notif-mark-all-btn" onClick={markAllAsRead}>
+          Mark all as read
+        </button>
       </div>
 
-      {/* List */}
+      {/* ── List ── */}
       {loading ? (
         <div className="admin-notif-empty">Loading notifications…</div>
       ) : paginated.length === 0 ? (
-        <div className="admin-notif-empty">
-          No notifications found.
-        </div>
+        <div className="admin-notif-empty">No notifications found.</div>
       ) : (
         <>
           <div className="admin-notif-list">
             {paginated.map((n) => (
               <div
                 key={n.id}
-                className={`admin-notif-item${!n.isRead ? ' admin-notif-item-unread' : ''}`}
+                className={`admin-notif-item ${!n.isRead ? 'admin-notif-item-unread' : ''}`}
                 onClick={() => {
                   if (!n.isRead) markAsRead(n.id);
                   setDetailModal(n);
                 }}
-                style={{ cursor: 'pointer' }}
               >
-                <div className={`admin-notif-icon ${getIconBg(n.type)}`}>
-                  {(n.type === 'donation' || n.type === 'savings') && (
-                    <Heart size={20} color="#E60076" />
-                  )}
-                  {n.type === 'member' && (
-                    <CalendarDays size={20} color="#9810FA" />
-                  )}
-                  {n.type === 'attendance' && (
-                    <CalendarDays size={20} color="#15803D" />
-                  )}
+                <div className={`admin-notif-icon admin-notif-icon-${n.type}`}>
+                  {n.type === 'loan' ? <Banknote size={20} color="#155DFC" /> :
+                   (n.type === 'donation' || n.type === 'savings') ? <Heart size={20} color="#155DFC" /> :
+                   <CalendarDays size={20} color="#155DFC" />}
                 </div>
 
                 <div className="admin-notif-content">
                   <div className="admin-notif-content-header">
-                    <h3 className={`admin-notif-content-title${n.isRead ? ' admin-notif-content-title-read' : ''}`}>
+                    <h3 className={`admin-notif-content-title ${n.isRead ? 'admin-notif-content-title-read' : ''}`}>
                       {n.title}
                     </h3>
                     {!n.isRead && <div className="admin-notif-unread-indicator" />}
                   </div>
 
-                  <p className={`admin-notif-content-message${n.isRead ? ' admin-notif-content-message-read' : ''}`}>
+                  <p className={`admin-notif-content-message ${n.isRead ? 'admin-notif-content-message-read' : ''}`}>
                     {n.message}
                   </p>
 
@@ -207,15 +196,7 @@ export default function AdminNotifications() {
                     <span className="admin-notif-timestamp">{fmtTime(n.timestamp)}</span>
                     <div className="admin-notif-actions">
                       {!n.isRead ? (
-                        <>
-                          <span className="admin-notif-unread-badge">Unread</span>
-                          <button
-                            className="admin-notif-mark-read-btn"
-                            onClick={() => markAsRead(n.id)}
-                          >
-                            Mark as read
-                          </button>
-                        </>
+                        <span className="admin-notif-unread-badge">New</span>
                       ) : (
                         <span className="admin-notif-read-badge">Read</span>
                       )}
@@ -241,7 +222,7 @@ export default function AdminNotifications() {
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
                   <button
                     key={p}
-                    className={`admin-notif-page-btn${p === page ? ' active' : ''}`}
+                    className={`admin-notif-page-btn ${p === page ? 'active' : ''}`}
                     onClick={() => setPage(p)}
                   >{p}</button>
                 ))}

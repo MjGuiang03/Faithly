@@ -524,11 +524,9 @@
 .user-home-community-card {
   background: var(--card);
   border: 1px solid var(--border);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1), 0 4px 10px rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
   display: flex;
   flex-direction: column;
-  position: relative;
-  z-index: 2;
 }
 
 .dark .user-home-community-card {
@@ -1304,6 +1302,28 @@
   display: flex;
   flex-direction: column;
   gap: 0;
+  max-height: 280px; /* Fixed height for the list area */
+  overflow-y: auto;
+  padding-right: 4px; /* Space for scrollbar */
+}
+
+.user-events-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.user-events-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.user-events-list::-webkit-scrollbar-thumb {
+  background: #E2E8F0;
+  border-radius: 4px;
+}
+
+.user-home-events-card {
+  min-height: 380px; /* Matching the height in the screenshot */
+  display: flex;
+  flex-direction: column;
 }
 
 .user-event-row {
@@ -1322,9 +1342,55 @@
   transform: translateX(4px);
 }
 
-.dark .user-event-row:hover {
-  background: rgba(255, 255, 255, 0.03);
+.dark .user-event-modal-close-abs:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
+
+/* Multi-image Slider & Display */
+.ann-slider {
+  display: flex !important;
+  flex-direction: row !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scroll-snap-type: x mandatory !important;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  background: #f8fafc;
+  width: 100%;
+}
+
+.ann-slider::-webkit-scrollbar {
+  display: none;
+}
+
+.ann-slider img {
+  flex-shrink: 0;
+  width: 100% !important;
+  scroll-snap-align: center !important;
+  object-fit: contain !important;
+  max-height: 450px !important;
+}
+
+.ann-slider-count {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+  z-index: 5;
+  pointer-events: none;
+}
+
+.ann-banner {
+  position: relative;
+  overflow: hidden;
+}
+
 
 .user-event-row:last-child {
   border-bottom: none;
@@ -1338,6 +1404,7 @@
 .user-event-date-block {
   width: 42px;
   min-width: 42px;
+  max-width: 42px;
   height: 46px;
   background: #1E3A8A;
   border-radius: 9px;
@@ -1377,8 +1444,9 @@
 .user-event-title-row {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
 }
 
 .user-event-title {
@@ -1386,7 +1454,12 @@
   font-weight: 600;
   color: var(--foreground);
   font-family: 'Inter', sans-serif;
-  line-height: 20px;
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex: 1;
 }
 
 .user-event-tag {
@@ -1402,6 +1475,11 @@
   font-size: 12px;
   color: var(--text-muted);
   font-family: 'Inter', sans-serif;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.4;
 }
 
 .dark .user-event-date-block {
@@ -1435,11 +1513,12 @@
 
 .user-event-accent-bar {
   width: 3px;
-  min-height: 100%;
+  min-width: 3px;
+  max-width: 3px;
   border-radius: 4px;
   flex-shrink: 0;
   align-self: stretch;
-  min-height: 70px;
+  min-height: 50px;
 }
 
 .user-event-meta-row {
@@ -1486,7 +1565,7 @@
 }
 
 .user-event-detail-content {
-  max-width: 480px;
+  max-width: 800px; /* Increased for better layout harmonization */
 }
 
 .user-event-all-content {
@@ -1708,5 +1787,171 @@
     right: 0 !important;
     left: auto !important;
   }
+}
+
+/* ── Harmonized Announcement Cards (Ported from Admin) ── */
+.ann-card {
+  background: white;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.ann-card-modal {
+  border: none;
+  border-radius: 16px;
+}
+
+.ann-body-modal {
+  padding: 32px;
+}
+
+.ann-title-modal {
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+
+.ann-msg-modal {
+  font-size: 16px;
+  color: #374151;
+}
+
+.ann-meta-modal {
+  display: flex;
+  gap: 20px;
+  font-size: 13px;
+  color: #6B7280;
+  flex-wrap: wrap;
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.ann-card-side {
+  display: flex;
+}
+
+.ann-banner {
+  width: 100%;
+  height: auto;
+  min-height: 110px;
+  max-height: 450px;
+  overflow: hidden;
+  background: #f8fafc;
+}
+
+.ann-banner img {
+  width: 100%;
+  height: auto;
+  max-height: 450px;
+  object-fit: contain;
+  display: block;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.ann-banner img:hover {
+  opacity: 0.9;
+}
+
+.ann-banner-placeholder {
+  width: 100%;
+  height: 100%;
+  min-height: 150px;
+  background: #EEF2FF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ann-side-img {
+  width: 280px;
+  flex-shrink: 0;
+  background: #f1f5f9;
+}
+
+.ann-side-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  cursor: pointer;
+}
+
+.ann-body {
+  padding: 24px;
+  flex: 1;
+}
+
+.ann-header-row {
+  margin-bottom: 12px;
+}
+
+.ann-cat {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: #EFF6FF;
+  color: #1E3A8A;
+  padding: 4px 12px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.ann-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+.ann-msg {
+  font-size: 14px;
+  color: #4B5563;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  white-space: pre-wrap;
+}
+
+.ann-meta {
+  display: flex;
+  gap: 10px;
+  font-size: 10px;
+  color: #94a3b8;
+  flex-wrap: wrap;
+}
+
+.ann-meta span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.user-event-modal-close-abs {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: #64748b;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: all 0.2s;
+}
+
+.user-event-modal-close-abs:hover {
+  background: #f8fafc;
+  color: #1e293b;
+  transform: rotate(90deg);
 }
 

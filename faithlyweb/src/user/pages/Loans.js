@@ -9,7 +9,7 @@ import { Banknote, Circle, Lock as LockIcon, X, Wallet, ShieldAlert, Clock } fro
 import { isOfficerPosition } from '../../utils/officerPositions';
 
 const fmt = (n) =>
-  n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 0 })}` : '₱0';
+  n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '₱0.00';
 
 const fmtDate = (d) =>
   d ? new Date(d).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
@@ -23,6 +23,16 @@ const STATUS_CLASS = {
   completed:  'ul-badge-completed',
   rejected:   'ul-badge-rejected',
   overdue:    'ul-badge-overdue',
+};
+
+const STATUS_TEXT = {
+  pending:    'Pending review',
+  approved:   'Approved',
+  active:     'Active',
+  completed:  'Completed',
+  rejected:   'Rejected',
+  overdue:    'Overdue',
+  awaiting_member_approval: 'Review requested',
 };
 
 export default function Loans() {
@@ -257,29 +267,38 @@ export default function Loans() {
                 <div className="ul-stat-card">
                   <label className="ul-stat-label">Total Borrowed</label>
                   <div className="ul-stat-value">{fmt(stats.totalBorrowed)}</div>
-                  <div className="ul-stat-sub">{stats.activeCount > 0 ? `${stats.activeCount} active loan(s)` : loans.some(l => l.status === 'approved') ? 'Awaiting disbursement' : 'No loans yet'}</div>
+                  <div className="ul-stat-sub">
+                    {stats.activeCount > 0 
+                      ? `${stats.activeCount} active loan(s)` 
+                      : (loans.some(l => l.status === 'approved' || l.status === 'pending') 
+                          ? 'Awaiting disbursement' 
+                          : 'No active items')
+                    }
+                  </div>
                 </div>
                 <div className="ul-stat-card">
                   <label className="ul-stat-label">Remaining Balance</label>
-                  <div className="ul-stat-value">{fmt(stats.remainingBalance)}</div>
+                  <div className="ul-stat-value">
+                    {stats.activeCount > 0 ? fmt(stats.remainingBalance) : '₱0.00'}
+                  </div>
                   <div className="ul-stat-sub">
-                    {stats.remainingBalance > 0
+                    {stats.activeCount > 0 && stats.totalBorrowed > 0
                       ? `${Math.round((stats.remainingBalance / stats.totalBorrowed) * 100)}% outstanding`
-                      : '—'}
+                      : 'No active repayments'}
                   </div>
                 </div>
                 <div className={`ul-stat-card ${nextDueLoan && nextDueLoan.nextPaymentDate && new Date(nextDueLoan.nextPaymentDate) < new Date() ? 'ul-stat-card--overdue' : ''}`}>
                   {nextDueLoan ? (
                     <>
                       <label className="ul-stat-label">Next Payment</label>
-                      <div className="ul-stat-value">{fmt(nextDueLoan.monthlyPayment)}</div>
+                      <div className="ul-stat-value">{fmt(nextDueLoan.upcomingPaymentAmount || nextDueLoan.monthlyPayment)}</div>
                       <div className="ul-stat-sub">Due {fmtDate(nextDueLoan.nextPaymentDate)}</div>
                     </>
                   ) : (
                     <>
-                      <label className="ul-stat-label">Active Loans</label>
-                      <div className="ul-stat-value">{stats.activeCount}</div>
-                      <div className="ul-stat-sub">{isVerified ? 'Eligible to apply' : '—'}</div>
+                      <label className="ul-stat-label">Next Due</label>
+                      <div className="ul-stat-value">₱0.00</div>
+                      <div className="ul-stat-sub">{loans.some(l => l.status === 'approved' || l.status === 'pending') ? 'Pending disbursement' : 'No upcoming payments'}</div>
                     </>
                   )}
                 </div>
@@ -315,7 +334,7 @@ export default function Loans() {
                               <div className="ul-loan-title-row">
                                 <h3 className="ul-loan-id">{loan.loanId}</h3>
                                 <span className={`ul-loan-badge ${STATUS_CLASS[loan.status] || ''}`}>
-                                  {loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}
+                                  {STATUS_TEXT[loan.status] || loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}
                                 </span>
                               </div>
                               <p className="ul-loan-meta">{fmtDate(loan.appliedDate)} · {loan.purpose}</p>
@@ -326,39 +345,46 @@ export default function Loans() {
                             </div>
                           </div>
 
-                          {loan.status === 'active' && loan.termMonths && (
-                            <div className="ul-progress-wrap">
-                              <div className="ul-progress-label">
-                                <span>Repayment progress</span>
-                                <span>{loan.paidMonths || 0} of {loan.termMonths} payments made</span>
+                          {loan.status === 'active' ? (
+                            <>
+                              <div className="ul-progress-wrap">
+                                <div className="ul-progress-label">
+                                  <span>Repayment progress</span>
+                                  <span>{loan.paidMonths || 0} of {loan.termMonths} payments made</span>
+                                </div>
+                                <div className="ul-progress-bar">
+                                  <div
+                                    className="ul-progress-fill"
+                                    style={{ width: `${Math.max(2, Math.round(((loan.paidMonths || 0) / loan.termMonths) * 100))}%` }}
+                                  />
+                                </div>
                               </div>
-                              <div className="ul-progress-bar">
-                                <div
-                                  className="ul-progress-fill"
-                                  style={{ width: `${Math.max(2, Math.round(((loan.paidMonths || 0) / loan.termMonths) * 100))}%` }}
-                                />
+
+                              <div className="ul-loan-meta-grid">
+                                <div className="ul-meta-item">
+                                  <div className="ul-meta-label">Monthly payment</div>
+                                  <div className="ul-meta-value">{loan.monthlyPayment ? fmt(loan.monthlyPayment) : '—'}</div>
+                                </div>
+                                <div className="ul-meta-item">
+                                  <div className="ul-meta-label">Remaining balance</div>
+                                  <div className="ul-meta-value">
+                                    {loan.remainingBalance != null ? fmt(loan.remainingBalance) : '—'}
+                                  </div>
+                                </div>
+                                <div className={`ul-meta-item ${loan.nextPaymentDate && new Date(loan.nextPaymentDate) < new Date() ? 'ul-meta-item--warn' : ''}`}>
+                                  <div className="ul-meta-label">Next due date</div>
+                                  <div className={`ul-meta-value ${loan.nextPaymentDate && new Date(loan.nextPaymentDate) < new Date() ? 'ul-meta-value--warn' : ''}`}>
+                                    {loan.nextPaymentDate ? fmtDate(loan.nextPaymentDate) : '—'}
+                                  </div>
+                                </div>
                               </div>
+                            </>
+                          ) : (
+                            <div className="ul-disbursement-notice">
+                              <ShieldAlert size={16} />
+                              <span>Payment schedule will appear once funds are released.</span>
                             </div>
                           )}
-
-                          <div className="ul-loan-meta-grid">
-                            <div className="ul-meta-item">
-                              <div className="ul-meta-label">Monthly payment</div>
-                              <div className="ul-meta-value">{loan.monthlyPayment ? fmt(loan.monthlyPayment) : '—'}</div>
-                            </div>
-                            <div className="ul-meta-item">
-                              <div className="ul-meta-label">Remaining balance</div>
-                              <div className="ul-meta-value">
-                                {loan.status === 'active' && loan.remainingBalance != null ? fmt(loan.remainingBalance) : '—'}
-                              </div>
-                            </div>
-                            <div className={`ul-meta-item ${loan.nextPaymentDate && new Date(loan.nextPaymentDate) < new Date() ? 'ul-meta-item--warn' : ''}`}>
-                              <div className="ul-meta-label">Next due date</div>
-                              <div className={`ul-meta-value ${loan.nextPaymentDate && new Date(loan.nextPaymentDate) < new Date() ? 'ul-meta-value--warn' : ''}`}>
-                                {loan.nextPaymentDate ? fmtDate(loan.nextPaymentDate) : '—'}
-                              </div>
-                            </div>
-                          </div>
 
                           <div className="ul-loan-actions">
                             <button className="ul-action-btn" onClick={() => navigate(`/loans/${loan.loanId}?tab=schedule`)}>
@@ -411,7 +437,7 @@ export default function Loans() {
                           <div className="ul-hist-id-row">
                             <span className="ul-hist-id">{loan.loanId}</span>
                             <span className={`ul-loan-badge ${STATUS_CLASS[loan.status] || ''}`}>
-                              {loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}
+                              {STATUS_TEXT[loan.status] || loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}
                             </span>
                           </div>
                           <div className="ul-hist-sub">

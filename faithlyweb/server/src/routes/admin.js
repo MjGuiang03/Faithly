@@ -167,6 +167,40 @@ router.put('/update-member', authenticateAdmin, async (req, res) => {
   }
 });
 
+/* ================== UPDATE MEMBER RFID ================== */
+router.post('/update-member-rfid', authenticateAdmin, async (req, res) => {
+  try {
+    const { email, rfidCardId } = req.body;
+
+    if (!email || !rfidCardId) {
+      return res.status(400).json({ success: false, message: 'Email and RFID Card ID are required' });
+    }
+
+    const user = await users.findOne({ email });
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    // Check if this card ID is already registered to someone else
+    const owner = await users.findOne({ rfidCardId, email: { $ne: email } });
+    if (owner) {
+      return res.status(400).json({ 
+        success: false, 
+        message: `This card is already linked to ${owner.fullName || owner.email}.` 
+      });
+    }
+
+    await users.updateOne({ email }, { $set: { rfidCardId, updatedAt: new Date() } });
+
+    res.status(200).json({
+      success: true,
+      message: `Successfully linked RFID card to ${user.fullName || user.email}`
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to update RFID card' });
+  }
+});
+
+
 /* ================== DELETE MEMBER (PERMANENT) ================== */
 router.delete('/delete-member-permanent', authenticateAdmin, async (req, res) => {
   try {
@@ -431,29 +465,29 @@ router.get('/announcements', async (req, res) => {
     const { branch, admin: isAdmin } = req.query;
     const query = {};
 
-    // For user-facing requests, filter out expired announcements
+    // For user-facing requests, filter by branch visibility and expiration
     if (!isAdmin) {
-      query.$or = [
-        { expiresAt: { $exists: false } },
-        { expiresAt: null },
-        { expiresAt: { $gt: new Date() } }
+      query.$and = [
+        {
+          $or: [
+            { expiresAt: { $exists: false } },
+            { expiresAt: null },
+            { expiresAt: { $gt: new Date() } }
+          ]
+        },
+        {
+          $or: [
+            { visibility: 'all' },
+            { visibility: { $exists: false } },
+            { visibility: null },
+            { targetBranches: branch }
+          ]
+        }
       ];
     }
 
-    let all = await announcements.find(query).sort({ createdAt: -1 }).toArray();
-
-    // For user-facing requests, filter by branch visibility
-    if (!isAdmin && branch) {
-      all = all.filter(a => {
-        if (!a.visibility || a.visibility === 'all') return true;
-        if (a.visibility === 'branches' && Array.isArray(a.targetBranches)) {
-          return a.targetBranches.includes(branch);
-        }
-        return true;
-      });
-    }
-
-    res.status(200).json({ success: true, announcements: all });
+    const announcementsList = await announcements.find(query).sort({ createdAt: -1 }).toArray();
+    res.status(200).json({ success: true, announcements: announcementsList });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Failed to fetch announcements' });
@@ -463,7 +497,7 @@ router.get('/announcements', async (req, res) => {
 /* ================== ANNOUNCEMENTS - CREATE (ADMIN) ================== */
 router.post('/announcements', authenticateAdmin, async (req, res) => {
   try {
-    const { title, body, category, eventDate, expiresAt, visibility, targetBranches, imageBase64 } = req.body;
+    const { title, body, category, eventDate, expiresAt, visibility, targetBranches, imageBase64, images } = req.body;
     if (!title || !body) {
       return res.status(400).json({ success: false, message: 'Title and body are required' });
     }
@@ -475,7 +509,8 @@ router.post('/announcements', authenticateAdmin, async (req, res) => {
       expiresAt: expiresAt ? new Date(expiresAt) : null,
       visibility: visibility || 'all',
       targetBranches: Array.isArray(targetBranches) ? targetBranches : [],
-      image: imageBase64 || null,
+      image: imageBase64 || (images && images.length > 0 ? images[0] : null), // Legacy support
+      images: Array.isArray(images) ? images : (imageBase64 ? [imageBase64] : []),
       createdBy: req.admin.email,
       createdAt: new Date(),
     };
@@ -492,7 +527,7 @@ router.put('/announcements/:id', authenticateAdmin, async (req, res) => {
   try {
     const { ObjectId } = await import('mongodb');
     const { id } = req.params;
-    const { title, body, category, eventDate, expiresAt, visibility, targetBranches, imageBase64, template } = req.body;
+    const { title, body, category, eventDate, expiresAt, visibility, targetBranches, imageBase64, images, template } = req.body;
     if (!title || !body) {
       return res.status(400).json({ success: false, message: 'Title and body are required' });
     }
@@ -504,7 +539,8 @@ router.put('/announcements/:id', authenticateAdmin, async (req, res) => {
       expiresAt: expiresAt ? new Date(expiresAt) : null,
       visibility: visibility || 'all',
       targetBranches: Array.isArray(targetBranches) ? targetBranches : [],
-      image: imageBase64 || null,
+      image: imageBase64 || (images && images.length > 0 ? images[0] : null), // Legacy support
+      images: Array.isArray(images) ? images : (imageBase64 ? [imageBase64] : []),
       template: template || 'banner',
       updatedAt: new Date(),
       updatedBy: req.admin.email,
@@ -817,10 +853,10 @@ router.get('/loans/:id/dss-analysis', authenticateAdmin, async (req, res) => {
     const isOfficer = officerPositions.some(p => p.toLowerCase() === (user.position || '').trim().toLowerCase());
     const isVerified = user.verificationStatus === 'verified' || user.isVerified === true;
 
-    // - Savings >= ₱2,500
+    // - Savings >= ₱1,000
     const userGoals = await savingsGoals.find({ email: loan.email }).toArray();
     const totalSavings = userGoals.reduce((sum, g) => sum + (g.savedAmount || 0), 0);
-    const savingsOk = totalSavings >= 2500;
+    const savingsOk = totalSavings >= 1000;
 
     // - No overdue or unpaid loans (excluding current)
     const otherLoans = await loans.find({ email: loan.email, _id: { $ne: new ObjectId(id) } }).toArray();
@@ -839,8 +875,8 @@ router.get('/loans/:id/dss-analysis', authenticateAdmin, async (req, res) => {
     const config = LOAN_CONFIG[loan.loanType] || LOAN_CONFIG['personal'];
     const currentBalance = unpaidLoans.reduce((sum, l) => sum + (l.remainingBalance || 0), 0);
     
-    // Formula: (Savings * Multiplier) - Balance
-    const maxLoanable = Math.max(0, (totalSavings * config.multiplier) - currentBalance);
+    // Formula: Savings * Multiplier
+    const maxLoanable = Math.max(0, totalSavings * config.multiplier);
     const requestedOk = loan.amount <= maxLoanable && loan.amount >= config.min;
 
     // 3. Risk Level
@@ -871,14 +907,14 @@ router.get('/loans/:id/dss-analysis', authenticateAdmin, async (req, res) => {
     } else if (!isOfficer || !isVerified) {
         recommendationText = "This application may be declined: Applicant is not a verified officer.";
     } else if (!savingsOk) {
-        recommendationText = "This application may be declined: Insufficient savings (below ₱2,500).";
+        recommendationText = "This application may be declined: Insufficient savings (below ₱1,000).";
     } else if (hasOverdue) {
         recommendationText = "The system recommends closer review — this member has an active delinquency record.";
     } else if (!requestedOk) {
         if (loan.amount < config.min) {
             recommendationText = `Minimum loan amount is ₱${config.min.toLocaleString()}.`;
         } else {
-            recommendationText = "Amount exceeds calculated loan capacity based on savings and existing balance.";
+            recommendationText = "Amount exceeds calculated loan capacity based on savings multiplier.";
         }
     } else {
         recommendationText = "The system recommends reviewing missing documentation or historical profile.";

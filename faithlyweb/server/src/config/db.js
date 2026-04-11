@@ -44,12 +44,14 @@ export const announcements      = db.collection('announcements');
 export const savingsGoals       = db.collection('savings_goals');
 export const savingsTransactions = db.collection('savings_transactions');
 export const loanPayments        = db.collection('loan_payments');
+export const attendanceSessions  = db.collection('attendance_sessions');
 
 
 /* ================== DATABASE INDEXES ================== */
 await users.createIndex({ email: 1 }, { unique: true });
 await users.createIndex({ fullName: 1 });
 await users.createIndex({ memberId: 1 });
+await users.createIndex({ rfidCardId: 1 }, { sparse: true }); // Sparse index for RFID
 await otps.createIndex({ email: 1 });
 await loans.createIndex({ email: 1 });
 await loans.createIndex({ loanId: 1 });
@@ -58,6 +60,8 @@ await attendance.createIndex({ email: 1 });
 await attendance.createIndex({ member: 1 });
 await attendance.createIndex({ recordId: 1 });
 await attendance.createIndex({ service: 1 });
+await attendance.createIndex({ sessionId: 1 }); // Link to session
+await attendanceSessions.createIndex({ branch: 1, status: 1 });
 await verifications.createIndex({ email: 1 });
 await donations.createIndex({ email: 1 });
 await donations.createIndex({ member: 1 });

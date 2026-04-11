@@ -38,7 +38,7 @@ export default function UserHeader({ toggleSidebar, collapsed }) {
       const data = await res.json();
       if (!data.success) throw new Error(data.message || 'Failed to fetch feed');
 
-      const { readIds: readIdsFromData, payments, loans: loansDataFeed, donations: donationsDataFeed, attendance: attendanceDataFeed, savings: savingsDataFeed } = data;
+      const { readIds: readIdsFromData, payments, loans: loansDataFeed, donations: donationsDataFeed, attendance: attendanceDataFeed, savings: savingsDataFeed, announcements: announcementsDataFeed } = data;
 
       const currentReadIds = new Set(readIdsFromData || []);
       setReadIds(currentReadIds);
@@ -80,9 +80,20 @@ export default function UserHeader({ toggleSidebar, collapsed }) {
           });
         });
       }
+      if (announcementsDataFeed) {
+        announcementsDataFeed.forEach(a => {
+          items.push({ 
+            id: `ann-${a._id}`, 
+            type: 'announcement', 
+            title: a.title, 
+            message: a.body.length > 60 ? a.body.substring(0, 60) + '...' : a.body, 
+            timestamp: a.createdAt 
+          });
+        });
+      }
 
       items.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-      setNotifItems(items.slice(0, 10));
+      setNotifItems(items.slice(0, 5)); // Show exactly 5 items as requested
       setUnreadNotifCount(items.filter(it => !currentReadIds.has(it.id)).length);
     } catch (err) {
       console.error('Failed to fetch header notifications:', err);
@@ -202,6 +213,7 @@ export default function UserHeader({ toggleSidebar, collapsed }) {
                          item.type === 'donation' ? <Heart size={18} color="#155DFC" /> :
                          item.type === 'attendance' ? <CalendarDays size={18} color="#155DFC" /> :
                          item.type === 'savings' ? <Banknote size={18} color="#155DFC" /> :
+                         item.type === 'announcement' ? <Bell size={18} color="#155DFC" /> :
                          <Circle size={10} color="#155DFC" />}
                       </div>
                       <div className="user-header-notif-content">

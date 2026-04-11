@@ -453,7 +453,26 @@
 .ul-loan-meta-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  gap: 12px;
+}
+
+.ul-disbursement-notice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fdf2f2;
+  border: 1px solid #fecaca;
+  border-radius: 9px;
+  padding: 14px 16px;
+  color: #991b1b;
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  margin: 4px 0;
+}
+
+.ul-disbursement-notice svg {
+  color: #ef4444;
+  flex-shrink: 0;
 }
 
 .ul-meta-item {

@@ -24,10 +24,11 @@ export default function AdminAnnouncements() {
   const [template, setTemplate] = useState('banner');
   const [showPosted, setShowPosted] = useState(false);
   const [form, setForm] = useState({
-    title: '', body: '', category: 'General',
+    title: '', body: '', category: 'Divine Service',
+    customCategory: '', // Added for 'Other' option
     eventDate: '', expiresAt: '',
     visibility: 'all', targetBranches: [],
-    imageBase64: ''
+    images: [] // Changed from imageBase64 to images array
   });
 
   const fetchAnnouncements = useCallback(async () => {
@@ -63,7 +64,14 @@ export default function AdminAnnouncements() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
+    setForm(prev => {
+      const updated = { ...prev, [name]: value };
+      // Reset custom category if choosing a fixed one
+      if (name === 'category' && value !== 'Other') {
+        updated.customCategory = '';
+      }
+      return updated;
+    });
   };
 
   const toggleBranch = (branch) => {
@@ -78,15 +86,25 @@ export default function AdminAnnouncements() {
   const handleEdit = (a) => {
     setEditingId(a._id);
     setTemplate(a.template || 'banner');
+    
+    const predefined = [
+      'General', 'Events', 'Services', 'Donations', 'Urgent',
+      'Divine Service', 'Bible Study', 'Summer Youth Camp', 'Bible School',
+      'Vacation Bible School', 'Annual Thanksgiving Anniversary', 'Youth Fellowship',
+      'Men’s Fellowship', 'Women’s Fellowship', 'Children’s Fellowship'
+    ];
+    const isCustom = a.category && !predefined.includes(a.category);
+
     setForm({
       title: a.title || '',
       body: a.body || '',
-      category: a.category || 'General',
+      category: isCustom ? 'Other' : (a.category || 'Divine Service'),
+      customCategory: isCustom ? a.category : '',
       eventDate: a.eventDate ? new Date(new Date(a.eventDate).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : '',
-      expiresAt: a.expiresAt ? new Date(new Date(a.expiresAt).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : '',
-      visibility: (!a.visibility || a.visibility === 'all') ? 'all' : 'branches',
+      expiresAt: a.expiresAt ? new Date(a.expiresAt).toISOString().slice(0, 16) : '',
+      visibility: a.visibility || 'all',
       targetBranches: a.targetBranches || [],
-      imageBase64: a.image || ''
+      images: Array.isArray(a.images) ? a.images : (a.image ? [a.image] : [])
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -95,9 +113,10 @@ export default function AdminAnnouncements() {
     setEditingId(null);
     setTemplate('banner');
     setForm({
-      title: '', body: '', category: 'General',
-      eventDate: '', expiresAt: '',
-      visibility: 'all', targetBranches: [], imageBase64: ''
+      title: '', body: '', category: 'Divine Service',
+      customCategory: '', eventDate: '', expiresAt: '',
+      visibility: 'all', targetBranches: [],
+      images: []
     });
   };
 
@@ -111,15 +130,28 @@ export default function AdminAnnouncements() {
       toast.error('Please select at least one branch');
       return;
     }
+
+    const now = new Date();
+    if (form.eventDate && new Date(form.eventDate) < now) {
+      toast.error('Event date cannot be in the past');
+      return;
+    }
+    if (form.expiresAt && new Date(form.expiresAt) < now) {
+      toast.error('Auto-disappear date cannot be in the past');
+      return;
+    }
     setSubmitting(true);
     try {
       const token = localStorage.getItem('adminToken');
       const payload = {
         ...form,
+        category: form.category === 'Other' ? form.customCategory : form.category,
         template,
         eventDate: form.eventDate || null,
         expiresAt: form.expiresAt || null,
       };
+      // Remove helper field before sending
+      delete payload.customCategory;
       const url = editingId ? `${API}/api/admin/announcements/${editingId}` : `${API}/api/admin/announcements`;
       const res = await fetch(url, {
         method: editingId ? 'PUT' : 'POST',
@@ -141,21 +173,55 @@ export default function AdminAnnouncements() {
     }
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) {
-      setForm(prev => ({ ...prev, imageBase64: '' }));
-      return;
-    }
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error('Image must be less than 2MB');
+  const handleImageChange = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+
+    const currentCount = form.images.length;
+    const remaining = 8 - currentCount;
+    if (remaining <= 0) {
+      toast.error('Maximum 8 images allowed');
       e.target.value = '';
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => setForm(prev => ({ ...prev, imageBase64: reader.result }));
-    reader.onerror = () => toast.error('Failed to read image');
-    reader.readAsDataURL(file);
+
+    const filesToProcess = files.slice(0, remaining);
+    if (files.length > remaining) {
+      toast.info(`Only the first ${remaining} images were added (limit 8).`);
+    }
+
+    setSubmitting(true);
+    try {
+      const newImages = await Promise.all(
+        filesToProcess.map(file => {
+          return new Promise((resolve, reject) => {
+            if (file.size > 2 * 1024 * 1024) {
+              toast.error(`${file.name} is too large (>2MB)`);
+              return resolve(null);
+            }
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => reject(new Error('Read failed'));
+            reader.readAsDataURL(file);
+          });
+        })
+      );
+
+      const filtered = newImages.filter(img => img !== null);
+      setForm(prev => ({ ...prev, images: [...prev.images, ...filtered] }));
+    } catch {
+      toast.error('Failed to process some images');
+    } finally {
+      setSubmitting(false);
+      e.target.value = ''; // Reset for same file selection
+    }
+  };
+
+  const removeImage = (index) => {
+    setForm(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
   };
 
   const handleDelete = async (id) => {
@@ -265,18 +331,27 @@ export default function AdminAnnouncements() {
 
             {template !== 'text' && (
               <div className="admin-announce-form-group">
-                <label className="admin-announce-label">Banner / Image (Optional)</label>
+                <label className="admin-announce-label">Images / Banner (Max 8)</label>
                 <input
                   type="file"
                   accept="image/*"
+                  multiple
                   onChange={handleImageChange}
                   className="admin-announce-input"
+                  disabled={form.images.length >= 8}
                 />
-                {form.imageBase64 && (
-                  <div className={`admin-announce-img-preview admin-announce-img-${template}`}>
-                    <img src={form.imageBase64} alt="Preview" />
+                
+                {form.images.length > 0 && (
+                  <div className="admin-announce-gallery">
+                    {form.images.map((img, idx) => (
+                      <div key={idx} className="admin-announce-gallery-item">
+                        <button type="button" className="admin-announce-remove-img" onClick={() => removeImage(idx)}>×</button>
+                        <img src={img} alt="Preview" />
+                      </div>
+                    ))}
                   </div>
                 )}
+                <p className="admin-announce-img-count">{form.images.length} / 8 images added</p>
               </div>
             )}
 
@@ -284,12 +359,32 @@ export default function AdminAnnouncements() {
               <div className="admin-announce-form-group">
                 <label className="admin-announce-label">Category</label>
                 <select name="category" className="admin-announce-select" value={form.category} onChange={handleChange}>
-                  <option value="General">General</option>
-                  <option value="Events">Events</option>
-                  <option value="Services">Services</option>
-                  <option value="Donations">Donations</option>
-                  <option value="Urgent">Urgent</option>
+                  <option value="Divine Service">Divine Service</option>
+                  <option value="Bible Study">Bible Study</option>
+                  <option value="Summer Youth Camp">Summer Youth Camp</option>
+                  <option value="Bible School">Bible School</option>
+                  <option value="Vacation Bible School">Vacation Bible School</option>
+                  <option value="Annual Thanksgiving Anniversary">Annual Thanksgiving Anniversary</option>
+                  <option value="Youth Fellowship">Youth Fellowship</option>
+                  <option value="Men’s Fellowship">Men’s Fellowship</option>
+                  <option value="Women’s Fellowship">Women’s Fellowship</option>
+                  <option value="Children’s Fellowship">Children’s Fellowship</option>
+                  <option disabled>──────────</option>
+                  <option value="Other">Other (Type manually)</option>
                 </select>
+
+                {form.category === 'Other' && (
+                  <input
+                    type="text"
+                    name="customCategory"
+                    className="admin-announce-input"
+                    style={{ marginTop: '8px' }}
+                    placeholder="Enter custom category..."
+                    value={form.customCategory}
+                    onChange={handleChange}
+                    required
+                  />
+                )}
               </div>
               <div className="admin-announce-form-group">
                 <label className="admin-announce-label">Target Audience</label>
@@ -313,14 +408,28 @@ export default function AdminAnnouncements() {
                   <Calendar size={13} style={{ marginRight: 4, verticalAlign: 'middle' }} />
                   Event Date &amp; Time
                 </label>
-                <input type="datetime-local" name="eventDate" className="admin-announce-input" value={form.eventDate} onChange={handleChange} />
+                <input 
+                  type="datetime-local" 
+                  name="eventDate" 
+                  className="admin-announce-input" 
+                  value={form.eventDate} 
+                  onChange={handleChange} 
+                  min={new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)}
+                />
               </div>
               <div className="admin-announce-form-group">
                 <label className="admin-announce-label">
                   <Clock size={13} style={{ marginRight: 4, verticalAlign: 'middle' }} />
                   Auto-Disappear Date
                 </label>
-                <input type="datetime-local" name="expiresAt" className="admin-announce-input" value={form.expiresAt} onChange={handleChange} />
+                <input 
+                  type="datetime-local" 
+                  name="expiresAt" 
+                  className="admin-announce-input" 
+                  value={form.expiresAt} 
+                  onChange={handleChange} 
+                  min={new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)}
+                />
               </div>
             </div>
 
@@ -363,20 +472,34 @@ export default function AdminAnnouncements() {
               <div className={`ann-card ann-card-${template}`}>
                 {template === 'banner' && (
                   <div className="ann-banner">
-                    {form.imageBase64
-                      ? <img src={form.imageBase64} alt="" />
-                      : <div className="ann-banner-placeholder"><Megaphone size={24} color="#1E3A8A" /></div>}
+                    {form.images.length > 0
+                      ? (
+                        <div className="ann-slider">
+                          {form.images.map((img, i) => (
+                            <img key={i} src={img} alt="" onClick={() => window.open(img, '_blank')} />
+                          ))}
+                        </div>
+                      )
+                      : <div className="ann-banner-placeholder"><Megaphone size={24} color="#1E3A8A" /></div>
+                    }
                   </div>
                 )}
                 {template === 'side' && (
                   <div className="ann-side-img">
-                    {form.imageBase64
-                      ? <img src={form.imageBase64} alt="" />
-                      : <div className="ann-banner-placeholder"><Megaphone size={20} color="#1E3A8A" /></div>}
+                    {form.images.length > 0
+                      ? (
+                        <div className="ann-slider">
+                          {form.images.map((img, i) => (
+                            <img key={i} src={img} alt="" onClick={() => window.open(img, '_blank')} />
+                          ))}
+                        </div>
+                      )
+                      : <div className="ann-banner-placeholder"><Megaphone size={20} color="#1E3A8A" /></div>
+                    }
                   </div>
                 )}
                 <div className="ann-body">
-                  <span className="ann-cat">{form.category}</span>
+                  <span className="ann-cat">{form.category === 'Other' ? (form.customCategory || 'Custom Category') : form.category}</span>
                   <p className="ann-title">
                     {form.title || <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>Announcement title...</span>}
                   </p>
@@ -432,7 +555,7 @@ export default function AdminAnnouncements() {
           <div className={`admin-announce-slide-container ${showPosted ? 'open' : ''}`}>
             <div className="admin-announce-slide-content">
               <div className="admin-announce-filter-tabs">
-                {['All', 'General', 'Events', 'Prayer', 'Services', 'Donations', 'Urgent'].map(cat => (
+                {['All', 'Divine Service', 'Bible Study', 'Youth Fellowship', 'Men’s Fellowship', 'Women’s Fellowship'].map(cat => (
                   <button
                     key={cat}
                     className={`admin-announce-filter-tab${categoryFilter === cat ? ' active' : ''}`}

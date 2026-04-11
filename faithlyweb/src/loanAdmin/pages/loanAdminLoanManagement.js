@@ -8,7 +8,8 @@ import useDebounce from '../../hooks/useDebounce';
 import '../styles/loanAdminLoanManagement.css';
 
 import API from '../../utils/api';
-import { Banknote, CheckCircle, Circle, Search, XCircle } from 'lucide-react';
+import { Banknote, CheckCircle, Circle, Search, X, XCircle, ShieldCheck, AlertTriangle, ScanLine } from 'lucide-react';
+import { performOCRScan } from '../../utils/ocrProcessor';
 
 
 /* ── Loan-type config (mirrors user-side) ── */
@@ -19,7 +20,7 @@ const LOAN_TYPES = [
 ];
 
 const fmt = (n) =>
-    n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : '₱0.00';
+    n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '₱0.00';
 
 const fmtDate = (d) => {
     if (!d) return 'N/A';
@@ -78,6 +79,10 @@ export default function LoanAdminLoanManagement() {
     /* ── DSS Analysis state ── */
     const [dssAnalysis, setDssAnalysis] = useState(null);
     const [dssLoading, setDssLoading] = useState(false);
+
+    /* ── OCR State ── */
+    const [ocrResults, setOcrResults] = useState(null);
+    const [isOcrLoading, setIsOcrLoading] = useState(false);
 
     /* ── Fetch loans from API ── */
     const fetchLoans = useCallback(async () => {
@@ -229,6 +234,56 @@ export default function LoanAdminLoanManagement() {
             console.error('DSS Analysis Error:', err);
         } finally {
             setDssLoading(false);
+            setOcrResults(null); // Reset OCR for new loan
+            
+            // Automatically trigger OCR scan for pending loans
+            if (loan.status === 'pending') {
+                handleVerifyDocuments(loan);
+            }
+        }
+    };
+
+    /* ── Document Verification (OCR) ── */
+    const handleVerifyDocuments = async (loanArg) => {
+        const loan = loanArg || selectedLoan;
+        if (!loan) return;
+        if (!loan.idData && !loan.selfieData) return;
+
+        setIsOcrLoading(true);
+        const messages = [];
+        let matchFound = false;
+
+        try {
+            // Process Government ID primarily for name
+            if (selectedLoan.idData) {
+                const result = await performOCRScan(selectedLoan.idData, selectedLoan.memberName);
+                if (result.isMatch) {
+                    matchFound = true;
+                    messages.push(`Valid ID: Name match confirmed (${selectedLoan.memberName})`);
+                } else {
+                    messages.push(`Valid ID: Mismatch or low confidence scan. Manual check required.`);
+                }
+            }
+
+            // Optional: Process Selfie if ID Scan failed to find name
+            if (!matchFound && selectedLoan.selfieData) {
+                const result = await performOCRScan(selectedLoan.selfieData, selectedLoan.memberName);
+                if (result.isMatch) {
+                    matchFound = true;
+                    messages.push(`Selfie w/ ID: Name match confirmed (${selectedLoan.memberName})`);
+                }
+            }
+
+            setOcrResults({ matchFound, messages });
+            if (matchFound) {
+                toast.success('Documents verified successfully');
+            } else {
+                toast.error('Potential document mismatch detected');
+            }
+        } catch (err) {
+            toast.error('Failed to process documents');
+        } finally {
+            setIsOcrLoading(false);
         }
     };
 
@@ -462,7 +517,7 @@ export default function LoanAdminLoanManagement() {
                                 <p className="dm-req-id">Request ID: {selectedLoan.loanId}</p>
                             </div>
                             <button className="dm-x-btn" onClick={() => setShowDetailsModal(false)}>
-                                <Banknote size={12} />
+                                <X size={20} />
                             </button>
                         </div>
 
@@ -484,197 +539,211 @@ export default function LoanAdminLoanManagement() {
                                 </span>
                             </div>
 
-                            {/* Member Information */}
-                            <div>
-                                <div className="dm-sec-label">Member information</div>
-                                <div className="dm-info-grid">
-                                    <div className="dm-ic">
-                                        <div className="dm-ik">Member name</div>
-                                        <div className="dm-iv">{selectedLoan.memberName}</div>
-                                    </div>
-                                    <div className="dm-ic">
-                                        <div className="dm-ik">Email address</div>
-                                        <div className="dm-iv email">{selectedLoan.email}</div>
-                                    </div>
-                                    <div className="dm-ic">
-                                        <div className="dm-ik">Applied date</div>
-                                        <div className="dm-iv">{fmtDate(selectedLoan.appliedDate)}</div>
-                                    </div>
-                                    <div className="dm-ic">
-                                        <div className="dm-ik">Member savings balance</div>
-                                        <div className="dm-iv green">{fmt(memberSavings)}</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Requested Loan Type */}
-                            <div>
-                                <div className="dm-sec-label">Requested loan type</div>
-                                <div className={`dm-loan-pill ${pillClass}`}>
-                                    <div className="dm-lt-icon">
-                                        <Banknote size={18} color="#185fa5" />
-                                    </div>
+                            <div className="dm-layout-grid">
+                                {/* ── LEFT COLUMN ── */}
+                                <div className="dm-column-left">
+                                    {/* Member Information */}
                                     <div>
-                                        <div className={`dm-lt-name ${pillClass}`}>
-                                            {selectedType?.name || 'Personal Loan'}
-                                        </div>
-                                        <div className="dm-lt-tags">
-                                            <span className={`dm-lt-tag ${pillClass}`}>{selectedType?.multiplier || 2}× savings</span>
-                                            <span className={`dm-lt-tag ${pillClass}`}>{selectedType?.rateLabel || '2% / mo'}</span>
-                                            <span className={`dm-lt-tag ${pillClass}`}>{selectedType?.minTerm || 3}–{selectedType?.maxTerm || 12} months</span>
+                                        <div className="dm-sec-label">Member information</div>
+                                        <div className="dm-info-grid">
+                                            <div className="dm-ic">
+                                                <div className="dm-ik">Member name</div>
+                                                <div className="dm-iv">{selectedLoan.memberName}</div>
+                                            </div>
+                                            <div className="dm-ic">
+                                                <div className="dm-ik">Email address</div>
+                                                <div className="dm-iv email">{selectedLoan.email}</div>
+                                            </div>
+                                            <div className="dm-ic">
+                                                <div className="dm-ik">Applied date</div>
+                                                <div className="dm-iv">{fmtDate(selectedLoan.appliedDate)}</div>
+                                            </div>
+                                            <div className="dm-ic">
+                                                <div className="dm-ik">Member savings</div>
+                                                <div className="dm-iv green">{fmt(memberSavings)}</div>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className="dm-lt-amt">
-                                        <div className="dm-lt-amt-label">Requested amount</div>
-                                        <div className={`dm-lt-amt-val ${pillClass}`}>{fmt(selectedLoan.amount)}</div>
+
+                                    {/* Requested Loan Type */}
+                                    <div>
+                                        <div className="dm-sec-label">Requested loan type</div>
+                                        <div className={`dm-loan-pill ${pillClass}`}>
+                                            <div style={{ flex: 1 }}>
+                                                <div className={`dm-lt-name ${pillClass}`}>
+                                                    {selectedType?.name || 'Personal Loan'}
+                                                </div>
+                                                <div className="dm-lt-tags">
+                                                    <span className={`dm-lt-tag ${pillClass}`}>{selectedType?.multiplier || 2}×</span>
+                                                    <span className={`dm-lt-tag ${pillClass}`}>{selectedType?.rateLabel || '2% / mo'}</span>
+                                                    <span className={`dm-lt-tag ${pillClass}`}>{selectedType?.minTerm || 3}–{selectedType?.maxTerm || 12}m</span>
+                                                </div>
+                                            </div>
+                                            <div className="dm-lt-amt">
+                                                <div className="dm-lt-amt-label">Requested</div>
+                                                <div className={`dm-lt-amt-val ${pillClass}`}>{fmt(selectedLoan.amount)}</div>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
 
-                            {/* ── DSS Panel ── */}
-                            <DSSPanel analysis={dssAnalysis} loading={dssLoading} />
-
-                            {/* Admin — set repayment terms */}
-                            <div className="dm-edit-box">
-                                <div className="dm-edit-box-title">
-                                    <Banknote size={14} color="#1E3A8A" />
-                                    Admin — set repayment terms
-                                </div>
-                                <div className="dm-edit-row">
-                                    <div className="dm-edit-field">
-                                        <label className="dm-edit-label">Approved amount (₱)</label>
-                                        <input
-                                            className="dm-edit-input"
-                                            type="number"
-                                            value={approvedAmount}
-                                            onChange={(e) => setApprovedAmount(e.target.value)}
-                                            min="500"
-                                            max={maxLoanable || undefined}
-                                        />
+                                    {/* Admin — set repayment terms (MOVED HERE) */}
+                                    <div className="dm-edit-box">
+                                        <div className="dm-edit-box-title">
+                                            Admin — Set Repayment Terms
+                                        </div>
+                                        <div className="dm-edit-row">
+                                            <div className="dm-edit-field">
+                                                <label className="dm-edit-label">Approved amount (₱)</label>
+                                                <input
+                                                    className="dm-edit-input"
+                                                    type="number"
+                                                    value={approvedAmount}
+                                                    onChange={(e) => setApprovedAmount(e.target.value)}
+                                                    min="500"
+                                                    max={maxLoanable || undefined}
+                                                />
+                                            </div>
+                                            <div className="dm-edit-field">
+                                                <label className="dm-edit-label">Repayment term</label>
+                                                <select
+                                                    className="dm-edit-select"
+                                                    value={repaymentTerm}
+                                                    onChange={(e) => setRepaymentTerm(e.target.value)}
+                                                >
+                                                    <option value="">Select term</option>
+                                                    {termOptions.map(m => (
+                                                        <option key={m} value={m}>{m} months</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </div>
                                         {maxLoanable > 0 && (
                                             <div className="dm-edit-hint">
                                                 Max loanable: {fmt(maxLoanable)} ({selectedType?.multiplier}× savings)
                                             </div>
                                         )}
-                                    </div>
-                                    <div className="dm-edit-field">
-                                        <label className="dm-edit-label">Repayment term</label>
-                                        <select
-                                            className="dm-edit-select"
-                                            value={repaymentTerm}
-                                            onChange={(e) => setRepaymentTerm(e.target.value)}
-                                        >
-                                            <option value="">Select term</option>
-                                            {termOptions.map(m => (
-                                                <option key={m} value={m}>{m} months</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                </div>
-                                {calc && (
-                                    <div className="dm-computed">
-                                        <div className="dm-computed-pill">
-                                            <div className="dm-cp-label">Monthly payment</div>
-                                            <div className="dm-cp-val">{fmt(calc.monthly)}</div>
-                                        </div>
-                                        <div className="dm-computed-pill">
-                                            <div className="dm-cp-label">Total interest</div>
-                                            <div className="dm-cp-val amber">{fmt(calc.totalInterest)}</div>
-                                        </div>
-                                        <div className="dm-computed-pill">
-                                            <div className="dm-cp-label">Total repayment</div>
-                                            <div className="dm-cp-val green">{fmt(calc.totalRepayment)}</div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Disbursement Method */}
-                            <div>
-                                <div className="dm-sec-label">Disbursement method</div>
-                                <div className="dm-disbursement-row">
-                                    {[
-                                        { id: 'cash', label: 'Cash (office)' },
-                                        { id: 'gcash', label: 'GCash' },
-                                        { id: 'bank', label: 'Bank Transfer' },
-                                    ].map(opt => {
-                                        const active = selectedLoan.disbursementMethod === opt.id;
-                                        return (
-                                            <div key={opt.id} className={`dm-dopt ${active ? 'sel' : ''}`}>
-                                                <div className={`dm-rdot ${active ? 'on' : ''}`} />
-                                                <span className="dm-dlabel">{opt.label}</span>
+                                        {calc && (
+                                            <div className="dm-computed">
+                                                <div className="dm-computed-pill">
+                                                    <div className="dm-cp-label">Monthly</div>
+                                                    <div className="dm-cp-val">{fmt(calc.monthly)}</div>
+                                                </div>
+                                                <div className="dm-computed-pill">
+                                                    <div className="dm-cp-label">Interest</div>
+                                                    <div className="dm-cp-val amber">{fmt(calc.totalInterest)}</div>
+                                                </div>
+                                                <div className="dm-computed-pill">
+                                                    <div className="dm-cp-label">Total</div>
+                                                    <div className="dm-cp-val green">{fmt(calc.totalRepayment)}</div>
+                                                </div>
                                             </div>
-                                        );
-                                    })}
-                                </div>
-                                {selectedLoan.disbursementAccount && (
-                                    <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '8px' }}>
-                                        Account: {selectedLoan.disbursementAccount}
-                                    </p>
-                                )}
-                            </div>
+                                        )}
+                                    </div>
 
-                            {/* Uploaded Documents */}
-                            <div>
-                                <div className="dm-sec-label">Uploaded documents</div>
-                                <div className="dm-docs-grid">
-                                    {/* Selfie with ID */}
-                                    <div className="dm-doc-card">
-                                        <div className="dm-doc-placeholder" onClick={() => selectedLoan.selfieData && setViewingImage(selectedLoan.selfieData)} style={selectedLoan.selfieData ? { cursor: 'pointer' } : {}}>
-                                            {selectedLoan.selfieData ? (
-                                                <img src={selectedLoan.selfieData} alt="Selfie with ID" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} />
-                                            ) : (
-                                                <>
-                                                    <Banknote size={28} />
-                                                    <span>{selectedLoan.selfieFileName || 'No file uploaded'}</span>
-                                                </>
+                                    {/* Disbursement Method (MOVED HERE) */}
+                                    <div>
+                                        <div className="dm-sec-label">Disbursement method</div>
+                                        <div className="dm-disbursement-row">
+                                            {[
+                                                { id: 'cash', label: 'Cash' },
+                                                { id: 'gcash', label: 'GCash' },
+                                                { id: 'bank', label: 'Bank' },
+                                            ].map(opt => {
+                                                const active = selectedLoan.disbursementMethod === opt.id;
+                                                return (
+                                                    <div key={opt.id} className={`dm-dopt ${active ? 'sel' : ''}`}>
+                                                        <div className={`dm-rdot ${active ? 'on' : ''}`} />
+                                                        <span className="dm-dlabel">{opt.label}</span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                        {selectedLoan.disbursementAccount && (
+                                            <p style={{ fontSize: '11px', color: '#6b7280', marginTop: '6px' }}>
+                                                Account: {selectedLoan.disbursementAccount}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {/* Uploaded Documents (MOVED HERE) */}
+                                    <div>
+                                        <div className="dm-sec-label">Uploaded documents</div>
+                                        <div className="dm-docs-grid">
+                                            {/* Selfie with ID */}
+                                            <div className="dm-doc-card" onClick={() => selectedLoan.selfieData && setViewingImage(selectedLoan.selfieData)}>
+                                                <div className="dm-doc-placeholder">
+                                                    {selectedLoan.selfieData ? (
+                                                        <img src={selectedLoan.selfieData} alt="Selfie" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '4px' }} />
+                                                    ) : (
+                                                        <span style={{ fontSize: '10px' }}>No selfie</span>
+                                                    )}
+                                                </div>
+                                                <div className="dm-doc-footer">
+                                                    <span className="dm-doc-name">Selfie w/ ID</span>
+                                                    <span className={`dm-doc-badge ${selectedLoan.selfieData ? 'ok' : 'missing'}`}>
+                                                        {selectedLoan.selfieData ? 'OK' : 'X'}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            {/* Government ID */}
+                                            <div className="dm-doc-card" onClick={() => selectedLoan.idData && setViewingImage(selectedLoan.idData)}>
+                                                <div className="dm-doc-placeholder">
+                                                    {selectedLoan.idData ? (
+                                                        <img src={selectedLoan.idData} alt="ID" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '4px' }} />
+                                                    ) : (
+                                                        <span style={{ fontSize: '10px' }}>No ID</span>
+                                                    )}
+                                                </div>
+                                                <div className="dm-doc-footer">
+                                                    <span className="dm-doc-name">Valid ID</span>
+                                                    <span className={`dm-doc-badge ${selectedLoan.idData ? 'ok' : 'missing'}`}>
+                                                        {selectedLoan.idData ? 'OK' : 'X'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* ── RIGHT COLUMN ── */}
+                                <div className="dm-column-right">
+                                    {/* ── DSS Panel (MOVED HERE) ── */}
+                                    <DSSPanel analysis={dssAnalysis} loading={dssLoading} />
+
+                                    {/* OCR Results Analysis */}
+                                    {ocrResults && (
+                                        <div className={`dm-ocr-result-box ${ocrResults.matchFound ? 'pass' : 'fail'}`}>
+                                            <div className="dm-ocr-header">
+                                                {ocrResults.matchFound ? (
+                                                    <ShieldCheck size={18} className="dm-ocr-icon pass" />
+                                                ) : (
+                                                    <AlertTriangle size={18} className="dm-ocr-icon fail" />
+                                                )}
+                                                <span className={`dm-ocr-title ${ocrResults.matchFound ? 'pass' : 'fail'}`}>
+                                                    {ocrResults.matchFound ? 'OCR Identity Match' : 'OCR Verification Alert'}
+                                                </span>
+                                            </div>
+                                            <ul className="dm-ocr-list">
+                                                {ocrResults.messages.map((m, idx) => (
+                                                    <li key={idx}>{m}</li>
+                                                ))}
+                                            </ul>
+                                            {!ocrResults.matchFound && (
+                                                <div className="dm-ocr-warning">
+                                                    <strong>Important:</strong> The system could not confirm the member's name from the document scan. Please examine the images closely before approval.
+                                                </div>
                                             )}
                                         </div>
-                                        <div className="dm-doc-footer">
-                                            <span className="dm-doc-name">Selfie with ID & Date</span>
-                                            <div className="dm-doc-actions">
-                                                <span className={`dm-doc-badge ${selectedLoan.selfieData ? 'ok' : 'missing'}`}>
-                                                    {selectedLoan.selfieData ? 'Uploaded' : 'Not uploaded'}
-                                                </span>
-                                                {selectedLoan.selfieData && (
-                                                    <button type="button" className="dm-doc-view" onClick={() => setViewingImage(selectedLoan.selfieData)}>View</button>
-                                                )}
-                                            </div>
+                                    )}
+
+                                    {/* System Note */}
+                                    <div className="dm-note-box">
+                                        <div className="dm-note-title">System Note</div>
+                                        <div className="dm-note-text">
+                                            Review within 2–3 days. Late penalty 3%/mo applies.
                                         </div>
                                     </div>
-
-                                    {/* Government ID */}
-                                    <div className="dm-doc-card">
-                                        <div className="dm-doc-placeholder" onClick={() => selectedLoan.idData && setViewingImage(selectedLoan.idData)} style={selectedLoan.idData ? { cursor: 'pointer' } : {}}>
-                                            {selectedLoan.idData ? (
-                                                <img src={selectedLoan.idData} alt="Government ID" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} />
-                                            ) : (
-                                                <>
-                                                    <Banknote size={28} />
-                                                    <span>{selectedLoan.idFileName || 'No file uploaded'}</span>
-                                                </>
-                                            )}
-                                        </div>
-                                        <div className="dm-doc-footer">
-                                            <span className="dm-doc-name">Valid Government ID</span>
-                                            <div className="dm-doc-actions">
-                                                <span className={`dm-doc-badge ${selectedLoan.idData ? 'ok' : 'missing'}`}>
-                                                    {selectedLoan.idData ? 'Uploaded' : 'Not uploaded'}
-                                                </span>
-                                                {selectedLoan.idData && (
-                                                    <button type="button" className="dm-doc-view" onClick={() => setViewingImage(selectedLoan.idData)}>View</button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* System Note */}
-                            <div className="dm-note-box">
-                                <div className="dm-note-title">System note</div>
-                                <div className="dm-note-text">
-                                    Application will be reviewed within 2–3 business days. A late payment penalty of 3% per month applies after a 3-day grace period.
                                 </div>
                             </div>
 
@@ -694,6 +763,13 @@ export default function LoanAdminLoanManagement() {
                                 <button className="dm-btn-close" onClick={() => setShowDetailsModal(false)}>
                                     Close
                                 </button>
+
+                                {selectedLoan.status === 'pending' && isOcrLoading && (
+                                    <div className="dm-scan-status">
+                                        <div className="btn-spinner" />
+                                        <span>Scanning Documents...</span>
+                                    </div>
+                                )}
 
                                 {selectedLoan.status === 'awaiting_member_approval' && (
                                     <span className="dm-awaiting-tag">⏳ Waiting for member approval</span>

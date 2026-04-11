@@ -16,7 +16,7 @@ const fileToBase64 = (file) =>
   });
 
 const fmt = (n) =>
-    n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : '₱0.00';
+    n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '₱0.00';
 
 const fmtDate = (d) =>
     d ? new Date(d).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
@@ -24,8 +24,19 @@ const fmtDate = (d) =>
 const STATUS_CLASS = {
     active: 'ld-badge--active',
     pending: 'ld-badge--pending',
+    approved: 'ld-badge--approved',
     completed: 'ld-badge--completed',
     rejected: 'ld-badge--rejected',
+};
+
+const STATUS_TEXT = {
+    pending:    'Pending review',
+    approved:   'Approved',
+    active:     'Active',
+    completed:  'Completed',
+    rejected:   'Rejected',
+    overdue:    'Overdue',
+    awaiting_member_approval: 'Review requested',
 };
 
 /* ── Back arrow ── */
@@ -438,7 +449,7 @@ export default function LoanDetail() {
                             <div className="ld-page-title-row">
                                 <h1 className="ld-page-title">{loan.loanId}</h1>
                                 <span className={`ld-badge ${STATUS_CLASS[loan.status] || ''}`}>
-                                    {loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}
+                                    {STATUS_TEXT[loan.status] || loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}
                                 </span>
                             </div>
                             <p className="ld-page-subtitle">{loan.purpose} loan · Applied {fmtDate(loan.appliedDate)}</p>
@@ -479,10 +490,10 @@ export default function LoanDetail() {
                             <div className="ld-stat-value">
                                 {loan.nextPaymentDate
                                     ? new Date(loan.nextPaymentDate).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' })
-                                    : loan.status === 'pending' ? 'Pending Approval' : '—'}
+                                    : (loan.status === 'pending' || loan.status === 'approved') ? 'Pending disbursement' : '—'}
                             </div>
                             <div className="ld-stat-sub">
-                                {loan.nextPaymentDate ? `${fmt(loan.upcomingPaymentAmount || loan.monthlyPayment)} due` : loan.status === 'pending' ? 'Starts after disbursement' : 'No upcoming payment'}
+                                {loan.nextPaymentDate ? `${fmt(loan.upcomingPaymentAmount || loan.monthlyPayment)} due` : (loan.status === 'pending' || loan.status === 'approved') ? 'Starts after disbursement' : 'No upcoming payment'}
                             </div>
                         </div>
                     </div>

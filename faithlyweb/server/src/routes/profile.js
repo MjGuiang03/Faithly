@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { users, otps, loans, loanPayments, donations, attendance, savingsTransactions } from '../config/db.js';
+import { users, otps, loans, loanPayments, donations, attendance, savingsTransactions, announcements } from '../config/db.js';
 import { authenticateUser } from '../middleware/auth.js';
 import { sendOTP, generateOTP } from '../utils/email.js';
 
@@ -198,14 +198,38 @@ router.get('/notifications/feed', authenticateUser, async (req, res) => {
     const email = req.user.email;
     const limit = 10;
 
-    const [userReq, pendingPayments, userLoans, userDonations, userAttendance, userSavings] = await Promise.all([
-      users.findOne({ email }),
+    /* 1. Fetch user to get their branch for filtering */
+    const userReq = await users.findOne({ email });
+    const branch = userReq?.branch || '';
+
+    const [pendingPayments, userLoans, userDonations, userAttendance, userSavings, recentAnnouncements] = await Promise.all([
       loanPayments.find({ email, status: 'pending' }).sort({ submittedAt: -1 }).limit(limit).toArray(),
       loans.find({ email }).sort({ updatedAt: -1 }).limit(limit).toArray(),
       donations.find({ email }).sort({ updatedAt: -1 }).limit(limit).toArray(),
       attendance.find({ email }).sort({ createdAt: -1 }).limit(limit).toArray(),
       savingsTransactions.find({ email }).sort({ date: -1 }).limit(limit).toArray(),
+      announcements.find({
+        $and: [
+          {
+            $or: [
+              { expiresAt: { $exists: false } },
+              { expiresAt: null },
+              { expiresAt: { $gt: new Date() } }
+            ]
+          },
+          {
+            $or: [
+              { visibility: 'all' },
+              { visibility: { $exists: false } },
+              { visibility: null },
+              { targetBranches: branch }
+            ]
+          }
+        ]
+      }).sort({ createdAt: -1 }).limit(limit).toArray(),
     ]);
+
+    const filteredAnnouncements = recentAnnouncements;
 
     res.json({
       success: true,
@@ -214,7 +238,8 @@ router.get('/notifications/feed', authenticateUser, async (req, res) => {
       loans:      userLoans,
       donations:  userDonations,
       attendance: userAttendance,
-      savings:    userSavings
+      savings:    userSavings,
+      announcements: filteredAnnouncements
     });
   } catch (err) {
     console.error('Notification feed error:', err);

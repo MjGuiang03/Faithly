@@ -108,52 +108,50 @@ export default function LoanAdminNotif() {
             <LoanAdminSidebar />
 
             <div className="loan-admin-notif-content">
-                {/* Header */}
+                {/* ── Page Header ── */}
                 <div className="loan-admin-notif-header">
                     <div className="loan-admin-notif-header-left">
-                        <h1 className="loan-admin-notif-title">
-                            Loan Notifications
-                            {getUnreadCount() > 0 && (
-                                <span className="loan-admin-notif-badge">{getUnreadCount()} New</span>
-                            )}
-                        </h1>
-
+                        <h1 className="loan-admin-notif-title">Notifications</h1>
+                        {getUnreadCount() > 0 && <span className="admin-notif-badge">{getUnreadCount()}</span>}
                     </div>
+                    <p className="loan-admin-notif-subtitle">Manage loan applications and system notifications.</p>
+                </div>
+
+                {/* Filters + Action Row */}
+                <div className="admin-notif-controls-row">
+                    <div className="admin-notif-tabs">
+                        {[
+                            { key: 'all',    label: 'All' },
+                            { key: 'unread', label: 'Unread' },
+                            { key: 'read',   label: 'Read' }
+                        ].map(({ key, label }) => {
+                            const count = key === 'unread' ? getUnreadCount() : 0;
+                            return (
+                                <button
+                                    key={key}
+                                    className={`admin-notif-tab${activeFilter === key ? ' admin-notif-tab-active' : ''}`}
+                                    onClick={() => { setActiveFilter(key); }}
+                                >
+                                    {label}
+                                    {count > 0 && (
+                                        <span className="admin-notif-tab-badge">{count}</span>
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </div>
+
                     <button className="loan-admin-notif-mark-all" onClick={markAllAsRead}>
-                        <Bell size={16} color="#155DFC" />
                         Mark all as read
                     </button>
                 </div>
 
-                {/* Filter Tabs matching Admin Design */}
-                <div className="admin-notif-tabs" style={{ marginBottom: '24px' }}>
-                    {[
-                        { key: 'all',    label: 'All' },
-                        { key: 'unread', label: 'Unread' },
-                        { key: 'read',   label: 'Read' }
-                    ].map(({ key, label }) => {
-                        const count = key === 'unread' ? getUnreadCount() : 0;
-                        return (
-                            <button
-                                key={key}
-                                className={`admin-notif-tab${activeFilter === key ? ' admin-notif-tab-active' : ''}`}
-                                onClick={() => setActiveFilter(key)}
-                            >
-                                {label}
-                                {count > 0 && (
-                                    <span className="admin-notif-tab-badge">{count}</span>
-                                )}
-                            </button>
-                        );
-                    })}
-                </div>
-
-                {/* Notifications List */}
+                {/* ── List ── */}
                 <div className="loan-admin-notif-list">
                     {loading ? (
-                        <p style={{ color: '#9CA3AF', fontSize: 14, padding: '40px 0', textAlign: 'center' }}>Loading notifications…</p>
+                        <p style={{ color: '#9CA3AF', fontSize: 13, padding: '40px 0', textAlign: 'center', fontFamily: 'Inter' }}>Loading notifications…</p>
                     ) : filteredNotifications.length === 0 ? (
-                        <p style={{ color: '#9CA3AF', fontSize: 14, padding: '40px 0', textAlign: 'center' }}>No loan notifications found.</p>
+                        <p style={{ color: '#9CA3AF', fontSize: 13, padding: '40px 0', textAlign: 'center', fontFamily: 'Inter' }}>No notifications found.</p>
                     ) : (
                         filteredNotifications.map(notification => (
                             <div
@@ -163,7 +161,6 @@ export default function LoanAdminNotif() {
                                     if (!notification.isRead) markAsRead(notification.id);
                                     setDetailModal(notification);
                                 }}
-                                style={{ cursor: 'pointer' }}
                             >
                                 <div className="loan-admin-notif-card-icon">
                                     <Banknote size={20} color="#155DFC" />
@@ -175,17 +172,11 @@ export default function LoanAdminNotif() {
                                     </div>
                                     <p className="loan-admin-notif-card-message">{notification.message}</p>
                                     <div className="loan-admin-notif-card-footer">
-                                        <p className="loan-admin-notif-card-timestamp">{fmtTimestamp(notification.timestamp)}</p>
-                                        {!notification.isRead && (
-                                            <button
-                                                className="loan-admin-notif-card-mark-read"
-                                                onClick={() => markAsRead(notification.id)}
-                                            >
-                                                Mark as read
-                                            </button>
-                                        )}
-                                        {notification.isRead && (
-                                            <span className="loan-admin-notif-card-read-badge">Read</span>
+                                        <span className="loan-admin-notif-card-timestamp">{fmtTimestamp(notification.timestamp)}</span>
+                                        {!notification.isRead ? (
+                                            <span className="loan-admin-notif-status-badge">New</span>
+                                        ) : (
+                                            <span className="loan-admin-notif-status-badge read">Read</span>
                                         )}
                                     </div>
                                 </div>
@@ -194,6 +185,7 @@ export default function LoanAdminNotif() {
                     )}
                 </div>
             </div>
+
 
             {/* ── Notification Detail Modal ── */}
             {detailModal && (
