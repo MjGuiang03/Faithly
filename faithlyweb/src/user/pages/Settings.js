@@ -6,7 +6,7 @@ import VerifyEmailModal from '../components/VerifyEmail';
 import { useTheme } from '../../context/ThemeContext';
 
 import API from '../../utils/api';
-import { CalendarDays, Circle, Edit, Mail, User, XCircle, ChevronDown, ChevronUp, Check, Bell, Lock, Shield } from 'lucide-react';
+import { CalendarDays, Circle, Edit, Mail, User, XCircle, ChevronDown, ChevronUp, Check, Bell, Lock } from 'lucide-react';
 
 
 /* ─── Community options ──────────────────────────────────────────────── */

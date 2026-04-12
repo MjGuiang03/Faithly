@@ -1,5 +1,5 @@
 import '../styles/secApprovedLoanDetailsModal.css';
-import { Banknote, CheckCircle, X } from 'lucide-react';
+import { Banknote, X } from 'lucide-react';
 
 
 export default function SecApprovedLoanDetailsModal({ loan, onClose, onProcess }) {

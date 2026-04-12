@@ -3,7 +3,7 @@ import SecretaryAdminSidebar from '../components/secretaryAdminSidebar';
 import '../styles/secretaryAdminNotif.css';
 
 import API from '../../utils/api';
-import { Bell, Circle, Banknote } from 'lucide-react';
+import { Banknote } from 'lucide-react';
 
 
 export default function SecretaryAdminNotif() {

@@ -8,7 +8,7 @@ import useDebounce from '../../hooks/useDebounce';
 import '../styles/loanAdminLoanManagement.css';
 
 import API from '../../utils/api';
-import { Banknote, CheckCircle, Circle, Search, X, XCircle, ShieldCheck, AlertTriangle, ScanLine } from 'lucide-react';
+import { CheckCircle, Circle, Search, X, XCircle, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { performOCRScan } from '../../utils/ocrProcessor';
 
 

@@ -6,7 +6,7 @@ import LoanAdminSidebar from './loanAdminSidebar';
 import '../styles/loanAdminNotif.css';
 
 import API from '../../utils/api';
-import { Banknote, Bell } from 'lucide-react';
+import { Banknote } from 'lucide-react';
 
 
 const fmtTimestamp = (ts) => {

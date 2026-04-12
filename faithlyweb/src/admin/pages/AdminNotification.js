@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import '../styles/AdminNotification.css';
 
 import API from '../../utils/api';
-import { CalendarDays, Heart, PlusCircle, Banknote } from 'lucide-react';
+import { CalendarDays, Heart, Banknote } from 'lucide-react';
 
 const PER_PAGE = 10;
 
@@ -103,12 +103,7 @@ export default function AdminNotifications() {
   }, [notifications]);
 
 
-  const getIconBg = (type) => {
-    if (type === 'donation' || type === 'savings') return 'admin-notif-icon-donation';
-    if (type === 'member')     return 'admin-notif-icon-member';
-    if (type === 'attendance') return 'admin-notif-icon-attendance';
-    return '';
-  };
+
 
   return (
     <div className="admin-notif-main">
