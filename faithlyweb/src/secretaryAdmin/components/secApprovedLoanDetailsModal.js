@@ -13,7 +13,7 @@ export default function SecApprovedLoanDetailsModal({ loan, onClose, onProcess }
                         <p className="sec-modal-subtitle">Loan ID: {loan.id}</p>
                     </div>
                     <button className="sec-modal-close-btn" onClick={onClose}>
-                        <CheckCircle size={24} color="#0A0A0A" />
+                        <X size={20} color="#0A0A0A" />
                     </button>
                 </div>
 
@@ -109,7 +109,7 @@ export default function SecApprovedLoanDetailsModal({ loan, onClose, onProcess }
                         Close
                     </button>
                     <button className="sec-modal-btn-primary" onClick={onProcess}>
-                        <X size={20} color="white" />
+                        <Banknote size={16} color="white" />
                         Process Payment
                     </button>
                 </div>

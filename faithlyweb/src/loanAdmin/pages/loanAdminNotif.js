@@ -49,12 +49,12 @@ export default function LoanAdminNotif() {
 
                 const readIds = new Set(data.readIds || []);
 
-                // Filter only loan-related notifications
-                const loanNotifs = (data.notifications || [])
-                    .filter(n => n.type === 'loan')
+                // Filter only loan and savings notifications
+                const activeNotifs = (data.notifications || [])
+                    .filter(n => n.type === 'loan' || n.type === 'savings')
                     .map(n => ({ ...n, isRead: readIds.has(n.id) }));
 
-                setNotifications(loanNotifs);
+                setNotifications(activeNotifs);
             } catch (err) {
                 toast.error('Network error. Could not load notifications.');
             } finally {

@@ -293,7 +293,7 @@ export default function Savings() {
                 {transactions.map((txn) => {
                     const isIn = txn.type === 'deposit';
                     return (
-                        <div key={txn._id} className="sv-txn-row">
+                        <div key={txn._id} className="sv-txn-row" onClick={() => { setModal('transactionInfo'); setModalData(txn); }}>
                             <div className={`sv-txn-dot-wrap ${isIn ? 'sv-txn-dot-wrap--in' : 'sv-txn-dot-wrap--out'}`}>
                                 {isIn ? <TxnArrowIn /> : <TxnArrowOut />}
                             </div>

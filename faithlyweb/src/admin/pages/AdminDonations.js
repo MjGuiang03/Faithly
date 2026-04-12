@@ -55,6 +55,7 @@ export default function AdminDonationsNew() {
   /* ── Detail modal ── */
   const [detailModal, setDetailModal] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [showRejectInput, setShowRejectInput] = useState(false);
 
   /* ── Auth guard ── */
   useEffect(() => {
@@ -328,7 +329,7 @@ export default function AdminDonationsNew() {
             {/* Header */}
             <div className="admin-don-modal-header">
               <h2 className="admin-don-modal-title">Donation Details</h2>
-              <button className="admin-don-modal-close" onClick={() => setDetailModal(null)}>×</button>
+              <button className="admin-don-modal-close" onClick={() => { setDetailModal(null); setShowRejectInput(false); }}>×</button>
             </div>
 
             {/* Info Grid */}
@@ -395,35 +396,60 @@ export default function AdminDonationsNew() {
             <div className="admin-don-modal-footer" style={{ flexDirection: 'column', gap: '12px', alignItems: 'stretch' }}>
               {(!detailModal.status || detailModal.status === 'pending') && (
                 <div style={{ padding: '12px', background: '#FEF2F2', border: '1px solid #FCA5A5', borderRadius: '8px' }}>
-                  <p style={{ margin: '0 0 8px 0', fontSize: '13px', color: '#991B1B', fontWeight: '500' }}>Rejection Reason</p>
-                  <select 
-                    style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #FCA5A5', marginBottom: '12px', fontSize: '14px' }}
-                    value={rejectReason}
-                    onChange={(e) => setRejectReason(e.target.value)}
-                  >
-                    <option value="Incomplete or unreadable proof of payment">Incomplete or unreadable proof of payment</option>
-                    <option value="Amount deposited does not match the entered amount">Amount deposited does not match the entered amount</option>
-                    <option value="Duplicate payment proof uploaded">Duplicate payment proof uploaded</option>
-                    <option value="Invalid transaction reference number">Invalid transaction reference number</option>
-                    <option value="Other / Suspected fraudulent submission">Other / Suspected fraudulent submission</option>
-                  </select>
+                  {showRejectInput && (
+                    <>
+                      <p style={{ margin: '0 0 8px 0', fontSize: '13px', color: '#991B1B', fontWeight: '500' }}>Rejection Reason</p>
+                      <select 
+                        style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #FCA5A5', marginBottom: '12px', fontSize: '14px' }}
+                        value={rejectReason}
+                        onChange={(e) => setRejectReason(e.target.value)}
+                      >
+                        <option value="Incomplete or unreadable proof of payment">Incomplete or unreadable proof of payment</option>
+                        <option value="Amount deposited does not match the entered amount">Amount deposited does not match the entered amount</option>
+                        <option value="Duplicate payment proof uploaded">Duplicate payment proof uploaded</option>
+                        <option value="Invalid transaction reference number">Invalid transaction reference number</option>
+                        <option value="Other / Suspected fraudulent submission">Other / Suspected fraudulent submission</option>
+                      </select>
+                    </>
+                  )}
+                  
                   <div style={{ display: 'flex', gap: '10px' }}>
                     <button
                       className="admin-don-action-btn admin-don-action-reject"
                       style={{ padding: '10px 20px', fontSize: '14px', flex: 1 }}
-                      onClick={() => handleReject(detailModal._id)}
+                      onClick={() => {
+                        if (!showRejectInput) {
+                          setShowRejectInput(true);
+                        } else {
+                          handleReject(detailModal._id);
+                        }
+                      }}
                       disabled={actionLoading}
                     >
-                      {actionLoading ? <span className="btn-spinner" /> : 'Reject'}
+                      {actionLoading ? <span className="btn-spinner" /> : showRejectInput ? 'Submit Rejection' : 'Reject'}
                     </button>
-                    <button
-                      className="admin-don-action-btn admin-don-action-confirm"
-                      style={{ padding: '10px 24px', fontSize: '14px', flex: 2 }}
-                      onClick={() => handleConfirm(detailModal._id)}
-                      disabled={actionLoading}
-                    >
-                      {actionLoading ? <span className="btn-spinner" /> : 'Confirm Donation'}
-                    </button>
+                    
+                    {!showRejectInput && (
+                      <button
+                        className="admin-don-action-btn admin-don-action-confirm"
+                        style={{ padding: '10px 24px', fontSize: '14px', flex: 2 }}
+                        onClick={() => handleConfirm(detailModal._id)}
+                        disabled={actionLoading}
+                      >
+                        {actionLoading ? <span className="btn-spinner" /> : 'Confirm Donation'}
+                      </button>
+                    )}
+
+                    {showRejectInput && (
+                      <button
+                        className="admin-don-action-btn admin-don-action-view"
+                        style={{ padding: '10px 20px', fontSize: '14px', flex: 1 }}
+                        onClick={() => setShowRejectInput(false)}
+                        disabled={actionLoading}
+                      >
+                        Cancel
+                      </button>
+                    )}
                   </div>
                 </div>
               )}
@@ -431,7 +457,7 @@ export default function AdminDonationsNew() {
                 <button
                   className="admin-don-action-btn admin-don-action-view"
                   style={{ padding: '10px 20px', fontSize: '14px' }}
-                  onClick={() => setDetailModal(null)}
+                  onClick={() => { setDetailModal(null); setShowRejectInput(false); }}
                 >
                   Close
                 </button>

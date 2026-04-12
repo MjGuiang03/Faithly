@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import '../styles/SavingsModal.css';
 import API from '../../utils/api';
-import { CheckCircle, FileText, X, ArrowDownRight, ArrowUpLeft, Repeat, History } from 'lucide-react';
+import { CheckCircle, FileText, X, ArrowDownRight, ArrowUpLeft, Repeat, History, CreditCard, Smartphone, Building2, Calendar, Info, Coins, ShieldCheck, AlertCircle } from 'lucide-react';
 
 
 const fmt = (n) =>
@@ -1178,6 +1178,115 @@ function GoalInfoModal({ goal, onClose, onEdit, onTransfer, onQuickDeposit }) {
     );
 }
 
+
+/* ─────────────────────────────────────────────────────────────
+   6.  TRANSACTION INFO MODAL (Specific details)
+───────────────────────────────────────────────────────────── */
+function TransactionInfoModal({ transaction, onClose }) {
+    if (!transaction) return null;
+
+    const isIn = transaction.type === 'deposit';
+    const isOut = transaction.type === 'withdrawal';
+    const isTransfer = transaction.source === 'Transfer';
+    const isGcash = transaction.paymentMethod === 'gcash';
+    const isBank = transaction.paymentMethod === 'bank';
+
+    let Icon = ArrowDownRight;
+    let iconClass = 'svm-tx-icon--in';
+    let statusText = transaction.status === 'confirmed' ? 'Validated' : transaction.status === 'rejected' ? 'Rejected' : 'Pending';
+    let StatusIcon = statusText === 'Validated' ? ShieldCheck : statusText === 'Rejected' ? AlertCircle : History;
+
+    if (isOut) { Icon = ArrowUpLeft; iconClass = 'svm-tx-icon--out'; }
+    if (isTransfer) { Icon = Repeat; iconClass = 'svm-tx-icon--transfer'; }
+
+    return (
+        <div className="svm-overlay" onClick={onClose}>
+            <div className="svm-modal svm-modal--sm" onClick={e => e.stopPropagation()}>
+                <div className="svm-modal-head">
+                    <div>
+                        <div className="svm-modal-title">Transaction details</div>
+                        <div className="svm-modal-sub">Overview of this individual activity</div>
+                    </div>
+                    <button className="svm-close-btn" onClick={onClose}><CloseIcon /></button>
+                </div>
+
+                <div className="svm-modal-body svm-tx-details">
+                    <div className="svm-tx-header">
+                        <div className={`svm-tx-badge-icon ${iconClass}`}>
+                            <Icon size={24} />
+                        </div>
+                        <div className="svm-tx-amount-large">
+                            {isIn ? '+' : '-'}{fmt(transaction.amount)}
+                        </div>
+                        <div className="svm-tx-status-wrap">
+                            <span className={`svm-tx-status-tag svm-tx-status--${transaction.status || 'pending'}`}>
+                                <StatusIcon size={12} />
+                                {statusText}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="svm-tx-grid">
+                        <div className="svm-tx-item">
+                            <label><Calendar size={14} /> Date</label>
+                            <span>{new Date(transaction.date).toLocaleString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                        <div className="svm-tx-item">
+                            <label><Info size={14} /> Type</label>
+                            <span style={{ textTransform: 'capitalize' }}>{transaction.type} {isTransfer ? '(Transfer)' : ''}</span>
+                        </div>
+                        <div className="svm-tx-item">
+                            <label><Coins size={14} /> Goal</label>
+                            <span>{transaction.goalName || 'General Savings'}</span>
+                        </div>
+                        <div className="svm-tx-item">
+                            <label><FileText size={14} /> Description</label>
+                            <span>{transaction.description || (isIn ? 'Deposit' : 'Withdrawal')}</span>
+                        </div>
+                    </div>
+
+                    {(transaction.paymentMethod && transaction.paymentMethod !== 'cash') && (
+                        <div className="svm-tx-payment-info">
+                            <div className="svm-tx-item">
+                                <label>
+                                    {isGcash ? <Smartphone size={14} /> : isBank ? <Building2 size={14} /> : <CreditCard size={14} />} 
+                                    Payment Method
+                                </label>
+                                <span style={{ textTransform: 'capitalize' }}>{transaction.paymentMethod}</span>
+                            </div>
+                            {transaction.referenceNumber && (
+                                <div className="svm-tx-item">
+                                    <label>Reference Number</label>
+                                    <span className="svm-tx-ref">{transaction.referenceNumber}</span>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {transaction.proofOfPayment && (
+                        <div className="svm-tx-proof-section">
+                            <label className="svm-tx-label">Proof of Payment</label>
+                            <div className="svm-tx-proof-container">
+                                <img 
+                                    src={transaction.proofOfPayment} 
+                                    alt="Proof" 
+                                    className="svm-tx-proof-img" 
+                                    onClick={() => window.open(transaction.proofOfPayment, '_blank')}
+                                />
+                                <div className="svm-tx-proof-hint">Click image to view full size</div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                <div className="svm-modal-footer">
+                    <button className="svm-btn-cancel" style={{ flex: 1 }} onClick={onClose}>Close</button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 /* ─────────────────────────────────────────────────────────────
    ROOT EXPORT  — renders whichever modal is active
 ───────────────────────────────────────────────────────────── */
@@ -1208,6 +1317,9 @@ export default function SavingsModals({ modal, modalData, goals, onClose, onEdit
 
     if (modal === 'transfer')
         return <TransferModal goal={modalData} goals={goals} onClose={onClose} />;
+
+    if (modal === 'transactionInfo')
+        return <TransactionInfoModal transaction={modalData} onClose={onClose} />;
 
     return null;
 }

@@ -123,7 +123,7 @@ export default function AdminNotifications() {
           </div>
         </div>
         <p className="admin-notif-subtitle">
-          Manage member registrations, donations, savings deposits, and attendance check-ins.
+          Manage member registrations, donations, and attendance check-ins.
         </p>
       </div>
 
@@ -134,9 +134,7 @@ export default function AdminNotifications() {
             { key: 'all',        label: 'All' },
             { key: 'member',     label: 'Members' },
             { key: 'donation',   label: 'Donations' },
-            { key: 'savings',    label: 'Savings' },
-            { key: 'attendance', label: 'Attendance' },
-            { key: 'loan',       label: 'Loans' }
+            { key: 'attendance', label: 'Attendance' }
           ].map(({ key, label }) => {
             const count = enriched.filter(n => (key === 'all' ? true : n.type === key) && !n.isRead).length;
             return (

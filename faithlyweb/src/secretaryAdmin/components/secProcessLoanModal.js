@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import '../styles/secProcessLoanModal.css';
-import { Banknote, MessageCircle, X } from 'lucide-react';
+import { Banknote, Check, Smartphone, Building2, Upload, X } from 'lucide-react';
 
 
 /* ── File → base64 helper ── */
@@ -44,7 +44,10 @@ export default function SecProcessLoanModal({ loan, onClose, onProcess }) {
             <div className="sec-process-modal-container" onClick={(e) => e.stopPropagation()}>
                 {/* Icon */}
                 <div className="sec-process-modal-icon">
-                    <X size={32} color="#155DFC" />
+                    <Banknote size={24} color="#155DFC" />
+                    <button className="sec-process-modal-close-top" onClick={onClose}>
+                        <X size={18} />
+                    </button>
                 </div>
 
                 {/* Title */}
@@ -85,7 +88,7 @@ export default function SecProcessLoanModal({ loan, onClose, onProcess }) {
                             className={`sec-process-payment-option ${paymentMethod === 'cash' ? 'active' : ''}`}
                             onClick={() => setPaymentMethod('cash')}
                         >
-                            <Banknote size={32} />
+                            <Banknote size={22} />
                             <span>Cash</span>
                         </button>
 
@@ -93,7 +96,7 @@ export default function SecProcessLoanModal({ loan, onClose, onProcess }) {
                             className={`sec-process-payment-option ${paymentMethod === 'gcash' ? 'active' : ''}`}
                             onClick={() => setPaymentMethod('gcash')}
                         >
-                            <Banknote size={32} />
+                            <Smartphone size={22} />
                             <span>GCash</span>
                         </button>
 
@@ -101,7 +104,7 @@ export default function SecProcessLoanModal({ loan, onClose, onProcess }) {
                             className={`sec-process-payment-option ${paymentMethod === 'bank' ? 'active' : ''}`}
                             onClick={() => setPaymentMethod('bank')}
                         >
-                            <Banknote size={32} />
+                            <Building2 size={22} />
                             <span>Bank Transfer</span>
                         </button>
                     </div>
@@ -145,7 +148,7 @@ export default function SecProcessLoanModal({ loan, onClose, onProcess }) {
                         htmlFor="proof-upload"
                         style={{
                             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                            padding: proofFile ? '8px' : '20px',
+                            padding: proofFile ? '6px' : '15px',
                             border: `1.5px dashed ${proofFile ? '#16A34A' : '#D1D5DB'}`,
                             borderRadius: '10px',
                             cursor: 'pointer',
@@ -175,7 +178,7 @@ export default function SecProcessLoanModal({ loan, onClose, onProcess }) {
                             </>
                         ) : (
                             <>
-                                <MessageCircle size={24} color="#99A1AF" />
+                                <Upload size={20} color="#99A1AF" />
                                 <p style={{ margin: 0, fontSize: '13px', color: '#6B7280', fontFamily: 'Inter' }}>
                                     Click to upload proof
                                 </p>
@@ -200,7 +203,7 @@ export default function SecProcessLoanModal({ loan, onClose, onProcess }) {
                         Cancel
                     </button>
                     <button className="sec-process-btn-confirm" onClick={handleProcess} disabled={processing}>
-                        <X size={16} color="white" />
+                        <Check size={16} color="white" />
                         {processing ? <span className="btn-spinner" /> : 'Process Payment'}
                     </button>
                 </div>

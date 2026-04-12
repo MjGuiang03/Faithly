@@ -607,6 +607,12 @@
     gap: 12px;
     padding: 12px 20px;
     border-bottom: 0.8px solid var(--border);
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.sv-txn-row:hover {
+    background: var(--secondary);
 }
 
 .sv-txn-row:last-child {

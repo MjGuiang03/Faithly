@@ -13,26 +13,28 @@
 /* Process Modal Container */
 .sec-process-modal-container {
     background: white;
-    border-radius: 2px;
-    padding: 24px;
-    max-width: 400px;
+    border-radius: 12px;
+    padding: 24px; /* Reduced from 32px */
+    max-width: 440px;
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    /* box-shadow removed for flat layout */
+    gap: 14px; /* Reduced from 20px */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    position: relative;
 }
 
 /* Icon */
 .sec-process-modal-icon {
-    width: 48px;
+    width: 48px; /* Reduced from 60px */
     height: 48px;
-    background: #dbeafe;
-    border-radius: 2px;
+    background: #eff6ff;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto;
+    position: relative;
 }
 
 .sec-process-modal-icon svg {
@@ -40,11 +42,35 @@
     height: 24px;
 }
 
+.sec-process-modal-close-top {
+    position: absolute;
+    top: -8px;
+    right: -175px; 
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: white;
+    border: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #6b7280;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.sec-process-modal-close-top:hover {
+    background: #f9fafb;
+    color: #111827;
+    border-color: #d1d5db;
+}
+
 /* Title */
 .sec-process-modal-title {
     font-family: 'Inter', sans-serif;
     font-weight: 700;
-    font-size: 20px;
+    font-size: 18px; /* Reduced from 20px */
     color: #101828;
     text-align: center;
     margin: 0;
@@ -54,10 +80,10 @@
 .sec-process-modal-subtitle {
     font-family: 'Inter', sans-serif;
     font-weight: 400;
-    font-size: 14px;
+    font-size: 13px; /* Reduced from 14px */
     color: #4a5565;
     text-align: center;
-    margin: 0;
+    margin: -4px 0 0;
 }
 
 .sec-process-modal-subtitle strong {
@@ -67,12 +93,13 @@
 
 /* Info Box */
 .sec-process-modal-info {
-    background: #f9fafb;
-    border-radius: 2px;
-    padding: 24px; /* Enhanced breathing room */
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 16px; /* Reduced from 20px */
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 6px; /* Reduced from 8px */
+    border: 1px solid #f1f5f9;
 }
 
 .sec-process-modal-info-text {
@@ -110,7 +137,7 @@
 /* Payment Options */
 .sec-process-modal-payment-options {
     display: grid;
-    grid-template-columns: 1.1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
     gap: 8px;
 }
 
@@ -118,13 +145,14 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
-    padding: 12px 8px;
+    justify-content: center;
+    gap: 6px;
+    padding: 12px 8px; /* Reduced from 16px 12px */
     background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 2px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
 }
 
 .sec-process-payment-option svg {
@@ -144,8 +172,9 @@
 .sec-process-payment-option span {
     font-family: 'Inter', sans-serif;
     font-weight: 500;
-    font-size: 14px;
+    font-size: 12px;
     color: #4a5565;
+    text-align: center;
 }
 
 .sec-process-payment-option.active span {
@@ -161,15 +190,15 @@
 .sec-process-btn-cancel,
 .sec-process-btn-confirm {
     flex: 1;
-    height: 44px;
+    height: 40px; /* Reduced from 44px */
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
     font-family: 'Inter', sans-serif;
     font-weight: 600;
-    font-size: 14px;
-    border-radius: 2px;
+    font-size: 13px; /* Reduced from 14px */
+    border-radius: 10px;
     border: none;
     cursor: pointer;
     transition: all 0.2s;

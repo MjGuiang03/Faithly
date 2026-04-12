@@ -6,7 +6,7 @@ import VerifyEmailModal from '../components/VerifyEmail';
 import { useTheme } from '../../context/ThemeContext';
 
 import API from '../../utils/api';
-import { CalendarDays, Circle, Edit, Mail, User, XCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { CalendarDays, Circle, Edit, Mail, User, XCircle, ChevronDown, ChevronUp, Check, Bell, Lock, Shield } from 'lucide-react';
 
 
 /* ─── Community options ──────────────────────────────────────────────── */
@@ -52,6 +52,34 @@ export default function Settings() {
   /* ── Other settings ──────────────────────────────────────────────────── */
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [smsNotifications,   setSmsNotifications]   = useState(false);
+
+  const [twoFactorAuth, setTwoFactorAuth] = useState(false);
+  const [passForm, setPassForm] = useState({
+    current: '',
+    new: '',
+    confirm: ''
+  });
+  const [passLoading, setPassLoading] = useState(false);
+  const [passError, setPassError] = useState('');
+  const [passSuccess, setPassSuccess] = useState('');
+
+  const [notifPrefs, setNotifPrefs] = useState(() => {
+    const saved = localStorage.getItem('notif_prefs');
+    return saved ? JSON.parse(saved) : {
+      loan: true,
+      payment_pending: true,
+      announcement: true,
+      attendance: true,
+      savings: true,
+      donation: true
+    };
+  });
+
+  const handleTogglePref = (key) => {
+    const newVal = { ...notifPrefs, [key]: !notifPrefs[key] };
+    setNotifPrefs(newVal);
+    localStorage.setItem('notif_prefs', JSON.stringify(newVal));
+  };
 
   /* ── Collapsible info ────────────────────────────────────────────────── */
   const [infoExpanded, setInfoExpanded] = useState(false);
@@ -140,6 +168,54 @@ export default function Settings() {
   const handleSaveSettings = () => alert('Settings saved successfully!');
   const handleReset = () => {
     setEmailNotifications(true); setSmsNotifications(false);
+    setTwoFactorAuth(false);
+  };
+
+  const handleUpdatePassword = async (e) => {
+    if (e) e.preventDefault();
+    setPassError('');
+    setPassSuccess('');
+
+    if (!passForm.current || !passForm.new || !passForm.confirm) {
+      setPassError('Please fill in all password fields.');
+      return;
+    }
+
+    if (passForm.new !== passForm.confirm) {
+      setPassError('New passwords do not match.');
+      return;
+    }
+
+    if (passForm.new.length < 6) {
+      setPassError('New password must be at least 6 characters.');
+      return;
+    }
+
+    setPassLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API}/api/user/change-password`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          currentPassword: passForm.current,
+          newPassword: passForm.new
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to update password');
+
+      setPassSuccess('Password updated successfully!');
+      setPassForm({ current: '', new: '', confirm: '' });
+    } catch (err) {
+      setPassError(err.message);
+    } finally {
+      setPassLoading(false);
+    }
   };
 
 
@@ -188,6 +264,9 @@ export default function Settings() {
           {/* ── Personal Information ──────────────────────────────────── */}
           <div className="user-settings-section user-pi-section">
             <div className="user-settings-section-header">
+              <div className="user-settings-icon-box" style={{ background: '#E6EFFF' }}>
+                <User className="user-settings-section-icon" size={20} color="#155DFC" />
+              </div>
               <div className="user-settings-header-text">
                 <h2 className="user-settings-section-title">Personal Information</h2>
                 <p className="user-settings-section-subtitle">View and manage your profile details</p>
@@ -206,12 +285,14 @@ export default function Settings() {
                   {avatarSrc ? (
                     <img src={avatarSrc} alt="Profile" style={{ width: 52, height: 52, borderRadius: '50%', objectFit: 'cover' }} />
                   ) : (
-                    <Edit size={28} />
+                    <span style={{ fontSize: 20, fontWeight: 700, color: 'white' }}>
+                      {displayName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                    </span>
                   )}
                 </div>
                 {isEditing && (
                   <div className="user-pi-card-avatar-badge">
-                    <Edit size={13} color="white" />
+                    <Edit size={13} color="#ffffff" />
                   </div>
                 )}
                 <input id="user-pi-photo-input-header" type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhotoSelect} />
@@ -235,8 +316,9 @@ export default function Settings() {
                 className="user-pi-card-chevron-btn"
                 onClick={() => setInfoExpanded(prev => !prev)}
                 title={infoExpanded ? 'Collapse' : 'Expand'}
+                style={{ background: 'rgba(21, 93, 252, 0.1)', border: '1px solid rgba(21, 93, 252, 0.2)' }}
               >
-                {infoExpanded ? <ChevronUp size={18} color="white" /> : <ChevronDown size={18} color="white" />}
+                {infoExpanded ? <ChevronUp size={18} color="#155DFC" /> : <ChevronDown size={18} color="#155DFC" />}
               </button>
 
             </div>
@@ -342,8 +424,8 @@ export default function Settings() {
           {/* ── Appearance ─────────────────────────────────────────── */}
           <div className="user-settings-section">
             <div className="user-settings-section-header">
-              <div className="user-settings-icon-box" style={{ background: '#f3e8ff' }}>
-                <User className="user-settings-section-icon" size={20} color="#8B5CF6" />
+              <div className="user-settings-icon-box" style={{ background: '#E6EFFF' }}>
+                <User className="user-settings-section-icon" size={20} color="#155DFC" />
               </div>
               <div className="user-settings-header-text">
                 <h2 className="user-settings-section-title">Appearance</h2>
@@ -368,7 +450,7 @@ export default function Settings() {
           <div className="user-settings-section">
             <div className="user-settings-section-header">
               <div className="user-settings-icon-box user-notifications-icon">
-                <User className="user-settings-section-icon" size={20} color="#155DFC" />
+                <Bell className="user-settings-section-icon" size={20} color="#155DFC" />
               </div>
               <div className="user-settings-header-text">
                 <h2 className="user-settings-section-title">Notifications</h2>
@@ -376,6 +458,7 @@ export default function Settings() {
               </div>
             </div>
             <div className="user-settings-group">
+              <h3 className="user-settings-group-title">Communication Channels</h3>
               <div className="user-toggle-setting">
                 <div className="user-toggle-setting-info">
                   <h3 className="user-toggle-title">Email Notifications</h3>
@@ -393,6 +476,119 @@ export default function Settings() {
                 </div>
                 <label className="user-toggle-switch">
                   <input type="checkbox" checked={smsNotifications} onChange={e => setSmsNotifications(e.target.checked)} />
+                  <span className="user-toggle-slider"></span>
+                </label>
+              </div>
+
+              <div className="user-settings-divider" />
+
+              <h3 className="user-settings-group-title">Notification Categories</h3>
+              <p className="user-settings-group-desc">Choose which types of activity you want to be notified about in your feed.</p>
+              
+              <div className="user-notif-prefs-grid">
+                {[
+                  { key: 'loan', label: 'Loans' },
+                  { key: 'payment_pending', label: 'Payments' },
+                  { key: 'announcement', label: 'Announcements' },
+                  { key: 'attendance', label: 'Attendance' },
+                  { key: 'savings', label: 'Savings' },
+                  { key: 'donation', label: 'Donations' },
+                ].map(({ key, label }) => (
+                  <label key={key} className="user-notif-pref-item">
+                    <input
+                      type="checkbox"
+                      checked={notifPrefs[key]}
+                      onChange={() => handleTogglePref(key)}
+                    />
+                    <div className="user-notif-checkbox-box">
+                      <Check size={12} className="check-icon" />
+                    </div>
+                    <span>{label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+          {/* ── Security & Password ────────────────────────────────────── */}
+          <div className="user-settings-section">
+            <div className="user-settings-section-header">
+              <div className="user-settings-icon-box" style={{ background: '#E6EFFF' }}>
+                <Lock className="user-settings-section-icon" size={20} color="#155DFC" />
+              </div>
+              <div className="user-settings-header-text">
+                <h2 className="user-settings-section-title">Security & Password</h2>
+                <p className="user-settings-section-subtitle">Manage your password and account security</p>
+              </div>
+            </div>
+            
+            <div className="user-settings-group">
+              <h3 className="user-settings-group-title">Update Password</h3>
+              
+              {passError && (
+                <div style={{ display:'flex', alignItems:'center', gap:8, background:'#FEF2F2', border:'1px solid #FECACA', borderRadius:10, padding:'10px 14px', marginBottom:16 }}>
+                  <XCircle size={16} color="#F04438" />
+                  <span style={{ fontSize:13, color:'#B91C1C' }}>{passError}</span>
+                </div>
+              )}
+              {passSuccess && (
+                <div style={{ display:'flex', alignItems:'center', gap:8, background:'#F0FDF4', border:'1px solid #BBF7D0', borderRadius:10, padding:'10px 14px', marginBottom:16 }}>
+                  <Check size={16} color="#16A34A" />
+                  <span style={{ fontSize:13, color:'#16A34A' }}>{passSuccess}</span>
+                </div>
+              )}
+
+              <div className="user-pi-form-grid" style={{ marginBottom: 16 }}>
+                <div className="user-pi-form-field user-pi-form-field-full">
+                  <label className="user-pi-form-label">CURRENT PASSWORD</label>
+                  <input 
+                    type="password" 
+                    className="user-pi-form-input" 
+                    value={passForm.current} 
+                    onChange={e => setPassForm({...passForm, current: e.target.value})}
+                    placeholder="••••••••" 
+                  />
+                </div>
+                <div className="user-pi-form-field">
+                  <label className="user-pi-form-label">NEW PASSWORD</label>
+                  <input 
+                    type="password" 
+                    className="user-pi-form-input" 
+                    value={passForm.new} 
+                    onChange={e => setPassForm({...passForm, new: e.target.value})}
+                    placeholder="••••••••" 
+                  />
+                </div>
+                <div className="user-pi-form-field">
+                  <label className="user-pi-form-label">CONFIRM NEW PASSWORD</label>
+                  <input 
+                    type="password" 
+                    className="user-pi-form-input" 
+                    value={passForm.confirm} 
+                    onChange={e => setPassForm({...passForm, confirm: e.target.value})}
+                    placeholder="••••••••" 
+                  />
+                </div>
+              </div>
+              
+              <button 
+                className="user-pi-btn-edit-bottom" 
+                onClick={handleUpdatePassword}
+                disabled={passLoading}
+                style={{ alignSelf: 'flex-start' }}
+              >
+                {passLoading ? <span className="btn-spinner" /> : 'Update Password'}
+              </button>
+
+              <div className="user-settings-divider" />
+
+              <h3 className="user-settings-group-title">Account Access</h3>
+              <div className="user-toggle-setting">
+                <div className="user-toggle-setting-info">
+                  <h3 className="user-toggle-title">Two-Factor Authentication</h3>
+                  <p className="user-toggle-description">Add an extra layer of security to your account</p>
+                </div>
+                <label className="user-toggle-switch">
+                  <input type="checkbox" checked={twoFactorAuth} onChange={e => setTwoFactorAuth(e.target.checked)} />
                   <span className="user-toggle-slider"></span>
                 </label>
               </div>

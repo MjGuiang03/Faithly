@@ -5,9 +5,8 @@ import { Circle } from 'lucide-react';
 
 
 export default function SecretaryLoanSettings() {
-    const [churchName, setChurchName] = useState('Church of Grace');
-    const [defaultCurrency, setDefaultCurrency] = useState('');
-    const [timezone, setTimezone] = useState('');
+    const [secName, setSecName] = useState('Secretary');
+    const [secEmail, setSecEmail] = useState('secretary@church.com');
 
     const [emailNotifications, setEmailNotifications] = useState(true);
     const [smsAlerts, setSmsAlerts] = useState(true);
@@ -26,51 +25,37 @@ export default function SecretaryLoanSettings() {
                     <p className="sec-admin-settings-subtitle">Configure system preferences and security</p>
                 </div>
 
-                {/* System Settings Section */}
+                {/* Personal Profile Section */}
                 <div className="sec-admin-settings-section">
                     <div className="sec-admin-settings-section-header">
                         <div className="sec-admin-settings-section-icon blue">
                             <Circle size={20} color="#155DFC" />
                         </div>
                         <div>
-                            <h3 className="sec-admin-settings-section-title">System Settings</h3>
-                            <p className="sec-admin-settings-section-desc">General system configurations</p>
+                            <h3 className="sec-admin-settings-section-title">Personal Profile</h3>
+                            <p className="sec-admin-settings-section-desc">Manage your admin account details</p>
                         </div>
                     </div>
 
                     <div className="sec-admin-settings-form">
                         <div className="sec-admin-settings-form-group">
-                            <label className="sec-admin-settings-label">Church Name</label>
+                            <label className="sec-admin-settings-label">Full Name</label>
                             <input
                                 type="text"
                                 className="sec-admin-settings-input"
-                                value={churchName}
-                                onChange={(e) => setChurchName(e.target.value)}
+                                value={secName}
+                                onChange={(e) => setSecName(e.target.value)}
                             />
                         </div>
 
-                        <div className="sec-admin-settings-form-row">
-                            <div className="sec-admin-settings-form-group">
-                                <label className="sec-admin-settings-label">Default Currency</label>
-                                <input
-                                    type="text"
-                                    className="sec-admin-settings-input"
-                                    placeholder="Default Currency"
-                                    value={defaultCurrency}
-                                    onChange={(e) => setDefaultCurrency(e.target.value)}
-                                />
-                            </div>
-
-                            <div className="sec-admin-settings-form-group">
-                                <label className="sec-admin-settings-label">Timezone</label>
-                                <input
-                                    type="text"
-                                    className="sec-admin-settings-input"
-                                    placeholder="Timezone"
-                                    value={timezone}
-                                    onChange={(e) => setTimezone(e.target.value)}
-                                />
-                            </div>
+                        <div className="sec-admin-settings-form-group">
+                            <label className="sec-admin-settings-label">Email Address</label>
+                            <input
+                                type="email"
+                                className="sec-admin-settings-input"
+                                value={secEmail}
+                                onChange={(e) => setSecEmail(e.target.value)}
+                            />
                         </div>
                     </div>
                 </div>

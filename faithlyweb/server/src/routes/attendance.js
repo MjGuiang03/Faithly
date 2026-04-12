@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { users, attendance } from '../config/db.js';
+import { users, attendance, attendanceSessions } from '../config/db.js';
 import { authenticateUser } from '../middleware/auth.js';
 import { authenticateAdmin } from '../middleware/auth.js';
 

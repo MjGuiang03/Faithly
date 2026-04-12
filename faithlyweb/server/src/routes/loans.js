@@ -417,7 +417,7 @@ router.put('/admin/loans/:id/process', authenticateAdmin, async (req, res) => {
           proofFileName: proofFileName || null,
           updatedAt: new Date() 
         },
-        $push: { statusHistory: { status: 'active', date: new Date() } }
+        $push: { statusHistory: { status: 'processed', date: new Date() } }
       }
     );
 

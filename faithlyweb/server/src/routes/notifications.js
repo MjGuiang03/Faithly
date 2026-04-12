@@ -21,77 +21,85 @@ router.get('/notifications', authenticateAdmin, async (req, res) => {
 
     const notifications = [];
 
-    // Savings deposits → notification
-    recentSavings.forEach(s => {
-      notifications.push({
-        id:        `savings-${s._id}`,
-        type:      'savings',
-        title:     'Savings deposit received',
-        message:   `A deposit of ₱${Number(s.amount).toLocaleString()} was added to ${s.goalName}.`,
-        timestamp: s.date,
-        isRead:    false,
-        meta: {
-          member: s.email, // using email as identifier for now
-          amount: s.amount,
-        }
+    // Savings deposits → notification (Only for Loan Admin)
+    if (req.admin.role === 'loanAdmin') {
+      recentSavings.forEach(s => {
+        notifications.push({
+          id:        `savings-${s._id}`,
+          type:      'savings',
+          title:     'Savings deposit received',
+          message:   `A deposit of ₱${Number(s.amount).toLocaleString()} was added to ${s.goalName}.`,
+          timestamp: s.date,
+          isRead:    false,
+          meta: {
+            member: s.email,
+            amount: s.amount,
+          }
+        });
       });
-    });
+    }
 
-    // Donations → notification
-    recentDonations.forEach(d => {
-      notifications.push({
-        id:        `donation-${d._id}`,
-        type:      'donation',
-        title:     'Donation received',
-        message:   `${d.member} donated ₱${Number(d.amount).toLocaleString()} to ${d.category}.`,
-        timestamp: d.createdAt || d.date,
-        isRead:    false,
-        meta: {
-          donationId: d.donationId,
-          member:     d.member,
-          amount:     d.amount,
-          category:   d.category,
-          method:     d.method,
-        }
+    // Donations → notification (Only for Super Admin)
+    if (req.admin.role === 'admin') {
+      recentDonations.forEach(d => {
+        notifications.push({
+          id:        `donation-${d._id}`,
+          type:      'donation',
+          title:     'Donation received',
+          message:   `${d.member} donated ₱${Number(d.amount).toLocaleString()} to ${d.category}.`,
+          timestamp: d.createdAt || d.date,
+          isRead:    false,
+          meta: {
+            donationId: d.donationId,
+            member:     d.member,
+            amount:     d.amount,
+            category:   d.category,
+            method:     d.method,
+          }
+        });
       });
-    });
+    }
 
-    // Members → notification (new registrations)
-    recentMembers.forEach(m => {
-      notifications.push({
-        id:        `member-${m._id}`,
-        type:      'member',
-        title:     'New member registered',
-        message:   `${m.fullName} has been successfully registered as a new member.`,
-        timestamp: m.createdAt,
-        isRead:    false,
-        meta: {
-          memberId: m.memberId,
-          name:     m.fullName,
-          branch:   m.branch,
-          position: m.position,
-        }
+    // Members → notification (Only for Super Admin)
+    if (req.admin.role === 'admin') {
+      recentMembers.forEach(m => {
+        notifications.push({
+          id:        `member-${m._id}`,
+          type:      'member',
+          title:     'New member registered',
+          message:   `${m.fullName} has been successfully registered as a new member.`,
+          timestamp: m.createdAt,
+          isRead:    false,
+          meta: {
+            memberId: m.memberId,
+            name:     m.fullName,
+            branch:   m.branch,
+            position: m.position,
+          }
+        });
       });
-    });
+    }
 
-    // Attendance → notification
-    recentAttendance.forEach(a => {
-      notifications.push({
-        id:        `attendance-${a._id}`,
-        type:      'attendance',
-        title:     'Attendance check-in recorded',
-        message:   `${a.member} checked in to ${a.service} at ${a.branch}.`,
-        timestamp: a.createdAt,
-        isRead:    false,
-        meta: {
-          recordId: a.recordId,
-          member:   a.member,
-          service:  a.service,
-          branch:   a.branch,
-          method:   a.method,
-        }
+    // Attendance → notification (Only for Super Admin)
+    if (req.admin.role === 'admin') {
+      recentAttendance.forEach(a => {
+        notifications.push({
+          id:        `attendance-${a._id}`,
+          type:      'attendance',
+          title:     'Attendance check-in recorded',
+          message:   `${a.member} checked in to ${a.service} at ${a.branch}.`,
+          timestamp: a.createdAt,
+          isRead:    false,
+          meta: {
+            recordId: a.recordId,
+            member:   a.member,
+            service:  a.service,
+            branch:   a.branch,
+            method:   a.method,
+          }
+        });
       });
-    });
+    }
 
     // Loans → notification
     if (req.admin.role !== 'admin') {
@@ -136,6 +144,10 @@ router.get('/notifications', authenticateAdmin, async (req, res) => {
                 title   = 'Loan approved and ready for processing';
                 message = `Loan ${l.loanId} for ${l.memberName} (₱${Number(l.amount).toLocaleString()}) has been approved by the loan officer and is ready for disbursement.`;
                 notifications.push({ ...hBase, id: `loan-approved-${l._id}`, title, message });
+              } else if (history.status === 'processed') {
+                title   = 'Loan disbursement completed';
+                message = `Loan ${l.loanId} for ${l.memberName} (₱${Number(l.amount).toLocaleString()}) has been disbursed.`;
+                notifications.push({ ...hBase, id: `loan-processed-${l._id}`, title, message });
               }
             }
           });

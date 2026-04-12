@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import '../styles/AdminSettings.css';
-import { ArrowLeft, Bell, Lock, Printer, Settings } from 'lucide-react';
+import { ArrowLeft, Bell, Lock, Printer, Settings, Mail } from 'lucide-react';
 
 
 export default function AdminSettings() {
@@ -22,7 +22,10 @@ export default function AdminSettings() {
     weeklyReports: true,
     monthlyReports: true,
     backupEnabled: true,
-    twoFactorAuth: false
+    twoFactorAuth: false,
+    smtpServer: 'smtp.example.com',
+    smtpPort: '587',
+    fromEmail: 'noreply@church.com'
   });
 
   useEffect(() => {
@@ -303,6 +306,60 @@ export default function AdminSettings() {
           className="admin-settings-save-btn"
         >
           Save Preferences
+        </button>
+      </div>
+
+      {/* Email Configuration Section */}
+      <div className="admin-settings-section">
+        <div className="admin-settings-section-header">
+          <div className="admin-settings-section-icon admin-settings-section-icon-blue">
+            <Mail size={20} />
+          </div>
+          <div className="admin-settings-section-title-wrapper">
+            <h2 className="admin-settings-section-title">Email Configuration</h2>
+            <p className="admin-settings-section-description">Configure system-wide email server settings</p>
+          </div>
+        </div>
+
+        <div className="admin-settings-form-group">
+          <label className="admin-settings-form-label">SMTP Server</label>
+          <input
+            type="text"
+            value={settings.smtpServer}
+            onChange={(e) => setSettings({ ...settings, smtpServer: e.target.value })}
+            placeholder="smtp.gmail.com"
+            className="admin-settings-form-input"
+          />
+        </div>
+
+        <div className="admin-settings-form-row">
+          <div className="admin-settings-form-group">
+            <label className="admin-settings-form-label">SMTP Port</label>
+            <input
+              type="text"
+              value={settings.smtpPort}
+              onChange={(e) => setSettings({ ...settings, smtpPort: e.target.value })}
+              placeholder="587"
+              className="admin-settings-form-input"
+            />
+          </div>
+          <div className="admin-settings-form-group">
+            <label className="admin-settings-form-label">From Email Address</label>
+            <input
+              type="email"
+              value={settings.fromEmail}
+              onChange={(e) => setSettings({ ...settings, fromEmail: e.target.value })}
+              placeholder="noreply@churchofgrace.org"
+              className="admin-settings-form-input"
+            />
+          </div>
+        </div>
+
+        <button
+          onClick={() => handleSave('Email')}
+          className="admin-settings-save-btn"
+        >
+          Save Configuration
         </button>
       </div>
 

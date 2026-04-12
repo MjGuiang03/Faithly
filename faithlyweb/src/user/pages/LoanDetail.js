@@ -412,7 +412,7 @@ export default function LoanDetail() {
 
     /* ── Skeleton ── */
     if (loading) return (
-        <div className="user-main-content">
+        <div className="ld-loading-wrap">
             <div className="ld-back-btn" style={{ marginBottom: '20px', opacity: 0.4 }}>
                 <BackIcon /> Back to My Loans
             </div>
@@ -426,7 +426,7 @@ export default function LoanDetail() {
     );
 
     return (
-        <div className="user-main-content">
+        <div className="ld-page-wrapper">
 
             {/* ── Back ── */}
             <button className="ld-back-btn" onClick={() => navigate('/loans')}>
@@ -466,15 +466,21 @@ export default function LoanDetail() {
                         <div className="ld-stat-card">
                             <label className="ld-stat-label">Original amount</label>
                             <div className="ld-stat-value">{fmt(loan.amount)}</div>
-                            <div className="ld-stat-sub">Disbursed in full</div>
+                            <div className="ld-stat-sub">
+                                {(loan.status === 'active' || loan.status === 'completed') ? 'Disbursed in full' : 'Not yet disbursed'}
+                            </div>
                         </div>
                         <div className="ld-stat-card">
                             <label className="ld-stat-label">Remaining balance</label>
-                            <div className="ld-stat-value">{fmt(loan.remainingBalance)}</div>
+                            <div className="ld-stat-value">
+                                {(loan.status === 'pending' || loan.status === 'approved') ? fmt(0) : fmt(loan.remainingBalance)}
+                            </div>
                             <div className="ld-stat-sub">
-                                {loan.remainingBalance > 0
-                                    ? `${Math.round((loan.remainingBalance / loan.amount) * 100)}% outstanding`
-                                    : 'Fully paid'}
+                                {loan.status === 'pending' || loan.status === 'approved' 
+                                    ? 'Awaiting disbursement'
+                                    : loan.remainingBalance > 0
+                                        ? `${Math.round((loan.remainingBalance / loan.amount) * 100)}% outstanding`
+                                        : 'Fully paid'}
                             </div>
                         </div>
                         <div className="ld-stat-card">
@@ -506,7 +512,7 @@ export default function LoanDetail() {
                         <div className="ld-progress-body">
                             <div className="ld-progress-label">
                                 <span>{paidCount} of {totalMonths} payments made</span>
-                                <span>{fmt(paidAmount)} paid · {fmt(loan.remainingBalance)} remaining</span>
+                                <span>{fmt(paidAmount)} paid · {(loan.status === 'pending' || loan.status === 'approved') ? fmt(0) : fmt(loan.remainingBalance)} remaining</span>
                             </div>
                             <div className="ld-progress-bar">
                                 <div className="ld-progress-fill" style={{ width: `${progressPct}%` }} />
@@ -546,7 +552,7 @@ export default function LoanDetail() {
                                 </div>
                                 <div className="ld-detail-row">
                                     <span className="ld-detail-label">Disbursement date</span>
-                                    <span className="ld-detail-val">{fmtDate(loan.disbursedDate || loan.appliedDate)}</span>
+                                    <span className="ld-detail-val">{fmtDate(loan.disbursedDate)}</span>
                                 </div>
                                 <div className="ld-detail-row">
                                     <span className="ld-detail-label">Maturity date</span>

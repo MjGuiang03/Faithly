@@ -6,9 +6,8 @@ import { Banknote, Circle } from 'lucide-react';
 
 
 export default function LoanAdminSettings() {
-    const [churchName, setChurchName] = useState('Church of Grace');
-    const [defaultCurrency, setDefaultCurrency] = useState('Philippine Peso (₱)');
-    const [timezone, setTimezone] = useState('Asia/Manila (GMT+8)');
+    const [adminName, setAdminName] = useState('Loan Admin');
+    const [adminEmail, setAdminEmail] = useState('loanadmin@church.com');
 
     const [emailNotifications, setEmailNotifications] = useState(true);
     const [smsAlerts, setSmsAlerts] = useState(true);
@@ -21,9 +20,6 @@ export default function LoanAdminSettings() {
     const [maxLoanAmount, setMaxLoanAmount] = useState('50000');
     const [defaultInterestRate, setDefaultInterestRate] = useState('5.0');
 
-    const [smtpServer, setSmtpServer] = useState('smtp.example.com');
-    const [smtpPort, setSmtpPort] = useState('587');
-    const [fromEmail, setFromEmail] = useState('noreply@churchofgrace.org');
 
     const handleSaveSettings = () => {
         alert('Settings saved successfully!');
@@ -31,20 +27,8 @@ export default function LoanAdminSettings() {
 
     const handleResetToDefault = () => {
         if (window.confirm('Are you sure you want to reset all settings to default values?')) {
-            setChurchName('Church of Grace');
-            setDefaultCurrency('Philippine Peso (₱)');
-            setTimezone('Asia/Manila (GMT+8)');
-            setEmailNotifications(true);
-            setSmsAlerts(true);
-            setTwoFactorAuth(true);
-            setSessionTimeout('30 minutes');
-            setAutoApproval(false);
-            setMinLoanAmount('500');
-            setMaxLoanAmount('50000');
-            setDefaultInterestRate('5.0');
-            setSmtpServer('smtp.example.com');
-            setSmtpPort('587');
-            setFromEmail('noreply@churchofgrace.org');
+            setAdminName('Loan Admin');
+            setAdminEmail('loanadmin@church.com');
             alert('Settings reset to default values');
         }
     };
@@ -60,55 +44,37 @@ export default function LoanAdminSettings() {
                     <p className="loan-admin-settings-subtitle">Configure system preferences and security</p>
                 </div>
 
-                {/* System Settings Section */}
+                {/* Personal Profile Section */}
                 <div className="loan-admin-settings-section">
                     <div className="loan-admin-settings-section-header">
                         <div className="loan-admin-settings-section-icon blue">
                             <Circle size={20} color="#155DFC" />
                         </div>
                         <div>
-                            <h3 className="loan-admin-settings-section-title">System Settings</h3>
-                            <p className="loan-admin-settings-section-desc">General system configurations</p>
+                            <h3 className="loan-admin-settings-section-title">Personal Profile</h3>
+                            <p className="loan-admin-settings-section-desc">Manage your admin account details</p>
                         </div>
                     </div>
 
                     <div className="loan-admin-settings-form">
                         <div className="loan-admin-settings-form-group">
-                            <label className="loan-admin-settings-label">Church Name</label>
+                            <label className="loan-admin-settings-label">Full Name</label>
                             <input
                                 type="text"
                                 className="loan-admin-settings-input"
-                                value={churchName}
-                                onChange={(e) => setChurchName(e.target.value)}
+                                value={adminName}
+                                onChange={(e) => setAdminName(e.target.value)}
                             />
                         </div>
 
-                        <div className="loan-admin-settings-form-row">
-                            <div className="loan-admin-settings-form-group">
-                                <label className="loan-admin-settings-label">Default Currency</label>
-                                <select
-                                    className="loan-admin-settings-input"
-                                    value={defaultCurrency}
-                                    onChange={(e) => setDefaultCurrency(e.target.value)}
-                                >
-                                    <option>Philippine Peso (₱)</option>
-                                    <option>US Dollar ($)</option>
-                                    <option>Euro (€)</option>
-                                </select>
-                            </div>
-
-                            <div className="loan-admin-settings-form-group">
-                                <label className="loan-admin-settings-label">Timezone</label>
-                                <select
-                                    className="loan-admin-settings-input"
-                                    value={timezone}
-                                    onChange={(e) => setTimezone(e.target.value)}
-                                >
-                                    <option>Asia/Manila (GMT+8)</option>
-                                    <option>UTC (GMT+0)</option>
-                                    <option>America/New_York (GMT-5)</option>
-                                </select>
-                            </div>
+                        <div className="loan-admin-settings-form-group">
+                            <label className="loan-admin-settings-label">Email Address</label>
+                            <input
+                                type="email"
+                                className="loan-admin-settings-input"
+                                value={adminEmail}
+                                onChange={(e) => setAdminEmail(e.target.value)}
+                            />
                         </div>
                     </div>
                 </div>
@@ -302,53 +268,6 @@ export default function LoanAdminSettings() {
                     </div>
                 </div>
 
-                {/* Email Configuration Section */}
-                <div className="loan-admin-settings-section">
-                    <div className="loan-admin-settings-section-header">
-                        <div className="loan-admin-settings-section-icon pink">
-                            <Circle size={20} color="#EC4899" />
-                        </div>
-                        <div>
-                            <h3 className="loan-admin-settings-section-title">Email Configuration</h3>
-                            <p className="loan-admin-settings-section-desc">Configure email server settings</p>
-                        </div>
-                    </div>
-
-                    <div className="loan-admin-settings-form">
-                        <div className="loan-admin-settings-form-group">
-                            <label className="loan-admin-settings-label">SMTP Server</label>
-                            <input
-                                type="text"
-                                className="loan-admin-settings-input"
-                                placeholder="smtp.example.com"
-                                value={smtpServer}
-                                onChange={(e) => setSmtpServer(e.target.value)}
-                            />
-                        </div>
-
-                        <div className="loan-admin-settings-form-row">
-                            <div className="loan-admin-settings-form-group">
-                                <label className="loan-admin-settings-label">Port</label>
-                                <input
-                                    type="number"
-                                    className="loan-admin-settings-input"
-                                    value={smtpPort}
-                                    onChange={(e) => setSmtpPort(e.target.value)}
-                                />
-                            </div>
-
-                            <div className="loan-admin-settings-form-group">
-                                <label className="loan-admin-settings-label">From Email</label>
-                                <input
-                                    type="email"
-                                    className="loan-admin-settings-input"
-                                    value={fromEmail}
-                                    onChange={(e) => setFromEmail(e.target.value)}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                 {/* Action Buttons */}
                 <div className="loan-admin-settings-actions">
