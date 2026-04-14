@@ -1,0 +1,215 @@
+/* =============================================================
+   AdminSidebar.css
+   Visually matched to user Sidebar.css.
+
+   KEY DIFFERENCE from user sidebar:
+   - User sidebar uses position:fixed (standalone pages)
+   - Admin sidebar uses height:100% as a normal flex child
+     inside .admin-shell (height:100dvh / overflow:hidden)
+   - This is intentional — do NOT add position:fixed here
+   ============================================================= */
+
+/* ── Sidebar container ── */
+.admin-sidebar {
+  width: 256px;
+  min-width: 256px;
+  height: 100%;
+  background: linear-gradient(180deg, #0f172b 0%, #162456 100%);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;        /* Firefox */
+  -ms-overflow-style: none;     /* IE/Edge */
+}
+
+/* ── Logo / brand area ── */
+.admin-sidebar-logo {
+  padding: 24px;
+  border-bottom: 0.8px solid #1c398e;
+  flex-shrink: 0;
+}
+
+.admin-sidebar-logo-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-sidebar-logo-image {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.admin-sidebar-logo-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-sidebar-logo-image svg {
+  width: 28px;
+  height: 28px;
+}
+
+.admin-sidebar-logo-text h1 {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 0;
+  color: white;
+  font-family: 'Arial', sans-serif;
+  line-height: 24px;
+}
+
+.admin-sidebar-logo-text p {
+  font-size: 14px;
+  color: #8ec5ff;
+  margin: 0;
+  font-family: 'Arial', sans-serif;
+  line-height: 20px;
+}
+
+/* ── Navigation ── */
+.admin-sidebar-nav {
+  flex: 1;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-sidebar-nav-button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-left: 16px;
+  height: 48px;
+  background: transparent;
+  border: none;
+  color: #bedbff;
+  font-size: 16px;
+  font-family: 'Arial', sans-serif;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+  text-align: left;
+  line-height: 24px;
+  white-space: nowrap;
+}
+
+.admin-sidebar-nav-button:hover {
+  background: rgba(21, 93, 252, 0.2);
+}
+
+.admin-sidebar-nav-button.active {
+  background: #155dfc;
+  color: white;
+}
+
+.admin-sidebar-nav-button svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* ── Profile / sign-out footer ── */
+.admin-sidebar-profile {
+  padding: 16px;
+  border-top: 0.8px solid #1c398e;
+  flex-shrink: 0;
+}
+
+.admin-sidebar-profile-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.admin-sidebar-profile-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #155dfc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: white;
+  flex-shrink: 0;
+}
+
+.admin-sidebar-profile-avatar p {
+  margin: 0;
+  font-size: 16px;
+  font-family: 'Arial', sans-serif;
+}
+
+.admin-sidebar-profile-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-sidebar-profile-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  margin: 0;
+  font-family: 'Arial', sans-serif;
+  line-height: 20px;
+}
+
+.admin-sidebar-profile-email {
+  font-size: 12px;
+  color: #8ec5ff;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: 'Arial', sans-serif;
+  line-height: 16px;
+}
+
+.admin-sidebar-profile-signout {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  background: transparent;
+  border: 1px solid #1c398e;
+  color: #bedbff;
+  font-size: 14px;
+  font-family: 'Arial', sans-serif;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.admin-sidebar-profile-signout:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #ef4444;
+  color: #fca5a5;
+}
+
+.admin-sidebar-profile-signout svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .admin-sidebar {
+    display: none;
+  }
+}

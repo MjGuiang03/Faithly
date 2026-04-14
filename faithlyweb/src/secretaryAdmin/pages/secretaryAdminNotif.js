@@ -98,10 +98,11 @@ export default function SecretaryAdminNotif() {
                     <div className="sec-admin-notif-header-left">
                         <h1 className="sec-admin-notif-title">Notifications</h1>
                         {unreadCount > 0 && (
-                            <div className="sec-admin-notif-badge">{unreadCount}</div>
+                            <div className="admin-notif-badge">{unreadCount}</div>
                         )}
                     </div>
                     <p className="sec-admin-notif-subtitle">
+
                         Process disbursement notifications for approved loan applications.
                     </p>
                 </div>

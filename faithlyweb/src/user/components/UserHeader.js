@@ -31,7 +31,6 @@ export default function UserHeader({ toggleSidebar, collapsed }) {
       // Safety guard for non-JSON responses (like 404 pages)
       const contentType = res.headers.get("content-type");
       if (!res.ok || !contentType || !contentType.includes("application/json")) {
-        console.warn('Notifications feed not ready or 404. Waiting for next poll.');
         return;
       }
 
@@ -77,17 +76,6 @@ export default function UserHeader({ toggleSidebar, collapsed }) {
               ? `Your deposit of ₱${s.amount.toLocaleString()} is now confirmed.` 
               : `A deposit of ₱${s.amount.toLocaleString()} has been recorded.`, 
             timestamp: s.date || s.createdAt 
-          });
-        });
-      }
-      if (announcementsDataFeed) {
-        announcementsDataFeed.forEach(a => {
-          items.push({ 
-            id: `ann-${a._id}`, 
-            type: 'announcement', 
-            title: a.title, 
-            message: a.body.length > 60 ? a.body.substring(0, 60) + '...' : a.body, 
-            timestamp: a.createdAt 
           });
         });
       }
@@ -209,12 +197,11 @@ export default function UserHeader({ toggleSidebar, collapsed }) {
                       className={`user-header-notif-item ${readIds.has(item.id) ? '' : 'unread'}`}
                     >
                       <div className="user-header-notif-icon-box">
-                        {item.type === 'loan' ? <Banknote size={18} color="#155DFC" /> : 
-                         item.type === 'donation' ? <Heart size={18} color="#155DFC" /> :
-                         item.type === 'attendance' ? <CalendarDays size={18} color="#155DFC" /> :
-                         item.type === 'savings' ? <Banknote size={18} color="#155DFC" /> :
-                         item.type === 'announcement' ? <Bell size={18} color="#155DFC" /> :
-                         <Circle size={10} color="#155DFC" />}
+                        {item.type === 'loan' ? <Banknote size={14} color="#155DFC" /> : 
+                         item.type === 'donation' ? <Heart size={14} color="#155DFC" /> :
+                         item.type === 'attendance' ? <CalendarDays size={14} color="#155DFC" /> :
+                         item.type === 'savings' ? <Banknote size={14} color="#155DFC" /> :
+                         <Circle size={8} color="#155DFC" />}
                       </div>
                       <div className="user-header-notif-content">
                         <div className="user-header-notif-title-row">

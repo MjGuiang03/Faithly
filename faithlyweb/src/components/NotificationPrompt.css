@@ -3,27 +3,26 @@
 .notif-prompt-banner {
   position: fixed;
   bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
+  right: 24px;
   z-index: 99999;
   background: white;
   border: 1px solid #E5E7EB;
   border-radius: 12px;
   padding: 18px 48px 18px 20px;
-  width: 480px;
+  width: 440px;
   max-width: calc(100vw - 48px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
-  animation: notifPromptSlideIn 0.35s ease-out;
+  animation: notifPromptSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes notifPromptSlideIn {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(20px);
+    transform: translateX(30px);
   }
   to {
     opacity: 1;
-    transform: translateX(-50%) translateY(0);
+    transform: translateX(0);
   }
 }
 

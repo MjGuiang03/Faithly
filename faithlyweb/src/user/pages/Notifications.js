@@ -71,17 +71,15 @@ export default function Notifications() {
         fetch(`${API}/api/attendance/my-attendance`, { headers: hdrs }),
         fetch(`${API}/api/savings/transactions`, { headers: hdrs }),
         fetch(`${API}/api/loans/my-pending-payments`, { headers: hdrs }),
-        fetch(`${API}/api/admin/announcements`, { headers: hdrs }),
         fetch(`${API}/api/read-notifications`, { headers: hdrs }),
       ]);
 
-      const [lData, dData, aData, sData, ppData, annData, readData] = await Promise.all([
+      const [lData, dData, aData, sData, ppData, readData] = await Promise.all([
         lRes.ok ? lRes.json() : { loans: [] },
         dRes.ok ? dRes.json() : { donations: [] },
         aRes.ok ? aRes.json() : { attendance: [] },
         sRes.ok ? sRes.json() : { transactions: [] },
         ppRes.ok ? ppRes.json() : { payments: [] },
-        annRes.ok ? annRes.json() : { announcements: [] },
         readRes.ok ? readRes.json() : { readIds: [] },
       ]);
       setReadIds(new Set(readData.readIds || []));
@@ -251,17 +249,6 @@ export default function Notifications() {
         });
       });
 
-      /* Announcements → notifications */
-      (annData.announcements || []).forEach((ann) => {
-        items.push({
-          id: `ann-${ann._id}`,
-          type: 'announcement',
-          timestamp: ann.createdAt || ann.date,
-          title: ann.title,
-          message: ann.body || ann.message || '',
-        });
-      });
-
       /* Sort newest first */
       items.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
       setRawItems(items);
@@ -283,7 +270,6 @@ export default function Notifications() {
     let base = notifications;
     if (activeFilter === 'unread') return base.filter(n => !n.isRead);
     if (activeFilter === 'loans_payments') return base.filter(n => ['loan', 'payment_pending'].includes(n.type));
-    if (activeFilter === 'announcements') return base.filter(n => n.type === 'announcement');
     if (activeFilter === 'activity') return base.filter(n => ['attendance', 'savings', 'donation'].includes(n.type));
     return base;
   };
@@ -294,7 +280,6 @@ export default function Notifications() {
     if (tabKey === 'all') return notifications.filter(n => !n.isRead).length;
     if (tabKey === 'unread') return notifications.filter(n => !n.isRead).length;
     if (tabKey === 'loans_payments') return notifications.filter(n => !n.isRead && ['loan', 'payment_pending'].includes(n.type)).length;
-    if (tabKey === 'announcements') return notifications.filter(n => !n.isRead && n.type === 'announcement').length;
     if (tabKey === 'activity') return notifications.filter(n => !n.isRead && ['attendance', 'savings', 'donation'].includes(n.type)).length;
     return 0;
   };
@@ -710,7 +695,6 @@ export default function Notifications() {
             {[
               { key: 'all', label: 'All' },
               { key: 'loans_payments', label: 'Loans & Payments' },
-              { key: 'announcements', label: 'Announcements' },
               { key: 'activity', label: 'Activity' },
               { key: 'unread', label: 'Unread' },
             ].map(({ key, label }) => (

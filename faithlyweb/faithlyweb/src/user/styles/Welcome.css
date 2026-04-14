@@ -1,0 +1,515 @@
+/* Welcome Container */
+.welcome-container-new {
+  min-height: 100vh;
+  background: #eee;
+  font-family: Arial, sans-serif;
+}
+
+/* Header */
+.welcome-header-new {
+  background-color: #101828;
+  border-bottom: 0.8px solid #000;
+}
+
+.header-content-new {
+  max-width: 1144px;
+  margin-left: 15px;
+  padding: 12px 20px;
+  display: flex;  
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo-section-new {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-image-new {
+  width: 43px;
+  height: 43px;
+  object-fit: contain;
+}
+
+.logo-title-new {
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  color: white;
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.logo-subtitle-new {
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  color: #8ec5ff;
+  margin: 0;
+  line-height: 16px;
+}
+
+.header-login-btn {
+  padding: 8px 24px;
+  background-color: #155dfc;
+  color: white;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  font-size: 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.header-login-btn:hover {
+  background-color: #1246d1;
+}
+
+/* Hero Section */
+.hero-section-new {
+  max-width: 1144px;
+  margin: 0 auto;
+  padding: 3rem 1rem;
+}
+
+@media (min-width: 1024px) {
+  .hero-section-new {
+    padding: 4rem 2rem;
+  }
+}
+
+.hero-grid-new {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3rem;
+  align-items: start;
+}
+
+.hero-grid-new-centered {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+@media (min-width: 1024px) {
+  .hero-grid-new {
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+  }
+}
+
+/* Hero Left */
+.hero-left-new {
+  padding-top: 2rem;
+}
+
+.trust-badge-new {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: #e5e7eb;
+  border: 0.8px solid #1447e6;
+  border-radius: 9999px;
+  margin-bottom: 1.5rem;
+  font-size: 14px;
+}
+
+.pulse-dot-new {
+  width: 8px;
+  height: 8px;
+  background-color: #05df72;
+  border-radius: 9999px;
+  opacity: 0.96;
+}
+
+.trust-text-new {
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  color: #101f33;
+}
+
+.hero-title-new {
+  font-family: Arial, sans-serif;
+  font-size: 35px;
+  font-weight: bold;
+  color: #0a0a0a;
+  margin-bottom: 1.5rem;
+  line-height: 1.2;
+}
+
+@media (min-width: 768px) {
+  .hero-title-new {
+    font-size: 42px;
+  }
+}
+
+.hero-title-gradient-new {
+  display: block;
+  background: linear-gradient(90deg, #51a2ff 0%, #53eafd 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-description-new {
+  font-family: Arial, sans-serif;
+  font-size: 20px;
+  color: #1d3662;
+  margin-bottom: 2rem;
+  line-height: 1.4;
+}
+
+.hero-buttons-new {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 3rem;
+}
+
+.btn-primary-new {
+  padding: 16px 0;
+  width: 248px;
+  background-color: #155dfc;
+  color: white;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  font-size: 17px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  box-shadow: 0 10px 15px 0 rgba(28, 57, 142, 0.5), 0 4px 6px 0 rgba(28, 57, 142, 0.5);
+}
+
+.btn-primary-new:hover {
+  background-color: #1246d1;
+}
+
+/* Stats Grid */
+.stats-grid-new {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.stat-item-new {
+  text-align: left;
+}
+
+.stat-number-new {
+  font-family: Arial, sans-serif;
+  font-size: 30px;
+  font-weight: bold;
+  color: #101828;
+  margin: 0;
+  line-height: 36px;
+}
+
+.stat-label-new {
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  color: #1d3662;
+  margin: 0;
+  line-height: 20px;
+}
+
+/* Login Card Container */
+.login-card-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 0;
+}
+
+.login-card-welcome {
+  background: #fefeff;
+  border-radius: 16px;
+  box-shadow: 0 25px 50px 0 rgba(0, 0, 0, 0.25);
+  padding: 2rem;
+  width: 100%;
+  max-width: 428px;
+}
+
+.login-card-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.login-card-logo {
+  width: 71px;
+  height: 71px;
+  object-fit: contain;
+  margin: 0 auto 1rem;
+  display: block;
+}
+
+.login-card-title {
+  font-family: Arial, sans-serif;
+  font-size: 24px;
+  font-weight: bold;
+  color: #0a0a0a;
+  margin: 0 0 0.5rem 0;
+  line-height: 32px;
+}
+
+.login-card-subtitle {
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  color: rgba(0, 0, 0, 0.48);
+  margin: 0;
+  line-height: 24px;
+}
+
+/* Login Card Preview */
+.login-card-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.login-preview-button {
+  width: 100%;
+  padding: 3rem 2rem;
+  background: linear-gradient(135deg, #155dfc 0%, #1e90ff 100%);
+  color: white;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  font-size: 18px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 10px 25px 0 rgba(21, 93, 252, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.login-preview-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 35px 0 rgba(21, 93, 252, 0.5);
+  background: linear-gradient(135deg, #1246d1 0%, #1c7ed6 100%);
+}
+
+.login-preview-button .arrow-icon {
+  width: 24px;
+  height: 24px;
+  transition: transform 0.3s;
+}
+
+.login-preview-button:hover .arrow-icon {
+  transform: translateX(4px);
+}
+
+.login-signup-text {
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  color: #000;
+  text-align: center;
+  margin: 0;
+  line-height: 24px;
+}
+
+.login-signup-link {
+  color: #155dfc;
+  background: transparent;
+  border: none;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  transition: color 0.3s;
+  padding: 0;
+}
+
+.login-signup-link:hover {
+  color: #1246d1;
+  text-decoration: underline;
+}
+
+/* Benefits Section */
+.benefits-section-new {
+  background-color: #101828;
+  border-top: 0.8px solid rgba(25, 60, 184, 0.5);
+  border-bottom: 0.8px solid rgba(25, 60, 184, 0.5);
+  padding: 4rem 1rem;
+}
+
+.benefits-content-new {
+  max-width: 1144px;
+  margin: 0 auto;
+}
+
+.benefits-header-new {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.benefits-title-new {
+  font-family: Arial, sans-serif;
+  font-size: 30px;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 1rem;
+  line-height: 36px;
+}
+
+.benefits-description-new {
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  color: #bedbff;
+  max-width: 656px;
+  margin: 0 auto;
+  line-height: 24px;
+}
+
+.benefits-grid-new {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  max-width: 896px;
+  margin: 0 auto;
+}
+
+@media (max-width: 1024px) {
+  .benefits-grid-new {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .benefits-grid-new {
+    grid-template-columns: 1fr;
+  }
+}
+
+.benefit-item-new {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.benefit-icon-new {
+  width: 20px;
+  height: 20px;
+  color: #05df72;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.benefit-text-new {
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  color: #bedbff;
+  margin: 0;
+  line-height: 24px;
+}
+
+/* CTA Section */
+.cta-section-new {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0;
+}
+
+.cta-card-new {
+  background: linear-gradient(to right, #155dfc, #0092b8);
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.cta-title-new {
+  font-family: Arial, sans-serif;
+  font-size: 30px;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 1rem;
+  line-height: 36px;
+}
+
+.cta-description-new {
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  color: #dbeafe;
+  max-width: 649px;
+  margin: 0 auto 2rem;
+  line-height: 24px;
+}
+
+.cta-button-new {
+  padding: 16px 0;
+  width: 212px;
+  background-color: white;
+  color: #155dfc;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  font-size: 16px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  box-shadow: 0 10px 15px 0 rgba(0, 0, 0, 0.1), 0 4px 6px 0 rgba(0, 0, 0, 0.1);
+}
+
+.cta-button-new:hover {
+  background-color: #f0f0f0;
+}
+
+/* Footer */
+.welcome-footer-new {
+  background-color: #101828;
+  border-top: 0.8px solid rgba(25, 60, 184, 0.5);
+  padding: 2rem 1rem;
+}
+
+.footer-content-new {
+  max-width: 1144px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.footer-text-new {
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  color: #8ec5ff;
+  margin: 0;
+  line-height: 20px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .hero-title-new {
+    font-size: 28px;
+  }
+
+  .hero-description-new {
+    font-size: 16px;
+  }
+
+  .stats-grid-new {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .stat-item-new {
+    text-align: center;
+  }
+
+  .btn-primary-new {
+    width: 100%;
+  }
+
+  .login-card-welcome {
+    margin-top: 2rem;
+  }
+
+  .benefits-title-new,
+  .cta-title-new {
+    font-size: 24px;
+  }
+}
