@@ -37,7 +37,7 @@ export default function UserHeader({ toggleSidebar, collapsed }) {
       const data = await res.json();
       if (!data.success) throw new Error(data.message || 'Failed to fetch feed');
 
-      const { readIds: readIdsFromData, payments, loans: loansDataFeed, donations: donationsDataFeed, attendance: attendanceDataFeed, savings: savingsDataFeed, announcements: announcementsDataFeed } = data;
+      const { readIds: readIdsFromData, payments, loans: loansDataFeed, donations: donationsDataFeed, attendance: attendanceDataFeed, savings: savingsDataFeed } = data;
 
       const currentReadIds = new Set(readIdsFromData || []);
       setReadIds(currentReadIds);

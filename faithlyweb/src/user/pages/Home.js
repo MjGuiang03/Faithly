@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 
 import API from '../../utils/api';
 import '../styles/Home.css';
-import { Banknote, CalendarDays, CheckCircle, ChevronRight, ChevronLeft, Heart, MapPin, PiggyBank, Wallet, FileText, Megaphone, ArrowRight } from 'lucide-react';
+import { Banknote, CalendarDays, CheckCircle, ChevronRight, Heart, MapPin, PiggyBank, Wallet, FileText, Megaphone, ArrowRight } from 'lucide-react';
 import { isOfficerPosition } from '../../utils/officerPositions';
 
 

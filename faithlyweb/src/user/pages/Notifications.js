@@ -65,7 +65,7 @@ export default function Notifications() {
     const hdrs = { Authorization: `Bearer ${token}` };
 
     try {
-      const [lRes, dRes, aRes, sRes, ppRes, annRes, readRes] = await Promise.all([
+      const [lRes, dRes, aRes, sRes, ppRes, readRes] = await Promise.all([
         fetch(`${API}/api/loans/my-loans`, { headers: hdrs }),
         fetch(`${API}/api/donations/my-donations`, { headers: hdrs }),
         fetch(`${API}/api/attendance/my-attendance`, { headers: hdrs }),

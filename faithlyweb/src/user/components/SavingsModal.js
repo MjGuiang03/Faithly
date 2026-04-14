@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import '../styles/SavingsModal.css';
 import API from '../../utils/api';
-import { CheckCircle, FileText, X, ArrowDownRight, ArrowUpLeft, Repeat, History, CreditCard, Smartphone, Building2, Calendar, Info, Coins, ShieldCheck, AlertCircle } from 'lucide-react';
+import { CheckCircle, FileText, X, ArrowDownRight, ArrowUpLeft, Repeat, History, CreditCard, Smartphone, Building2, Info } from 'lucide-react';
 
 
 const fmt = (n) =>
