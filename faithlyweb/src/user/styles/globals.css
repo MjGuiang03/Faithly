@@ -4,7 +4,7 @@
   --font-size: 16px;
 
   /* ── PUAC Light Mode ── */
-  --background: #F0F2F5;
+  --background: #CBD5E1;
   --foreground: #111318;
   --card: #FFFFFF;
   --card-foreground: #1E2332;
@@ -53,15 +53,15 @@
   --radius: 12px;
 
   /* Sidebar */
-  --sidebar: #1E3A8A;
+  --sidebar: #0D1F45;
   --sidebar-foreground: #FFFFFF;
-  --sidebar-primary: #1E3A8A;
+  --sidebar-primary: #0D1F45;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: rgba(245, 200, 0, 0.12);
+  --sidebar-accent: rgba(255, 255, 255, 0.1);
   --sidebar-accent-foreground: #FFFFFF;
-  --sidebar-border: rgba(255, 255, 255, 0.12);
+  --sidebar-border: rgba(255, 255, 255, 0.1);
   --sidebar-ring: #F5C800;
-  --sidebar-nav-inactive: rgba(255, 255, 255, 0.72);
+  --sidebar-nav-inactive: rgba(255, 255, 255, 0.65);
   --sidebar-active-bar: #F5C800;
 }
 
@@ -197,7 +197,8 @@
   box-sizing: border-box;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   padding: 0;
-  background: #F0F2F5; /* Ensure gray background for content area */
+  background: var(--background) !important;
+  /* Ensure gray background for content area */
   overflow-y: auto;
   overflow-x: hidden;
   min-height: 100vh;
@@ -376,5 +377,3 @@ html {
 h1[class*="-title"]:not(.fl-hero-title) {
   font-size: 22px !important;
 }
-
-

@@ -98,12 +98,12 @@
 }
 
 .user-sidebar-logo-text h1 {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 1.55rem;
-  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 500;
   margin: 0;
   color: white;
-  letter-spacing: 0.02em;
+  letter-spacing: -0.02em;
   white-space: nowrap;
 }
 
@@ -434,7 +434,8 @@
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 1050; /* Between header and sidebar */
+  z-index: 1050;
+  /* Between header and sidebar */
 }
 
 /* ── Mobile Floating Toggle ── */
@@ -458,7 +459,7 @@
     align-items: center;
     justify-content: center;
     z-index: 45;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     cursor: pointer;
     transition: all 0.2s;
   }
@@ -466,6 +467,7 @@
   .user-sidebar-mobile-toggle-btn:active {
     background: var(--muted);
   }
+
   .user-sidebar {
     width: 256px !important;
     transform: translateX(0);

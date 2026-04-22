@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 
 import '../styles/Branches.css';
@@ -142,6 +143,7 @@ const COMMUNITY_MAP = {
 };
 
 export default function Branches() {
+  const navigate = useNavigate();
   const { profile } = useAuth();
 
   const [search, setSearch] = useState('');
@@ -151,9 +153,31 @@ export default function Branches() {
   const [drawerMounted, setDrawerMounted] = useState(false);
   const [isClosingRegion, setIsClosingRegion] = useState(false);
 
-  // Resolve user's community branch name
-  const userBranchName = profile?.branch ? (COMMUNITY_MAP[profile.branch] ?? profile.branch) : null;
-  const userBranch = userBranchName ? branchData.find(b => b.name === userBranchName) : null;
+  // Resolve user's community branch more robustly
+  const userBranch = useMemo(() => {
+    const rawBranch = profile?.branch || profile?.community;
+    if (!rawBranch) return null;
+
+    const normalizedUserBranch = rawBranch.toLowerCase().replace(/\s*city\s*/gi, '').trim();
+
+    // 1. Try inclusive match first (e.g. "Meycauayan" matches "Meycauayan City")
+    let match = branchData.find(b => {
+      const normalizedName = b.name.toLowerCase().replace(/\s*city\s*/gi, '').trim();
+      return normalizedName.includes(normalizedUserBranch) || normalizedUserBranch.includes(normalizedName);
+    });
+
+    // 2. Try mapped match as fallback
+    if (!match) {
+      const mappedName = COMMUNITY_MAP[rawBranch];
+      if (mappedName) {
+        match = branchData.find(b => b.name.toLowerCase() === mappedName.toLowerCase());
+      }
+    }
+
+    return match || null;
+  }, [profile]);
+
+  const userBranchName = userBranch?.name || null;
 
   const openDrawer = (branch) => {
     setDrawerBranch(branch);
@@ -235,51 +259,61 @@ export default function Branches() {
     <>
       <div className="user-branches-container">
 
-        {/* ── My Community Banner ─────────────────────────────── */}
-        {userBranch && (
-          <div className="user-my-community-banner" onClick={() => openDrawer(userBranch)}>
-            <div className="user-mcb-left">
-              <div className="user-mcb-icon">
-                <User size={18} color="#155dfc" />
+        {/* ── My Community Spotlight ──────────────────────────── */}
+        {userBranch ? (
+          <div className="ubr-community-spotlight user-fade-in">
+            <div className="ubr-spotlight-details">
+              <div className="ubr-spotlight-tag">Your Home Community</div>
+              <h2 className="ubr-spotlight-name">{userBranch.name}</h2>
+              <div className="ubr-spotlight-info">
+                <div className="ubr-info-item">
+                  <Globe size={16} />
+                  <span>{userBranch.region} · {userBranch.province}</span>
+                </div>
+                <div className="ubr-info-item">
+                  <CalendarDays size={16} />
+                  <div className="ubr-service-list">
+                    {userBranch.serviceTimes.map((s, idx) => (
+                      <span key={idx} className="ubr-service-tag">
+                        <strong>{s.day}</strong> {s.time}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               </div>
-              <div className="user-mcb-text">
-                <span className="user-mcb-eyebrow">Your Community</span>
-                <span className="user-mcb-name">{userBranch.name}</span>
-                <span className="user-mcb-province">
-                  {userBranch.province === userBranch.region ? userBranch.region : `${userBranch.province} · ${userBranch.region}`}
-                </span>
+              <div className="ubr-spotlight-actions">
+                <button className="ubr-cta ubr-cta--primary" onClick={() => openDrawer(userBranch)}>View Complete Profile</button>
+                <a 
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(userBranch.name + ', ' + userBranch.province)},Philippines`} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="ubr-cta ubr-cta--outline"
+                >
+                  Get Directions
+                </a>
               </div>
             </div>
-            <div className="user-mcb-right">
-              <div className="user-mcb-services">
-                {userBranch.serviceTimes.map((s, i) => (
-                  <span key={i} className="user-mcb-day-tag" style={DAY_COLORS[s.day] || {}}>
-                    {s.day.slice(0, 3)} {s.time}
-                  </span>
-                ))}
-              </div>
-              <ChevronRight className="user-mcb-chevron" size={20} color="#155dfc" />
+            <div className="ubr-spotlight-map">
+              <iframe
+                title="Branch Map"
+                src={`https://maps.google.com/maps?q=${encodeURIComponent(userBranch.name + ', ' + userBranch.province)},Philippines&t=&z=14&ie=UTF8&iwloc=&output=embed`}
+                frameBorder="0"
+                scrolling="no"
+                marginHeight="0"
+                marginWidth="0"
+              />
             </div>
           </div>
+        ) : (
+          <div className="ubr-no-community-placeholder user-fade-in">
+            <div className="ubr-placeholder-icon">🏠</div>
+            <h3>Highlight Your Community</h3>
+            <p>Select your home community in settings to pins your local church details and service schedules right here.</p>
+            <button className="ubr-cta ubr-cta--primary" onClick={() => navigate('/settings')} style={{ marginTop: '16px' }}>
+              Set Home Community
+            </button>
+          </div>
         )}
-
-        {/* ── Stats ──────────────────────────────────────────── */}
-        <div className="user-branches-stats">
-          {[
-            { label: 'Total Branches', value: totalBranches, icon: <MapPin size={20} color="#155DFC" /> },
-            { label: 'Regions', value: totalRegions, icon: <Globe size={20} color="#155DFC" /> },
-            { label: 'Provinces', value: totalProvinces, icon: <Map size={20} color="#155DFC" /> },
-            { label: 'Weekly Services', value: totalServices, icon: <CalendarDays size={20} color="#155DFC" /> },
-          ].map(s => (
-            <div key={s.label} className="user-branch-stat-card">
-              <div className="user-branch-stat-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <p className="user-branch-stat-label" style={{ margin: 0 }}>{s.label}</p>
-                {s.icon}
-              </div>
-              <p className="user-branch-stat-value">{s.value}</p>
-            </div>
-          ))}
-        </div>
 
         {/* ── Search Bar ─────────────────────────────────────── */}
         <div className="ubr-search-row">

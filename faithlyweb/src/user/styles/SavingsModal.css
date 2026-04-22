@@ -1095,4 +1095,139 @@
     opacity: 1;
 }
 
+/* ── Withdraw Modal Styles ──────────────────────────────── */
+.svm-withdraw-balance-card {
+    background: var(--secondary);
+    border: 0.8px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.svm-withdraw-balance-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.svm-withdraw-balance-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+}
+
+.svm-withdraw-balance-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--foreground);
+    font-family: 'Inter', sans-serif;
+}
+
+.svm-withdraw-warning {
+    padding: 10px 12px;
+    background: #fff5f5;
+    border: 0.8px solid #fca5a5;
+    border-radius: 8px;
+    font-size: 12px;
+    color: #991b1b;
+    font-family: 'Inter', sans-serif;
+}
+
+.dark .svm-withdraw-warning {
+    background: rgba(220, 38, 38, 0.08);
+    border-color: rgba(220, 38, 38, 0.25);
+    color: #fca5a5;
+}
+
+.svm-withdraw-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 12px;
+    background: #eff4ff;
+    border: 0.8px solid #c7d7fe;
+    border-radius: 8px;
+    font-size: 12px;
+    color: #1E3A8A;
+    font-family: 'Inter', sans-serif;
+    line-height: 1.4;
+}
+
+.svm-withdraw-notice svg {
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.dark .svm-withdraw-notice {
+    background: rgba(30, 58, 138, 0.1);
+    border-color: rgba(30, 58, 138, 0.25);
+    color: #93c5fd;
+}
+
+.svm-withdraw-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 32px 16px;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.svm-withdraw-empty p {
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    line-height: 1.5;
+    max-width: 260px;
+    margin: 0;
+}
+
+.svm-quick-pill--all {
+    background: #fff5f5;
+    border-color: #fca5a5;
+    color: #991b1b;
+}
+
+.svm-quick-pill--all:hover {
+    background: #fee2e2;
+    border-color: #991b1b;
+}
+
+.dark .svm-quick-pill--all {
+    background: rgba(220, 38, 38, 0.08);
+    border-color: rgba(220, 38, 38, 0.2);
+    color: #fca5a5;
+}
+
+.svm-progress-hint--withdraw {
+    background: #fff5f5;
+    border: 0.8px solid #fecaca;
+}
+
+.dark .svm-progress-hint--withdraw {
+    background: rgba(220, 38, 38, 0.06);
+    border-color: rgba(220, 38, 38, 0.15);
+}
+
+.svm-progress-bar-fill--withdraw {
+    background: #dc2626;
+}
+
+.dark .svm-progress-bar-fill--withdraw {
+    background: #f87171;
+}
+
+.svm-btn-submit--withdraw {
+    background: #991b1b;
+}
+
+.svm-btn-submit--withdraw:hover:not(:disabled) {
+    background: #b91c1c;
+}
+
+.dark .svm-btn-submit--withdraw {
+    background: #dc2626;
+}
 

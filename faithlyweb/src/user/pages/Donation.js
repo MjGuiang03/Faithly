@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Banknote, CalendarDays, CheckCircle, ChevronDown, Download, Heart, Receipt, Share2, X } from 'lucide-react';
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import '../styles/Donation.css';
 import gcashLogo from '../../assets/gcashlogo.png';
 import bank from '../../assets/bank.png';
@@ -31,7 +32,7 @@ const GCashIcon = () => (
   <img
     src={gcashLogo}
     alt="GCash"
-    style={{ width: 60, height: 30, objectFit: 'contain' }}
+    className="user-donation-gcash-icon"
   />
 );
 
@@ -39,7 +40,7 @@ const BankIcon = () => (
   <img
     src={bank}
     alt="Bank Transfer"
-    style={{ width: 32, height: 32, objectFit: 'contain' }}
+    className="user-donation-bank-icon"
   />
 );
 
@@ -184,21 +185,21 @@ export default function Donation() {
               <p className="user-donation-stat-label">Total Donated</p>
               <Banknote className="user-donation-stat-icon" size={20} color="#155DFC" />
             </div>
-            {loading ? <div className="user-skeleton" style={{ height: '32px', width: '100px', margin: '8px 0' }}></div> : <p className="user-donation-stat-value user-fade-in">{fmt(stats.totalDonated)}</p>}
+            {loading ? <div className="user-skeleton user-donation-stat-skeleton"></div> : <p className="user-donation-stat-value user-fade-in">{fmt(stats.totalDonated)}</p>}
           </div>
           <div className="user-donation-stat-card">
             <div className="user-donation-stat-header">
               <p className="user-donation-stat-label">This Year</p>
               <CalendarDays className="user-donation-stat-icon" size={20} color="#155DFC" />
             </div>
-            {loading ? <div className="user-skeleton" style={{ height: '32px', width: '100px', margin: '8px 0' }}></div> : <p className="user-donation-stat-value user-fade-in">{fmt(stats.thisYearTotal)}</p>}
+            {loading ? <div className="user-skeleton user-donation-stat-skeleton"></div> : <p className="user-donation-stat-value user-fade-in">{fmt(stats.thisYearTotal)}</p>}
           </div>
           <div className="user-donation-stat-card">
             <div className="user-donation-stat-header">
               <p className="user-donation-stat-label">Total Donations</p>
               <Heart className="user-donation-stat-icon" size={20} color="#155DFC" />
             </div>
-            {loading ? <div className="user-skeleton" style={{ height: '32px', width: '60px', margin: '8px 0' }}></div> : <p className="user-donation-stat-value user-fade-in">{stats.totalCount}</p>}
+            {loading ? <div className="user-skeleton user-donation-stat-skeleton-sm"></div> : <p className="user-donation-stat-value user-fade-in">{stats.totalCount}</p>}
           </div>
         </div>
 
@@ -226,7 +227,7 @@ export default function Donation() {
                     disabled={submitting}
                   />
                 </div>
-                <div className="user-quick-amounts" style={{ marginTop: '20px', marginBottom: '8px' }}>
+                <div className="user-quick-amounts user-quick-amounts-wrapper">
                   {QUICK_AMOUNTS.map((q) => (
                     <button
                       key={q}
@@ -283,9 +284,9 @@ export default function Donation() {
 
                 {/* ── Payment Account & Proof Wrapper ── */}
                 <div className={`user-payment-info-wrapper ${paymentMethod !== '' ? 'expanded' : ''}`}>
-                    <div className="user-payment-info-box" style={{ display: paymentMethod === 'Bank' ? 'none' : 'block' }}>
+                    <div className={`user-payment-info-box ${paymentMethod === 'Bank' ? 'user-payment-info-box-hidden' : 'user-payment-info-box-visible'}`}>
                       <div className="user-payment-info-header">
-                        <img src={gcashLogo} alt="GCash" style={{ width: 50, height: 25, objectFit: 'contain' }} />
+                        <img src={gcashLogo} alt="GCash" className="user-payment-gcash-header-icon" />
                         <span className="user-payment-info-title">GCash Account Details</span>
                       </div>
                       <div className="user-payment-info-content">
@@ -306,9 +307,9 @@ export default function Donation() {
                       </div>
                     </div>
 
-                    <div className="user-payment-info-box" style={{ display: paymentMethod === 'Bank' ? 'block' : 'none' }}>
+                    <div className={`user-payment-info-box ${paymentMethod === 'Bank' ? 'user-payment-info-box-visible' : 'user-payment-info-box-hidden'}`}>
                       <div className="user-payment-info-header">
-                        <img src={bank} alt="Bank" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+                        <img src={bank} alt="Bank" className="user-payment-bank-header-icon" />
                         <span className="user-payment-info-title">Bank Transfer Details</span>
                       </div>
                       <div className="user-payment-info-content">
@@ -334,7 +335,7 @@ export default function Donation() {
                     </div>
 
                   {/* ── Proof of Payment ── */}
-                  <div className="user-donation-form-group" style={{ marginTop: '16px' }}>
+                  <div className="user-donation-form-group user-proof-upload-wrapper">
                     <label className="user-donation-form-label">Proof of Payment</label>
                     <label
                       htmlFor="donation-proof-upload"
@@ -392,58 +393,32 @@ export default function Donation() {
               <button className="user-view-history-btn" onClick={handleOpenHistory}>View History</button>
             </div>
 
-            {loading && (
-              <div className="user-donation-history-list">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="user-donation-history-item" style={{ padding: '16px' }}>
-                    <div className="user-donation-history-main" style={{ width: '100%' }}>
-                      <div className="user-skeleton user-skeleton-circle" style={{ width: '32px', height: '32px', flexShrink: 0 }}></div>
-                      <div style={{ flex: 1, marginLeft: '12px' }}>
-                        <div className="user-skeleton" style={{ height: '14px', width: '30%', marginBottom: '6px' }}></div>
-                        <div className="user-skeleton" style={{ height: '12px', width: '50%' }}></div>
-                      </div>
-                      <div className="user-skeleton" style={{ height: '16px', width: '60px' }}></div>
-                    </div>
-                  </div>
-                ))}
+            {/* Category Pie Chart */}
+            {!loading && stats.categoryBreakdown && Object.keys(stats.categoryBreakdown).length > 0 && (
+              <div className="user-donation-chart-container user-donation-chart-container-inner">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={Object.entries(stats.categoryBreakdown).map(([name, value]) => ({ name, value }))}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={50}
+                      outerRadius={80}
+                      paddingAngle={2}
+                      dataKey="value"
+                    >
+                      {Object.entries(stats.categoryBreakdown).map((_, index) => {
+                        const COLORS = ['#155DFC', '#E60076', '#16a34a', '#f59e0b', '#8b5cf6', '#14b8a6', '#f43f5e'];
+                        return <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />;
+                      })}
+                    </Pie>
+                    <Tooltip formatter={(value) => `₱${Number(value).toLocaleString('en-PH', { minimumFractionDigits: 0 })}`} />
+                    <Legend verticalAlign="bottom" height={36}/>
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
             )}
 
-            {!loading && donationHistory.length === 0 && (
-              <p className="user-donations-empty-text">No donations yet.</p>
-            )}
-
-              {!loading && donationHistory.length > 0 && (
-              <div className="user-donation-history-list user-fade-in">
-                {donationHistory.slice(0, 5).map((d) => (
-                  <div
-                    key={d._id || d.donationId}
-                    className="user-donation-history-item user-clickable"
-                    onClick={() => handleOpenReceipt(d)}
-                  >
-                    <div className="user-donation-history-main">
-                      <Heart className="user-donation-history-icon" size={20} color="#155DFC" />
-                      <div className="user-donation-history-info">
-                        <h3 className="user-donation-fund">{d.category}</h3>
-                        <p className="user-donation-id">{d.donationId}</p>
-                        <p className="user-donation-details">
-                          {fmtDate(d.createdAt || d.date)} · {d.method || d.paymentMethod}
-                        </p>
-                        {d.type === 'Recurring' && (
-                          <span className="user-recurring-badge">Recurring</span>
-                        )}
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-                      <p className="user-donation-history-amount">{fmt(d.amount)}</p>
-                      <span className={`user-donation-status-badge user-donation-status-${d.status || 'pending'}`}>
-                        {d.status === 'confirmed' ? 'Confirmed' : d.status === 'rejected' ? 'Rejected' : 'Pending'}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -543,13 +518,16 @@ export default function Donation() {
                       onClick={() => handleOpenReceipt(d)}
                     >
                       <div className="user-donation-history-main">
+                        <div className="user-modal-icon-wrapper">
+                          <Receipt size={18} color="#155DFC" />
+                        </div>
                         <div className="user-donation-history-info">
                           <h3 className="user-donation-fund">{d.category}</h3>
                           <p className="user-donation-id">{d.donationId} · {fmtDate(d.createdAt || d.date)}</p>
                           <p className="user-donation-details">{d.method || d.paymentMethod}</p>
                         </div>
                       </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                      <div className="user-donation-history-amount-col">
                         <p className="user-donation-history-amount">{fmt(d.amount)}</p>
                         <span className={`user-donation-status-badge user-donation-status-${d.status || 'pending'}`}>
                           {d.status === 'confirmed' ? 'Confirmed' : d.status === 'rejected' ? 'Rejected' : 'Pending'}

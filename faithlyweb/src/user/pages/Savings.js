@@ -121,6 +121,7 @@ export default function Savings() {
 
 
     const openDeposit = () => setModal('deposit');
+    const openWithdraw = () => setModal('withdraw');
     const openNewGoal = () => setModal('newGoal');
     const closeModal = () => { setModal(null); setModalData(null); fetchAll(false); };
 
@@ -301,11 +302,9 @@ export default function Savings() {
                                 <div className="sv-txn-label">{txn.description || (isIn ? 'Deposit' : 'Withdrawal')}{txn.goalName ? ` — ${txn.goalName}` : ''}</div>
                                 <div className="sv-txn-date-row">
                                     <span className="sv-txn-date">{fmtDate(txn.date)}{txn.source ? ` · ${txn.source}` : ''}</span>
-                                    {isIn && (
-                                        <span className={`sv-txn-status-badge sv-txn-status--${txn.status || 'pending'}`}>
-                                            {txn.status === 'confirmed' ? 'Validated' : txn.status === 'rejected' ? 'Rejected' : 'Pending'}
-                                        </span>
-                                    )}
+                                    <span className={`sv-txn-status-badge sv-txn-status--${txn.status || 'pending'}`}>
+                                        {txn.status === 'confirmed' ? 'Validated' : txn.status === 'rejected' ? 'Rejected' : 'Pending'}
+                                    </span>
                                 </div>
                             </div>
                             <div className={`sv-txn-amt ${isIn ? 'sv-txn-amt--in' : 'sv-txn-amt--out'}`}>
@@ -332,9 +331,15 @@ export default function Savings() {
                                 <h1 className="sv-page-title">My Savings</h1>
                                 <p className="sv-page-subtitle">Build your goals and grow your funds</p>
                             </div>
-                            <button className="sv-deposit-header-btn" onClick={openDeposit}>
-                                + Deposit
-                            </button>
+                            <div className="sv-header-actions">
+                                <button className="sv-withdraw-header-btn" onClick={openWithdraw}>
+                                    <ArrowUpRight size={16} />
+                                    Withdraw
+                                </button>
+                                <button className="sv-deposit-header-btn" onClick={openDeposit}>
+                                    + Deposit
+                                </button>
+                            </div>
                         </div>
 
                         {/* Error */}

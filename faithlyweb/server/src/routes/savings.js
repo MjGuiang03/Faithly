@@ -246,6 +246,52 @@ router.post('/savings/deposit', authenticateUser, async (req, res) => {
   }
 });
 
+/* ================== WITHDRAW FROM SAVINGS ================== */
+router.post('/savings/withdraw', authenticateUser, async (req, res) => {
+  try {
+    const email = req.user.email;
+    const { goalId, amount, reason } = req.body;
+
+    if (!goalId || !amount || amount <= 0) {
+      return res.status(400).json({ success: false, message: 'Goal and a positive amount are required' });
+    }
+
+    const goal = await savingsGoals.findOne({ _id: new ObjectId(goalId), email });
+    if (!goal) return res.status(404).json({ success: false, message: 'Goal not found' });
+
+    const withdrawAmount = Number(amount);
+
+    if ((goal.savedAmount || 0) < withdrawAmount) {
+      return res.status(400).json({ success: false, message: 'Insufficient savings balance for this withdrawal' });
+    }
+
+    const user = await users.findOne({ email });
+
+    // Create withdrawal transaction (pending admin approval)
+    const txn = {
+      email,
+      memberName: user?.fullName || 'Unknown Member',
+      goalId: new ObjectId(goalId),
+      goalName: goal.name,
+      type: 'withdrawal',
+      amount: withdrawAmount,
+      description: reason || 'Withdrawal request',
+      source: 'Manual',
+      status: 'pending',
+      date: new Date(),
+    };
+    await savingsTransactions.insertOne(txn);
+
+    res.json({
+      success: true,
+      message: `₱${withdrawAmount.toLocaleString()} withdrawal request submitted for ${goal.name} (Pending Admin Approval)`,
+    });
+  } catch (err) {
+    console.error('Withdraw error:', err);
+    res.status(500).json({ success: false, message: 'Failed to process withdrawal' });
+  }
+});
+
 /* ================== GET SAVINGS TRANSACTIONS ================== */
 router.get('/savings/transactions', authenticateUser, async (req, res) => {
   try {

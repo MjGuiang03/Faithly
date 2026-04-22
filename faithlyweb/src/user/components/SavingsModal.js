@@ -1295,6 +1295,209 @@ function TransactionInfoModal({ transaction, onClose }) {
             )}
         </div>
     );
+}/* ─────────────────────────────────────────────────────────────
+   8.  WITHDRAW MODAL
+───────────────────────────────────────────────────────────── */
+function WithdrawModal({ goals, onClose }) {
+    const activeGoals = goals.filter(g => (g.savedAmount || 0) > 0);
+    const [selectedGoal, setSelectedGoal] = useState(activeGoals[0]?._id || '');
+    const [amount, setAmount] = useState('');
+    const [reason, setReason] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState(false);
+
+    const goal = activeGoals.find(g => g._id === selectedGoal);
+    const balance = goal?.savedAmount || 0;
+    const numAmt = parseFloat(amount.replace(/,/g, '')) || 0;
+    const remaining = balance - numAmt;
+    const remainingPct = goal?.targetAmount > 0
+        ? Math.max(0, Math.round((remaining / goal.targetAmount) * 100))
+        : 0;
+
+    const handleSubmit = async () => {
+        if (!numAmt || numAmt <= 0) { setError('Please enter a valid amount.'); return; }
+        if (!selectedGoal) { setError('Please select a goal.'); return; }
+        if (numAmt > balance) { setError(`Insufficient balance. Available: ${fmt(balance)}`); return; }
+        if (!reason.trim()) { setError('Please provide a reason for withdrawal.'); return; }
+        setError('');
+        setLoading(true);
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${API}/api/savings/withdraw`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ goalId: selectedGoal, amount: numAmt, reason }),
+            });
+            const data = await res.json();
+            if (!res.ok || !data.success) throw new Error(data.message || 'Withdrawal failed.');
+            setSuccess(true);
+            setTimeout(onClose, 1500);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (activeGoals.length === 0) {
+        return (
+            <div className="svm-overlay" onClick={onClose}>
+                <div className="svm-modal svm-modal--sm" onClick={e => e.stopPropagation()}>
+                    <div className="svm-modal-head">
+                        <div>
+                            <div className="svm-modal-title">Withdraw savings</div>
+                            <div className="svm-modal-sub">No funds available to withdraw</div>
+                        </div>
+                        <button className="svm-close-btn" onClick={onClose}><CloseIcon /></button>
+                    </div>
+                    <div className="svm-modal-body">
+                        <div className="svm-withdraw-empty">
+                            <ArrowUpLeft size={28} />
+                            <p>You don't have any savings to withdraw yet. Start by making a deposit to one of your goals.</p>
+                        </div>
+                    </div>
+                    <div className="svm-modal-footer">
+                        <button className="svm-btn-cancel" style={{ flex: 1 }} onClick={onClose}>Close</button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="svm-overlay" onClick={onClose}>
+            <div className="svm-modal" onClick={e => e.stopPropagation()}>
+                <div className="svm-modal-head">
+                    <div>
+                        <div className="svm-modal-title">Withdraw savings</div>
+                        <div className="svm-modal-sub">Request a withdrawal from your savings goal.</div>
+                    </div>
+                    <button className="svm-close-btn" onClick={onClose}><CloseIcon /></button>
+                </div>
+
+                <div className="svm-modal-body">
+                    {error && <div className="svm-error">{error}</div>}
+
+                    {success ? (
+                        <div className="svm-success">
+                            <CheckCircle size={20} color="#fff" />
+                            Withdrawal of {fmt(numAmt)} submitted for admin approval!
+                        </div>
+                    ) : (
+                        <>
+                            <div className="svm-field">
+                                <label className="svm-label">Withdraw from</label>
+                                <select
+                                    className="svm-select"
+                                    value={selectedGoal}
+                                    onChange={e => setSelectedGoal(e.target.value)}
+                                >
+                                    {activeGoals.map(g => (
+                                        <option key={g._id} value={g._id}>
+                                            {g.name} — {fmt(g.savedAmount)} available
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {goal && (
+                                <div className="svm-withdraw-balance-card">
+                                    <div className="svm-withdraw-balance-row">
+                                        <span className="svm-withdraw-balance-label">Available balance</span>
+                                        <span className="svm-withdraw-balance-value">{fmt(balance)}</span>
+                                    </div>
+                                    {goal.targetAmount > 0 && (
+                                        <div className="svm-withdraw-balance-row">
+                                            <span className="svm-withdraw-balance-label">Goal target</span>
+                                            <span className="svm-withdraw-balance-value" style={{ color: 'var(--text-muted)' }}>{fmt(goal.targetAmount)}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            <div className="svm-field">
+                                <label className="svm-label">Amount to withdraw</label>
+                                <div className="svm-amount-wrap">
+                                    <span className="svm-peso">₱</span>
+                                    <input
+                                        className="svm-input svm-input--amount"
+                                        type="text"
+                                        placeholder="0.00"
+                                        value={amount}
+                                        onChange={e => setAmount(e.target.value.replace(/[^0-9.]/g, ''))}
+                                        autoFocus
+                                    />
+                                </div>
+                                <div className="svm-quick-pills">
+                                    {[500, 1000, 2000].filter(v => v <= balance).map(v => (
+                                        <button key={v} className="svm-quick-pill" onClick={() => setAmount(String(v))}>
+                                            ₱{v.toLocaleString()}
+                                        </button>
+                                    ))}
+                                    <button className="svm-quick-pill svm-quick-pill--all" onClick={() => setAmount(String(balance))}>
+                                        Withdraw all
+                                    </button>
+                                </div>
+                            </div>
+
+                            {goal && numAmt > 0 && numAmt <= balance && (
+                                <div className="svm-progress-hint svm-progress-hint--withdraw">
+                                    <div style={{ flex: 1 }}>
+                                        <div className="svm-progress-hint-text">
+                                            After withdrawal, <strong>{goal.name}</strong> will have {fmt(remaining)} remaining
+                                        </div>
+                                        <div className="svm-progress-bar-wrap">
+                                            <div
+                                                className="svm-progress-bar-fill svm-progress-bar-fill--withdraw"
+                                                style={{ width: `${remainingPct}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="svm-progress-pct">{remainingPct}%</div>
+                                </div>
+                            )}
+
+                            {numAmt > balance && (
+                                <div className="svm-withdraw-warning">
+                                    ⚠️ Amount exceeds available balance of {fmt(balance)}
+                                </div>
+                            )}
+
+                            <div className="svm-field">
+                                <label className="svm-label">Reason for withdrawal</label>
+                                <input
+                                    className="svm-input"
+                                    type="text"
+                                    placeholder="e.g. Personal emergency, tuition payment"
+                                    value={reason}
+                                    onChange={e => setReason(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="svm-withdraw-notice">
+                                <Info size={14} />
+                                <span>Withdrawal requests require admin approval. Your funds will be released once confirmed.</span>
+                            </div>
+                        </>
+                    )}
+                </div>
+
+                {!success && (
+                    <div className="svm-modal-footer">
+                        <button className="svm-btn-cancel" onClick={onClose} disabled={loading}>Cancel</button>
+                        <button
+                            className="svm-btn-submit svm-btn-submit--withdraw"
+                            onClick={handleSubmit}
+                            disabled={loading || !numAmt || numAmt > balance}
+                        >
+                            {loading ? <span className="btn-spinner" /> : `Request withdrawal`}
+                        </button>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
 }
 
 
@@ -1329,6 +1532,9 @@ export default function SavingsModals({ modal, modalData, goals, onClose, onEdit
 
     if (modal === 'transfer')
         return <TransferModal goal={modalData} goals={goals} onClose={onClose} />;
+
+    if (modal === 'withdraw')
+        return <WithdrawModal goals={goals} onClose={onClose} />;
 
     if (modal === 'transactionInfo')
         return <TransactionInfoModal transaction={modalData} onClose={onClose} />;

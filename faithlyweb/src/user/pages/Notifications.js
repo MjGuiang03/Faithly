@@ -416,30 +416,7 @@ export default function Notifications() {
     });
 
     const collapse = (list) => {
-      const counts = {};
-      list.forEach(i => counts[i.type] = (counts[i.type] || 0) + 1);
-
-      const result = [];
-      const seen = new Set();
-      list.forEach(i => {
-        if (counts[i.type] >= 3) {
-          if (!seen.has(i.type)) {
-            const items = list.filter(x => x.type === i.type);
-            result.push({
-              id: `summary-${i.type}-${i.timestamp}`,
-              isSummary: true,
-              type: i.type,
-              count: counts[i.type],
-              items: items,
-              timestamp: items[0].timestamp
-            });
-            seen.add(i.type);
-          }
-        } else {
-          result.push(i);
-        }
-      });
-      return result;
+      return list;
     };
 
     return {
@@ -681,9 +658,6 @@ export default function Notifications() {
           <div className="user-notifications-header-left">
             <div className="user-notifications-title-row">
               <h1 className="user-notifications-page-title">Notifications</h1>
-              {getUnreadCount('all') > 0 && (
-                <span className="user-notifications-count-pill" style={{ backgroundColor: '#EF4444' }}>{getUnreadCount('all')}</span>
-              )}
             </div>
           </div>
         </div>

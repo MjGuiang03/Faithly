@@ -76,13 +76,19 @@ router.get('/donations/my-donations', authenticateUser, async (req, res) => {
       .filter(d => new Date(d.createdAt).getFullYear() === now.getFullYear())
       .reduce((sum, d) => sum + d.amount, 0);
 
+    const categoryBreakdown = {};
+    allUserDonations.forEach(d => {
+      const cat = d.category || 'Other';
+      categoryBreakdown[cat] = (categoryBreakdown[cat] || 0) + (Number(d.amount) || 0);
+    });
+
     res.status(200).json({
       success: true,
       donations: userDonations,
       totalCount,
       totalPages: Math.ceil(totalCount / limit),
       currentPage: page,
-      stats: { totalDonated, thisYearTotal, totalCount: confirmedDonations.length }
+      stats: { totalDonated, thisYearTotal, totalCount: confirmedDonations.length, categoryBreakdown }
     });
   } catch (err) {
     console.error(err);

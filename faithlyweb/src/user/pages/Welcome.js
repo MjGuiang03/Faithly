@@ -21,10 +21,10 @@ import {
 
 // Event Images
 import divineServiceImg from '../../assets/events/divine_service.png';
-import youthFellowshipImg from '../../assets/events/youth_fellowship.png';
-import bibleSchoolImg from '../../assets/events/bible_school.png';
-import thanksgivingImg from '../../assets/events/thanksgiving.png';
+import summerYouthCampImg from '../../assets/events/summer youth camp.png';
 import womenFellowshipImg from '../../assets/events/women_fellowship.png';
+import youthFellowshipImg from '../../assets/events/youth_fellowship.png';
+import thanksgivingImg from '../../assets/events/thanksgiving.png';
 import { useRef } from 'react';
 
 const features = [
@@ -77,20 +77,14 @@ const features = [
 ];
 
 const heroSlides = [
-  { bg: '#b5d4f4', label: 'Morning Divine Service', sub: 'Every Sunday · All Branches' },
-  { bg: '#bbf7d0', label: 'Youth Camp 2025', sub: 'Annual · Tagaytay' },
-  { bg: '#fbcfe8', label: "Women's Fellowship", sub: 'Monthly · Main Branch' },
-  { bg: '#ddd6fe', label: 'Youth Fellowship Night', sub: 'Monthly · All Branches' },
-  { bg: '#fde68a', label: 'Thanksgiving Anniversary', sub: 'Annual · Main Venue' },
+  { img: divineServiceImg, label: 'Morning Divine Service', sub: 'Every Sunday · All Branches' },
+  { img: summerYouthCampImg, label: 'Youth Camp 2025', sub: 'Annual · Tagaytay' },
+  { img: womenFellowshipImg, label: "Women's Fellowship", sub: 'Monthly · Main Branch' },
+  { img: youthFellowshipImg, label: 'Youth Fellowship Night', sub: 'Monthly · All Branches' },
+  { img: thanksgivingImg, label: 'Thanksgiving Anniversary', sub: 'Annual · Main Venue' },
 ];
 
-const featuredEvents = [
-  { label: 'Divine Service', freq: 'Weekly', image: divineServiceImg },
-  { label: 'Bible Study', freq: 'Weekly', image: bibleSchoolImg },
-  { label: 'Youth Fellowship', freq: 'Monthly', image: youthFellowshipImg },
-  { label: "Women's Fellowship", freq: 'Monthly', image: womenFellowshipImg },
-  { label: 'Thanksgiving', freq: 'Yearly', image: thanksgivingImg },
-];
+
 
 export default function Welcome() {
   const [showSignupModal, setShowSignupModal] = useState(false);
@@ -99,9 +93,7 @@ export default function Welcome() {
 
   // Carousel States
   const [activeSlide, setActiveSlide] = useState(heroSlides.length);
-  const [activeEventIndex, setActiveEventIndex] = useState(featuredEvents.length);
   const [heroTransitionEnabled, setHeroTransitionEnabled] = useState(true);
-  const [eventTransitionEnabled, setEventTransitionEnabled] = useState(true);
 
   // Refined Logic States
   const [isScrolled, setIsScrolled] = useState(false);
@@ -111,7 +103,6 @@ export default function Welcome() {
 
   // Tripled sets for seamless infinite loop
   const tripledHeroSlides = [...heroSlides, ...heroSlides, ...heroSlides];
-  const tripledFeaturedEvents = [...featuredEvents, ...featuredEvents, ...featuredEvents];
 
   // Hero carousel auto-advance
   useEffect(() => {
@@ -121,13 +112,7 @@ export default function Welcome() {
     return () => clearInterval(timer);
   }, []);
 
-  // Events carousel auto-advance
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveEventIndex((prev) => prev + 1);
-    }, 4500);
-    return () => clearInterval(timer);
-  }, []);
+
 
   // Infinite loop snap — hero
   const handleHeroTransitionEnd = () => {
@@ -137,13 +122,7 @@ export default function Welcome() {
     }
   };
 
-  // Infinite loop snap — events
-  const handleEventTransitionEnd = () => {
-    if (activeEventIndex >= featuredEvents.length * 2) {
-      setEventTransitionEnabled(false);
-      setActiveEventIndex(featuredEvents.length);
-    }
-  };
+
 
   // Re-enable transitions after snap
   useEffect(() => {
@@ -153,12 +132,7 @@ export default function Welcome() {
     }
   }, [heroTransitionEnabled]);
 
-  useEffect(() => {
-    if (!eventTransitionEnabled) {
-      const t = setTimeout(() => setEventTransitionEnabled(true), 50);
-      return () => clearTimeout(t);
-    }
-  }, [eventTransitionEnabled]);
+
 
   // Refined: Scroll & Intersection Logic
   useEffect(() => {
@@ -230,10 +204,7 @@ export default function Welcome() {
     document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const cardStep = parseInt(
-    getComputedStyle(document.documentElement)
-      .getPropertyValue('--card-step')
-  ) || 332;
+
 
   return (
     <div className="fl-page">
@@ -373,8 +344,8 @@ export default function Welcome() {
               <div
                 key={i}
                 className="fl-hero-slide"
-                style={{ backgroundColor: slide.bg }}
               >
+                <img src={slide.img} alt={slide.label} className="fl-hero-slide-img" />
                 {/* Large watermark number (01-05) */}
                 <span className="fl-hero-slide-num">
                   {String((i % heroSlides.length) + 1).padStart(2, '0')}
@@ -389,50 +360,7 @@ export default function Welcome() {
           </div>
         </div>
 
-        {/* ── Events Carousel — full width row 2 ── */}
-        <div className="fl-events-carousel-section">
-          <div className="fl-events-carousel-wrap">
-            <div
-              className={`fl-events-track${!eventTransitionEnabled ? ' no-transition' : ''}`}
-              onTransitionEnd={handleEventTransitionEnd}
-              style={{
-                transform: `translateX(calc(50vw - ${activeEventIndex * cardStep}px - ${cardStep / 2}px))`,
-              }}
-            >
-              {tripledFeaturedEvents.map((ev, i) => (
-                <div
-                  key={i}
-                  className={`fl-event-card${i === activeEventIndex ? ' active' : ''}`}
-                >
-                  <img src={ev.image} alt={ev.label} className="fl-event-image" />
-                  <div className="fl-event-overlay">
-                    <div className="fl-event-header">
-                      <span className="fl-event-freq">{ev.freq}</span>
-                    </div>
-                    <div className="fl-event-footer">
-                      <h4 className="fl-event-title">{ev.label}</h4>
-                      <p className="fl-event-subtitle">Coming Soon</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
 
-          <div className="fl-events-nav">
-            {featuredEvents.map((_, i) => (
-              <button
-                key={i}
-                className={`fl-event-dot${activeEventIndex % featuredEvents.length === i ? ' selected' : ''}`}
-                onClick={() => {
-                  setEventTransitionEnabled(true);
-                  setActiveEventIndex(featuredEvents.length + i);
-                }}
-                aria-label={`Event ${i + 1}`}
-              />
-            ))}
-          </div>
-        </div>
 
       </section>
 
@@ -552,13 +480,6 @@ export default function Welcome() {
       {/* ── FOOTER ── */}
       <footer className="fl-footer" id="about">
         <div className="fl-footer-content">
-          <div className="fl-footer-left">
-            <div className="fl-footer-logo">
-              <img src={puacLogo} alt="PUAC Logo" />
-            </div>
-            <span className="fl-footer-name">FaithLy</span>
-          </div>
-          <p className="fl-footer-tagline">Built with faith, designed for community.</p>
           <div className="fl-footer-info">
             <p className="fl-footer-copy">
               © 2026 FaithLy. All rights reserved.<br />

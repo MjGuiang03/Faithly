@@ -263,7 +263,6 @@ export default function Home() {
 
           {isOfficer && (
           <div className="uh-stat-card uh-stat-card--savings uh-stat-card--clickable" onClick={() => navigate('/savings')}>
-            <div className="uh-stat-card__bar" />
             <div className="uh-stat-card__body">
               <div className="uh-stat-icon-box">
                 <PiggyBank size={20} />
@@ -300,7 +299,6 @@ export default function Home() {
 
           {isOfficer && (
           <div className="uh-stat-card uh-stat-card--loans uh-stat-card--clickable" onClick={() => navigate('/loans')}>
-            <div className="uh-stat-card__bar" />
             <div className="uh-stat-card__body">
               <div className="uh-stat-icon-box">
                 <Banknote size={20} />
@@ -337,7 +335,6 @@ export default function Home() {
           )}
 
           <div className="uh-stat-card uh-stat-card--donations uh-stat-card--clickable" onClick={() => navigate('/donation')}>
-            <div className="uh-stat-card__bar" />
             <div className="uh-stat-card__body">
               <div className="uh-stat-icon-box">
                 <Heart size={20} />
@@ -356,7 +353,6 @@ export default function Home() {
           </div>
 
           <div className="uh-stat-card uh-stat-card--attendance uh-stat-card--clickable" onClick={() => navigate('/attendance')}>
-            <div className="uh-stat-card__bar" />
             <div className="uh-stat-card__body">
               <div className="uh-stat-icon-box">
                 <CalendarDays size={20} />
