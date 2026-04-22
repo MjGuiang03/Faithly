@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 
 import '../styles/Branches.css';
 import { useState, useMemo, useEffect } from 'react';
-import { ChevronRight, MapPin, Search, User, Globe, Map, CalendarDays } from 'lucide-react';
+import { MapPin, Search, User, Globe, CalendarDays } from 'lucide-react';
 
 
 // ─── Branch data ordered North → South ───────────────────────────────────────
@@ -196,9 +196,6 @@ export default function Branches() {
 
   // Stats
   const totalBranches = branchData.length;
-  const totalRegions = [...new Set(branchData.map(b => b.region))].length;
-  const totalProvinces = [...new Set(branchData.map(b => b.province))].length;
-  const totalServices = branchData.reduce((s, b) => s + b.serviceTimes.length, 0);
 
   // Region summary cards
   const regionSummaries = useMemo(() => {

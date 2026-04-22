@@ -52,7 +52,6 @@ export default function Donation() {
   const [isRecurring, setIsRecurring] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
-  const [donationHistory, setDonationHistory] = useState([]);
   const [stats, setStats] = useState({ totalDonated: 0, thisYearTotal: 0, totalCount: 0 });
   const [loading, setLoading] = useState(true);
   const [historyPage, setHistoryPage] = useState(1);
@@ -81,7 +80,6 @@ export default function Donation() {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setDonationHistory(data.donations || []);
         setStats(data.stats || { totalDonated: 0, thisYearTotal: 0, totalCount: 0 });
       }
     } catch { /* silent */ }
