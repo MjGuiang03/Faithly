@@ -10,7 +10,7 @@ import { validate } from '../middleware/validate.js';
 import { loginLimiter } from '../middleware/rateLimiter.js';
 import { authenticateAdmin } from '../middleware/auth.js';
 
-const router     = Router();
+const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
 
 /* ================== ADMIN LOGIN ================== */
@@ -57,25 +57,25 @@ router.post('/login',
 router.get('/members', authenticateAdmin, async (req, res) => {
   try {
     const { search, status, branch, isOfficer } = req.query;
-    const page  = Math.max(1, parseInt(req.query.page)  || 1);
+    const page = Math.max(1, parseInt(req.query.page) || 1);
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 10));
-    const skip  = (page - 1) * limit;
+    const skip = (page - 1) * limit;
 
     const baseQuery = {};
     if (search) {
       baseQuery.$or = [
         { fullName: { $regex: search, $options: 'i' } },
-        { email:    { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
         { memberId: { $regex: search, $options: 'i' } }
       ];
     }
     if (branch && branch !== 'all') baseQuery.branch = branch;
     // Officers = verified members (Level 2)
-    if (isOfficer === 'true')  baseQuery.verificationStatus = 'verified';
+    if (isOfficer === 'true') baseQuery.verificationStatus = 'verified';
     if (isOfficer === 'false') baseQuery.verificationStatus = { $ne: 'verified' };
 
-    const allUsers   = await users.find(baseQuery).toArray();
-    const now        = new Date();
+    const allUsers = await users.find(baseQuery).toArray();
+    const now = new Date();
     const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
     const withStatus = allUsers.map(user => {
@@ -88,7 +88,7 @@ router.get('/members', authenticateAdmin, async (req, res) => {
       return { ...user, status: userStatus, memberId: user.memberId || `M-${user._id.toString().slice(-5).toUpperCase()}` };
     });
 
-    const allForStats    = await users.find({}).toArray();
+    const allForStats = await users.find({}).toArray();
     const statsWithStatus = allForStats.map(u => {
       if (u.isDeleted) return { ...u, status: 'deactivated' };
       if (!u.lastLoginAt || new Date(u.lastLoginAt) < oneWeekAgo) return { ...u, status: 'inactive' };
@@ -96,21 +96,21 @@ router.get('/members', authenticateAdmin, async (req, res) => {
     });
 
     const stats = {
-      total:        allForStats.length,
-      active:       statsWithStatus.filter(u => u.status === 'active').length,
-      inactive:     statsWithStatus.filter(u => u.status === 'inactive').length,
-      deactivated:  statsWithStatus.filter(u => u.status === 'deactivated').length,
-      officers:     allForStats.filter(u => u.verificationStatus === 'verified').length,
+      total: allForStats.length,
+      active: statsWithStatus.filter(u => u.status === 'active').length,
+      inactive: statsWithStatus.filter(u => u.status === 'inactive').length,
+      deactivated: statsWithStatus.filter(u => u.status === 'deactivated').length,
+      officers: allForStats.filter(u => u.verificationStatus === 'verified').length,
       newThisMonth: allForStats.filter(u => {
         const created = new Date(u.createdAt);
         return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
       }).length
     };
 
-    const filtered     = (status && status !== 'all') ? withStatus.filter(u => u.status === status) : withStatus;
+    const filtered = (status && status !== 'all') ? withStatus.filter(u => u.status === status) : withStatus;
     const totalMembers = filtered.length;
-    const totalPages   = Math.ceil(totalMembers / limit) || 1;
-    const pageMembers  = filtered.slice(skip, skip + limit);
+    const totalPages = Math.ceil(totalMembers / limit) || 1;
+    const pageMembers = filtered.slice(skip, skip + limit);
 
     res.status(200).json({
       success: true,
@@ -129,7 +129,7 @@ router.put('/update-member', authenticateAdmin, async (req, res) => {
   try {
     const { email, adminPassword, fullName, phone, branch, position, newPassword } = req.body;
 
-    if (!email)         return res.status(400).json({ success: false, message: 'Email is required' });
+    if (!email) return res.status(400).json({ success: false, message: 'Email is required' });
     if (!adminPassword) return res.status(400).json({ success: false, message: 'Admin password is required' });
 
     const admin = await admins.findOne({ email: req.admin.email });
@@ -145,8 +145,8 @@ router.put('/update-member', authenticateAdmin, async (req, res) => {
 
     const updateData = {};
     if (fullName !== undefined) updateData.fullName = fullName;
-    if (phone    !== undefined) updateData.phone    = phone;
-    if (branch   !== undefined) updateData.branch   = branch;
+    if (phone !== undefined) updateData.phone = phone;
+    if (branch !== undefined) updateData.branch = branch;
     if (position !== undefined) updateData.position = position;
 
     if (newPassword && newPassword.trim() !== '') {
@@ -182,9 +182,9 @@ router.post('/update-member-rfid', authenticateAdmin, async (req, res) => {
     // Check if this card ID is already registered to someone else
     const owner = await users.findOne({ rfidCardId, email: { $ne: email } });
     if (owner) {
-      return res.status(400).json({ 
-        success: false, 
-        message: `This card is already linked to ${owner.fullName || owner.email}.` 
+      return res.status(400).json({
+        success: false,
+        message: `This card is already linked to ${owner.fullName || owner.email}.`
       });
     }
 
@@ -206,7 +206,7 @@ router.delete('/delete-member-permanent', authenticateAdmin, async (req, res) =>
   try {
     const { email, adminPassword } = req.body;
 
-    if (!email)         return res.status(400).json({ success: false, message: 'Email is required' });
+    if (!email) return res.status(400).json({ success: false, message: 'Email is required' });
     if (!adminPassword) return res.status(400).json({ success: false, message: 'Admin password is required' });
 
     const admin = await admins.findOne({ email: req.admin.email });
@@ -233,9 +233,9 @@ router.delete('/delete-member-permanent', authenticateAdmin, async (req, res) =>
 router.get('/branches', authenticateAdmin, async (req, res) => {
   try {
     const { search } = req.query;
-    const page  = Math.max(1, parseInt(req.query.page)  || 1);
+    const page = Math.max(1, parseInt(req.query.page) || 1);
     const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 10));
-    const skip  = (page - 1) * limit;
+    const skip = (page - 1) * limit;
 
     // Aggregate member counts per branch
     const allUsers = await users.find({}).toArray();
@@ -324,9 +324,9 @@ router.get('/admins', authenticateAdmin, async (req, res) => {
     }
 
     const { search } = req.query;
-    const page  = Math.max(1, parseInt(req.query.page)  || 1);
+    const page = Math.max(1, parseInt(req.query.page) || 1);
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
-    const skip  = (page - 1) * limit;
+    const skip = (page - 1) * limit;
 
     const query = {};
     if (search) {
@@ -497,7 +497,7 @@ router.get('/announcements', async (req, res) => {
 /* ================== ANNOUNCEMENTS - CREATE (ADMIN) ================== */
 router.post('/announcements', authenticateAdmin, async (req, res) => {
   try {
-    const { title, body, category, eventDate, expiresAt, visibility, targetBranches, imageBase64, images } = req.body;
+    const { title, body, category, eventDate, expiresAt, visibility, targetBranches, imageBase64, images, template } = req.body;
     if (!title || !body) {
       return res.status(400).json({ success: false, message: 'Title and body are required' });
     }
@@ -511,6 +511,7 @@ router.post('/announcements', authenticateAdmin, async (req, res) => {
       targetBranches: Array.isArray(targetBranches) ? targetBranches : [],
       image: imageBase64 || (images && images.length > 0 ? images[0] : null), // Legacy support
       images: Array.isArray(images) ? images : (imageBase64 ? [imageBase64] : []),
+      template: template || 'banner',
       createdBy: req.admin.email,
       createdAt: new Date(),
     };
@@ -643,6 +644,81 @@ router.put('/savings/deposits/:id/reject', authenticateAdmin, async (req, res) =
   }
 });
 
+/* ================== SAVINGS WITHDRAWALS (ADMIN) ================== */
+router.get('/savings/withdrawals', authenticateAdmin, async (req, res) => {
+  try {
+    const { status, search } = req.query;
+    const query = { type: 'withdrawal' };
+
+    if (status) query.status = status;
+
+    if (search) {
+      query.$or = [
+        { memberName: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    const withdrawals = await savingsTransactions.find(query).sort({ date: -1 }).toArray();
+    res.json({ success: true, withdrawals });
+  } catch (err) {
+    console.error('Failed to fetch savings withdrawals:', err);
+    res.status(500).json({ success: false, message: 'Failed to fetch savings withdrawals' });
+  }
+});
+
+router.put('/savings/withdrawals/:id/confirm', authenticateAdmin, async (req, res) => {
+  try {
+    const { ObjectId } = await import('mongodb');
+    const { id } = req.params;
+
+    const txn = await savingsTransactions.findOne({ _id: new ObjectId(id) });
+    if (!txn) return res.status(404).json({ success: false, message: 'Withdrawal not found' });
+    if (txn.type !== 'withdrawal') return res.status(400).json({ success: false, message: 'Transaction is not a withdrawal' });
+    if (txn.status === 'confirmed') return res.status(400).json({ success: false, message: 'Already confirmed' });
+
+    // Update Transaction
+    await savingsTransactions.updateOne({ _id: new ObjectId(id) }, { $set: { status: 'confirmed', confirmedAt: new Date(), confirmedBy: req.admin.email } });
+
+    // Update Goal - deduct saved amount
+    const goal = await savingsGoals.findOne({ _id: txn.goalId });
+    if (goal) {
+      const newSaved = Math.max(0, (goal.savedAmount || 0) - txn.amount);
+      const updates = { savedAmount: newSaved, updatedAt: new Date() };
+      // If deducting brings it below target, mark as active again
+      if (goal.status === 'completed' && newSaved < goal.targetAmount) {
+        updates.status = 'active';
+      }
+      await savingsGoals.updateOne({ _id: txn.goalId }, { $set: updates });
+    }
+
+    res.json({ success: true, message: `Withdrawal of ₱${txn.amount.toLocaleString()} confirmed and deducted from savings.` });
+  } catch (err) {
+    console.error('Failed to confirm withdrawal:', err);
+    res.status(500).json({ success: false, message: 'Failed to confirm withdrawal' });
+  }
+});
+
+router.put('/savings/withdrawals/:id/reject', authenticateAdmin, async (req, res) => {
+  try {
+    const { ObjectId } = await import('mongodb');
+    const { id } = req.params;
+    const { reason } = req.body;
+
+    const txn = await savingsTransactions.findOne({ _id: new ObjectId(id) });
+    if (!txn) return res.status(404).json({ success: false, message: 'Withdrawal not found' });
+    if (txn.type !== 'withdrawal') return res.status(400).json({ success: false, message: 'Transaction is not a withdrawal' });
+    if (txn.status === 'confirmed') return res.status(400).json({ success: false, message: 'Cannot reject confirmed withdrawal' });
+
+    await savingsTransactions.updateOne({ _id: new ObjectId(id) }, { $set: { status: 'rejected', rejectReason: reason || '', rejectedAt: new Date(), rejectedBy: req.admin.email } });
+
+    res.json({ success: true, message: 'Withdrawal request rejected.' });
+  } catch (err) {
+    console.error('Failed to reject withdrawal:', err);
+    res.status(500).json({ success: false, message: 'Failed to reject withdrawal' });
+  }
+});
+
 /* ================== ADMIN - GET SAVINGS GOALS BY EMAIL ================== */
 router.get('/user-savings-goals/:email', authenticateAdmin, async (req, res) => {
   try {
@@ -724,7 +800,7 @@ router.post('/process-loan-payment', authenticateAdmin, async (req, res) => {
     if (loan.status !== 'active') return res.status(400).json({ success: false, message: 'Only active loans can receive payments' });
 
     const dt = new Date();
-    
+
     // 1. Create confirmed payment record
     const payment = {
       loanId: loan.loanId,
@@ -755,14 +831,14 @@ router.post('/process-loan-payment', authenticateAdmin, async (req, res) => {
 
     await loans.updateOne(
       { _id: loan._id },
-      { 
-        $set: { 
+      {
+        $set: {
           remainingBalance: newBalance,
           paidMonths: newPaidMonths,
           status: isComplete ? 'completed' : 'active',
           nextPaymentDate: nextDue,
           nextDueDate: nextDue
-        } 
+        }
       }
     );
 
@@ -813,7 +889,7 @@ router.post('/create-member', authenticateAdmin, async (req, res) => {
     // Just in case there is a leftover pending registration or OTP, clear it
     await import('../config/db.js').then(async ({ pendingRegistrations }) => {
       await pendingRegistrations.deleteOne({ email });
-    }).catch(() => {});
+    }).catch(() => { });
     await otps.deleteMany({ email });
 
     res.status(201).json({
@@ -833,7 +909,7 @@ router.get('/loans/:id/dss-analysis', authenticateAdmin, async (req, res) => {
   try {
     const { ObjectId } = await import('mongodb');
     const { id } = req.params;
-    
+
     if (!ObjectId.isValid(id)) {
       return res.status(400).json({ success: false, message: 'Invalid Loan ID' });
     }
@@ -846,9 +922,9 @@ router.get('/loans/:id/dss-analysis', authenticateAdmin, async (req, res) => {
 
     // 1. Eligibility Check
     const officerPositions = [
-        'Deacon','Local Evangelist','District Evangelist','National Evangelist',
-        'Assistant Priest','Priest','Elder','District Elder',
-        'Bishop','District Bishop','National Bishop','Apostle',
+      'Deacon', 'Local Evangelist', 'District Evangelist', 'National Evangelist',
+      'Assistant Priest', 'Priest', 'Elder', 'District Elder',
+      'Bishop', 'District Bishop', 'National Bishop', 'Apostle',
     ];
     const isOfficer = officerPositions.some(p => p.toLowerCase() === (user.position || '').trim().toLowerCase());
     const isVerified = user.verificationStatus === 'verified' || user.isVerified === true;
@@ -868,13 +944,13 @@ router.get('/loans/:id/dss-analysis', authenticateAdmin, async (req, res) => {
 
     // 2. Loan Capacity
     const LOAN_CONFIG = {
-        'personal':   { multiplier: 2,   min: 5000 },
-        'emergency':  { multiplier: 1.5, min: 5000 },
-        'short-term': { multiplier: 1,   min: 5000 }
+      'personal': { multiplier: 2, min: 5000 },
+      'emergency': { multiplier: 1.5, min: 5000 },
+      'short-term': { multiplier: 1, min: 5000 }
     };
     const config = LOAN_CONFIG[loan.loanType] || LOAN_CONFIG['personal'];
     const currentBalance = unpaidLoans.reduce((sum, l) => sum + (l.remainingBalance || 0), 0);
-    
+
     // Formula: Savings * Multiplier
     const maxLoanable = Math.max(0, totalSavings * config.multiplier);
     const requestedOk = loan.amount <= maxLoanable && loan.amount >= config.min;
@@ -889,63 +965,63 @@ router.get('/loans/:id/dss-analysis', authenticateAdmin, async (req, res) => {
     let riskLevel = 1;
 
     if (currentlyLate) {
-        riskTier = 'High Risk';
-        riskColor = 'red';
-        riskLevel = 3;
+      riskTier = 'High Risk';
+      riskColor = 'red';
+      riskLevel = 3;
     } else if (historyLate) {
-        riskTier = 'Moderate Risk';
-        riskColor = 'yellow';
-        riskLevel = 2;
+      riskTier = 'Moderate Risk';
+      riskColor = 'yellow';
+      riskLevel = 2;
     }
 
     // 4. Recommendation
     const eligible = isOfficer && isVerified && savingsOk && !hasOverdue && infoValid && requestedOk;
     let recommendationText = "";
-    
+
     if (eligible) {
-        recommendationText = "Based on the member's savings and repayment history, this application appears eligible for approval.";
+      recommendationText = "Based on the member's savings and repayment history, this application appears eligible for approval.";
     } else if (!isOfficer || !isVerified) {
-        recommendationText = "This application may be declined: Applicant is not a verified officer.";
+      recommendationText = "This application may be declined: Applicant is not a verified officer.";
     } else if (!savingsOk) {
-        recommendationText = "This application may be declined: Insufficient savings (below ₱1,000).";
+      recommendationText = "This application may be declined: Insufficient savings (below ₱1,000).";
     } else if (hasOverdue) {
-        recommendationText = "The system recommends closer review — this member has an active delinquency record.";
+      recommendationText = "The system recommends closer review — this member has an active delinquency record.";
     } else if (!requestedOk) {
-        if (loan.amount < config.min) {
-            recommendationText = `Minimum loan amount is ₱${config.min.toLocaleString()}.`;
-        } else {
-            recommendationText = "Amount exceeds calculated loan capacity based on savings multiplier.";
-        }
+      if (loan.amount < config.min) {
+        recommendationText = `Minimum loan amount is ₱${config.min.toLocaleString()}.`;
+      } else {
+        recommendationText = "Amount exceeds calculated loan capacity based on savings multiplier.";
+      }
     } else {
-        recommendationText = "The system recommends reviewing missing documentation or historical profile.";
+      recommendationText = "The system recommends reviewing missing documentation or historical profile.";
     }
 
     res.json({
-        success: true,
-        analysis: {
-            eligibility: {
-                isOfficer: isOfficer && isVerified,
-                savingsOk,
-                noOverdue: !hasOverdue,
-                infoValid
-            },
-            capacity: {
-                totalSavings,
-                multiplier: config.multiplier,
-                currentBalance,
-                maxLoanable,
-                requestedOk,
-                requestedAmount: loan.amount
-            },
-            risk: {
-                tier: riskTier,
-                color: riskColor,
-                level: riskLevel,
-                hasHistoryLate: historyLate
-            },
-            recommendation: recommendationText,
-            isEligible: eligible
-        }
+      success: true,
+      analysis: {
+        eligibility: {
+          isOfficer: isOfficer && isVerified,
+          savingsOk,
+          noOverdue: !hasOverdue,
+          infoValid
+        },
+        capacity: {
+          totalSavings,
+          multiplier: config.multiplier,
+          currentBalance,
+          maxLoanable,
+          requestedOk,
+          requestedAmount: loan.amount
+        },
+        risk: {
+          tier: riskTier,
+          color: riskColor,
+          level: riskLevel,
+          hasHistoryLate: historyLate
+        },
+        recommendation: recommendationText,
+        isEligible: eligible
+      }
     });
 
   } catch (err) {
@@ -955,4 +1031,4 @@ router.get('/loans/:id/dss-analysis', authenticateAdmin, async (req, res) => {
 });
 
 export default router;
-
+

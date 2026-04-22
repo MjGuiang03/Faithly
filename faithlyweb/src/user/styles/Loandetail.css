@@ -139,7 +139,7 @@
 .ld-stat-card {
     background: var(--card);
     border: 0.8px solid var(--border);
-    border-radius: 12px;
+    border-radius: 5px;
     padding: 14px 16px;
     display: flex;
     flex-direction: column;
@@ -190,7 +190,7 @@
 .ld-section {
     background: var(--card);
     border: 0.8px solid var(--border);
-    border-radius: 14px;
+    border-radius: 5px;
     overflow: hidden;
     margin-bottom: 16px;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);

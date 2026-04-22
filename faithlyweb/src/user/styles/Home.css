@@ -17,7 +17,7 @@
 .uh-stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
+  gap: 14px;
   margin-bottom: 24px;
   position: relative;
   z-index: 100;
@@ -359,7 +359,7 @@
 
 .uh-grid-main {
   display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(0, 3fr) minmax(0, 4fr);
+  grid-template-columns: minmax(0, 3fr) minmax(0, 3fr) minmax(0, 5fr);
   gap: 14px;
   align-items: stretch;
   margin-bottom: 20px;
@@ -379,7 +379,8 @@
 .uh-actions {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
+  gap: 10px;
+  width: 100%;
 }
 
 .uh-action {
@@ -387,7 +388,7 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 14px;
-  padding: 22px 20px;
+  padding: 12px 12px;
   border-radius: 5px;
   border: none;
   cursor: pointer;
@@ -458,13 +459,13 @@
 
 .uh-action__title {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 800;
   color: var(--foreground);
   line-height: 1.3;
 }
 
 .uh-action__desc {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-muted);
   line-height: 1.3;
 }
@@ -635,27 +636,51 @@
 }
 
 .uh-event-hero {
-  padding: 36px 32px;
-  border-radius: 5px;
+  border-radius: 12px;
   display: flex;
-  flex-direction: column;
-  gap: 16px;
-  min-height: 280px;
+  flex-direction: row;
+  min-height: 260px;
   position: relative;
   overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.uh-event-hero__content {
+  flex: 1;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
+
+}
+
+.uh-event-hero__image {
+  flex: 0 0 50%;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.uh-event-hero:hover .uh-event-hero__image {
+  transform: scale(1.05);
 }
 
 .uh-event-hero__badge {
-  position: absolute;
-  top: 14px;
-  right: 14px;
+  display: inline-block;
+  align-self: flex-start;
+  margin-bottom: 20px;
   font-size: 10px;
   font-weight: 800;
   text-transform: uppercase;
-  padding: 4px 10px;
+  padding: 4px 12px;
   border-radius: 20px;
-  letter-spacing: 0.05em;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  letter-spacing: 0.06em;
+  background: white !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  z-index: 10;
 }
 
 .uh-event-hero__date {
@@ -1216,6 +1241,19 @@
   display: flex;
 }
 
+.ann-card-text {
+  background: linear-gradient(145deg, #ffffff 0%, #f1f5f9 100%);
+  border-left: 5px solid var(--primary);
+  box-shadow: inset 0 0 40px rgba(30, 58, 138, 0.03);
+}
+
+.ann-card-side .ann-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+
 .ann-banner {
   position: relative;
   overflow: hidden;
@@ -1585,6 +1623,7 @@
 
 /* ── Responsive ── */
 
+/* ── Tablet / small desktop ── */
 @media (max-width: 1200px) {
   .uh-stats-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -1602,22 +1641,17 @@
   }
 }
 
+/* ── Mobile ── */
 @media (max-width: 768px) {
   .uh-stats-grid {
     grid-template-columns: 1fr;
     gap: 10px;
   }
 
-  .uh-grid-main {
+  .uh-grid-main,
+  .uh-grid-bottom {
+    grid-template-columns: 1fr;
     gap: 10px;
-  }
-
-  .user-home-info-pill {
-    display: none;
-  }
-
-  .user-home-page-title {
-    font-size: 20px;
   }
 
   .uh-card {
@@ -1628,57 +1662,280 @@
     padding: 14px 16px;
   }
 
+  /* ── Quick Actions: force 2-column, all 4 buttons always visible ── */
+  div.uh-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+    width: 100% !important;
+    padding: 0 !important;
+    /* Remove any max-height or overflow that could hide rows */
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  button.uh-action {
+    display: flex !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    padding: 16px 12px !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
+    /* Undo any transform that could push items off-screen */
+    transform: none !important;
+  }
+
+  /* Prayer wall — prevent overflow */
+  .uh-prayer-item__text {
+    overflow-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+  }
+
+  .uh-prayer-list {
+    overflow-x: hidden;
+  }
+
+  /* Events carousel — keep inside card bounds */
+  .uh-carousel-viewport {
+    overflow: hidden;
+    width: 100%;
+  }
+
+  .uh-event-hero {
+    padding: 20px 16px;
+    min-height: 220px;
+    box-sizing: border-box;
+  }
+
+  .uh-event-hero__title {
+    font-size: 15px;
+  }
+
+  .uh-event-hero__body {
+    font-size: 12px;
+    -webkit-line-clamp: 2;
+  }
+
+  /* Activity */
   .uh-activity-scroll {
     flex-direction: column;
     overflow-x: visible;
+    overflow-y: auto;
+    max-height: 320px;
   }
 
   .uh-activity-card {
     flex: none;
     width: 100%;
+    box-sizing: border-box;
+  }
+
+  .user-home-info-pill {
+    display: none;
+  }
+
+  .user-home-page-title {
+    font-size: 18px;
+  }
+
+  .uh-map-wrap {
+    min-height: 140px;
+    max-height: 180px;
+  }
+
+  /* Modals */
+  .uh-modal {
+    border-radius: 12px;
+    max-height: 92vh;
+  }
+
+  .uh-modal--detail,
+  .uh-modal--list {
+    max-width: 100%;
+    margin: 0 8px;
+  }
+
+  .uh-overlay {
+    padding: 8px;
+    align-items: flex-end;
+  }
+
+  .ann-card-side {
+    flex-direction: column;
+  }
+
+  .ann-side-img {
+    width: 100%;
+    height: 200px;
   }
 }
 
+
+/* ── Small mobile ── */
 @media (max-width: 480px) {
-  .uh-actions {
-    grid-template-columns: 1fr;
-    gap: 10px;
+  div.uh-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    width: 100% !important;
+    padding: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
   }
 
-  .uh-action {
-    padding: 16px;
+  button.uh-action {
+    display: flex !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    padding: 14px 10px !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
+    transform: none !important;
   }
 
   .uh-action__title {
-    font-size: 14px;
+    font-size: 13px !important;
+  }
+
+  .uh-action__desc {
+    font-size: 10px !important;
   }
 
   .uh-stat-value {
     font-size: 22px;
   }
+
+  .uh-stat-card__body {
+    padding: 12px 14px;
+    gap: 12px;
+  }
+
+  .uh-event-hero {
+    flex-direction: column;
+    min-height: auto;
+  }
+
+  .uh-event-hero__image {
+    flex: 0 0 160px;
+    order: -1;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .uh-event-hero__content {
+    padding: 20px 24px;
+  }
+
+  .uh-event-hero__day {
+    font-size: 26px;
+  }
+
+  .uh-event-hero__title {
+    font-size: 15px;
+    margin-top: 2px;
+  }
+
+  .uh-event-hero__badge {
+    margin-bottom: 8px;
+    padding: 3px 10px;
+  }
+
+  .uh-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .uh-modal {
+    border-radius: 16px 16px 0 0;
+    max-height: 88vh;
+  }
 }
 
+/* ── Church Events — overflow & text fixes ── */
 
-/* ── Legacy compat ── */
-
-.user-home-full-width-section {
-  grid-column: 1 / -1;
+/* Card itself must not overflow */
+.uh-card--events {
+  overflow: hidden;
+  min-width: 0;
   width: 100%;
-  overflow: visible !important;
+  box-sizing: border-box;
 }
 
-.user-home-empty-text {
-  font-size: 14px;
-  color: var(--text-muted);
-  padding: 20px 0;
-  text-align: center;
+/* Carousel must stay within card */
+.uh-carousel-viewport {
+  overflow: hidden;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
-.user-stat-badge {
-  background: var(--destructive);
-  color: white;
-  padding: 2px 8px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 700;
+.uh-carousel-track {
+  display: flex;
+  min-width: 0;
+}
+
+.uh-carousel-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Event hero — contained */
+.uh-event-hero {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Title — clamp to 2 lines */
+.uh-event-hero__title {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+}
+
+/* Body — clamp to 3 lines */
+.uh-event-hero__body {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+}
+
+/* Footer — prevent wrapping overflow */
+.uh-event-hero__footer {
+  flex-wrap: wrap;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Badge — don't push outside card */
+.uh-event-hero__badge {
+  max-width: calc(100% - 28px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

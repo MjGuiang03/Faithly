@@ -1,4 +1,3 @@
-/* ─── Header ─────────────────────────────────────────────── */
 .user-donation-page-header {
   display: flex;
   flex-direction: column;
@@ -21,13 +20,9 @@
   color: var(--foreground);
   margin: 0;
   line-height: 20px;
+  margin-bottom: 10px;
 }
 
-/* ═══════════════════════════════════════════════
-   Donations Page CSS
-═══════════════════════════════════════════════ */
-
-/* Stats */
 .user-donations-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -38,7 +33,7 @@
 .user-donation-stat-card {
   background: var(--card);
   border: 0.8px solid var(--border);
-  border-radius: 12px;
+  border-radius: 5px;
   padding: 12px 14px;
   display: flex;
   flex-direction: column;
@@ -91,7 +86,7 @@
 .user-donation-form-card {
   background: var(--card);
   border: 0.8px solid var(--border);
-  border-radius: 12px;
+  border-radius: 5px;
   padding: 12px 16px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
@@ -191,7 +186,7 @@
   height: 34px;
   background: var(--secondary);
   border: 0.8px solid #d1d5dc;
-  border-radius: 8px;
+  border-radius: 50px;
   font-size: 13px;
   color: #0a0a0a;
   font-family: 'Inter', sans-serif;
@@ -563,7 +558,7 @@
 .user-donation-history-card {
   background: var(--card);
   border: 0.8px solid var(--border);
-  border-radius: 12px;
+  border-radius: 5px;
   padding: 12px 14px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   /* FIX: removed height:100% so card height matches its content, eliminating bottom whitespace */
@@ -1003,7 +998,7 @@
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  box-shadow: 0 -4px 6px -1px rgba(0,0,0,0.02);
+  box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.02);
 }
 
 .user-modal-page-info {
@@ -1550,22 +1545,103 @@
 }
 
 /* ── Additional explicit classes to remove inline styles ── */
-.user-donation-gcash-icon { width: 60px; height: 30px; object-fit: contain; }
-.user-donation-bank-icon { width: 32px; height: 32px; object-fit: contain; }
-.user-donation-stat-skeleton { height: 32px; width: 100px; margin: 8px 0; }
-.user-donation-stat-skeleton-sm { height: 32px; width: 60px; margin: 8px 0; }
-.user-quick-amounts-wrapper { margin-top: 20px; margin-bottom: 8px; }
-.user-payment-info-box-hidden { display: none; }
-.user-payment-info-box-visible { display: block; }
-.user-payment-gcash-header-icon { width: 50px; height: 25px; object-fit: contain; }
-.user-payment-bank-header-icon { width: 28px; height: 28px; object-fit: contain; }
-.user-proof-upload-wrapper { margin-top: 16px; }
-.user-donation-chart-container-inner { width: 100%; height: 220px; margin-bottom: 20px; }
-.user-donation-history-item-skeleton { padding: 16px; }
-.user-donation-history-main-skeleton { width: 100%; }
-.user-skeleton-circle-md { width: 32px; height: 32px; flex-shrink: 0; }
-.user-skeleton-text-container { flex: 1; margin-left: 12px; }
-.user-skeleton-line-md { height: 14px; width: 30%; margin-bottom: 6px; }
-.user-skeleton-line-sm { height: 12px; width: 50%; }
-.user-skeleton-amount { height: 16px; width: 60px; }
-.user-donation-history-amount-col { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.user-donation-gcash-icon {
+  width: 60px;
+  height: 30px;
+  object-fit: contain;
+}
+
+.user-donation-bank-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.user-donation-stat-skeleton {
+  height: 32px;
+  width: 100px;
+  margin: 8px 0;
+}
+
+.user-donation-stat-skeleton-sm {
+  height: 32px;
+  width: 60px;
+  margin: 8px 0;
+}
+
+.user-quick-amounts-wrapper {
+  margin-top: 20px;
+  margin-bottom: 8px;
+}
+
+.user-payment-info-box-hidden {
+  display: none;
+}
+
+.user-payment-info-box-visible {
+  display: block;
+}
+
+.user-payment-gcash-header-icon {
+  width: 50px;
+  height: 25px;
+  object-fit: contain;
+}
+
+.user-payment-bank-header-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.user-proof-upload-wrapper {
+  margin-top: 16px;
+}
+
+.user-donation-chart-container-inner {
+  width: 100%;
+  height: 220px;
+  margin-bottom: 20px;
+}
+
+.user-donation-history-item-skeleton {
+  padding: 16px;
+}
+
+.user-donation-history-main-skeleton {
+  width: 100%;
+}
+
+.user-skeleton-circle-md {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.user-skeleton-text-container {
+  flex: 1;
+  margin-left: 12px;
+}
+
+.user-skeleton-line-md {
+  height: 14px;
+  width: 30%;
+  margin-bottom: 6px;
+}
+
+.user-skeleton-line-sm {
+  height: 12px;
+  width: 50%;
+}
+
+.user-skeleton-amount {
+  height: 16px;
+  width: 60px;
+}
+
+.user-donation-history-amount-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}

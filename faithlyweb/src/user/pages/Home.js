@@ -8,6 +8,15 @@ import { Banknote, CalendarDays, CheckCircle, ChevronRight, Heart, MapPin, Piggy
 import { isOfficerPosition } from '../../utils/officerPositions';
 
 
+const CAT_COLORS = {
+  Events: { bg: '#FFF7ED', color: '#C2410C' },
+  General: { bg: '#EFF6FF', color: '#1E40AF' },
+  Prayer: { bg: '#F5F3FF', color: '#6D28D9' },
+  Services: { bg: '#F0FDF4', color: '#15803D' },
+  Donations: { bg: '#FDF2F8', color: '#9D174D' },
+  Urgent: { bg: '#FFF1F2', color: '#BE123C' },
+};
+
 export default function Home() {
   const navigate = useNavigate();
   const { profile } = useAuth();
@@ -463,35 +472,38 @@ export default function Home() {
                   style={{ transform: `translateX(-${currentEventIndex * 100}%)` }}
                 >
                   {upcomingEvents.map((evt, i) => {
-                    const catColors = {
-                      Events: { bg: '#FFF7ED', color: '#C2410C' },
-                      General: { bg: '#EFF6FF', color: '#1E40AF' },
-                      Prayer: { bg: '#F5F3FF', color: '#6D28D9' },
-                      Services: { bg: '#F0FDF4', color: '#15803D' },
-                      Donations: { bg: '#FDF2F8', color: '#9D174D' },
-                      Urgent: { bg: '#FFF1F2', color: '#BE123C' },
-                    };
-                    const c = catColors[evt.category] || catColors.General;
+                    const catStyle = CAT_COLORS[evt.category] || CAT_COLORS.General;
+                    const hasImage = !!(evt.images?.[0] || evt.image);
+                    const imageUrl = evt.images?.[0] || evt.image;
                     return (
                       <div
                         key={i}
                         className="uh-carousel-slide"
-                        onClick={() => setSelectedEvent(evt)}
                       >
-                        <div className="uh-event-hero" style={{ background: c.bg }}>
-                          <div className="uh-event-hero__badge" style={{ color: c.color, background: 'white' }}>{evt.category}</div>
-                          <div className="uh-event-hero__date">
-                            <span className="uh-event-hero__day">{evt.day}</span>
-                            <span className="uh-event-hero__month">{evt.month}</span>
+                        <div className="uh-event-hero" style={{ background: catStyle.bg }}>
+                          <div className="uh-event-hero__content">
+                            <div className="uh-event-hero__badge" style={{ color: catStyle.color }}>
+                              {evt.category}
+                            </div>
+                            <div className="uh-event-hero__date">
+                              <span className="uh-event-hero__day">{evt.day}</span>
+                              <span className="uh-event-hero__month">{evt.month}</span>
+                            </div>
+                            <h3 className="uh-event-hero__title">{evt.title}</h3>
+                            <p className="uh-event-hero__body">{evt.body}</p>
+                            <div className="uh-event-hero__footer">
+                              <MapPin size={12} />
+                              <span>{evt.branch.split(',')[0]}</span>
+                              <span className="uh-dot-sep">·</span>
+                              <span>{evt.time || 'All Day'}</span>
+                            </div>
                           </div>
-                          <h3 className="uh-event-hero__title">{evt.title}</h3>
-                          <p className="uh-event-hero__body">{evt.body}</p>
-                          <div className="uh-event-hero__footer">
-                            <MapPin size={12} />
-                            <span>{evt.branch.split(',')[0]}</span>
-                            <span className="uh-dot-sep">·</span>
-                            <span>{evt.time || 'All Day'}</span>
-                          </div>
+                          {hasImage && (
+                            <div 
+                              className="uh-event-hero__image"
+                              style={{ backgroundImage: `url(${imageUrl})` }} 
+                            />
+                          )}
                         </div>
                       </div>
                     );
@@ -654,18 +666,10 @@ export default function Home() {
                 <div className="uh-empty"><p>No upcoming events are currently scheduled.</p></div>
               ) : (
                 allAnnouncements.map((evt, i) => {
-                  const catColors = {
-                    Events: { bg: '#FFF7ED', color: '#C2410C' },
-                    General: { bg: '#EFF6FF', color: '#1E40AF' },
-                    Prayer: { bg: '#F5F3FF', color: '#6D28D9' },
-                    Services: { bg: '#F0FDF4', color: '#15803D' },
-                    Donations: { bg: '#FDF2F8', color: '#9D174D' },
-                    Urgent: { bg: '#FFF1F2', color: '#BE123C' },
-                  };
-                  const c = catColors[evt.category] || catColors.General;
+                  const catStyle = CAT_COLORS[evt.category] || CAT_COLORS.General;
                   return (
                     <div key={i} className="uh-event" onClick={() => { setShowAllEvents(false); setSelectedEvent(evt); }}>
-                      <div className="uh-event__accent" style={{ background: c.color }} />
+                      <div className="uh-event__accent" style={{ background: catStyle.color }} />
                       <div className="uh-event__date">
                         <span className="uh-event__day">{evt.day}</span>
                         <span className="uh-event__month">{evt.month}</span>
@@ -673,7 +677,7 @@ export default function Home() {
                       <div className="uh-event__info">
                         <div className="uh-event__top">
                           <span className="uh-event__title">{evt.title}</span>
-                          <span className="uh-event__tag" style={{ color: c.color, background: c.bg }}>{evt.category}</span>
+                          <span className="uh-event__tag" style={{ color: catStyle.color, background: catStyle.bg }}>{evt.category}</span>
                         </div>
                         <p className="uh-event__body">{evt.body}</p>
                         <span className="uh-event__branch"><MapPin size={11} />{evt.branch}</span>

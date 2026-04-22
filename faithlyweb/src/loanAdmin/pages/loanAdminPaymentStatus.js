@@ -5,7 +5,7 @@ import LoanAdminSidebar from './loanAdminSidebar';
 import '../styles/loanAdminLoanManagement.css';
 import '../styles/loanAdminPaymentStatus.css';
 import API from '../../utils/api';
-import { PiggyBank, Search, X } from 'lucide-react';
+import { PiggyBank, Search, X, ArrowUpLeft } from 'lucide-react';
 
 
 const fmt = (n) => n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : '₱0.00';
@@ -33,6 +33,8 @@ export default function LoanAdminPaymentStatus() {
   const [loans, setLoans] = useState([]);
   const [pendingPayments, setPendingPayments] = useState([]);
   const [pendingSavings, setPendingSavings] = useState([]);
+  const [pendingWithdrawals, setPendingWithdrawals] = useState([]);
+  const [selectedWithdrawal, setSelectedWithdrawal] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(isSavingsRoute ? 'savings' : 'loans');
@@ -103,7 +105,18 @@ export default function LoanAdminPaymentStatus() {
     } catch { /* silent */ }
   }, [token]);
 
-  useEffect(() => { fetchLoans(); fetchPayments(); fetchSavings(); }, [fetchLoans, fetchPayments, fetchSavings]);
+  const fetchWithdrawals = useCallback(async () => {
+    try {
+      const res = await fetch(`${API}/api/admin/savings/withdrawals`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      if (data.success) {
+        const wds = data.withdrawals || [];
+        setPendingWithdrawals(wds.filter(w => w.status === 'pending'));
+      }
+    } catch { /* silent */ }
+  }, [token]);
+
+  useEffect(() => { fetchLoans(); fetchPayments(); fetchSavings(); fetchWithdrawals(); }, [fetchLoans, fetchPayments, fetchSavings, fetchWithdrawals]);
 
   useEffect(() => {
     setActiveTab(isSavingsRoute ? 'savings' : 'loans');
@@ -178,6 +191,41 @@ export default function LoanAdminPaymentStatus() {
         fetchSavings();
       } else { toast.error(data.message); }
     } catch { toast.error('Failed to reject savings deposit'); }
+    finally { setActionLoading(false); }
+  };
+
+  const handleConfirmWithdrawal = async (withdrawalId) => {
+    setActionLoading(true);
+    try {
+      const res = await fetch(`${API}/api/admin/savings/withdrawals/${withdrawalId}/confirm`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('Withdrawal approved & savings deducted!');
+        setSelectedWithdrawal(null);
+        fetchSavings(); fetchWithdrawals();
+      } else { toast.error(data.message); }
+    } catch { toast.error('Failed to confirm withdrawal'); }
+    finally { setActionLoading(false); }
+  };
+
+  const handleRejectWithdrawal = async (withdrawalId) => {
+    const reason = window.prompt('Reason for rejection (optional):');
+    setActionLoading(true);
+    try {
+      const res = await fetch(`${API}/api/admin/savings/withdrawals/${withdrawalId}/reject`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ reason: reason || '' })
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('Withdrawal request rejected.');
+        setSelectedWithdrawal(null);
+        fetchWithdrawals();
+      } else { toast.error(data.message); }
+    } catch { toast.error('Failed to reject withdrawal'); }
     finally { setActionLoading(false); }
   };
 
@@ -302,6 +350,11 @@ export default function LoanAdminPaymentStatus() {
     (paymentMethodFilter === 'all' || (s.paymentMethod || '').toLowerCase() === paymentMethodFilter)
   );
 
+  const pendingWithdrawalsFiltered = pendingWithdrawals.filter(w =>
+    (w.memberName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (w.email || '').toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const counts = {
     onTrack: enriched.filter(l => l.paymentStatus.cls === 'on-track').length,
     overdue: enriched.filter(l => ['reminder', 'delinquent'].includes(l.paymentStatus.cls)).length,
@@ -311,6 +364,7 @@ export default function LoanAdminPaymentStatus() {
 
   const pendingCount = pendingPayments.filter(p => p.status === 'pending').length;
   const pendingSavingsCount = pendingSavings.length;
+  const pendingWithdrawalsCount = pendingWithdrawals.length;
 
   const totalSavingsFiltered = allSavings.filter(s => {
     if (s.status !== 'confirmed') return false;
@@ -447,24 +501,44 @@ export default function LoanAdminPaymentStatus() {
               </button>
             </>
           ) : (
-            <button
-              onClick={() => setActiveTab('savings')}
-              style={{
-                padding: '8px 18px', borderRadius: '8px', border: 'none', fontFamily: 'Inter',
-                fontSize: '13px', fontWeight: 600, cursor: 'pointer', position: 'relative',
-                background: activeTab === 'savings' ? '#155DFC' : '#F3F4F6',
-                color: activeTab === 'savings' ? '#fff' : '#6B7280',
-              }}
-            >
-              Pending Savings
-              {pendingSavingsCount > 0 && (
-                <span style={{
-                  position: 'absolute', top: -6, right: -6, background: '#DC2626', color: '#fff',
-                  borderRadius: '50%', width: 20, height: 20, fontSize: '11px', fontWeight: 700,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>{pendingSavingsCount}</span>
-              )}
-            </button>
+            <>
+              <button
+                onClick={() => setActiveTab('savings')}
+                style={{
+                  padding: '8px 18px', borderRadius: '8px', border: 'none', fontFamily: 'Inter',
+                  fontSize: '13px', fontWeight: 600, cursor: 'pointer', position: 'relative',
+                  background: activeTab === 'savings' ? '#155DFC' : '#F3F4F6',
+                  color: activeTab === 'savings' ? '#fff' : '#6B7280',
+                }}
+              >
+                Pending Deposits
+                {pendingSavingsCount > 0 && (
+                  <span style={{
+                    position: 'absolute', top: -6, right: -6, background: '#DC2626', color: '#fff',
+                    borderRadius: '50%', width: 20, height: 20, fontSize: '11px', fontWeight: 700,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>{pendingSavingsCount}</span>
+                )}
+              </button>
+              <button
+                onClick={() => setActiveTab('withdrawals')}
+                style={{
+                  padding: '8px 18px', borderRadius: '8px', border: 'none', fontFamily: 'Inter',
+                  fontSize: '13px', fontWeight: 600, cursor: 'pointer', position: 'relative',
+                  background: activeTab === 'withdrawals' ? '#155DFC' : '#F3F4F6',
+                  color: activeTab === 'withdrawals' ? '#fff' : '#6B7280',
+                }}
+              >
+                Pending Withdrawals
+                {pendingWithdrawalsCount > 0 && (
+                  <span style={{
+                    position: 'absolute', top: -6, right: -6, background: '#DC2626', color: '#fff',
+                    borderRadius: '50%', width: 20, height: 20, fontSize: '11px', fontWeight: 700,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>{pendingWithdrawalsCount}</span>
+                )}
+              </button>
+            </>
           )}
         </div>
 
@@ -693,9 +767,78 @@ export default function LoanAdminPaymentStatus() {
           </div>
         )}
 
+        {/* Pending Withdrawals Tab */}
+        {activeTab === 'withdrawals' && (
+          <div>
+            <div className="loan-admin-mgmt-table-container">
+              <table className="loan-admin-mgmt-table">
+                <thead>
+                  <tr>
+                    <th>Member</th>
+                    <th>Goal Name</th>
+                    <th>Amount</th>
+                    <th>Reason</th>
+                    <th>Submitted</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pendingWithdrawalsFiltered.length === 0 ? (
+                    <tr><td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>No pending withdrawal requests</td></tr>
+                  ) : (
+                    pendingWithdrawalsFiltered.map(w => (
+                      <tr key={w._id} onClick={() => setSelectedWithdrawal(w)} style={{ cursor: 'pointer' }} className="loan-admin-mgmt-table-row-hover">
+                        <td>
+                          <div className="loan-admin-mgmt-table-member">
+                            <p className="loan-admin-mgmt-table-member-name">{w.memberName}</p>
+                            <p className="loan-admin-mgmt-table-member-email">{w.email}</p>
+                          </div>
+                        </td>
+                        <td style={{ fontSize: '13px', fontWeight: 500 }}>{w.goalName}</td>
+                        <td className="loan-admin-mgmt-table-amount" style={{ color: '#DC2626' }}>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <ArrowUpLeft size={14} />
+                            {fmt(w.amount)}
+                          </span>
+                        </td>
+                        <td style={{ fontSize: '13px', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {w.description || 'No reason provided'}
+                        </td>
+                        <td style={{ fontSize: '13px' }}>{fmtDate(w.date)}</td>
+                        <td>
+                          <span className={`ps-status-badge ${w.status === 'pending' ? 'reminder' : w.status === 'confirmed' ? 'on-track' : 'default'}`}>
+                            {w.status.charAt(0).toUpperCase() + w.status.slice(1)}
+                          </span>
+                        </td>
+                        <td onClick={(e) => e.stopPropagation()}>
+                          {w.status === 'pending' && (
+                            <div style={{ display: 'flex', gap: '6px' }}>
+                              <button
+                                onClick={() => handleConfirmWithdrawal(w._id)}
+                                disabled={actionLoading}
+                                style={{ background: '#16A34A', color: '#fff', border: 'none', padding: '5px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}
+                              >Approve</button>
+                              <button
+                                onClick={() => handleRejectWithdrawal(w._id)}
+                                disabled={actionLoading}
+                                style={{ background: '#fff', color: '#DC2626', border: '1px solid #FCA5A5', padding: '5px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}
+                              >Reject</button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
         <div className="loan-admin-mgmt-pagination">
           <p className="loan-admin-mgmt-pagination-info">
-            {activeTab === 'loans' ? `Showing ${filtered.length} active loans` : activeTab === 'payments' ? `Showing ${pendingFiltered.length} payment submissions` : `Showing ${pendingSavingsFiltered.length} savings deposits`}
+            {activeTab === 'loans' ? `Showing ${filtered.length} active loans` : activeTab === 'payments' ? `Showing ${pendingFiltered.length} payment submissions` : activeTab === 'withdrawals' ? `Showing ${pendingWithdrawalsFiltered.length} withdrawal requests` : `Showing ${pendingSavingsFiltered.length} savings deposits`}
           </p>
         </div>
       </div>
@@ -846,6 +989,57 @@ export default function LoanAdminPaymentStatus() {
                 </>
               ) : (
                 <button onClick={() => setSelectedSavings(null)} style={{ background: '#155DFC', color: '#fff', border: 'none', padding: '8px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}>Close</button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Withdrawal Detail Modal ── */}
+      {selectedWithdrawal && (
+        <div className="loan-admin-mgmt-modal-overlay" onClick={() => setSelectedWithdrawal(null)}>
+          <div className="loan-admin-mgmt-modal-container" style={{ maxWidth: '480px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="loan-admin-mgmt-modal-header">
+              <h2 className="loan-admin-mgmt-modal-title">Withdrawal Request Details</h2>
+              <button className="loan-admin-mgmt-modal-close" onClick={() => setSelectedWithdrawal(null)}>
+                <X size={16} />
+              </button>
+            </div>
+            <div style={{ padding: '20px 24px' }}>
+              {/* Withdrawal badge */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', padding: '10px 14px', background: '#FEF2F2', borderRadius: '10px', border: '1px solid #FECACA' }}>
+                <ArrowUpLeft size={18} color="#DC2626" />
+                <span style={{ fontSize: '14px', fontWeight: 600, fontFamily: 'Inter', color: '#991B1B' }}>Withdrawal Request</span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                <div><p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Member</p><p style={{ fontSize: '14px', fontWeight: 600, fontFamily: 'Inter', color: '#111827' }}>{selectedWithdrawal.memberName}</p></div>
+                <div><p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Email</p><p style={{ fontSize: '13px', fontFamily: 'Inter', color: '#374151' }}>{selectedWithdrawal.email}</p></div>
+                <div><p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Goal Name</p><p style={{ fontSize: '14px', fontWeight: 600, fontFamily: 'Inter', color: '#111827' }}>{selectedWithdrawal.goalName}</p></div>
+                <div><p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Amount</p><p style={{ fontSize: '14px', fontWeight: 700, fontFamily: 'Inter', color: '#DC2626' }}>{fmt(selectedWithdrawal.amount)}</p></div>
+                <div style={{ gridColumn: '1 / -1' }}><p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Reason</p><p style={{ fontSize: '13px', fontFamily: 'Inter', color: '#374151' }}>{selectedWithdrawal.description || 'No reason provided'}</p></div>
+                <div><p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Submitted</p><p style={{ fontSize: '13px', fontFamily: 'Inter', color: '#374151' }}>{fmtDate(selectedWithdrawal.date)}</p></div>
+                <div><p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Status</p>
+                  <span className={`ps-status-badge ${selectedWithdrawal.status === 'pending' ? 'reminder' : selectedWithdrawal.status === 'confirmed' ? 'on-track' : 'default'}`}>
+                    {selectedWithdrawal.status.charAt(0).toUpperCase() + selectedWithdrawal.status.slice(1)}
+                  </span>
+                </div>
+              </div>
+              {selectedWithdrawal.status === 'pending' && (
+                <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '8px', padding: '10px 14px', fontSize: '12px', color: '#92400E', fontFamily: 'Inter', lineHeight: '1.5' }}>
+                  ⚠️ Approving this will deduct <strong>{fmt(selectedWithdrawal.amount)}</strong> from the member's <strong>{selectedWithdrawal.goalName}</strong> goal balance.
+                </div>
+              )}
+            </div>
+            <div style={{ padding: '0 24px 20px', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+              {selectedWithdrawal.status === 'pending' ? (
+                <>
+                  <button onClick={() => handleRejectWithdrawal(selectedWithdrawal._id)} disabled={actionLoading} style={{ background: '#fff', color: '#DC2626', border: '1px solid #FCA5A5', padding: '8px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}>Reject</button>
+                  <button onClick={() => handleConfirmWithdrawal(selectedWithdrawal._id)} disabled={actionLoading} style={{ background: '#16A34A', color: '#fff', border: 'none', padding: '8px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}>
+                    {actionLoading ? <span className="btn-spinner" /> : 'Approve Withdrawal'}
+                  </button>
+                </>
+              ) : (
+                <button onClick={() => setSelectedWithdrawal(null)} style={{ background: '#155DFC', color: '#fff', border: 'none', padding: '8px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}>Close</button>
               )}
             </div>
           </div>
