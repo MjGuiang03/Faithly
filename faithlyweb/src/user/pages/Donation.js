@@ -441,7 +441,7 @@ export default function Donation() {
                     return (
                       <div key={cat.name} className="user-donation-empty-category-item"
                         style={{ background: col.bg, borderColor: col.border }}>
-                        <div className="user-donation-empty-category-info">
+                          <div className="user-donation-empty-category-info">
                           <p className="user-donation-empty-category-name" style={{ color: col.text }}>{cat.name}</p>
                           <p className="user-donation-empty-category-desc">{cat.description}</p>
                         </div>

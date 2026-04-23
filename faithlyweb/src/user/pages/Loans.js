@@ -5,7 +5,7 @@ import LoanApplicationModal from '../components/LoanApplicationModal';
 import '../styles/Loans.css';
 
 import API from '../../utils/api';
-import { Banknote, Circle, Lock as LockIcon, X, Wallet, ShieldAlert, Clock, CheckCircle2 } from 'lucide-react';
+import { Banknote, Lock as LockIcon, X, Wallet, ShieldAlert, Clock, CheckCircle2 } from 'lucide-react';
 import { isOfficerPosition } from '../../utils/officerPositions';
 
 const fmt = (n) =>
