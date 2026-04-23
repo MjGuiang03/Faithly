@@ -5,7 +5,7 @@ import LoanApplicationModal from '../components/LoanApplicationModal';
 import '../styles/Loans.css';
 
 import API from '../../utils/api';
-import { Banknote, Circle, Lock as LockIcon, X, Wallet, ShieldAlert, Clock } from 'lucide-react';
+import { Banknote, Circle, Lock as LockIcon, X, Wallet, ShieldAlert, Clock, CheckCircle2 } from 'lucide-react';
 import { isOfficerPosition } from '../../utils/officerPositions';
 
 const fmt = (n) =>
@@ -424,35 +424,51 @@ export default function Loans() {
                   </div>
 
                   <div className="ul-history-list user-fade-in">
-                    {loans.map((loan) => (
-                      <div key={loan._id} className="ul-history-row" onClick={() => navigate(`/loans/${loan.loanId}`)}>
-                        <div className={`ul-hist-icon ul-hist-icon--${loan.status === 'active' || loan.status === 'pending' ? 'active' : 'closed'}`} style={{ background: 'rgba(21, 93, 252, 0.1)' }}>
-                          {loan.status === 'active' || loan.status === 'pending' ? (
-                            <X size={16} color="#155DFC" />
-                          ) : (
-                            <Circle size={16} color="#155DFC" />
-                          )}
-                        </div>
-                        <div className="ul-hist-info">
-                          <div className="ul-hist-id-row">
-                            <span className="ul-hist-id">{loan.loanId}</span>
-                            <span className={`ul-loan-badge ${STATUS_CLASS[loan.status] || ''}`}>
-                              {STATUS_TEXT[loan.status] || loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}
-                            </span>
+                    {loans.map((loan) => {
+                      let iconColor = "#000000";
+                      let iconBg = "rgba(0, 0, 0, 0.05)";
+                      let Icon = CheckCircle2;
+
+                      if (loan.status === 'active') {
+                        iconColor = "#10B981";
+                        iconBg = "rgba(16, 185, 129, 0.1)";
+                        Icon = Banknote;
+                      } else if (loan.status === 'pending' || loan.status === 'approved' || loan.status === 'overdue' || loan.status === 'awaiting_member_approval') {
+                        iconColor = "#F59E0B";
+                        iconBg = "rgba(245, 158, 11, 0.1)";
+                        Icon = Clock;
+                      } else if (loan.status === 'rejected') {
+                        iconColor = "#EF4444";
+                        iconBg = "rgba(239, 68, 68, 0.1)";
+                        Icon = X;
+                      }
+
+                      return (
+                        <div key={loan._id} className="ul-history-row" onClick={() => navigate(`/loans/${loan.loanId}`)}>
+                          <div className="ul-hist-icon" style={{ background: iconBg }}>
+                            <Icon size={18} color={iconColor} />
                           </div>
-                          <div className="ul-hist-sub">
-                            {loan.purpose} · {loan.termMonths} months
-                            {loan.status === 'active' && loan.paidMonths != null
-                              ? ` · ${loan.paidMonths} of ${loan.termMonths} paid`
-                              : loan.status === 'completed' ? ' · Fully paid' : ''}
+                          <div className="ul-hist-info">
+                            <div className="ul-hist-id-row">
+                              <span className="ul-hist-id">{loan.loanId}</span>
+                              <span className={`ul-loan-badge ${STATUS_CLASS[loan.status] || ''}`}>
+                                {STATUS_TEXT[loan.status] || loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}
+                              </span>
+                            </div>
+                            <div className="ul-hist-sub">
+                              {loan.purpose} · {loan.termMonths} months
+                              {loan.status === 'active' && loan.paidMonths != null
+                                ? ` · ${loan.paidMonths} of ${loan.termMonths} paid`
+                                : loan.status === 'completed' ? ' · Fully paid' : ''}
+                            </div>
+                          </div>
+                          <div className="ul-hist-right">
+                            <div className="ul-hist-amount">{fmt(loan.amount)}</div>
+                            <div className="ul-hist-date">{fmtDate(loan.appliedDate)}</div>
                           </div>
                         </div>
-                        <div className="ul-hist-right">
-                          <div className="ul-hist-amount">{fmt(loan.amount)}</div>
-                          <div className="ul-hist-date">{fmtDate(loan.appliedDate)}</div>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
 
                   {totalCount > LIMIT && (

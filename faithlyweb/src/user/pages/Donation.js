@@ -282,55 +282,55 @@ export default function Donation() {
 
                 {/* ── Payment Account & Proof Wrapper ── */}
                 <div className={`user-payment-info-wrapper ${paymentMethod !== '' ? 'expanded' : ''}`}>
-                    <div className={`user-payment-info-box ${paymentMethod === 'Bank' ? 'user-payment-info-box-hidden' : 'user-payment-info-box-visible'}`}>
-                      <div className="user-payment-info-header">
-                        <img src={gcashLogo} alt="GCash" className="user-payment-gcash-header-icon" />
-                        <span className="user-payment-info-title">GCash Account Details</span>
+                  <div className={`user-payment-info-box ${paymentMethod === 'Bank' ? 'user-payment-info-box-hidden' : 'user-payment-info-box-visible'}`}>
+                    <div className="user-payment-info-header">
+                      <img src={gcashLogo} alt="GCash" className="user-payment-gcash-header-icon" />
+                      <span className="user-payment-info-title">GCash Account Details</span>
+                    </div>
+                    <div className="user-payment-info-content">
+                      <div className="user-payment-info-details">
+                        <div className="user-payment-info-row">
+                          <span className="user-payment-info-label">Account Name</span>
+                          <span className="user-payment-info-value">Faithly Church Ministry</span>
+                        </div>
+                        <div className="user-payment-info-row">
+                          <span className="user-payment-info-label">GCash Number</span>
+                          <span className="user-payment-info-value user-payment-info-value--mono">0917 123 4567</span>
+                        </div>
                       </div>
-                      <div className="user-payment-info-content">
-                        <div className="user-payment-info-details">
-                          <div className="user-payment-info-row">
-                            <span className="user-payment-info-label">Account Name</span>
-                            <span className="user-payment-info-value">Faithly Church Ministry</span>
-                          </div>
-                          <div className="user-payment-info-row">
-                            <span className="user-payment-info-label">GCash Number</span>
-                            <span className="user-payment-info-value user-payment-info-value--mono">0917 123 4567</span>
-                          </div>
-                        </div>
-                        <div className="user-payment-qr-wrap">
-                          <img src={gcashQr} alt="GCash QR Code" className="user-payment-qr-img" />
-                          <span className="user-payment-qr-label">Scan to pay</span>
-                        </div>
+                      <div className="user-payment-qr-wrap">
+                        <img src={gcashQr} alt="GCash QR Code" className="user-payment-qr-img" />
+                        <span className="user-payment-qr-label">Scan to pay</span>
                       </div>
                     </div>
+                  </div>
 
-                    <div className={`user-payment-info-box ${paymentMethod === 'Bank' ? 'user-payment-info-box-visible' : 'user-payment-info-box-hidden'}`}>
-                      <div className="user-payment-info-header">
-                        <img src={bank} alt="Bank" className="user-payment-bank-header-icon" />
-                        <span className="user-payment-info-title">Bank Transfer Details</span>
-                      </div>
-                      <div className="user-payment-info-content">
-                        <div className="user-payment-info-details">
-                          <div className="user-payment-info-row">
-                            <span className="user-payment-info-label">Bank Name</span>
-                            <span className="user-payment-info-value">BDO Unibank</span>
-                          </div>
-                          <div className="user-payment-info-row">
-                            <span className="user-payment-info-label">Account Name</span>
-                            <span className="user-payment-info-value">Faithly Church Ministry Inc.</span>
-                          </div>
-                          <div className="user-payment-info-row">
-                            <span className="user-payment-info-label">Account Number</span>
-                            <span className="user-payment-info-value user-payment-info-value--mono">0012 3456 7890</span>
-                          </div>
-                          <div className="user-payment-info-row">
-                            <span className="user-payment-info-label">Branch</span>
-                            <span className="user-payment-info-value">BDO Main Branch</span>
-                          </div>
+                  <div className={`user-payment-info-box ${paymentMethod === 'Bank' ? 'user-payment-info-box-visible' : 'user-payment-info-box-hidden'}`}>
+                    <div className="user-payment-info-header">
+                      <img src={bank} alt="Bank" className="user-payment-bank-header-icon" />
+                      <span className="user-payment-info-title">Bank Transfer Details</span>
+                    </div>
+                    <div className="user-payment-info-content">
+                      <div className="user-payment-info-details">
+                        <div className="user-payment-info-row">
+                          <span className="user-payment-info-label">Bank Name</span>
+                          <span className="user-payment-info-value">BDO Unibank</span>
+                        </div>
+                        <div className="user-payment-info-row">
+                          <span className="user-payment-info-label">Account Name</span>
+                          <span className="user-payment-info-value">Faithly Church Ministry Inc.</span>
+                        </div>
+                        <div className="user-payment-info-row">
+                          <span className="user-payment-info-label">Account Number</span>
+                          <span className="user-payment-info-value user-payment-info-value--mono">0012 3456 7890</span>
+                        </div>
+                        <div className="user-payment-info-row">
+                          <span className="user-payment-info-label">Branch</span>
+                          <span className="user-payment-info-value">BDO Main Branch</span>
                         </div>
                       </div>
                     </div>
+                  </div>
 
                   {/* ── Proof of Payment ── */}
                   <div className="user-donation-form-group user-proof-upload-wrapper">
@@ -392,28 +392,63 @@ export default function Donation() {
             </div>
 
             {/* Category Pie Chart */}
+            {/* Category Pie Chart */}
             {!loading && stats.categoryBreakdown && Object.keys(stats.categoryBreakdown).length > 0 && (
               <div className="user-donation-chart-container user-donation-chart-container-inner">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
                       data={Object.entries(stats.categoryBreakdown).map(([name, value]) => ({ name, value }))}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={50}
-                      outerRadius={80}
-                      paddingAngle={2}
-                      dataKey="value"
+                      cx="50%" cy="50%"
+                      innerRadius={50} outerRadius={80}
+                      paddingAngle={2} dataKey="value"
                     >
                       {Object.entries(stats.categoryBreakdown).map((_, index) => {
-                        const COLORS = ['#155DFC', '#E60076', '#16a34a', '#f59e0b', '#8b5cf6', '#14b8a6', '#f43f5e'];
+                        const COLORS = ['#0D1F45', '#152B5C', '#1C3873', '#23448A', '#2B51A1', '#325DB8', '#396ACF'];
                         return <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />;
                       })}
                     </Pie>
                     <Tooltip formatter={(value) => `₱${Number(value).toLocaleString('en-PH', { minimumFractionDigits: 0 })}`} />
-                    <Legend verticalAlign="bottom" height={36}/>
+                    <Legend verticalAlign="bottom" height={36} />
                   </PieChart>
                 </ResponsiveContainer>
+              </div>
+            )}
+
+            {/* Empty State */}
+            {!loading && (!stats.categoryBreakdown || Object.keys(stats.categoryBreakdown).length === 0) && (
+              <div className="user-donation-empty-state">
+                <div className="user-donation-empty-icon-wrap">
+                  <Heart size={28} color="#1E3A8A" />
+                </div>
+                <p className="user-donation-empty-title">No donations yet</p>
+                <p className="user-donation-empty-subtitle">Your giving history will appear here. Every contribution makes a difference!</p>
+
+                <div className="user-donation-empty-divider">
+                  <span className="user-donation-empty-divider-label">Where your giving goes</span>
+                </div>
+
+                <div className="user-donation-empty-categories">
+                  {CATEGORIES.map((cat, i) => {
+                    const CATEGORY_COLORS = [
+                      { bg: '#EFF6FF', border: '#BFDBFE', text: '#1E3A8A' },
+                      { bg: '#FFF7ED', border: '#FED7AA', text: '#92400E' },
+                      { bg: '#F0FDF4', border: '#BBF7D0', text: '#166534' },
+                      { bg: '#FAF5FF', border: '#E9D5FF', text: '#6B21A8' },
+                      { bg: '#FFF1F2', border: '#FECDD3', text: '#9F1239' },
+                    ];
+                    const col = CATEGORY_COLORS[i % CATEGORY_COLORS.length];
+                    return (
+                      <div key={cat.name} className="user-donation-empty-category-item"
+                        style={{ background: col.bg, borderColor: col.border }}>
+                        <div className="user-donation-empty-category-info">
+                          <p className="user-donation-empty-category-name" style={{ color: col.text }}>{cat.name}</p>
+                          <p className="user-donation-empty-category-desc">{cat.description}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
 

@@ -77,10 +77,12 @@ router.get('/donations/my-donations', authenticateUser, async (req, res) => {
       .reduce((sum, d) => sum + d.amount, 0);
 
     const categoryBreakdown = {};
-    allUserDonations.forEach(d => {
-      const cat = d.category || 'Other';
-      categoryBreakdown[cat] = (categoryBreakdown[cat] || 0) + (Number(d.amount) || 0);
-    });
+    allUserDonations
+      .filter(d => d.status === 'confirmed')
+      .forEach(d => {
+        const cat = d.category || 'Other';
+        categoryBreakdown[cat] = (categoryBreakdown[cat] || 0) + (Number(d.amount) || 0);
+      });
 
     res.status(200).json({
       success: true,

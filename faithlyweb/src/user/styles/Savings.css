@@ -179,11 +179,10 @@
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    margin-bottom: 4px;
 }
 
 .sv-stat-value {
-    font-size: 20px;
+    font-size: 26px;
     font-weight: 700;
     color: var(--foreground);
     font-family: 'Inter', sans-serif;

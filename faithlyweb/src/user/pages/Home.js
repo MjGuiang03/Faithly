@@ -39,6 +39,9 @@ export default function Home() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showAllEvents, setShowAllEvents] = useState(false);
   const [currentEventIndex, setCurrentEventIndex] = useState(0);
+  const [showPrayerModal, setShowPrayerModal] = useState(false);
+  const [prayers, setPrayers] = useState([]);
+  const [newPrayer, setNewPrayer] = useState("");
 
   const token = localStorage.getItem('token');
 
@@ -48,22 +51,24 @@ export default function Home() {
       const headers = { Authorization: `Bearer ${token}` };
 
       const branch = profile?.branch || '';
-      const [loansRes, donationsRes, attendanceRes, annRes, savingsRes, savingsGoalsRes] = await Promise.all([
+      const [loansRes, donationsRes, attendanceRes, annRes, savingsRes, savingsGoalsRes, prayersRes] = await Promise.all([
         fetch(`${API}/api/loans/my-loans`, { headers }),
         fetch(`${API}/api/donations/my-donations`, { headers }),
         fetch(`${API}/api/attendance/my-attendance`, { headers }),
         fetch(`${API}/api/admin/announcements${branch ? `?branch=${encodeURIComponent(branch)}` : ''}`, { headers }),
         fetch(`${API}/api/savings/stats`, { headers }),
         fetch(`${API}/api/savings/goals`, { headers }),
+        fetch(`${API}/api/prayers`, { headers }),
       ]);
 
-      const [loansData, donationsData, attendanceData, annData, savingsData, savingsGoalsData] = await Promise.all([
+      const [loansData, donationsData, attendanceData, annData, savingsData, savingsGoalsData, prayersData] = await Promise.all([
         loansRes.ok ? loansRes.json() : { success: false },
         donationsRes.ok ? donationsRes.json() : { success: false },
         attendanceRes.ok ? attendanceRes.json() : { success: false },
         annRes.ok ? annRes.json() : { success: false },
         savingsRes.ok ? savingsRes.json() : { success: false },
         savingsGoalsRes.ok ? savingsGoalsRes.json() : { success: false },
+        prayersRes.ok ? prayersRes.json() : { success: false },
       ]);
 
       const now = new Date();
@@ -132,16 +137,20 @@ export default function Home() {
         setUpcomingEvents(list.slice(0, 4));
       }
 
+      if (prayersRes.ok && prayersData.success) {
+        setPrayers(prayersData.prayers || []);
+      }
+
       const activities = [];
 
       if (loansData.success && loansData.loans?.length) {
         const STATUS_TEXT = {
-          pending:    'Pending review',
-          approved:   'Approved',
-          active:     'Active',
-          completed:  'Completed',
-          rejected:   'Rejected',
-          overdue:    'Overdue',
+          pending: 'Pending review',
+          approved: 'Approved',
+          active: 'Active',
+          completed: 'Completed',
+          rejected: 'Rejected',
+          overdue: 'Overdue',
           awaiting_member_approval: 'Review requested',
         };
 
@@ -169,7 +178,7 @@ export default function Home() {
               amount: `₱${Number(donation.amount).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
               date: new Date(donation.createdAt),
             });
-        });
+          });
       }
 
       if (attendanceData.success && attendanceData.attendance?.length) {
@@ -264,13 +273,44 @@ export default function Home() {
   const formatCurrency = (val) =>
     `₱${Number(val || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
+  const formatAuthorName = (name) => {
+    if (!name) return 'Anonymous';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length <= 1) return name;
+    const firstNames = parts.slice(0, -1).join(' ');
+    const lastInitial = parts[parts.length - 1].charAt(0).toUpperCase();
+    return `${firstNames} ${lastInitial}.`;
+  };
+
+  const handlePostPrayer = async () => {
+    if (!newPrayer.trim()) return;
+    try {
+      const author = formatAuthorName(profile?.fullName);
+      const res = await fetch(`${API}/api/prayers`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ text: newPrayer.trim(), author })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setPrayers([data.prayer, ...prayers]);
+        setNewPrayer("");
+      }
+    } catch (err) {
+      console.error('Error posting prayer:', err);
+    }
+  };
+
   return (
     <div className="user-home-content-wrapper">
 
-        {/* Stats */}
-        <div className="uh-stats-grid">
+      {/* Stats */}
+      <div className="uh-stats-grid">
 
-          {isOfficer && (
+        {isOfficer && (
           <div className="uh-stat-card uh-stat-card--savings uh-stat-card--clickable" onClick={() => navigate('/savings')}>
             <div className="uh-stat-card__body">
               <div className="uh-stat-icon-box">
@@ -304,9 +344,9 @@ export default function Home() {
               </div>
             )}
           </div>
-          )}
+        )}
 
-          {isOfficer && (
+        {isOfficer && (
           <div className="uh-stat-card uh-stat-card--loans uh-stat-card--clickable" onClick={() => navigate('/loans')}>
             <div className="uh-stat-card__body">
               <div className="uh-stat-icon-box">
@@ -341,259 +381,304 @@ export default function Home() {
               </div>
             )}
           </div>
-          )}
+        )}
 
-          <div className="uh-stat-card uh-stat-card--donations uh-stat-card--clickable" onClick={() => navigate('/donation')}>
-            <div className="uh-stat-card__body">
-              <div className="uh-stat-icon-box">
-                <Heart size={20} />
-              </div>
-              <div className="uh-stat-text">
-                <span className="uh-stat-label">Total Donated</span>
-                {loading
-                  ? <div className="user-skeleton uh-stat-skel" />
-                  : <span className="uh-stat-value user-fade-in">{formatCurrency(donationStats.totalDonated)}</span>
-                }
-                {!loading && (
-                  <span className="uh-stat-sub">{monthlyDonationCount} contribution{monthlyDonationCount !== 1 ? 's' : ''} this month</span>
-                )}
-              </div>
+        <div className="uh-stat-card uh-stat-card--donations uh-stat-card--clickable" onClick={() => navigate('/donation')}>
+          <div className="uh-stat-card__body">
+            <div className="uh-stat-icon-box">
+              <Heart size={20} />
+            </div>
+            <div className="uh-stat-text">
+              <span className="uh-stat-label">Total Donated</span>
+              {loading
+                ? <div className="user-skeleton uh-stat-skel" />
+                : <span className="uh-stat-value user-fade-in">{formatCurrency(donationStats.totalDonated)}</span>
+              }
+              {!loading && (
+                <span className="uh-stat-sub">{monthlyDonationCount} contribution{monthlyDonationCount !== 1 ? 's' : ''} this month</span>
+              )}
             </div>
           </div>
-
-          <div className="uh-stat-card uh-stat-card--attendance uh-stat-card--clickable" onClick={() => navigate('/attendance')}>
-            <div className="uh-stat-card__body">
-              <div className="uh-stat-icon-box">
-                <CalendarDays size={20} />
-              </div>
-              <div className="uh-stat-text">
-                <span className="uh-stat-label">Services Attended</span>
-                {loading
-                  ? <div className="user-skeleton uh-stat-skel" />
-                  : <span className="uh-stat-value user-fade-in">{attendanceStats.total}</span>
-                }
-                {!loading && (
-                  <span className="uh-stat-sub">{monthlyAttendanceCount} this month</span>
-                )}
-              </div>
-            </div>
-          </div>
-
         </div>
 
-        {/* Main grid */}
-        <div className="uh-grid-main">
-
-          {/* Quick Actions */}
-          <div className="uh-card">
-            <h2 className="uh-card__heading">Quick Actions</h2>
-            <div className="uh-actions">
-              {quickActions.map((action, i) => (
-                <button key={i} onClick={action.action} className={`uh-action ${action.className}`}>
-                  <div className="uh-action__icon">{action.icon}</div>
-                  <div className="uh-action__text">
-                    <span className="uh-action__title">{action.title}</span>
-                    <span className="uh-action__desc">{action.description}</span>
-                  </div>
-                  <ChevronRight size={16} className="uh-action__arrow" />
-                </button>
-              ))}
+        <div className="uh-stat-card uh-stat-card--attendance uh-stat-card--clickable" onClick={() => navigate('/attendance')}>
+          <div className="uh-stat-card__body">
+            <div className="uh-stat-icon-box">
+              <CalendarDays size={20} />
+            </div>
+            <div className="uh-stat-text">
+              <span className="uh-stat-label">Services Attended</span>
+              {loading
+                ? <div className="user-skeleton uh-stat-skel" />
+                : <span className="uh-stat-value user-fade-in">{attendanceStats.total}</span>
+              }
+              {!loading && (
+                <span className="uh-stat-sub">{monthlyAttendanceCount} this month</span>
+              )}
             </div>
           </div>
+        </div>
 
-          {/* Prayer Wall */}
-          <div className="uh-card uh-card--prayer">
-            <div className="uh-card__header-row">
-              <h2 className="uh-card__heading">Prayer Wall</h2>
-              <span className="uh-badge">Community</span>
+      </div>
+
+      {/* Main grid */}
+      <div className="uh-grid-main">
+
+        {/* Quick Actions */}
+        <div className="uh-card">
+          <h2 className="uh-card__heading">Quick Actions</h2>
+          <div className="uh-actions">
+            {quickActions.map((action, i) => (
+              <button key={i} onClick={action.action} className={`uh-action ${action.className}`}>
+                <div className="uh-action__icon">{action.icon}</div>
+                <div className="uh-action__text">
+                  <span className="uh-action__title">{action.title}</span>
+                  <span className="uh-action__desc">{action.description}</span>
+                </div>
+                <ChevronRight size={16} className="uh-action__arrow" />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Prayer Wall */}
+        <div className="uh-card uh-card--prayer">
+          <div className="uh-card__header-row">
+            <h2 className="uh-card__heading">Prayer Wall</h2>
+          </div>
+          <div className="uh-prayer-list">
+            {prayers.length === 0 ? (
+              <div className="uh-empty-state">
+                <div className="uh-empty-state__icon-wrap">
+                  <Heart size={42} strokeWidth={1} className="uh-empty-state__icon" />
+                  <div className="uh-empty-state__pulse" />
+                </div>
+                <p className="uh-empty-state__text">Be the first to share a prayer or a word of encouragement with our community.</p>
+              </div>
+            ) : (
+              prayers.slice(0, 4).map((prayer) => (
+                <div key={prayer._id || prayer.id} className="uh-prayer-item">
+                  <div className="uh-prayer-item__body">
+                    <p className="uh-prayer-item__text">"{prayer.text}"</p>
+                    <div className="uh-prayer-item__meta">
+                      <span className="uh-prayer-item__author">{prayer.author}</span>
+                      <span className="uh-prayer-item__time">{formatTimeAgo(prayer.createdAt || prayer.date)}</span>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+          <button className="uh-cta" onClick={() => setShowPrayerModal(true)}>
+            <span>Share a Prayer</span>
+            <ArrowRight size={14} />
+          </button>
+        </div>
+
+        {/* Events Carousel */}
+        <div className="uh-card uh-card--events">
+          <div className="uh-card__header-row">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <h2 className="uh-card__heading">Church Events</h2>
+              {upcomingEvents.length > 0 && (
+                <span className="uh-events-count-badge">{upcomingEvents.length}</span>
+              )}
             </div>
-            <div className="uh-prayer-list">
-              <div className="uh-prayer-item">
-                <div className="uh-prayer-item__bar" />
-                <div className="uh-prayer-item__body">
-                  <p className="uh-prayer-item__text">"Please pray for my mother's fast recovery from her illness."</p>
-                  <div className="uh-prayer-item__meta">
-                    <span className="uh-prayer-item__author">Maria S.</span>
-                    <span className="uh-prayer-item__time">2h ago</span>
-                  </div>
-                </div>
-              </div>
-              <div className="uh-prayer-item">
-                <div className="uh-prayer-item__bar" />
-                <div className="uh-prayer-item__body">
-                  <p className="uh-prayer-item__text">"Praying for guidance and peace of mind on my upcoming board exams."</p>
-                  <div className="uh-prayer-item__meta">
-                    <span className="uh-prayer-item__author">John D.</span>
-                    <span className="uh-prayer-item__time">5h ago</span>
-                  </div>
-                </div>
-              </div>
-              <div className="uh-prayer-item">
-                <div className="uh-prayer-item__bar" />
-                <div className="uh-prayer-item__body">
-                  <p className="uh-prayer-item__text">"Lord, bless our community with unity and love."</p>
-                  <div className="uh-prayer-item__meta">
-                    <span className="uh-prayer-item__author">Sarah L.</span>
-                    <span className="uh-prayer-item__time">1d ago</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <button className="uh-cta" onClick={() => navigate('/prayer-wall')}>
-              <span>View Prayer Wall</span>
-              <ArrowRight size={14} />
+            <button className="uh-text-btn" onClick={() => setShowAllEvents(true)}>
+              <span>See all</span>
+              <ArrowRight size={12} style={{ marginLeft: '4px' }} />
             </button>
           </div>
 
-          {/* Events Carousel */}
-          <div className="uh-card uh-card--events">
-            <div className="uh-card__header-row">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <h2 className="uh-card__heading">Church Events</h2>
-                {upcomingEvents.length > 0 && (
-                  <span className="uh-events-count-badge">{upcomingEvents.length}</span>
-                )}
-              </div>
-              <button className="uh-text-btn" onClick={() => setShowAllEvents(true)}>
-                <span>See all</span>
-                <ArrowRight size={12} style={{ marginLeft: '4px' }} />
-              </button>
-            </div>
-
-            <div className="uh-carousel-viewport">
-              {upcomingEvents.length === 0 ? (
-                <div className="uh-empty">
-                  <CalendarDays size={28} strokeWidth={1.5} />
-                  <p>No upcoming events yet.</p>
-                </div>
-              ) : (
-                <div
-                  className="uh-carousel-track"
-                  style={{ transform: `translateX(-${currentEventIndex * 100}%)` }}
-                >
-                  {upcomingEvents.map((evt, i) => {
-                    const catStyle = CAT_COLORS[evt.category] || CAT_COLORS.General;
-                    const hasImage = !!(evt.images?.[0] || evt.image);
-                    const imageUrl = evt.images?.[0] || evt.image;
-                    return (
-                      <div
-                        key={i}
-                        className="uh-carousel-slide"
-                      >
-                        <div className="uh-event-hero" style={{ background: catStyle.bg }}>
-                          <div className="uh-event-hero__content">
-                            <div className="uh-event-hero__badge" style={{ color: catStyle.color }}>
-                              {evt.category}
-                            </div>
-                            <div className="uh-event-hero__date">
-                              <span className="uh-event-hero__day">{evt.day}</span>
-                              <span className="uh-event-hero__month">{evt.month}</span>
-                            </div>
-                            <h3 className="uh-event-hero__title">{evt.title}</h3>
-                            <p className="uh-event-hero__body">{evt.body}</p>
-                            <div className="uh-event-hero__footer">
-                              <MapPin size={12} />
-                              <span>{evt.branch.split(',')[0]}</span>
-                              <span className="uh-dot-sep">·</span>
-                              <span>{evt.time || 'All Day'}</span>
-                            </div>
-                          </div>
-                          {hasImage && (
-                            <div 
-                              className="uh-event-hero__image"
-                              style={{ backgroundImage: `url(${imageUrl})` }} 
-                            />
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            <div className="uh-carousel-dots">
-              {upcomingEvents.map((_, i) => (
-                <button
-                  key={i}
-                  className={`uh-carousel-dot ${i === currentEventIndex ? 'uh-carousel-dot--active' : ''}`}
-                  onClick={() => setCurrentEventIndex(i)}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom row */}
-        <div className="uh-grid-bottom">
-
-          {/* Activity */}
-          <div className="uh-card uh-card--activity">
-            <div className="uh-card__header-row">
-              <h2 className="uh-card__heading">Recent Activity</h2>
-              {!loading && <span className="uh-badge">{recentActivity.length}</span>}
-            </div>
-            {loading ? (
-              <div className="uh-activity-scroll">
-                {[1,2,3,4].map(i => (
-                  <div key={i} className="uh-activity-card uh-activity-card--skel">
-                    <div className="user-skeleton" style={{ width: 30, height: 30, borderRadius: 8 }} />
-                    <div style={{ flex: 1 }}>
-                      <div className="user-skeleton" style={{ height: 12, width: '70%', marginBottom: 6, borderRadius: 4 }} />
-                      <div className="user-skeleton" style={{ height: 10, width: '50%', borderRadius: 4 }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : recentActivity.length === 0 ? (
+          <div className="uh-carousel-viewport">
+            {upcomingEvents.length === 0 ? (
               <div className="uh-empty">
                 <CalendarDays size={28} strokeWidth={1.5} />
-                <p>No recent activity yet.</p>
+                <p>No upcoming events yet.</p>
               </div>
             ) : (
-              <div className="uh-activity-scroll user-fade-in">
-                {recentActivity.map((activity, index) => (
-                  <div key={index} className={`uh-activity-card uh-activity-card--${activity.type}`}>
-                    <div className={`uh-activity-card__icon uh-activity-card__icon--${activity.status || activity.type}`}>
-                      {renderActivityIcon(activity)}
+              <div
+                className="uh-carousel-track"
+                style={{ transform: `translateX(-${currentEventIndex * 100}%)` }}
+              >
+                {upcomingEvents.map((evt, i) => {
+                  const catStyle = CAT_COLORS[evt.category] || CAT_COLORS.General;
+                  const hasImage = !!(evt.images?.[0] || evt.image);
+                  const imageUrl = evt.images?.[0] || evt.image;
+                  return (
+                    <div
+                      key={i}
+                      className="uh-carousel-slide"
+                    >
+                      <div className="uh-event-hero" style={{ background: catStyle.bg }}>
+                        <div className="uh-event-hero__content">
+                          <div className="uh-event-hero__badge" style={{ color: catStyle.color }}>
+                            {evt.category}
+                          </div>
+                          <div className="uh-event-hero__date">
+                            <span className="uh-event-hero__day">{evt.day}</span>
+                            <span className="uh-event-hero__month">{evt.month}</span>
+                          </div>
+                          <h3 className="uh-event-hero__title">{evt.title}</h3>
+                          <p className="uh-event-hero__body">{evt.body}</p>
+                          <div className="uh-event-hero__footer">
+                            <MapPin size={12} />
+                            <span>{evt.branch.split(',')[0]}</span>
+                            <span className="uh-dot-sep">·</span>
+                            <span>{evt.time || 'All Day'}</span>
+                          </div>
+                        </div>
+                        {hasImage && (
+                          <div
+                            className="uh-event-hero__image"
+                            style={{ backgroundImage: `url(${imageUrl})` }}
+                          />
+                        )}
+                      </div>
                     </div>
-                    <div className="uh-activity-card__content">
-                      <span className="uh-activity-card__title">{activity.title}</span>
-                      <span className="uh-activity-card__sub">{activity.loanId || activity.category || ''}</span>
-                      {activity.amount && <span className="uh-activity-card__amount">{activity.amount}</span>}
-                    </div>
-                    <span className="uh-activity-card__time">{formatTimeAgo(activity.date)}</span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
 
-          {/* Community */}
-          <div className="uh-card uh-card--community">
-            <h2 className="uh-card__heading">
-              Your Community
-              {profile?.branch && (
-                <span className="uh-heading-sub"> · {profile.branch.replace(/\s*Community\s*/gi, '')}</span>
-              )}
-            </h2>
-            <div className="uh-map-wrap">
-              <iframe
-                title="Community Map"
-                width="100%"
-                height="100%"
-                loading="lazy"
-                allowFullScreen
-                src={`https://maps.google.com/maps?q=${encodeURIComponent(profile?.branch || 'Meycauayan City, Bulacan')},Philippines&t=&z=14&ie=UTF8&iwloc=&output=embed`}
+          <div className="uh-carousel-dots">
+            {upcomingEvents.map((_, i) => (
+              <button
+                key={i}
+                className={`uh-carousel-dot ${i === currentEventIndex ? 'uh-carousel-dot--active' : ''}`}
+                onClick={() => setCurrentEventIndex(i)}
               />
-            </div>
-            <p className="uh-community-text">Stay updated with your local branch and upcoming events in your area.</p>
-            <button className="uh-cta" onClick={() => navigate('/branches')}>
-              <span>Explore Branches</span>
-              <ArrowRight size={14} />
-            </button>
+            ))}
           </div>
         </div>
+      </div>
+
+      {/* Bottom row */}
+      <div className="uh-grid-bottom">
+
+        {/* Activity */}
+        <div className="uh-card uh-card--activity">
+          <div className="uh-card__header-row">
+            <h2 className="uh-card__heading">Recent Activity</h2>
+            {!loading && <span className="uh-badge">{recentActivity.length}</span>}
+          </div>
+          {loading ? (
+            <div className="uh-activity-scroll">
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="uh-activity-card uh-activity-card--skel">
+                  <div className="user-skeleton" style={{ width: 30, height: 30, borderRadius: 8 }} />
+                  <div style={{ flex: 1 }}>
+                    <div className="user-skeleton" style={{ height: 12, width: '70%', marginBottom: 6, borderRadius: 4 }} />
+                    <div className="user-skeleton" style={{ height: 10, width: '50%', borderRadius: 4 }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : recentActivity.length === 0 ? (
+            <div className="uh-empty">
+              <CalendarDays size={28} strokeWidth={1.5} />
+              <p>No recent activity yet.</p>
+            </div>
+          ) : (
+            <div className="uh-activity-scroll user-fade-in">
+              {recentActivity.map((activity, index) => (
+                <div key={index} className={`uh-activity-card uh-activity-card--${activity.type}`}>
+                  <div className={`uh-activity-card__icon uh-activity-card__icon--${activity.status || activity.type}`}>
+                    {renderActivityIcon(activity)}
+                  </div>
+                  <div className="uh-activity-card__content">
+                    <span className="uh-activity-card__title">{activity.title}</span>
+                    <span className="uh-activity-card__sub">{activity.loanId || activity.category || ''}</span>
+                    {activity.amount && <span className="uh-activity-card__amount">{activity.amount}</span>}
+                  </div>
+                  <span className="uh-activity-card__time">{formatTimeAgo(activity.date)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Community */}
+        <div className="uh-card uh-card--community">
+          <h2 className="uh-card__heading">
+            Your Community
+            {profile?.branch && (
+              <span className="uh-heading-sub"> · {profile.branch.replace(/\s*Community\s*/gi, '')}</span>
+            )}
+          </h2>
+          <div className="uh-map-wrap">
+            <iframe
+              title="Community Map"
+              width="100%"
+              height="100%"
+              loading="lazy"
+              allowFullScreen
+              src={`https://maps.google.com/maps?q=${encodeURIComponent(profile?.branch || 'Meycauayan City, Bulacan')},Philippines&t=&z=14&ie=UTF8&iwloc=&output=embed`}
+            />
+          </div>
+          <p className="uh-community-text">Stay updated with your local branch and upcoming events in your area.</p>
+          <button className="uh-cta" onClick={() => navigate('/branches')}>
+            <span>Explore Branches</span>
+            <ArrowRight size={14} />
+          </button>
+        </div>
+      </div>
+
+      {/* Prayer Wall Modal */}
+      {showPrayerModal && (
+        <div className="uh-overlay" onClick={() => setShowPrayerModal(false)}>
+          <div className="uh-modal uh-modal--list uh-modal--prayer-wall" onClick={e => e.stopPropagation()}>
+            <div className="uh-modal__header">
+              <h2 className="uh-modal__title">Community Prayer Wall</h2>
+              <button className="uh-modal__close-sm" onClick={() => setShowPrayerModal(false)}>×</button>
+            </div>
+            <div className="uh-modal__body uh-modal__body--sticky-input">
+              <div className="uh-prayer-input-container">
+                <input
+                  type="text"
+                  className="uh-prayer-input"
+                  placeholder="Share your prayer request..."
+                  value={newPrayer}
+                  onChange={(e) => setNewPrayer(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handlePostPrayer();
+                  }}
+                />
+                <button
+                  className="uh-cta uh-prayer-post-btn"
+                  onClick={handlePostPrayer}
+                >
+                  Post
+                </button>
+              </div>
+              <div className="uh-prayer-list-scroll">
+                {prayers.length === 0 ? (
+                  <div className="uh-empty-state uh-empty-state--modal">
+                    <div className="uh-empty-state__icon-wrap">
+                      <Heart size={32} strokeWidth={1} className="uh-empty-state__icon" />
+                      <div className="uh-empty-state__pulse" />
+                    </div>
+                    <p className="uh-empty-state__text">No prayers posted yet. Join the community by sharing your first prayer above.</p>
+                  </div>
+                ) : (
+                  prayers.map((prayer) => (
+                    <div key={prayer._id || prayer.id} className="uh-prayer-item--new">
+                      <div className="uh-prayer-item__body--new">
+                        <p className="uh-prayer-item__text--new">"{prayer.text}"</p>
+                        <div className="uh-prayer-item__meta--new">
+                          <span className="uh-prayer-item__author--new">{prayer.author}</span>
+                          <span className="uh-prayer-item__time--new">{formatTimeAgo(prayer.createdAt || prayer.date)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Event Detail Modal */}
       {selectedEvent && (

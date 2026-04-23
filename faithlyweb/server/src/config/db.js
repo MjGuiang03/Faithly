@@ -45,6 +45,7 @@ export const savingsGoals       = db.collection('savings_goals');
 export const savingsTransactions = db.collection('savings_transactions');
 export const loanPayments        = db.collection('loan_payments');
 export const attendanceSessions  = db.collection('attendance_sessions');
+export const prayers             = db.collection('prayers');
 
 
 /* ================== DATABASE INDEXES ================== */
@@ -77,6 +78,7 @@ await savingsGoals.createIndex({ email: 1 });
 await savingsTransactions.createIndex({ email: 1 });
 await savingsTransactions.createIndex({ date: -1 });
 await savingsTransactions.createIndex({ email: 1, type: 1, status: 1, date: -1 });
+await prayers.createIndex({ createdAt: 1 }, { expireAfterSeconds: 604800 });
 
 
 /* ================== CREATE DEFAULT ADMINS ================== */

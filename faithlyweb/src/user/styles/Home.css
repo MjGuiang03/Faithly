@@ -518,24 +518,7 @@
   background: var(--border);
 }
 
-.uh-prayer-item__bar {
-  width: 3px;
-  min-width: 3px;
-  flex-shrink: 0;
-}
 
-/* Alternate prayer bar colors for warmth */
-.uh-prayer-item:nth-child(3n+1) .uh-prayer-item__bar {
-  background: var(--primary);
-}
-
-.uh-prayer-item:nth-child(3n+2) .uh-prayer-item__bar {
-  background: #059669;
-}
-
-.uh-prayer-item:nth-child(3n+3) .uh-prayer-item__bar {
-  background: #7C3AED;
-}
 
 .uh-prayer-item__body {
   padding: 10px 12px;
@@ -575,7 +558,7 @@
 
 /* Prayer CTA — uses purple for variety */
 .uh-card--prayer .uh-cta {
-  background: #6D28D9;
+  background: var(--sidebar);
 }
 
 .uh-card--prayer .uh-cta:hover {
@@ -1061,6 +1044,93 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.uh-modal--prayer-wall {
+  max-height: 80vh;
+}
+
+.uh-modal__body--sticky-input {
+  padding: 0;
+  overflow: hidden;
+  gap: 0;
+}
+
+.uh-prayer-input-container {
+  display: flex;
+  gap: 8px;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.uh-prayer-input {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--input-background);
+  color: var(--foreground);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+}
+
+.uh-prayer-input:focus {
+  outline: 2px solid var(--primary);
+  border-color: transparent;
+}
+
+.uh-prayer-post-btn {
+  width: auto;
+  padding: 10px 16px;
+}
+
+.uh-prayer-list-scroll {
+  padding: 20px 24px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.uh-prayer-item--new {
+  margin-bottom: 16px;
+  display: flex;
+  border-radius: 12px;
+  background: var(--accent);
+  overflow: visible;
+}
+
+.uh-prayer-item__bar--new {
+  width: 4px;
+  border-radius: 4px 0 0 4px;
+}
+
+.uh-prayer-item__body--new {
+  padding: 14px 18px;
+  flex: 1;
+}
+
+.uh-prayer-item__text--new {
+  font-size: 14px;
+  margin-bottom: 8px;
+  font-style: italic;
+  color: var(--foreground);
+}
+
+.uh-prayer-item__meta--new {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.uh-prayer-item__author--new {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--primary);
+}
+
+.uh-prayer-item__time--new {
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
 .uh-event {
@@ -1938,4 +2008,106 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* ── Empty State Enhancements ── */
+.uh-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 32px 24px;
+  background: linear-gradient(to bottom, var(--accent) 0%, transparent 100%);
+  border-radius: 16px;
+  margin: 10px 0;
+}
+
+.uh-empty-state--modal {
+  background: transparent;
+  padding: 40px 24px;
+}
+
+.uh-empty-state__icon-wrap {
+  position: relative;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.uh-empty-state__icon {
+  color: var(--primary);
+  position: relative;
+  z-index: 2;
+  opacity: 0.7;
+}
+
+.uh-empty-state__pulse {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  background: var(--primary);
+  border-radius: 50%;
+  opacity: 0.15;
+  animation: uh-pulse 2s infinite ease-in-out;
+}
+
+.uh-empty-state__title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--foreground);
+  margin: 0 0 8px 0;
+  font-family: 'Inter', sans-serif;
+}
+
+.uh-empty-state__text {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  max-width: 240px;
+  margin: 0 0 20px 0;
+  font-family: 'Inter', sans-serif;
+}
+
+.uh-empty-state__btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
+}
+
+.uh-empty-state__btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(30, 58, 138, 0.3);
+  filter: brightness(1.1);
+}
+
+@keyframes uh-pulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.2;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.1;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0.2;
+  }
+}
+
+.dark .uh-empty-state {
+  background: linear-gradient(to bottom, rgba(255,255,255,0.03) 0%, transparent 100%);
+}
+
+.dark .uh-empty-state__pulse {
+  opacity: 0.1;
 }
