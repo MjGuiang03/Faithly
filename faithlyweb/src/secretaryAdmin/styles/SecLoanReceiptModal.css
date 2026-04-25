@@ -32,7 +32,7 @@
 }
 
 .sec-receipt-header {
-  background: linear-gradient(135deg, #0f2854 0%, #1E3A8A 100%);
+  background: linear-gradient(135deg, #0f2854 0%, #0D1F45 100%);
   padding: 24px;
   position: relative;
   text-align: center;
@@ -142,7 +142,7 @@
 }
 
 .sec-receipt-d-value.highlight {
-  color: #1E3A8A;
+  color: #0D1F45;
   font-family: 'JetBrains Mono', monospace;
   font-size: 13px;
 }
@@ -218,7 +218,7 @@
 }
 
 .sec-receipt-btn.primary {
-  background: #1E3A8A;
+  background: #0D1F45;
   border: none;
   color: white;
 }

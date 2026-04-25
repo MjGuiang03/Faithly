@@ -163,7 +163,7 @@ function EditModal({ member, onClose, onSave }) {
               </select>
             </div>
           </div>
-          <div className="admin-members-form-group" style={{ marginBottom: 20 }}>
+          <div className="admin-members-form-group admin-members-mb-20">
             <label className="admin-members-form-label">New Password (optional)</label>
             <input
               className="admin-members-form-input"
@@ -175,7 +175,7 @@ function EditModal({ member, onClose, onSave }) {
             />
           </div>
           <p className="admin-members-admin-confirm-title">Confirm Changes</p>
-          <div className="admin-members-form-row" style={{ marginBottom: 0 }}>
+          <div className="admin-members-form-row admin-members-mb-0">
             <label className="admin-members-form-label">Admin Password</label>
             <div className="admin-members-password-wrapper">
               <input
@@ -198,7 +198,7 @@ function EditModal({ member, onClose, onSave }) {
         </div>
 
         <div className="admin-members-modal-footer">
-          <button className="admin-members-btn admin-members-btn-cancel" onClick={onClose} disabled={saving} style={{ flex: 'none', width: '130px' }}>Cancel</button>
+          <button className="admin-members-btn admin-members-btn-cancel admin-members-btn-fixed" onClick={onClose} disabled={saving}>Cancel</button>
           <button className="admin-members-btn admin-members-btn-save" onClick={handleSubmit} disabled={saving}>
             {saving ? <span className="btn-spinner" /> : 'Save Changes'}
           </button>
@@ -273,7 +273,7 @@ function DeleteModal({ member, onClose, onConfirm }) {
           <div className="admin-members-password-divider">
             <span>Confirm your identity to delete</span>
           </div>
-          <div className="admin-members-form-row" style={{ marginBottom: 0 }}>
+          <div className="admin-members-form-row admin-members-mb-0">
             <label className="admin-members-form-label">Admin Password</label>
             <div className="admin-members-password-wrapper">
               <input
@@ -296,7 +296,7 @@ function DeleteModal({ member, onClose, onConfirm }) {
         </div>
 
         <div className="admin-members-modal-footer">
-          <button className="admin-members-btn admin-members-btn-cancel" onClick={onClose} disabled={deleting} style={{ flex: 'none', width: '130px' }}>Cancel</button>
+          <button className="admin-members-btn admin-members-btn-cancel admin-members-btn-fixed" onClick={onClose} disabled={deleting}>Cancel</button>
           <button className="admin-members-btn admin-members-btn-delete" onClick={handleDelete} disabled={deleting}>
             {deleting ? <span className="btn-spinner" /> : 'Delete Member'}
           </button>
@@ -341,7 +341,7 @@ function AddMemberModal({ onClose, onSave }) {
     <div className="admin-members-modal-overlay" onClick={onClose}>
       <div className="admin-members-modal" onClick={e => e.stopPropagation()}>
         <div className="admin-members-modal-header">
-          <div className="admin-members-modal-header-icon" style={{ background: '#EEF2FF', color: '#155DFC' }}><UserPlus size={20} /></div>
+          <div className="admin-members-modal-header-icon admin-members-icon-blue"><UserPlus size={20} /></div>
           <div className="admin-members-modal-header-text">
             <p className="admin-members-modal-title">Add New Member</p>
             <p className="admin-members-modal-subtitle">Register a new member directly</p>
@@ -353,7 +353,7 @@ function AddMemberModal({ onClose, onSave }) {
 
         <div className="admin-members-modal-body">
           <div className="admin-members-form-row">
-            <div className="admin-members-form-group" style={{ gridColumn: 'span 2' }}>
+            <div className="admin-members-form-group admin-members-col-span-2">
               <label className="admin-members-form-label">Full Name</label>
               <input className="admin-members-form-input" type="text" name="fullName" value={form.fullName} onChange={handleChange} placeholder="e.g. Juan De La Cruz" />
             </div>
@@ -446,7 +446,7 @@ function AddMemberModal({ onClose, onSave }) {
         </div>
 
         <div className="admin-members-modal-footer">
-          <button className="admin-members-btn admin-members-btn-cancel" onClick={onClose} disabled={saving} style={{ flex: 'none', width: '130px' }}>Cancel</button>
+          <button className="admin-members-btn admin-members-btn-cancel admin-members-btn-fixed" onClick={onClose} disabled={saving}>Cancel</button>
           <button className="admin-members-btn admin-members-btn-save" onClick={handleSubmit} disabled={saving}>
             {saving ? <span className="btn-spinner" /> : 'Add Member'}
           </button>
@@ -504,7 +504,7 @@ function LinkRFIDModal({ member, onClose, onSave }) {
     <div className="admin-members-modal-overlay" onClick={onClose}>
       <div className="admin-members-modal admin-members-modal-sm" onClick={e => e.stopPropagation()}>
         <div className="admin-members-modal-header">
-          <div className="admin-members-modal-header-icon" style={{ background: '#F0F9FF', color: '#0284C7' }}><CreditCard size={20} /></div>
+          <div className="admin-members-modal-header-icon admin-members-icon-light-blue"><CreditCard size={20} /></div>
           <div className="admin-members-modal-header-text">
             <p className="admin-members-modal-title">Link RFID Card</p>
             <p className="admin-members-modal-subtitle">Assign card to {member.fullName || member.name}</p>
@@ -512,27 +512,27 @@ function LinkRFIDModal({ member, onClose, onSave }) {
           <button className="admin-members-modal-close" onClick={onClose}><X size={20} color="#6a7282" /></button>
         </div>
 
-        <div className="admin-members-modal-body" style={{ textAlign: 'center', padding: '40px 24px' }}>
+        <div className="admin-members-modal-body admin-members-modal-center-pad">
           {rfidCode ? (
             <div className="rfid-success-zone">
-              <div style={{ color: '#059669', marginBottom: '16px' }}><CheckCircle2 size={48} style={{ margin: '0 auto' }} /></div>
-              <p style={{ fontWeight: 600, fontSize: '18px', color: '#111827', margin: '0 0 8px 0' }}>Card Detected!</p>
-              <p style={{ fontFamily: 'monospace', background: '#F3F4F6', padding: '8px', borderRadius: '4px', display: 'inline-block' }}>{rfidCode}</p>
-              <p style={{ fontSize: '14px', color: '#6B7280', marginTop: '16px' }}>Click "Link Card" to confirm assignment.</p>
+              <div className="admin-members-text-green-mb-16 admin-members-mx-auto"><CheckCircle2 size={48} /></div>
+              <p className="admin-members-title-bold">Card Detected!</p>
+              <p className="admin-members-code-block">{rfidCode}</p>
+              <p className="admin-members-subtitle-gray">Click "Link Card" to confirm assignment.</p>
             </div>
           ) : (
             <div className="rfid-waiting-zone">
-              <div className="admin-att-scanner-panel active" style={{ border: 'none', background: 'transparent', padding: 0, justifyContent: 'center', marginBottom: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <div className="pulse-indicator" style={{ width: '64px', height: '64px', background: '#D1D5DB', borderRadius: '50%' }}></div>
+              <div className="admin-att-scanner-panel active admin-members-scanner-container">
+                <div className="pulse-indicator admin-members-pulse-circle"></div>
               </div>
-              <p style={{ fontWeight: 500, color: '#374151' }}>Waiting for RFID Scan...</p>
-              <p style={{ fontSize: '13px', color: '#6B7280', marginTop: '8px' }}>Please tap the physical card on the reader now.</p>
+              <p className="admin-members-text-medium-dark">Waiting for RFID Scan...</p>
+              <p className="admin-members-text-small-gray">Please tap the physical card on the reader now.</p>
             </div>
           )}
         </div>
 
         <div className="admin-members-modal-footer">
-          <button className="admin-members-btn admin-members-btn-cancel" onClick={onClose} disabled={saving} style={{ padding: '8px 16px', borderRadius: '4px', border: '1px solid #D1D5DB', background: 'white', cursor: 'pointer' }}>Cancel</button>
+          <button className="admin-members-btn admin-members-btn-cancel admin-members-btn-outline" onClick={onClose} disabled={saving}>Cancel</button>
           <button 
             className="admin-members-btn admin-members-btn-save" 
             onClick={handleLink} 
@@ -638,7 +638,7 @@ export default function AdminMembers() {
         <div className="admin-members-modal-overlay" onClick={() => setViewMember(null)}>
           <div className="admin-members-modal" onClick={e => e.stopPropagation()}>
             <div className="admin-members-modal-header">
-              <div className="admin-members-modal-header-icon" style={{ background: '#e7f0ff' }}><Eye size={20} color="#155DFC" /></div>
+              <div className="admin-members-modal-header-icon admin-members-icon-bg-blue"><Eye size={20} color="#155DFC" /></div>
               <div className="admin-members-modal-header-text">
                 <p className="admin-members-modal-title">View Member</p>
                 <p className="admin-members-modal-subtitle">Details for {viewMember.fullName || viewMember.name}</p>
@@ -657,32 +657,32 @@ export default function AdminMembers() {
                   <p className="admin-members-delete-email">{viewMember.email}</p>
                 </div>
               </div>
-              <div className="admin-members-form-grid-2col" style={{ marginTop: '20px' }}>
+              <div className="admin-members-form-grid-2col admin-members-mt-20">
                 <div>
-                  <span className="admin-members-form-label" style={{ color: '#6B7280', marginBottom: 4 }}>Phone</span>
-                  <p style={{ margin: 0, fontWeight: 500, color: '#111827' }}>{viewMember.phone || '—'}</p>
+                  <span className="admin-members-form-label admin-members-label-gray">Phone</span>
+                  <p className="admin-members-val-dark">{viewMember.phone || '—'}</p>
                 </div>
                 <div>
-                  <span className="admin-members-form-label" style={{ color: '#6B7280', marginBottom: 4 }}>Community</span>
-                  <p style={{ margin: 0, fontWeight: 500, color: '#111827' }}>{viewMember.branch || '—'}</p>
+                  <span className="admin-members-form-label admin-members-label-gray">Community</span>
+                  <p className="admin-members-val-dark">{viewMember.branch || '—'}</p>
                 </div>
                 <div>
-                  <span className="admin-members-form-label" style={{ color: '#6B7280', marginBottom: 4 }}>Position</span>
-                  <p style={{ margin: 0, fontWeight: 500, color: '#111827', textTransform: 'capitalize' }}>{viewMember.position || 'Member'}</p>
+                  <span className="admin-members-form-label admin-members-label-gray">Position</span>
+                  <p className="admin-members-val-dark-cap">{viewMember.position || 'Member'}</p>
                 </div>
                 <div>
-                  <p className="admin-members-form-label" style={{ color: '#6B7280', marginBottom: 4 }}>Member ID</p>
-                  <p style={{ margin: 0, fontWeight: 500, color: '#111827' }}>{viewMember.memberId || '—'}</p>
+                  <p className="admin-members-form-label admin-members-label-gray">Member ID</p>
+                  <p className="admin-members-val-dark">{viewMember.memberId || '—'}</p>
                 </div>
                 <div>
-                  <p className="admin-members-form-label" style={{ color: '#6B7280', marginBottom: 4 }}>RFID Card ID</p>
-                  <p style={{ margin: 0, fontWeight: 500, color: '#111827', fontFamily: 'monospace' }}>{viewMember.rfidCardId || 'Not Linked'}</p>
+                  <p className="admin-members-form-label admin-members-label-gray">RFID Card ID</p>
+                  <p className="admin-members-val-dark-mono">{viewMember.rfidCardId || 'Not Linked'}</p>
                 </div>
 
                 {(viewMember.churchId || (viewMember.position !== 'member' && viewMember.position)) && (
                   <div>
-                    <span className="admin-members-form-label" style={{ color: '#6B7280', marginBottom: 4 }}>Church ID</span>
-                    <p style={{ margin: 0, fontWeight: 500, color: '#111827' }}>{viewMember.churchId || '—'}</p>
+                    <span className="admin-members-form-label admin-members-label-gray">Church ID</span>
+                    <p className="admin-members-val-dark">{viewMember.churchId || '—'}</p>
                   </div>
                 )}
               </div>
@@ -705,23 +705,23 @@ export default function AdminMembers() {
 
       {/* Stats Grid */}
       <div className="admin-members-stats-grid">
-        <div className="admin-members-stat-card">
+        <div className="admin-members-stat-card adm-clickable-card" onClick={() => setRoleFilter('all')}>
           <p className="admin-members-stat-label">Total Members</p>
           <p className="admin-members-stat-value admin-members-stat-value-blue">{stats.total ?? 0}</p>
         </div>
-        <div className="admin-members-stat-card">
+        <div className="admin-members-stat-card adm-clickable-card" onClick={() => setRoleFilter('officer')}>
           <p className="admin-members-stat-label">Officers</p>
           <p className="admin-members-stat-value admin-members-stat-value-blue">{stats.officers ?? 0}</p>
         </div>
-        <div className="admin-members-stat-card">
+        <div className="admin-members-stat-card adm-clickable-card" onClick={() => setRoleFilter('member')}>
           <p className="admin-members-stat-label">Active Members</p>
           <p className="admin-members-stat-value admin-members-stat-value-green">{stats.active ?? 0}</p>
         </div>
-        <div className="admin-members-stat-card">
+        <div className="admin-members-stat-card adm-clickable-card" onClick={() => setRoleFilter('inactive')}>
           <p className="admin-members-stat-label">Inactive Members</p>
           <p className="admin-members-stat-value admin-members-stat-value-orange">{stats.inactive ?? 0}</p>
         </div>
-        <div className="admin-members-stat-card">
+        <div className="admin-members-stat-card adm-clickable-card" onClick={() => setRoleFilter('new')}>
           <p className="admin-members-stat-label">New This Month</p>
           <p className="admin-members-stat-value admin-members-stat-value-blue">{stats.newThisMonth ?? 0}</p>
         </div>
@@ -737,34 +737,32 @@ export default function AdminMembers() {
             <h2 className="admin-members-section-title">All Members</h2>
           </div>
           <div className="admin-members-search-toolbar">
-            <div className="admin-members-search-wrapper" style={{ display: 'flex', gap: '8px' }}>
-              <div style={{ position: 'relative', flex: 1 }}>
-                <Search size={18} className="admin-members-search-icon" style={{ position: 'absolute', top: 12, left: 14 }} />
-                <input
-                  type="text"
-                  placeholder="Search members..."
-                  value={searchMembers}
-                  onChange={e => setSearchMembers(e.target.value)}
-                  className="admin-members-search-input"
-                  style={{ width: '100%', paddingLeft: 40, height: 42, borderRadius: 8, border: '1px solid #D1D5DB' }}
-                />
-              </div>
-              <select
-                className="admin-members-filter-btn"
-                onChange={e => setRoleFilter(e.target.value)}
-                value={roleFilter}
-                style={{ height: 42, borderRadius: 8, padding: '0 12px', border: '1px solid #D1D5DB' }}
-              >
-                <option value="all">All Roles</option>
-                <option value="member">Members</option>
-                <option value="officer">Officers</option>
-              </select>
+            <div className="admin-members-search-wrapper">
+              <Search size={18} className="admin-members-search-icon" />
+              <input
+                type="text"
+                placeholder="Search members..."
+                value={searchMembers}
+                onChange={e => setSearchMembers(e.target.value)}
+                className="admin-members-search-input"
+              />
             </div>
+            <select
+              className="admin-members-filter-select"
+              onChange={e => setRoleFilter(e.target.value)}
+              value={roleFilter}
+            >
+              <option value="all">All Roles</option>
+              <option value="member">Members</option>
+              <option value="officer">Officers</option>
+              <option value="inactive">Inactive</option>
+              <option value="new">New</option>
+            </select>
           </div>
         </div>
 
-        <div className="loan-admin-mgmt-table-container">
-          <table className="loan-admin-mgmt-table">
+        <div className="admin-table-container">
+          <table className="admin-table">
             <thead>
               <tr>
                 <th>Member ID</th>
@@ -779,37 +777,37 @@ export default function AdminMembers() {
             <tbody>
               {loadingMembers ? (
                 Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={i} className="loan-admin-mgmt-table-row-hover">
+                  <tr key={i} className="admin-table-row-hover">
                     {Array.from({ length: 7 }).map((__, j) => (
                       <td key={j}><div className="admin-members-skeleton" /></td>
                     ))}
                   </tr>
                 ))
               ) : members.length === 0 ? (
-                <tr><td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>No members found</td></tr>
+                <tr><td colSpan={7} className="admin-members-empty-cell">No members found</td></tr>
               ) : (
                 members.map(m => (
-                  <tr key={m._id} className="loan-admin-mgmt-table-row-hover">
-                    <td style={{ fontWeight: 600, color: '#111827' }}>{m.memberId || '—'}</td>
+                  <tr key={m._id} className="admin-table-row-hover">
+                    <td className="admin-members-cell-bold-dark">{m.memberId || '—'}</td>
                     <td>
-                      <div className="admin-members-avatar-name" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div className="admin-members-avatar-circle" style={{ width: 32, height: 32, borderRadius: '50%', background: '#EEF2FF', color: '#155DFC', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '600' }}>{(m.fullName || m.name || 'M').charAt(0)}</div>
-                        <span style={{ fontWeight: 500, color: '#111827' }}>{m.fullName || m.name}</span>
+                      <div className="admin-members-avatar-name admin-members-avatar-wrapper">
+                        <div className="admin-members-avatar-circle admin-members-avatar-circle">{(m.fullName || m.name || 'M').charAt(0)}</div>
+                        <span className="admin-members-avatar-name-text">{m.fullName || m.name}</span>
                       </div>
                     </td>
                     <td>
-                      <div className="admin-members-contact-info" style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ fontSize: '13px', color: '#374151' }}>{m.email}</span>
-                        <span style={{ fontSize: '12px', color: '#6B7280' }}>{m.phone}</span>
+                      <div className="admin-members-contact-info admin-members-flex-col">
+                        <span className="admin-members-email-text">{m.email}</span>
+                        <span className="admin-members-phone-text">{m.phone}</span>
                       </div>
                     </td>
-                    <td style={{ color: '#374151' }}>{m.branch || 'Bulacan Main'}</td>
-                    <td style={{ color: '#374151', textTransform: 'capitalize' }}>{m.position || 'Member'}</td>
+                    <td className="admin-members-branch-text">{m.branch || 'Bulacan Main'}</td>
+                    <td className="admin-members-position-text">{m.position || 'Member'}</td>
                     <td><span className={`ps-status-badge ${m.status?.toLowerCase() === 'active' ? 'on-track' : 'default'}`}>{m.status || 'Active'}</span></td>
-                    <td style={{ position: 'relative' }}>
-                      <div className="admin-members-actions" style={{ display: 'flex', justifyContent: 'center' }}>
+                    <td className="admin-members-relative">
+                      <div className="admin-members-actions-wrapper">
                         <button 
-                          className="admin-members-action-dots" 
+                          className="admin-members-actions-btn" 
                           onClick={(e) => { 
                             e.stopPropagation(); 
                             setOpenDropdownId(openDropdownId === m._id ? null : m._id); 
@@ -818,17 +816,17 @@ export default function AdminMembers() {
                           <MoreVertical size={20} color="#6B7280" />
                         </button>
                         {openDropdownId === m._id && (
-                          <div className="admin-members-dropdown-menu" onClick={(e) => e.stopPropagation()}>
-                            <button className="admin-members-dropdown-item" onClick={() => { setOpenDropdownId(null); setViewMember(m); }}>
+                          <div className="admin-members-actions-dropdown" onClick={(e) => e.stopPropagation()}>
+                            <button className="admin-members-actions-item" onClick={() => { setOpenDropdownId(null); setViewMember(m); }}>
                               <Eye size={16} /> View
                             </button>
-                            <button className="admin-members-dropdown-item" onClick={() => { setOpenDropdownId(null); setEditMember(m); }}>
+                            <button className="admin-members-actions-item" onClick={() => { setOpenDropdownId(null); setEditMember(m); }}>
                               <Edit size={16} /> Edit
                             </button>
-                            <button className="admin-members-dropdown-item" onClick={() => { setOpenDropdownId(null); setEnrollRFIDMember(m); }}>
+                            <button className="admin-members-actions-item" onClick={() => { setOpenDropdownId(null); setEnrollRFIDMember(m); }}>
                               <CreditCard size={16} /> Link RFID
                             </button>
-                            <button className="admin-members-dropdown-item admin-members-dropdown-item-danger" onClick={() => { setOpenDropdownId(null); setDeleteMember(m); }}>
+                            <button className="admin-members-actions-item delete" onClick={() => { setOpenDropdownId(null); setDeleteMember(m); }}>
                               <Trash2 size={16} /> Delete
                             </button>
                           </div>
@@ -843,15 +841,35 @@ export default function AdminMembers() {
         </div>
 
         {pagination.totalPages > 1 && (
-          <div className="admin-members-pagination">
-            <button className="admin-members-pagination-nav" onClick={() => setCurrentPage(p => Math.max(1, p-1))} disabled={currentPage === 1}><ChevronLeft size={16} /></button>
-            <div className="admin-members-pagination-numbers">
-              {buildPageNumbers(pagination).map((num, i) => (
-                num === '…' ? <span key={`dots-${i}`} className="admin-members-pagination-dots">…</span> :
-                <button key={num} onClick={() => setCurrentPage(num)} className={`admin-members-pagination-num ${currentPage === num ? 'active' : ''}`} style={{ background: currentPage === num ? '#155DFC' : 'transparent', color: currentPage === num ? 'white' : '#4B5563', border: 'none', borderRadius: 6, width: 32, height: 32, cursor: 'pointer' }}>{num}</button>
-              ))}
+          <div className="admin-members-pagination-wrapper">
+            <div className="admin-members-pagination">
+              <button 
+                className="admin-members-pagination-btn" 
+                onClick={() => setCurrentPage(p => Math.max(1, p-1))} 
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <div className="admin-members-pagination-numbers">
+                {buildPageNumbers(pagination).map((num, i) => (
+                  num === '…' ? <span key={`dots-${i}`} className="admin-members-pagination-dots">…</span> :
+                  <button 
+                    key={num} 
+                    onClick={() => setCurrentPage(num)} 
+                    className={`admin-members-pagination-number ${currentPage === num ? 'active' : ''}`}
+                  >
+                    {num}
+                  </button>
+                ))}
+              </div>
+              <button 
+                className="admin-members-pagination-btn" 
+                onClick={() => setCurrentPage(p => Math.min(pagination.totalPages, p+1))} 
+                disabled={currentPage === pagination.totalPages}
+              >
+                <ChevronRight size={18} />
+              </button>
             </div>
-            <button className="admin-members-pagination-nav" onClick={() => setCurrentPage(p => Math.min(pagination.totalPages, p+1))} disabled={currentPage === pagination.totalPages}><ChevronRight size={16} /></button>
           </div>
         )}
       </div>

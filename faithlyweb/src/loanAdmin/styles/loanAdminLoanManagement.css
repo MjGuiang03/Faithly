@@ -113,7 +113,7 @@
 }
 
 .loan-admin-mgmt-search input:focus {
-    border-color: #1E3A8A;
+    border-color: #0D1F45;
 }
 
 /* ─────────────────────────────────────────
@@ -164,7 +164,7 @@
 
 .loan-admin-mgmt-table-id {
     font-weight: 600;
-    color: #1E3A8A;
+    color: #0D1F45;
     font-size: 12px;
 }
 
@@ -245,7 +245,7 @@
 
 .loan-admin-mgmt-btn-details {
     padding: 7px 14px;
-    background: #1E3A8A;
+    background: #0D1F45;
     border: none;
     border-radius: 2px;
     font-weight: 600;
@@ -463,7 +463,7 @@
 }
 
 .loan-admin-mgmt-modal-textarea:focus {
-    border-color: #1E3A8A;
+    border-color: #0D1F45;
 }
 
 .loan-admin-mgmt-modal-hint {
@@ -657,7 +657,7 @@
 }
 
 .dm-sdot.awaiting {
-    background: #1E3A8A;
+    background: #0D1F45;
 }
 
 .dm-slabel {
@@ -675,7 +675,7 @@
 }
 
 .dm-slabel.awaiting {
-    color: #1e3a8a;
+    color: #0D1F45;
 }
 
 .dm-status-right {
@@ -693,7 +693,7 @@
 }
 
 .dm-status-right.awaiting {
-    color: #1e3a8a;
+    color: #0D1F45;
 }
 
 /* ── Section Label ── */
@@ -739,7 +739,7 @@
 }
 
 .dm-iv.email {
-    color: #1e3a8a;
+    color: #0D1F45;
     background: #f0f4ff;
     padding: 2px 8px;
     border-radius: 4px;
@@ -858,7 +858,7 @@
 .dm-edit-box-title {
     font-size: 14px;
     font-weight: 600;
-    color: #1e3a8a;
+    color: #0D1F45;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -897,7 +897,7 @@
 }
 
 .dm-edit-input:focus {
-    border-color: #1E3A8A;
+    border-color: #0D1F45;
 }
 
 .dm-edit-select {
@@ -915,7 +915,7 @@
 }
 
 .dm-edit-select:focus {
-    border-color: #1E3A8A;
+    border-color: #0D1F45;
 }
 
 .dm-edit-hint {
@@ -924,7 +924,7 @@
     border-radius: 6px;
     padding: 5px 12px;
     font-size: 12px;
-    color: #1e3a8a;
+    color: #0D1F45;
     margin: 8px 0 14px;
     width: fit-content;
 }
@@ -951,7 +951,7 @@
 .dm-cp-val {
     font-size: 16px;
     font-weight: 600;
-    color: #1E3A8A;
+    color: #0D1F45;
     margin-top: 2px;
 }
 
@@ -981,7 +981,7 @@
 }
 
 .dm-dopt.sel {
-    border-color: #1E3A8A;
+    border-color: #0D1F45;
     background: #eff6ff;
 }
 
@@ -994,8 +994,8 @@
 }
 
 .dm-rdot.on {
-    border-color: #1E3A8A;
-    background: #1E3A8A;
+    border-color: #0D1F45;
+    background: #0D1F45;
     /* box-shadow removed for flat layout */
 }
 
@@ -1006,7 +1006,7 @@
 }
 
 .dm-dopt.sel .dm-dlabel {
-    color: #1E3A8A;
+    color: #0D1F45;
 }
 
 /* ── Documents ── */
@@ -1025,7 +1025,7 @@
 }
 
 .dm-doc-card:hover {
-    border-color: #1E3A8A;
+    border-color: #0D1F45;
 }
 
 .dm-doc-placeholder {
@@ -1093,7 +1093,7 @@
 
 .dm-doc-view {
     font-size: 11px;
-    color: #1E3A8A;
+    color: #0D1F45;
     font-weight: 600;
     cursor: pointer;
     border: none;
@@ -1216,9 +1216,9 @@
 .dm-btn-scan {
     padding: 9px 18px;
     border-radius: 2px;
-    border: 1.5px solid #1E3A8A;
+    border: 1.5px solid #0D1F45;
     background: #fff;
-    color: #1E3A8A;
+    color: #0D1F45;
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
@@ -1233,7 +1233,7 @@
 }
 
 .dm-btn-scan.active {
-    background: #1E3A8A;
+    background: #0D1F45;
     color: #fff;
 }
 
@@ -1247,7 +1247,7 @@
     width: 14px;
     height: 14px;
     border: 2px solid rgba(30, 58, 138, 0.3);
-    border-top-color: #1E3A8A;
+    border-top-color: #0D1F45;
     border-radius: 50%;
     animation: btn-rotate 0.6s linear infinite;
 }
@@ -1274,11 +1274,11 @@
 .dm-scan-status span {
     font-size: 13px;
     font-weight: 600;
-    color: #1E3A8A;
+    color: #0D1F45;
 }
 
 .dm-scan-status .btn-spinner {
-    border-top-color: #1E3A8A;
+    border-top-color: #0D1F45;
 }
 .dm-btn-close:hover {
     background: #f9fafb;

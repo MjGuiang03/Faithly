@@ -141,7 +141,9 @@ export default function LoginModal({ isOpen = true, onClose, onSwitchToSignup, o
       if (onClose) onClose();
 
       const role = result.role || 'user';
-      if (role === 'admin') {
+      if (email.toLowerCase() === 'rfid@faithly.com') {
+        navigate('/admin/rfid-preview');
+      } else if (role === 'admin') {
         navigate('/admin/dashboard');
       } else if (role === 'loanAdmin' || role === 'loan') {
         navigate('/loan-admin/dashboard');

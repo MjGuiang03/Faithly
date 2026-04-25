@@ -35,10 +35,15 @@
 /* ─── Card shared ─── */
 .admin-announce-card {
   background: white;
-  border-radius: 2px;
+  border-radius: 10px;
   border: 1px solid #e2e8f0;
-  /* box-shadow removed for flat layout */
   overflow: hidden;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.admin-announce-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.08);
 }
 
 .admin-announce-card-header {
@@ -89,7 +94,7 @@
 .admin-announce-input,
 .admin-announce-select,
 .admin-announce-textarea {
-  padding: 12px 16px; 
+  padding: 12px 16px;
   border-radius: 2px;
   border: 1.5px solid #e2e8f0;
   font-size: 14px;
@@ -109,9 +114,8 @@
 .admin-announce-select:focus,
 .admin-announce-textarea:focus {
   outline: none;
-  border-color: #1E3A8A;
+  border-color: #0D1F45;
   background: white;
-  /* box-shadow removed for flat layout */
 }
 
 /* ─── Radio group ─── */
@@ -120,6 +124,7 @@
   gap: 8px;
   flex-wrap: wrap;
 }
+
 .admin-announce-radio-item {
   display: flex;
   align-items: center;
@@ -140,9 +145,9 @@
 }
 
 .admin-announce-radio-item.active {
-  border-color: #1E3A8A;
+  border-color: #0D1F45;
   background: #eff6ff;
-  color: #1E3A8A;
+  color: #0D1F45;
   font-weight: 500;
 }
 
@@ -171,14 +176,10 @@
   background: white;
 }
 
-.admin-announce-branch-chip:hover {
-  border-color: #cbd5e1;
-}
-
 .admin-announce-branch-chip.selected {
-  border-color: #1E3A8A;
+  border-color: #0D1F45;
   background: #eff6ff;
-  color: #1E3A8A;
+  color: #0D1F45;
   font-weight: 500;
 }
 
@@ -195,10 +196,10 @@
 /* ─── Submit button ─── */
 .admin-announce-submit {
   padding: 14px 24px;
-  background: #1E3A8A;
+  background: #0D1F45;
   color: white;
   border: none;
-  border-radius: 2px;
+  border-radius: 50px;
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
@@ -256,10 +257,6 @@
   margin-bottom: 4px;
   overflow-wrap: anywhere;
   word-break: break-word;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 .admin-announce-item-body {
@@ -267,12 +264,6 @@
   color: #475569;
   margin-bottom: 8px;
   line-height: 1.5;
-  overflow-wrap: anywhere;
-  word-break: break-word;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 .admin-announce-item-meta {
@@ -294,7 +285,7 @@
 
 .admin-announce-item-cat {
   background: #EFF6FF;
-  color: #1E3A8A;
+  color: #0D1F45;
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 2px;
@@ -309,30 +300,6 @@
   border-radius: 2px;
   font-size: 10px;
   font-weight: 500;
-  max-width: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.admin-announce-item-badge.event {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.admin-announce-item-badge.expiry {
-  background: #fce7f3;
-  color: #9d174d;
-}
-
-.admin-announce-item-badge.expired {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.admin-announce-item-badge.scope {
-  background: #ecfdf5;
-  color: #065f46;
 }
 
 .admin-announce-actions {
@@ -361,14 +328,6 @@
 
 .admin-announce-delete {
   color: #ef4444;
-}
-
-.admin-announce-edit:hover {
-  background: #e7f0ff;
-}
-
-.admin-announce-delete:hover {
-  background: #fee2e2;
 }
 
 .admin-announce-empty {
@@ -414,28 +373,7 @@
   background: #f1f5f9;
 }
 
-/* ── Active Badge ── */
-.admin-announce-active-badge {
-  background: #EFF6FF;
-  color: #1E3A8A;
-  font-size: 12px;
-  font-weight: 600;
-  font-family: 'Inter', sans-serif;
-  padding: 4px 12px;
-  border-radius: 2px;
-}
-
-/* ── Filter Tabs & Slide Container ── */
-.admin-announce-slide-container {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.admin-announce-slide-container.open {
-  grid-template-rows: 1fr;
-}
-
+/* ── Filter Tabs ── */
 .admin-announce-slide-content {
   overflow: hidden;
   display: flex;
@@ -453,12 +391,7 @@
   font-weight: 500;
   display: flex;
   align-items: center;
-  transition: all 0.2s;
- transition: transform 0.3s ease, background 0.3s ease; }
-
-.admin-announce-toggle-btn:hover {
-  background: #f1f5f9;
-  color: #1e293b;
+  transition: transform 0.3s ease, background 0.3s ease;
 }
 
 .admin-announce-filter-tabs {
@@ -480,15 +413,10 @@
   transition: all 0.15s;
 }
 
-.admin-announce-filter-tab:hover {
-  border-color: #cbd5e1;
-  background: #f8fafc;
-}
-
 .admin-announce-filter-tab.active {
   background: #EFF6FF;
-  color: #1E3A8A;
-  border-color: #1E3A8A;
+  color: #0D1F45;
+  border-color: #0D1F45;
   font-weight: 600;
 }
 
@@ -508,65 +436,20 @@
   text-align: center;
   font-size: 11px;
   color: #64748b;
-  transition: all 0.15s;
+  transition: transform 0.3s ease, background 0.3s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 5px;
- transition: transform 0.3s ease, background 0.3s ease; }
+}
 
 .admin-announce-tpl-btn.active {
-  border-color: #1E3A8A;
-  color: #1E3A8A;
+  border-color: #0D1F45;
+  color: #0D1F45;
   background: #EFF6FF;
 }
 
-.admin-announce-tpl-thumb {
-  width: 100%;
-  height: 32px;
-  border-radius: 2px;
-}
-
-.admin-announce-tpl-banner {
-  background: #1E3A8A;
-}
-
-.admin-announce-tpl-side {
-  background: linear-gradient(90deg, #EEF2FF 30%, #f8fafc 30%);
-  border: 1px solid #e2e8f0;
-}
-
-.admin-announce-tpl-text {
-  background: #f0f4ff;
-  border: 1px solid #e2e8f0;
-}
-
-/* ── Image preview variants ── */
-.admin-announce-img-preview {
-  border-radius: 2px;
-  overflow: hidden;
-  margin-top: 6px;
-}
-
-.admin-announce-img-banner img {
-  width: 100%;
-  height: 120px;
-  object-fit: cover;
-  display: block;
-}
-
-.admin-announce-img-side {
-  display: flex;
-}
-
-.admin-announce-img-side img {
-  width: 80px;
-  height: 80px;
-  object-fit: cover;
-  display: block;
-}
-
-/* ── Live Preview card ── */
+/* ── Live Preview ── */
 .admin-announce-preview-wrap {
   background: #f8fafc;
   border-radius: 2px;
@@ -579,10 +462,12 @@
   border-radius: 2px;
   border: 1px solid #e2e8f0;
   overflow: hidden;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 }
 
-.ann-card-side {
-  display: flex;
+.ann-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.08);
 }
 
 .ann-banner {
@@ -594,53 +479,131 @@
   background: #EEF2FF;
 }
 
-.ann-banner img, .ann-side-img img {
+.ann-banner-placeholder {
   width: 100%;
-  max-height: 450px;
-  object-fit: contain;
-  background: #f8fafc;
-  cursor: pointer;
-  flex-shrink: 0;
-  scroll-snap-align: center;
-}
-
-/* Multi-image Slider */
-.ann-slider {
+  height: 100%;
+  background: #EEF2FF;
   display: flex;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  background: #f8fafc;
-}
-
-.ann-slider::-webkit-scrollbar {
-  display: none;
-}
-
-.ann-slider-indicators {
-  display: flex;
+  align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 10px 0;
-  background: white;
-  border-bottom: 1px solid #f1f5f9;
 }
 
-.ann-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #cbd5e1;
-  transition: all 0.3s;
+.ann-side-img {
+  width: 80px;
+  flex-shrink: 0;
 }
 
-.ann-dot.active {
-  background: #1e3a8a;
-  transform: scale(1.2);
+.ann-body {
+  padding: 12px 16px;
+  flex: 1;
 }
 
-/* Admin Gallery Thumbnails */
+.ann-cat {
+  font-size: 10px;
+  font-weight: 600;
+  background: #EEF2FF;
+  color: #0D1F45;
+  padding: 2px 8px;
+  border-radius: 2px;
+  display: inline-block;
+  margin-bottom: 5px;
+}
+
+.ann-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.ann-msg {
+  font-size: 12px;
+  color: #475569;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.ann-meta {
+  display: flex;
+  gap: 10px;
+  font-size: 10px;
+  color: #94a3b8;
+  flex-wrap: wrap;
+}
+
+/* Utility classes at end */
+.admin-ann-mt-8 {
+  margin-top: 8px;
+}
+
+.admin-ann-icon-align {
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+.admin-ann-card-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-ann-header-no-border {
+  padding-bottom: 12px;
+  border-bottom: none;
+}
+
+.admin-ann-pad-20 {
+  padding: 0 20px 20px;
+}
+
+.admin-ann-placeholder-italic {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.admin-ann-divider {
+  height: 8px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.admin-ann-text-13 {
+  font-size: 13px;
+}
+
+.admin-ann-subtitle-11 {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 1px;
+}
+
+.admin-ann-active-badge-style {
+  padding: 2px 6px;
+  margin-left: 6px;
+  background: #DBEAFE;
+}
+
+.admin-ann-flex-1 {
+  flex: 1;
+}
+
+.admin-ann-skel-title {
+  height: 12px;
+  width: 60%;
+  margin-bottom: 6px;
+  border-radius: 4px;
+}
+
+.admin-ann-skel-desc {
+  height: 10px;
+  width: 90%;
+  border-radius: 4px;
+}
+
+.admin-ann-mb-8 {
+  margin-bottom: 8px;
+}
+
 .admin-announce-gallery {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
@@ -661,12 +624,6 @@
   background: white;
 }
 
-.admin-announce-gallery-item img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
 .admin-announce-remove-img {
   position: absolute;
   top: 4px;
@@ -682,14 +639,7 @@
   justify-content: center;
   cursor: pointer;
   font-size: 12px;
-  padding: 0;
-  transition: all 0.2s;
   z-index: 2;
-}
-
-.admin-announce-remove-img:hover {
-  background: #ef4444;
-  transform: scale(1.1);
 }
 
 .admin-announce-img-count {
@@ -699,159 +649,17 @@
   font-weight: 500;
 }
 
-.ann-banner img:hover {
-  opacity: 0.9;
+.btn-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
 }
 
-.ann-banner-placeholder {
-  width: 100%;
-  height: 100%;
-  background: #EEF2FF;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
-
-.ann-side-img {
-  width: 80px;
-  flex-shrink: 0;
-}
-
-.ann-side-img img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  cursor: pointer;
-  transition: opacity 0.2s;
-}
-
-.ann-side-img img:hover {
-  opacity: 0.9;
-}
-
-.ann-side-img .ann-banner-placeholder {
-  height: 100%;
-  min-height: 90px;
-}
-
-.ann-body {
-  padding: 12px 16px;
-  flex: 1;
-}
-
-.ann-cat {
-  font-size: 10px;
-  font-weight: 600;
-  background: #EEF2FF;
-  color: #1E3A8A;
-  padding: 2px 8px;
-  border-radius: 2px;
-  display: inline-block;
-  margin-bottom: 5px;
-}
-
-.ann-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: #1e293b;
-  margin-bottom: 4px;
-  line-height: 1.4;
-}
-
-.ann-msg {
-  font-size: 12px;
-  color: #475569;
-  line-height: 1.5;
-  margin-bottom: 8px;
-}
-
-.ann-meta {
-  display: flex;
-  gap: 10px;
-  font-size: 10px;
-  color: #94a3b8;
-  flex-wrap: wrap;
-}
-
-.ann-meta span {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-}
-
-/* ── Tighter list items ── */
-.admin-announce-item {
-  border: 1px solid #e2e8f0;
-  border-radius: 2px;
-  padding: 9px 10px;
-  background: #fafafa;
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-}
-
-.admin-announce-item-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: #1e293b;
-  margin-bottom: 2px;
-}
-
-.admin-announce-item-body {
-  font-size: 11px;
-  color: #475569;
-  margin-bottom: 5px;
-  line-height: 1.4;
-}
-
-.admin-announce-item-cat {
-  font-size: 10px;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.admin-announce-item-badge {
-  font-size: 10px;
-}
-
-.admin-announce-edit,
-.admin-announce-delete {
-  padding: 5px;
-}
-
-/* ── Compact stats ── */
-.admin-announce-stat-number {
-  font-size: 20px;
-}
-
-.admin-announce-stat-label {
-  font-size: 11px;
-}
-
-.admin-announce-stat-item {
-  padding: 8px 0;
-}
-
-.admin-announce-stat-divider {
-  height: 36px;
-}
-
-/* ── Compact filter tabs ── */
-.admin-announce-filter-tab {
-  padding: 3px 10px;
-  font-size: 11px;
-}
-
-.admin-announce-filter-tabs {
-  gap: 5px;
-  padding: 0 16px 8px;
-}
-
-.admin-announce-card { transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; }
-.admin-announce-card:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.08); }
-
-.ann-card { transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; }
-.ann-card:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.08); }

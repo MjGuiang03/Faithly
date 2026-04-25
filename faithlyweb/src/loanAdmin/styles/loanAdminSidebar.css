@@ -12,7 +12,7 @@
   top: 0;
   left: 0;
   z-index: 50;
-  background: #1E3A8A;
+  background: #0D1F45;
   color: white;
   display: flex;
   flex-direction: column;
@@ -133,7 +133,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: #1E3A8A;
+  background: #0D1F45;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -305,7 +305,7 @@
 
 .sidebar-nav-button.active .sidebar-notif-badge {
   background: rgba(255, 255, 255, 0.9);
-  color: #1E3A8A;
+  color: #0D1F45;
 }
 
 @keyframes badge-pop {
@@ -465,7 +465,7 @@
 }
 
 .loan-toggle-switch input:checked + .loan-toggle-slider { 
-  background-color: #1E3A8A; 
+  background-color: #0D1F45; 
 }
 
 .loan-toggle-switch input:checked + .loan-toggle-slider:before { 

@@ -81,7 +81,7 @@
 
 .loan-admin-notif-mark-all:hover {
     background: #f9fafb;
-    border-color: #1E3A8A;
+    border-color: #0D1F45;
 }
 
 /* ── Filter Tabs ── */
@@ -130,7 +130,7 @@
 }
 
 .admin-notif-tab-active {
-    background: #1E3A8A;
+    background: #0D1F45;
     color: #ffffff;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }
@@ -221,7 +221,7 @@
 .loan-admin-notif-unread-dot {
     width: 7px;
     height: 7px;
-    background: #1E3A8A;
+    background: #0D1F45;
     border-radius: 50%;
     flex-shrink: 0;
 }
@@ -252,7 +252,7 @@
     font-family: 'Inter', sans-serif;
     font-size: 11px;
     font-weight: 600;
-    color: #1E3A8A;
+    color: #0D1F45;
 }
 
 .loan-admin-notif-status-badge.read {

@@ -53,7 +53,7 @@ export default function Settings() {
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [smsNotifications,   setSmsNotifications]   = useState(false);
 
-  const [twoFactorAuth, setTwoFactorAuth] = useState(false);
+
   const [passForm, setPassForm] = useState({
     current: '',
     new: '',
@@ -165,11 +165,7 @@ export default function Settings() {
     setIsEditing(false);
   };
 
-  const handleSaveSettings = () => alert('Settings saved successfully!');
-  const handleReset = () => {
-    setEmailNotifications(true); setSmsNotifications(false);
-    setTwoFactorAuth(false);
-  };
+
 
   const handleUpdatePassword = async (e) => {
     if (e) e.preventDefault();
@@ -579,27 +575,9 @@ export default function Settings() {
                 {passLoading ? <span className="btn-spinner" /> : 'Update Password'}
               </button>
 
-              <div className="user-settings-divider" />
-
-              <h3 className="user-settings-group-title">Account Access</h3>
-              <div className="user-toggle-setting">
-                <div className="user-toggle-setting-info">
-                  <h3 className="user-toggle-title">Two-Factor Authentication</h3>
-                  <p className="user-toggle-description">Add an extra layer of security to your account</p>
-                </div>
-                <label className="user-toggle-switch">
-                  <input type="checkbox" checked={twoFactorAuth} onChange={e => setTwoFactorAuth(e.target.checked)} />
-                  <span className="user-toggle-slider"></span>
-                </label>
-              </div>
             </div>
           </div>
 
-          {/* ── Action Buttons ─────────────────────────────────────────── */}
-          <div className="user-settings-actions">
-            <button className="user-save-settings-btn" onClick={handleSaveSettings}>Save All Settings</button>
-            <button className="user-reset-btn" onClick={handleReset}>Reset</button>
-          </div>
         </div>
       </div>
     </>

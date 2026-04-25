@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
-import { CalendarDays, Circle, MapPin, Search, Users } from 'lucide-react';
+import { CalendarDays, Circle, MapPin, Search, Users, TrendingUp } from 'lucide-react';
 import useDebounce from '../../hooks/useDebounce';
 import '../styles/AdminBranches.css';
 
@@ -16,7 +16,7 @@ export default function AdminBranches() {
   const debouncedSearch = useDebounce(search, 400);
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-  const LIMIT = 6;
+  const LIMIT = 68;
 
   const fetchBranches = useCallback(async () => {
     setLoading(true);
@@ -67,7 +67,7 @@ export default function AdminBranches() {
           <h1 className="admin-branch-title">Branches</h1>
           <p className="admin-branch-subtitle">Manage church branches and their information</p>
         </div>
-        <div className="admin-members-search-wrapper" style={{ width: '300px' }}>
+        <div className="admin-members-search-wrapper admin-branch-search-wrapper">
           <Search size={18} className="admin-members-search-icon" />
           <input
             type="text"
@@ -84,7 +84,7 @@ export default function AdminBranches() {
         <div className="admin-branch-stat-card">
           <div className="admin-branch-stat-header">
             <span className="admin-branch-stat-label">Total Branches</span>
-            <MapPin size={20} color="#155DFC" />
+            <div className="adm-stat-icon-wrap"><MapPin size={20} color="white" /></div>
           </div>
           <p className="admin-branch-stat-value">{loading ? '—' : totalCount}</p>
         </div>
@@ -92,7 +92,7 @@ export default function AdminBranches() {
         <div className="admin-branch-stat-card">
           <div className="admin-branch-stat-header">
             <span className="admin-branch-stat-label">Total Members</span>
-            <Users size={20} color="#00A63E" />
+            <div className="adm-stat-icon-wrap"><Users size={20} color="white" /></div>
           </div>
           <p className="admin-branch-stat-value">{loading ? '—' : totalMembers.toLocaleString()}</p>
         </div>
@@ -100,7 +100,7 @@ export default function AdminBranches() {
         <div className="admin-branch-stat-card">
           <div className="admin-branch-stat-header">
             <span className="admin-branch-stat-label">Total Services</span>
-            <CalendarDays size={20} color="#9810FA" />
+            <div className="adm-stat-icon-wrap"><CalendarDays size={20} color="white" /></div>
           </div>
           <p className="admin-branch-stat-value">—</p>
         </div>
@@ -108,7 +108,7 @@ export default function AdminBranches() {
         <div className="admin-branch-stat-card">
           <div className="admin-branch-stat-header">
             <span className="admin-branch-stat-label">Growth Rate</span>
-            <Circle size={20} color="#E60076" />
+            <div className="adm-stat-icon-wrap"><TrendingUp size={20} color="white" /></div>
           </div>
           <p className="admin-branch-stat-value">—</p>
         </div>
@@ -159,11 +159,8 @@ export default function AdminBranches() {
       </div>
 
       {totalCount > LIMIT && (
-        <div className="admin-members-pagination" style={{ marginTop: '24px' }}>
-          <p className="admin-members-pagination-info">
-            Showing {(page - 1) * LIMIT + 1} to {Math.min(page * LIMIT, totalCount)} of {totalCount} branches
-          </p>
-          <div className="admin-members-pagination-controls">
+        <div className="admin-members-pagination-wrapper">
+          <div className="admin-members-pagination">
             <button
               className="admin-members-pagination-btn"
               onClick={() => setPage(p => Math.max(1, p - 1))}
@@ -171,15 +168,17 @@ export default function AdminBranches() {
             >
               Previous
             </button>
-            {Array.from({ length: Math.ceil(totalCount / LIMIT) }, (_, i) => (
-              <button
-                key={i + 1}
-                className={`admin-members-pagination-btn ${page === i + 1 ? 'active' : ''}`}
-                onClick={() => setPage(i + 1)}
-              >
-                {i + 1}
-              </button>
-            ))}
+            <div className="admin-members-pagination-numbers">
+              {Array.from({ length: Math.ceil(totalCount / LIMIT) }, (_, i) => (
+                <button
+                  key={i + 1}
+                  className={`admin-members-pagination-number ${page === i + 1 ? 'active' : ''}`}
+                  onClick={() => setPage(i + 1)}
+                >
+                  {i + 1}
+                </button>
+              ))}
+            </div>
             <button
               className="admin-members-pagination-btn"
               onClick={() => setPage(p => Math.min(Math.ceil(totalCount / LIMIT), p + 1))}

@@ -377,8 +377,7 @@ export default function AdminAnnouncements() {
                   <input
                     type="text"
                     name="customCategory"
-                    className="admin-announce-input"
-                    style={{ marginTop: '8px' }}
+                    className="admin-announce-input admin-ann-mt-8"
                     placeholder="Enter custom category..."
                     value={form.customCategory}
                     onChange={handleChange}
@@ -405,7 +404,7 @@ export default function AdminAnnouncements() {
             <div className="admin-announce-form-row">
               <div className="admin-announce-form-group">
                 <label className="admin-announce-label">
-                  <Calendar size={13} style={{ marginRight: 4, verticalAlign: 'middle' }} />
+                  <Calendar size={13} className="admin-ann-icon-align" />
                   Event Date &amp; Time
                 </label>
                 <input 
@@ -419,7 +418,7 @@ export default function AdminAnnouncements() {
               </div>
               <div className="admin-announce-form-group">
                 <label className="admin-announce-label">
-                  <Clock size={13} style={{ marginRight: 4, verticalAlign: 'middle' }} />
+                  <Clock size={13} className="admin-ann-icon-align" />
                   Auto-Disappear Date
                 </label>
                 <input 
@@ -461,13 +460,13 @@ export default function AdminAnnouncements() {
         </div>
 
         {/* ── RIGHT: Compact List ── */}
-        <div className="admin-announce-card" style={{ display: 'flex', flexDirection: 'column' }}>
+        <div className="admin-announce-card admin-ann-card-col">
 
           {/* Live Preview */}
-          <div className="admin-announce-card-header" style={{ paddingBottom: '12px', borderBottom: 'none' }}>
+          <div className="admin-announce-card-header admin-ann-header-no-border">
             <p className="admin-announce-card-title">Live Preview</p>
           </div>
-          <div style={{ padding: '0 20px 20px' }}>
+          <div className="admin-ann-pad-20">
             <div className="admin-announce-preview-wrap">
               <div className={`ann-card ann-card-${template}`}>
                 {template === 'banner' && (
@@ -501,10 +500,10 @@ export default function AdminAnnouncements() {
                 <div className="ann-body">
                   <span className="ann-cat">{form.category === 'Other' ? (form.customCategory || 'Custom Category') : form.category}</span>
                   <p className="ann-title">
-                    {form.title || <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>Announcement title...</span>}
+                    {form.title || <span className="admin-ann-placeholder-italic">Announcement title...</span>}
                   </p>
                   <p className="ann-msg">
-                    {form.body || <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>Your message will appear here.</span>}
+                    {form.body || <span className="admin-ann-placeholder-italic">Your message will appear here.</span>}
                   </p>
                   <div className="ann-meta">
                     <span><Calendar size={10} /> {previewDate}</span>
@@ -515,7 +514,7 @@ export default function AdminAnnouncements() {
             </div>
           </div>
 
-          <div style={{ height: '8px', background: '#f8fafc', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }} />
+          <div className="admin-ann-divider" />
 
           {/* Stats Bar */}
           <div className="admin-announce-stats-bar">
@@ -537,8 +536,8 @@ export default function AdminAnnouncements() {
 
           <div className="admin-announce-card-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: showPosted ? '1px solid #f1f5f9' : 'none' }}>
             <div>
-              <p className="admin-announce-card-title" style={{ fontSize: '13px' }}>Recent Announcements</p>
-              <p style={{ fontSize: '11px', color: '#94a3b8', marginTop: 1 }}>Manage active and expired announcements</p>
+              <p className="admin-announce-card-title admin-ann-text-13">Recent Announcements</p>
+              <p className="admin-ann-subtitle-11">Manage active and expired announcements</p>
             </div>
             <button 
               type="button"
@@ -546,7 +545,7 @@ export default function AdminAnnouncements() {
               onClick={() => setShowPosted(!showPosted)}
             >
               {showPosted ? 'Hide List' : 'View List'}
-              <span className="admin-announce-active-badge" style={{ padding: '2px 6px', marginLeft: '6px', background: '#DBEAFE' }}>
+              <span className="admin-announce-active-badge admin-ann-active-badge-style">
                 {items.filter(a => !isExpired(a.expiresAt)).length} active
               </span>
             </button>
@@ -570,15 +569,15 @@ export default function AdminAnnouncements() {
                 {loading ? (
                   [1, 2, 3].map(i => (
                     <div key={i} className="admin-announce-item">
-                      <div style={{ flex: 1 }}>
-                        <div className="user-skeleton" style={{ height: 12, width: '60%', marginBottom: 6, borderRadius: 4 }} />
-                        <div className="user-skeleton" style={{ height: 10, width: '90%', borderRadius: 4 }} />
+                      <div className="admin-ann-flex-1">
+                        <div className="user-skeleton admin-ann-skel-title" />
+                        <div className="user-skeleton admin-ann-skel-desc" />
                       </div>
                     </div>
                   ))
                 ) : (filteredItems => filteredItems.length === 0 ? (
                   <div className="admin-announce-empty">
-                    <Megaphone size={28} color="#cbd5e1" style={{ marginBottom: 8 }} />
+                    <Megaphone size={28} color="#cbd5e1" className="admin-ann-mb-8" />
                     <p>{items.length === 0 ? 'No announcements yet. Post one!' : `No ${categoryFilter} announcements.`}</p>
                   </div>
                 ) : (

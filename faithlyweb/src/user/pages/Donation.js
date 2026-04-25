@@ -6,6 +6,11 @@ import '../styles/Donation.css';
 import gcashLogo from '../../assets/gcashlogo.png';
 import bank from '../../assets/bank.png';
 import gcashQr from '../../assets/gcash_qr.png';
+import iconGeneral from '../../assets/icon_general.png';
+import iconChildren from '../../assets/icon_children.png';
+import iconBuilding from '../../assets/icon_building.png';
+import iconYouth from '../../assets/icon_youth.png';
+import iconMission from '../../assets/icon_mission.png';
 
 import API from '../../utils/api';
 
@@ -18,11 +23,11 @@ const fmtDate = (d) =>
 const QUICK_AMOUNTS = [25, 50, 100, 250];
 
 const CATEGORIES = [
-  { name: 'General Fund', description: 'Church operations and ministry' },
-  { name: 'Children Ministry', description: "Children's programs and activities" },
-  { name: 'Building Fund', description: 'Infrastructure and facility improvements' },
-  { name: 'Youth Ministry', description: 'Youth programs and events' },
-  { name: 'Mission Fund', description: 'Missionary work and outreach programs' },
+  { name: 'General Fund', description: 'Church operations and ministry', icon: <img src={iconGeneral} alt="General Fund" className="user-3d-cat-icon" /> },
+  { name: 'Children Ministry', description: "Children's programs and activities", icon: <img src={iconChildren} alt="Children Ministry" className="user-3d-cat-icon" /> },
+  { name: 'Building Fund', description: 'Infrastructure and facility improvements', icon: <img src={iconBuilding} alt="Building Fund" className="user-3d-cat-icon" /> },
+  { name: 'Youth Ministry', description: 'Youth programs and events', icon: <img src={iconYouth} alt="Youth Ministry" className="user-3d-cat-icon" /> },
+  { name: 'Mission Fund', description: 'Missionary work and outreach programs', icon: <img src={iconMission} alt="Mission Fund" className="user-3d-cat-icon" /> },
 ];
 
 
@@ -384,74 +389,69 @@ export default function Donation() {
             </div>
           </div>
 
-          {/* Right: Donation History (Preview) */}
-          <div className="user-donation-history-card">
-            <div className="user-card-header-row">
-              <h2 className="user-donation-section-title">Donation History</h2>
-              <button className="user-view-history-btn" onClick={handleOpenHistory}>View History</button>
+          {/* Right Column Container */}
+          <div className="user-donations-right-col">
+            {/* Donation History (Preview) */}
+            <div className="user-donation-history-card">
+              <div className="user-card-header-row">
+                <h2 className="user-donation-section-title">Donation History</h2>
+                <button className="user-view-history-btn" onClick={handleOpenHistory}>View History</button>
+              </div>
+
+              {/* Category Pie Chart */}
+              {!loading && stats.categoryBreakdown && Object.keys(stats.categoryBreakdown).length > 0 && (
+                <div className="user-donation-chart-container user-donation-chart-container-inner">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={Object.entries(stats.categoryBreakdown).map(([name, value]) => ({ name, value }))}
+                        cx="50%" cy="50%"
+                        innerRadius={50} outerRadius={80}
+                        paddingAngle={2} dataKey="value"
+                      >
+                        {Object.entries(stats.categoryBreakdown).map((_, index) => {
+                          const COLORS = ['#0D1F45', '#152B5C', '#1C3873', '#23448A', '#2B51A1', '#325DB8', '#396ACF'];
+                          return <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />;
+                        })}
+                      </Pie>
+                      <Tooltip formatter={(value) => `₱${Number(value).toLocaleString('en-PH', { minimumFractionDigits: 0 })}`} />
+                      <Legend verticalAlign="bottom" height={36} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+
+              {/* Empty State */}
+              {!loading && (!stats.categoryBreakdown || Object.keys(stats.categoryBreakdown).length === 0) && (
+                <div className="user-donation-empty-state">
+                  <div className="user-donation-empty-icon-wrap">
+                    <Heart size={28} color="#1E3A8A" />
+                  </div>
+                  <p className="user-donation-empty-title">No donations yet</p>
+                  <p className="user-donation-empty-subtitle">Your giving history will appear here. Every contribution makes a difference!</p>
+                </div>
+              )}
             </div>
 
-            {/* Category Pie Chart */}
-            {/* Category Pie Chart */}
-            {!loading && stats.categoryBreakdown && Object.keys(stats.categoryBreakdown).length > 0 && (
-              <div className="user-donation-chart-container user-donation-chart-container-inner">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={Object.entries(stats.categoryBreakdown).map(([name, value]) => ({ name, value }))}
-                      cx="50%" cy="50%"
-                      innerRadius={50} outerRadius={80}
-                      paddingAngle={2} dataKey="value"
-                    >
-                      {Object.entries(stats.categoryBreakdown).map((_, index) => {
-                        const COLORS = ['#0D1F45', '#152B5C', '#1C3873', '#23448A', '#2B51A1', '#325DB8', '#396ACF'];
-                        return <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />;
-                      })}
-                    </Pie>
-                    <Tooltip formatter={(value) => `₱${Number(value).toLocaleString('en-PH', { minimumFractionDigits: 0 })}`} />
-                    <Legend verticalAlign="bottom" height={36} />
-                  </PieChart>
-                </ResponsiveContainer>
+            {/* Where your giving goes */}
+            <div className="user-donation-history-card">
+              <div className="user-card-header-row user-giving-goes-header">
+                <h2 className="user-donation-section-title">Where Your Giving Goes</h2>
               </div>
-            )}
-
-            {/* Empty State */}
-            {!loading && (!stats.categoryBreakdown || Object.keys(stats.categoryBreakdown).length === 0) && (
-              <div className="user-donation-empty-state">
-                <div className="user-donation-empty-icon-wrap">
-                  <Heart size={28} color="#1E3A8A" />
-                </div>
-                <p className="user-donation-empty-title">No donations yet</p>
-                <p className="user-donation-empty-subtitle">Your giving history will appear here. Every contribution makes a difference!</p>
-
-                <div className="user-donation-empty-divider">
-                  <span className="user-donation-empty-divider-label">Where your giving goes</span>
-                </div>
-
-                <div className="user-donation-empty-categories">
-                  {CATEGORIES.map((cat, i) => {
-                    const CATEGORY_COLORS = [
-                      { bg: '#EFF6FF', border: '#BFDBFE', text: '#1E3A8A' },
-                      { bg: '#FFF7ED', border: '#FED7AA', text: '#92400E' },
-                      { bg: '#F0FDF4', border: '#BBF7D0', text: '#166534' },
-                      { bg: '#FAF5FF', border: '#E9D5FF', text: '#6B21A8' },
-                      { bg: '#FFF1F2', border: '#FECDD3', text: '#9F1239' },
-                    ];
-                    const col = CATEGORY_COLORS[i % CATEGORY_COLORS.length];
-                    return (
-                      <div key={cat.name} className="user-donation-empty-category-item"
-                        style={{ background: col.bg, borderColor: col.border }}>
-                          <div className="user-donation-empty-category-info">
-                          <p className="user-donation-empty-category-name" style={{ color: col.text }}>{cat.name}</p>
-                          <p className="user-donation-empty-category-desc">{cat.description}</p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+              <div className="user-donation-empty-categories">
+                {CATEGORIES.map((cat) => (
+                  <div key={cat.name} className="user-donation-empty-category-item">
+                    <div className="user-donation-3d-icon-wrap">
+                      {cat.icon}
+                    </div>
+                    <div className="user-donation-empty-category-info">
+                      <p className="user-donation-empty-category-name">{cat.name}</p>
+                      <p className="user-donation-empty-category-desc">{cat.description}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
-            )}
-
+            </div>
           </div>
         </div>
       </div>

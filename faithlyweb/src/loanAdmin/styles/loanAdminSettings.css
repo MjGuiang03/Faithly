@@ -149,7 +149,7 @@
 
 .loan-admin-settings-input:focus {
     outline: none;
-    border-color: #1E3A8A;
+    border-color: #0D1F45;
 }
 
 .loan-admin-settings-input-wrapper {
@@ -254,7 +254,7 @@
 }
 
 .loan-admin-settings-switch input:checked+.loan-admin-settings-slider {
-    background-color: #1E3A8A;
+    background-color: #0D1F45;
 }
 
 .loan-admin-settings-switch input:checked+.loan-admin-settings-slider:before {
@@ -300,7 +300,7 @@
     content: "•";
     position: absolute;
     left: 8px;
-    color: #1E3A8A;
+    color: #0D1F45;
 }
 
 /* Security Item */
@@ -340,13 +340,13 @@
 .loan-admin-settings-change-btn {
     padding: 6px 16px;
     background: transparent;
-    border: 1px solid #1E3A8A;
+    border: 1px solid #0D1F45;
     border-radius: 2px;
     font-family: 'Inter', sans-serif;
     font-weight: 500;
     font-size: 14px;
     line-height: 20px;
-    color: #1E3A8A;
+    color: #0D1F45;
     cursor: pointer;
     transition: all 0.2s;
  transition: transform 0.3s ease, background 0.3s ease; }
@@ -376,7 +376,7 @@
  transition: transform 0.3s ease, background 0.3s ease; }
 
 .loan-admin-settings-btn.primary {
-    background: #1E3A8A;
+    background: #0D1F45;
     color: #ffffff;
     min-width: 200px;
 }

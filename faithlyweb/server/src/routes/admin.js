@@ -234,7 +234,7 @@ router.get('/branches', authenticateAdmin, async (req, res) => {
   try {
     const { search } = req.query;
     const page = Math.max(1, parseInt(req.query.page) || 1);
-    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 10));
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 10));
     const skip = (page - 1) * limit;
 
     // Aggregate member counts per branch
@@ -367,14 +367,14 @@ router.get('/admins', authenticateAdmin, async (req, res) => {
   }
 });
 
-/* ================== UPDATE ADMIN ROLE ================== */
+/* ================== UPDATE ADMIN ROLE / PASSWORD ================== */
 router.put('/update-admin', authenticateAdmin, async (req, res) => {
   try {
     if (req.admin.role !== 'admin') {
-      return res.status(403).json({ success: false, message: 'Only Main Admin can update roles' });
+      return res.status(403).json({ success: false, message: 'Only Main Admin can update accounts' });
     }
 
-    const { email, role, adminPassword } = req.body;
+    const { email, role, newPassword, adminPassword } = req.body;
     if (!email || !role) {
       return res.status(400).json({ success: false, message: 'Email and role are required' });
     }
@@ -405,9 +405,14 @@ router.put('/update-admin', authenticateAdmin, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Admin not found' });
     }
 
-    await admins.updateOne({ email }, { $set: { role, updatedAt: new Date() } });
+    const updateFields = { role, updatedAt: new Date() };
+    if (newPassword && newPassword.trim() !== '') {
+      updateFields.passwordHash = await bcrypt.hash(newPassword, 12);
+    }
 
-    res.status(200).json({ success: true, message: `Role updated to ${role}` });
+    await admins.updateOne({ email }, { $set: updateFields });
+
+    res.status(200).json({ success: true, message: `Account updated successfully` });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Failed to update admin' });

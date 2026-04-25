@@ -658,6 +658,14 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  cursor: default;
+}
+
+.ul-lt-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  border-color: #93C5FD;
 }
 
 .ul-lt-icon {
@@ -819,5 +827,26 @@
 
   .ul-loan-amount-block {
     text-align: left;
+  }
+
+  .ul-locked-banner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ul-locked-action-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .ul-page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ul-apply-btn,
+  .ul-apply-btn-disabled {
+    width: 100%;
+    justify-content: center;
   }
 }

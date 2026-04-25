@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
-import { UserPlus, Search, Edit2, Trash2, Shield, Loader2, X, Info } from 'lucide-react';
+import { UserPlus, Search, Edit2, Trash2, Shield, Loader2, X, Info, Eye, EyeOff } from 'lucide-react';
 import useDebounce from '../../hooks/useDebounce';
 import API from '../../utils/api';
 import '../styles/AdminUserManagement.css';
@@ -80,6 +80,9 @@ export default function AdminUserManagement() {
   const [editTarget, setEditTarget] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [editRole, setEditRole] = useState('');
+  const [editPassword, setEditPassword] = useState('');
+  const [showCreatePassword, setShowCreatePassword] = useState(false);
+  const [showEditPassword, setShowEditPassword] = useState(false);
 
   // Create form
   const [createForm, setCreateForm] = useState({ email: '', password: '', role: 'loanAdmin' });
@@ -121,12 +124,7 @@ export default function AdminUserManagement() {
   /* ── Create ── */
   const handleCreate = async (e) => {
     e.preventDefault();
-    if (!createForm.email.endsWith('@gmail.com')) {
-      toast.error('Please use a valid Gmail address'); return;
-    }
-    if (createForm.password.length < 8) {
-      toast.error('Password must be at least 8 characters'); return;
-    }
+
     setCreateLoading(true);
     try {
       const res = await fetch(`${API}/api/admin/create-admin`, {
@@ -158,7 +156,7 @@ export default function AdminUserManagement() {
       const res = await fetch(`${API}/api/admin/update-admin`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ email: editTarget.email, role: editRole, adminPassword })
+        body: JSON.stringify({ email: editTarget.email, role: editRole, newPassword: editPassword, adminPassword })
       });
       const data = await res.json();
       if (res.ok && data.success) {
@@ -210,7 +208,7 @@ export default function AdminUserManagement() {
           <h1 className="admin-users-title">User Management</h1>
 
         </div>
-        <button className="admin-users-add-btn" onClick={() => setShowAddModal(true)}>
+        <button className="admin-users-add-btn" onClick={() => { setShowAddModal(true); setShowCreatePassword(false); }}>
           <UserPlus size={18} />
           <span>Add User</span>
         </button>
@@ -224,15 +222,15 @@ export default function AdminUserManagement() {
         </div>
         <div className="admin-users-stat-card">
           <p className="admin-users-stat-label">Main Admins</p>
-          <p className="admin-users-stat-value" style={{ color: ROLE_COLORS.admin }}>{loading ? '—' : stats.admins}</p>
+          <p className="admin-users-stat-value admin-users-color-admin">{loading ? '—' : stats.admins}</p>
         </div>
         <div className="admin-users-stat-card">
           <p className="admin-users-stat-label">Loan Officers</p>
-          <p className="admin-users-stat-value" style={{ color: ROLE_COLORS.loanAdmin }}>{loading ? '—' : stats.loanAdmins}</p>
+          <p className="admin-users-stat-value admin-users-color-loan">{loading ? '—' : stats.loanAdmins}</p>
         </div>
         <div className="admin-users-stat-card">
           <p className="admin-users-stat-label">Secretaries</p>
-          <p className="admin-users-stat-value" style={{ color: ROLE_COLORS.secretaryAdmin }}>{loading ? '—' : stats.secretaryAdmins}</p>
+          <p className="admin-users-stat-value admin-users-color-sec">{loading ? '—' : stats.secretaryAdmins}</p>
         </div>
       </div>
 
@@ -271,12 +269,12 @@ export default function AdminUserManagement() {
                 adminList.map(a => (
                   <tr key={a._id}>
                     <td className="admin-users-email-cell">
-                      <Shield size={14} style={{ color: ROLE_COLORS[a.role] || '#6b7280' }} />
+                      <Shield size={14} className={`admin-users-shield-color-${a.role || 'default'}`} />
                       <span>{a.email}</span>
                       {isSuperAdmin(a.email) && <span className="admin-users-super-badge">Super</span>}
                     </td>
                     <td>
-                      <span className="admin-users-role-badge" style={{ background: `${ROLE_COLORS[a.role]}18`, color: ROLE_COLORS[a.role] }}>
+                      <span className={`admin-users-role-badge admin-users-badge-${a.role || 'default'}`}>
                         {ROLE_LABELS[a.role] || a.role}
                       </span>
                     </td>
@@ -288,8 +286,8 @@ export default function AdminUserManagement() {
                         <div className="admin-users-actions-cell">
                           <button
                             className="admin-users-action-btn edit"
-                            title="Change Role"
-                            onClick={() => { setEditTarget(a); setEditRole(a.role); }}
+                            title="Edit Account"
+                            onClick={() => { setEditTarget(a); setEditRole(a.role); setEditPassword(''); setShowEditPassword(false); }}
                           >
                             <Edit2 size={14} />
                           </button>
@@ -327,18 +325,24 @@ export default function AdminUserManagement() {
             </div>
             <form className="admin-users-modal-body" onSubmit={handleCreate}>
               <div className="admin-users-form-group">
-                <label className="admin-users-form-label">Gmail Address</label>
+                <label className="admin-users-form-label">Email Address</label>
                 <input
-                  type="email" className="admin-users-input" placeholder="example@gmail.com"
+                  type="email" className="admin-users-input" placeholder="example@email.com"
                   value={createForm.email} onChange={e => setCreateForm(f => ({ ...f, email: e.target.value }))} required
                 />
               </div>
               <div className="admin-users-form-group">
                 <label className="admin-users-form-label">Password</label>
-                <input
-                  type="password" className="admin-users-input" placeholder="••••••••"
-                  value={createForm.password} onChange={e => setCreateForm(f => ({ ...f, password: e.target.value }))} required
-                />
+                <div className="admin-users-password-wrap">
+                  <input
+                    type={showCreatePassword ? "text" : "password"} className="admin-users-input" placeholder="••••••••"
+                    value={createForm.password} onChange={e => setCreateForm(f => ({ ...f, password: e.target.value }))} required
+
+                  />
+                  <button type="button" className="admin-users-eye-btn" onClick={() => setShowCreatePassword(!showCreatePassword)}>
+                    {showCreatePassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
               </div>
               <div className="admin-users-form-group">
                 <label className="admin-users-form-label">Account Role</label>
@@ -362,16 +366,16 @@ export default function AdminUserManagement() {
         </div>
       )}
 
-      {/* ── Edit Role Modal ── */}
+      {/* ── Edit Account Modal ── */}
       {editTarget && (
         <div className="admin-users-modal-overlay" onClick={() => setEditTarget(null)}>
           <div className="admin-users-modal" onClick={e => e.stopPropagation()}>
             <div className="admin-users-modal-header">
-              <h3>Change Role</h3>
+              <h3>Edit Account</h3>
               <button className="admin-users-modal-close" onClick={() => setEditTarget(null)}><X size={18} /></button>
             </div>
             <div className="admin-users-modal-body">
-              <p className="admin-users-modal-desc">Change role for <strong>{editTarget.email}</strong></p>
+              <p className="admin-users-modal-desc">Edit details for <strong>{editTarget.email}</strong></p>
               <div className="admin-users-form-group">
                 <label className="admin-users-form-label">New Role</label>
                 <select className="admin-users-select" value={editRole} onChange={e => setEditRole(e.target.value)}>
@@ -380,13 +384,26 @@ export default function AdminUserManagement() {
                   <option value="secretaryAdmin">Secretary</option>
                 </select>
               </div>
+              <div className="admin-users-form-group">
+                <label className="admin-users-form-label">New Password (optional)</label>
+                <div className="admin-users-password-wrap">
+                  <input
+                    type={showEditPassword ? "text" : "password"} className="admin-users-input admin-users-pwd-input" placeholder="Leave blank to keep current"
+                    value={editPassword} onChange={e => setEditPassword(e.target.value)}
+
+                  />
+                  <button type="button" className="admin-users-eye-btn" onClick={() => setShowEditPassword(!showEditPassword)}>
+                    {showEditPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
             </div>
             <div className="admin-users-modal-actions">
               <button className="admin-users-btn secondary" onClick={() => setEditTarget(null)}>Cancel</button>
               <button className="admin-users-btn primary" onClick={() => {
                 // Show password confirmation
                 setEditTarget({ ...editTarget, confirmStep: true });
-              }} disabled={editRole === editTarget.role}>
+              }} disabled={editRole === editTarget.role && !editPassword.trim()}>
                 Continue
               </button>
             </div>

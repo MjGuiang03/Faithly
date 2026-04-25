@@ -188,7 +188,7 @@ router.post('/admin/attendance/log-tap', authenticateAdmin, async (req, res) => 
      const existing = await attendance.findOne({ sessionId: session.sessionId, email: user.email });
      if (existing) {
           // Send back green success still, but message "already clocked in"
-         return res.status(200).json({ success: true, alreadyLogged: true, message: 'Already recorded for this session', user: { name: user.fullName, branch: user.branch } });
+         return res.status(200).json({ success: true, alreadyLogged: true, message: 'Already recorded for this session', user: { name: user.fullName || user.name, branch: user.branch, profilePicture: user.profilePicture } });
      }
 
      const now = new Date();
@@ -220,7 +220,7 @@ router.post('/admin/attendance/log-tap', authenticateAdmin, async (req, res) => 
 
      await attendance.insertOne(newRecord);
 
-     res.status(201).json({ success: true, message: `Checked in as ${status}`, record: newRecord });
+     res.status(201).json({ success: true, message: `Checked in as ${status}`, record: newRecord, user: { name: user.fullName || user.name, branch: user.branch, profilePicture: user.profilePicture, status: status } });
 
   } catch(err) {
      console.error(err);

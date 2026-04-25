@@ -216,7 +216,7 @@ export default function AdminSidebar() {
         <div className={`admin-sidebar-dropdown ${isAdminOpen ? 'open' : ''}`}>
           <button
             onClick={() => setIsAdminOpen(!isAdminOpen)}
-            className={`admin-sidebar-nav-button ${isGroupActive('/admin/reports', '/admin/users', '/admin/settings') ? 'active' : ''}`}
+            className={`admin-sidebar-nav-button ${isGroupActive('/admin/users', '/admin/settings') ? 'active' : ''}`}
           >
             <Settings size={20} />
             <span>Admin</span>

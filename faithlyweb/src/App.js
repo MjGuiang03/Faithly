@@ -33,16 +33,16 @@ import AdminBranches from './admin/pages/AdminBranches';
 import AdminSettings from './admin/pages/AdminSettings';
 import AdminNotifications from './admin/pages/AdminNotification';
 
-import AdminReports from './admin/pages/AdminReports';
+
 import AdminAnnouncements from './admin/pages/AdminAnnouncements';
 import AdminUserManagement from './admin/pages/AdminUserManagement';
-import AdminLoanManagement from './admin/pages/AdminLoanManagement';
+
+import AdminRFIDPreview from './admin/pages/AdminRFIDPreview';
 
 // Loan Admin Pages
 import LoanAdminDashboard from './loanAdmin/pages/loanAdminDashboard';
 import LoanAdminNotif from './loanAdmin/pages/loanAdminNotif';
 import LoanAdminLoanManagement from './loanAdmin/pages/loanAdminLoanManagement';
-import LoanAdminReports from './loanAdmin/pages/loanAdminReports';
 import LoanAdminPaymentStatus from './loanAdmin/pages/loanAdminPaymentStatus';
 import LoanAdminDelinquency from './loanAdmin/pages/loanAdminDelinquency';
 import LoanAdminSettings from './loanAdmin/pages/loanAdminSettings';
@@ -74,7 +74,8 @@ export default function App() {
             <Route path="/update-password" element={<UpdatePassword />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
 
-            {/* ========== ADMIN ROUTES ========== */}
+            {/* Standalone RFID Preview Route */}
+            <Route path="/admin/rfid-preview" element={<AdminProtectedRoute><AdminRFIDPreview /></AdminProtectedRoute>} />
 
             {/* Redirect /admin → /admin/dashboard */}
             <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
@@ -98,11 +99,11 @@ export default function App() {
               <Route path="/admin/donations" element={<AdminDonations />} />
               <Route path="/admin/attendance" element={<AdminAttendance />} />
               <Route path="/admin/branches" element={<AdminBranches />} />
-              <Route path="/admin/reports" element={<AdminReports />} />
+
               <Route path="/admin/announcements" element={<AdminAnnouncements />} />
               <Route path="/admin/users" element={<AdminUserManagement />} />
               <Route path="/admin/settings" element={<AdminSettings />} />
-              <Route path="/admin/loans" element={<AdminLoanManagement />} />
+
             </Route>
 
             {/* ========== LOAN ADMIN ROUTES ========== */}
@@ -117,7 +118,6 @@ export default function App() {
             <Route path="/loan-admin/payments/savings" element={<AdminProtectedRoute><LoanAdminPaymentStatus /></AdminProtectedRoute>} />
             <Route path="/loan-admin/payment-status" element={<Navigate to="/loan-admin/payments/loans" replace />} />
             <Route path="/loan-admin/delinquency" element={<AdminProtectedRoute><LoanAdminDelinquency /></AdminProtectedRoute>} />
-            <Route path="/loan-admin/reports" element={<AdminProtectedRoute><LoanAdminReports /></AdminProtectedRoute>} />
             <Route path="/loan-admin/settings" element={<AdminProtectedRoute><LoanAdminSettings /></AdminProtectedRoute>} />
 
             {/* ========== SECRETARY ADMIN ROUTES ========== */}

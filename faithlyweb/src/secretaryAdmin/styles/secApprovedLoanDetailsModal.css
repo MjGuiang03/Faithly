@@ -134,13 +134,13 @@
 
 .sec-loan-details-value.gcash {
     font-weight: 700;
-    color: #1E3A8A;
+    color: #0D1F45;
 }
 
 .sec-loan-details-value.amount {
     font-weight: 700;
     font-size: 20px;
-    color: #1E3A8A;
+    color: #0D1F45;
 }
 
 .sec-loan-details-status-badge {
@@ -259,7 +259,7 @@
 }
 
 .sec-modal-btn-primary {
-    background: #1E3A8A;
+    background: #0D1F45;
     color: white;
  transition: transform 0.3s ease, background 0.3s ease; }
 

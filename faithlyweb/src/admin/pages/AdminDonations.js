@@ -5,7 +5,7 @@ import useDebounce from '../../hooks/useDebounce';
 import '../styles/AdminDonations.css';
 
 import API from '../../utils/api';
-import { Circle, Heart, Search, XCircle } from 'lucide-react';
+import { Banknote, Users, Calculator, Search, XCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 
 
 const fmt = (n) =>
@@ -168,7 +168,7 @@ export default function AdminDonationsNew() {
         <div className="admin-don-new-stat-card">
           <div className="admin-don-new-stat-header">
             <span className="admin-don-new-stat-label">Total This Month</span>
-            <Circle size={20} color="#E60076" />
+            <div className="adm-stat-icon-wrap"><Banknote size={20} color="white" /></div>
           </div>
           <p className="admin-don-new-stat-value">{fmt(stats.totalThisMonth)}</p>
           <p className="admin-don-new-stat-change">{stats.percentageChange} from last month</p>
@@ -177,7 +177,7 @@ export default function AdminDonationsNew() {
         <div className="admin-don-new-stat-card">
           <div className="admin-don-new-stat-header">
             <span className="admin-don-new-stat-label">Total Donors</span>
-            <Circle size={20} color="#155DFC" />
+            <div className="adm-stat-icon-wrap"><Users size={20} color="white" /></div>
           </div>
           <p className="admin-don-new-stat-value">{stats.totalDonors}</p>
         </div>
@@ -185,12 +185,12 @@ export default function AdminDonationsNew() {
         <div className="admin-don-new-stat-card">
           <div className="admin-don-new-stat-header">
             <span className="admin-don-new-stat-label">Avg. Donation</span>
-            <Heart size={20} color="#00A63E" />
+            <div className="adm-stat-icon-wrap"><Calculator size={20} color="white" /></div>
           </div>
           <p className="admin-don-new-stat-value">{fmt(stats.avgDonation)}</p>
         </div>
 
-        <div className="admin-don-new-stat-card" style={{ cursor: 'pointer' }} onClick={async () => {
+        <div className="admin-don-new-stat-card admin-don-clickable-card" onClick={async () => {
           setShowRejectedModal(true);
           setRejectedLoading(true);
           const res = await fetch(`${API}/api/admin/donations?status=rejected&limit=100`, { headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }});
@@ -200,43 +200,38 @@ export default function AdminDonationsNew() {
         }}>
           <div className="admin-don-new-stat-header">
             <span className="admin-don-new-stat-label">Total Rejected</span>
-            <XCircle size={20} color="#EF4444" />
+            <div className="adm-stat-icon-wrap"><XCircle size={20} color="white" /></div>
           </div>
-          <p className="admin-don-new-stat-value" style={{ color: '#EF4444' }}>{stats.rejectedCount}</p>
+          <p className="admin-don-new-stat-value admin-don-text-red">{stats.rejectedCount}</p>
         </div>
       </div>
 
       {/* Donations Table */}
       <div className="admin-don-new-section">
-        <div className="admin-don-new-table-header">
-          <h2 className="admin-don-new-section-title">All Donations</h2>
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            {/* Status Filter */}
-            <select
-              className="admin-don-status-filter"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option value="active">All Forms</option>
-              <option value="pending">Pending</option>
-              <option value="confirmed">Confirmed</option>
-            </select>
-            {/* Search */}
-            <div className="history-search-box">
-              <Search className="search-icon-inner" size={14} color="#9ca3af" />
-              <input
-                type="text"
-                className="history-search-input"
-                placeholder="Search member, ID..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
+        <div className="admin-don-search-toolbar">
+          <div className="admin-don-search-wrapper">
+            <Search className="admin-don-search-icon" size={18} />
+            <input
+              type="text"
+              className="admin-don-search-input"
+              placeholder="Search member, ID..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
+          <select
+            className="admin-don-status-filter"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="active">All Forms</option>
+            <option value="pending">Pending</option>
+            <option value="confirmed">Confirmed</option>
+          </select>
         </div>
 
-        <div className="loan-admin-mgmt-table-container">
-          <table className="loan-admin-mgmt-table">
+        <div className="admin-table-container">
+          <table className="admin-table">
             <thead>
               <tr>
                 <th>Donation ID</th>
@@ -251,32 +246,32 @@ export default function AdminDonationsNew() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>
+                  <td colSpan={7} className="admin-don-empty-cell">
                     Loading donations…
                   </td>
                 </tr>
               ) : donations.length === 0 ? (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>
+                  <td colSpan={7} className="admin-don-empty-cell">
                     No donations found
                   </td>
                 </tr>
               ) : (
                 donations.map((donation, index) => (
-                  <tr key={donation._id || index} className="loan-admin-mgmt-table-row-hover">
-                    <td style={{ fontWeight: 600, color: '#111827' }}>
+                  <tr key={donation._id || index} className="admin-table-row-hover">
+                    <td className="admin-don-cell-bold-dark">
                       {donation.donationId || `D-${String(index + 1).padStart(3, '0')}`}
                     </td>
                     <td>
                       {donation.member || '—'}
                     </td>
-                    <td style={{ color: '#00A63E', fontWeight: 600 }}>
+                    <td className="admin-don-cell-green-bold">
                       {fmt(donation.amount)}
                     </td>
-                    <td style={{ color: '#374151' }}>
+                    <td className="admin-don-cell-muted">
                       {donation.category || donation.purpose || 'General Fund'}
                     </td>
-                    <td style={{ whiteSpace: 'nowrap', color: '#6B7280' }}>
+                    <td className="admin-don-cell-date">
                       {fmtDate(donation.createdAt || donation.date)}
                     </td>
                     <td>
@@ -301,22 +296,37 @@ export default function AdminDonationsNew() {
         </div>
 
         {/* Pagination */}
-        {!loading && totalCount > 0 && (
-          <div className="admin-don-new-pagination">
-            <div className="admin-don-new-pagination-info">
-              Showing <strong>{(currentPage - 1) * ITEMS_PER_PAGE + 1}</strong> to{' '}
-              <strong>{Math.min(currentPage * ITEMS_PER_PAGE, totalCount)}</strong> of{' '}
-              <strong>{totalCount}</strong> results
+        {!loading && totalPages > 1 && (
+          <div className="admin-don-pagination-wrapper">
+            <div className="admin-don-pagination">
+              <button 
+                className="admin-don-pagination-btn" 
+                onClick={goPrev} 
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <div className="admin-don-pagination-numbers">
+                {Array.from({ length: totalPages }).map((_, i) => (
+                  <button 
+                    key={i}
+                    className={`admin-don-pagination-number ${currentPage === i + 1 ? 'active' : ''}`}
+                    onClick={() => goTo(i + 1)}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+              </div>
+              <button 
+                className="admin-don-pagination-btn" 
+                onClick={goNext} 
+                disabled={currentPage === totalPages}
+              >
+                <ChevronRight size={18} />
+              </button>
             </div>
-            <div className="admin-don-new-pagination-controls">
-              <button className="admin-don-new-pagination-btn" onClick={goPrev} disabled={currentPage === 1}>&lt;</button>
-              <button className="admin-don-new-pagination-number admin-don-new-pagination-active">{currentPage}</button>
-              {currentPage < totalPages && (
-                <button className="admin-don-new-pagination-number" onClick={() => goTo(currentPage + 1)}>
-                  {currentPage + 1}
-                </button>
-              )}
-              <button className="admin-don-new-pagination-btn" onClick={goNext} disabled={currentPage === totalPages}>&gt;</button>
+            <div className="admin-don-pagination-info">
+              Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, totalCount)} of {totalCount} results
             </div>
           </div>
         )}
@@ -393,14 +403,14 @@ export default function AdminDonationsNew() {
             </div>
 
             {/* Footer Actions */}
-            <div className="admin-don-modal-footer" style={{ flexDirection: 'column', gap: '12px', alignItems: 'stretch' }}>
+            <div className="admin-don-modal-footer admin-don-modal-footer-col">
               {(!detailModal.status || detailModal.status === 'pending') && (
-                <div style={{ padding: '12px', background: '#FEF2F2', border: '1px solid #FCA5A5', borderRadius: '8px' }}>
+                <div className="admin-don-reject-box">
                   {showRejectInput && (
                     <>
-                      <p style={{ margin: '0 0 8px 0', fontSize: '13px', color: '#991B1B', fontWeight: '500' }}>Rejection Reason</p>
+                      <p className="admin-don-reject-label">Rejection Reason</p>
                       <select 
-                        style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #FCA5A5', marginBottom: '12px', fontSize: '14px' }}
+                        className="admin-don-reject-select"
                         value={rejectReason}
                         onChange={(e) => setRejectReason(e.target.value)}
                       >
@@ -413,10 +423,9 @@ export default function AdminDonationsNew() {
                     </>
                   )}
                   
-                  <div style={{ display: 'flex', gap: '10px' }}>
+                  <div className="admin-don-flex-gap-10">
                     <button
-                      className="admin-don-action-btn admin-don-action-reject"
-                      style={{ padding: '10px 20px', fontSize: '14px', flex: 1 }}
+                      className="admin-don-action-btn admin-don-action-reject admin-don-btn-flex-1"
                       onClick={() => {
                         if (!showRejectInput) {
                           setShowRejectInput(true);
@@ -431,8 +440,7 @@ export default function AdminDonationsNew() {
                     
                     {!showRejectInput && (
                       <button
-                        className="admin-don-action-btn admin-don-action-confirm"
-                        style={{ padding: '10px 24px', fontSize: '14px', flex: 2 }}
+                        className="admin-don-action-btn admin-don-action-confirm admin-don-btn-flex-2"
                         onClick={() => handleConfirm(detailModal._id)}
                         disabled={actionLoading}
                       >
@@ -442,8 +450,7 @@ export default function AdminDonationsNew() {
 
                     {showRejectInput && (
                       <button
-                        className="admin-don-action-btn admin-don-action-view"
-                        style={{ padding: '10px 20px', fontSize: '14px', flex: 1 }}
+                        className="admin-don-action-btn admin-don-action-view admin-don-btn-flex-1"
                         onClick={() => setShowRejectInput(false)}
                         disabled={actionLoading}
                       >
@@ -453,10 +460,9 @@ export default function AdminDonationsNew() {
                   </div>
                 </div>
               )}
-              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <div className="admin-don-flex-end">
                 <button
-                  className="admin-don-action-btn admin-don-action-view"
-                  style={{ padding: '10px 20px', fontSize: '14px' }}
+                  className="admin-don-action-btn admin-don-action-view admin-don-btn-standard"
                   onClick={() => { setDetailModal(null); setShowRejectInput(false); }}
                 >
                   Close
@@ -470,19 +476,19 @@ export default function AdminDonationsNew() {
       {/* ── Rejected List Modal ── */}
       {showRejectedModal && (
         <div className="admin-don-modal-overlay" onClick={() => setShowRejectedModal(false)}>
-          <div className="admin-don-modal-content" style={{ maxWidth: '800px' }} onClick={(e) => e.stopPropagation()}>
+          <div className="admin-don-modal-content admin-don-modal-content-wide" onClick={(e) => e.stopPropagation()}>
             <div className="admin-don-modal-header">
               <h2 className="admin-don-modal-title">Rejected Donations</h2>
               <button className="admin-don-modal-close" onClick={() => setShowRejectedModal(false)}>×</button>
             </div>
-            <div className="admin-don-modal-body" style={{ maxHeight: '60vh', overflowY: 'auto', padding: '16px' }}>
+            <div className="admin-don-modal-body admin-don-modal-scrollable-body">
               {rejectedLoading ? (
                 <p>Loading...</p>
               ) : rejectedList.length === 0 ? (
                 <p>No rejected donations found.</p>
               ) : (
-                <div className="loan-admin-mgmt-table-container">
-                  <table className="loan-admin-mgmt-table">
+                <div className="admin-table-container">
+                  <table className="admin-table">
                     <thead>
                       <tr>
                         <th>ID</th>
@@ -494,11 +500,11 @@ export default function AdminDonationsNew() {
                     </thead>
                     <tbody>
                       {rejectedList.map(r => (
-                        <tr key={r._id} className="loan-admin-mgmt-table-row-hover">
-                          <td style={{ fontWeight: 600 }}>{r.donationId}</td>
+                        <tr key={r._id} className="admin-table-row-hover">
+                          <td className="admin-don-fw-600">{r.donationId}</td>
                           <td>{r.member}</td>
                           <td>{fmt(r.amount)}</td>
-                          <td style={{ color: '#EF4444' }}>{r.rejectReason || 'Admin review'}</td>
+                          <td className="admin-don-text-red">{r.rejectReason || 'Admin review'}</td>
                           <td>{fmtDate(r.createdAt)}</td>
                         </tr>
                       ))}

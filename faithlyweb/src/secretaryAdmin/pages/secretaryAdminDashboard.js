@@ -4,15 +4,24 @@ import SecretaryAdminSidebar from '../components/secretaryAdminSidebar';
 import '../../admin/styles/AdminDashboard.css';
 import '../styles/secretaryAdminDashboard.css';
 import API from '../../utils/api';
-import { Banknote, Circle } from 'lucide-react';
+import { Banknote, Clock, CheckCircle, CalendarDays, X, Filter } from 'lucide-react';
 
 
 const fmt = (n) => n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 0 })}` : '₱0';
+const fmtDate = (d) => {
+  if (!d) return 'N/A';
+  return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+};
 const COLORS = ['#155DFC', '#00A63E', '#F59E0B'];
+const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const YEAR_OPTIONS = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() + i);
 
 export default function SecretaryAdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ awaiting: 0, today: 0, month: 0, disbursed: 0 });
+  const [rawLoans, setRawLoans] = useState([]);
+  const [chartYear, setChartYear] = useState(new Date().getFullYear());
+
   const [reportStats, setReportStats] = useState({ totalReceived: 0, totalReleased: 0, totalProcessed: 0, processingRate: 0 });
   const [paymentMethodData, setPaymentMethodData] = useState([
     { name: 'GCash', value: 0, percentage: 0 },
@@ -20,6 +29,18 @@ export default function SecretaryAdminDashboard() {
     { name: 'Cash', value: 0, percentage: 0 }
   ]);
   const [moneyFlowData, setMoneyFlowData] = useState([]);
+
+  // Modal states
+  const [showMonthModal, setShowMonthModal] = useState(false);
+  const [showDisbursedModal, setShowDisbursedModal] = useState(false);
+  const [monthLoans, setMonthLoans] = useState([]);
+  const [disbursedLoans, setDisbursedLoans] = useState([]);
+
+  // Modal filter states
+  const [monthModalMonth, setMonthModalMonth] = useState(new Date().getMonth().toString());
+  const [monthModalYear, setMonthModalYear] = useState(new Date().getFullYear());
+  const [disbModalMonth, setDisbModalMonth] = useState('all');
+  const [disbModalYear, setDisbModalYear] = useState('all');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -31,54 +52,7 @@ export default function SecretaryAdminDashboard() {
         const data = await res.json();
 
         if (data.success && data.loans) {
-          const loans = data.loans;
-          const activeLoans = loans.filter(l => l.status === 'active');
-          const disbursedLoans = loans.filter(l => l.disbursed);
-          const approvedLoans = loans.filter(l => l.status === 'active' || l.disbursed);
-
-          const now = new Date();
-          const todayStr = now.toLocaleDateString('en-US');
-          const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-
-          let processedToday = 0;
-          let processedMonth = 0;
-          let totalDisbursedAmount = 0;
-
-          activeLoans.forEach(l => {
-            if (l.disbursed && l.disbursementDate) {
-              totalDisbursedAmount += Number(l.amount) || 0;
-              const disbDate = new Date(l.disbursementDate);
-              if (disbDate.toLocaleDateString('en-US') === todayStr) processedToday++;
-              if (disbDate >= monthStart) processedMonth++;
-            }
-          });
-
-          setStats({ awaiting: activeLoans.filter(l => !l.disbursed).length, today: processedToday, month: processedMonth, disbursed: totalDisbursedAmount });
-
-          const totalReleasedAmt = disbursedLoans.reduce((sum, l) => sum + Number(l.amount), 0);
-          const processingRate = approvedLoans.length > 0 ? Math.round((disbursedLoans.length / approvedLoans.length) * 100) : 0;
-          setReportStats({ totalReceived: 0, totalReleased: totalReleasedAmt, totalProcessed: totalReleasedAmt, processingRate });
-
-          const gcashAmt = disbursedLoans.filter(l => l.paymentMethod === 'gcash').reduce((sum, l) => sum + Number(l.amount), 0);
-          const bankAmt = disbursedLoans.filter(l => l.paymentMethod === 'bank').reduce((sum, l) => sum + Number(l.amount), 0);
-          const cashAmt = disbursedLoans.filter(l => l.paymentMethod === 'cash').reduce((sum, l) => sum + Number(l.amount), 0);
-          const totalAmt = gcashAmt + bankAmt + cashAmt;
-          setPaymentMethodData([
-            { name: 'GCash', value: gcashAmt, percentage: totalAmt > 0 ? Math.round((gcashAmt / totalAmt) * 100) : 0 },
-            { name: 'Bank Transfer', value: bankAmt, percentage: totalAmt > 0 ? Math.round((bankAmt / totalAmt) * 100) : 0 },
-            { name: 'Cash', value: cashAmt, percentage: totalAmt > 0 ? Math.round((cashAmt / totalAmt) * 100) : 0 }
-          ]);
-
-          const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-          const currentYear = now.getFullYear();
-          const flowData = months.map(m => ({ month: m, released: 0 }));
-          disbursedLoans.forEach(l => {
-            if (!l.disbursementDate) return;
-            const d = new Date(l.disbursementDate);
-            if (d.getFullYear() !== currentYear) return;
-            flowData[d.getMonth()].released += Number(l.amount) || 0;
-          });
-          setMoneyFlowData(flowData);
+          setRawLoans(data.loans);
         }
       } catch (err) {
         console.error(err);
@@ -89,7 +63,117 @@ export default function SecretaryAdminDashboard() {
     fetchData();
   }, []);
 
+  // Derived stats — always uses current month/year
+  useEffect(() => {
+    if (!rawLoans.length) return;
+    const activeLoans = rawLoans.filter(l => l.status === 'active');
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    const todayStr = now.toLocaleDateString('en-US');
+
+    let processedToday = 0;
+    let processedMonth = 0;
+    let totalDisbursedAmount = 0;
+    const thisMonthLoans = [];
+    const allDisbursedLoans = [];
+
+    activeLoans.forEach(l => {
+      if (l.disbursed && l.disbursementDate) {
+        const disbDate = new Date(l.disbursementDate);
+        if (disbDate.toLocaleDateString('en-US') === todayStr) processedToday++;
+
+        if (disbDate.getFullYear() === currentYear && disbDate.getMonth() === currentMonth) {
+          processedMonth++;
+          thisMonthLoans.push(l);
+        }
+
+        totalDisbursedAmount += Number(l.amount) || 0;
+        allDisbursedLoans.push(l);
+      }
+    });
+
+    setStats({
+      awaiting: activeLoans.filter(l => !l.disbursed).length,
+      today: processedToday,
+      month: processedMonth,
+      disbursed: totalDisbursedAmount
+    });
+    setMonthLoans(thisMonthLoans);
+    setDisbursedLoans(allDisbursedLoans);
+  }, [rawLoans]);
+
+  // Derived stats for Reports and Chart
+  useEffect(() => {
+    if (!rawLoans.length) return;
+    const disbursedL = rawLoans.filter(l => l.disbursed);
+    const approvedLoans = rawLoans.filter(l => l.status === 'active' || l.disbursed);
+
+    const totalReleasedAmt = disbursedL.reduce((sum, l) => sum + Number(l.amount), 0);
+    const processingRate = approvedLoans.length > 0 ? Math.round((disbursedL.length / approvedLoans.length) * 100) : 0;
+    setReportStats({ totalReceived: 0, totalReleased: totalReleasedAmt, totalProcessed: totalReleasedAmt, processingRate });
+
+    const gcashAmt = disbursedL.filter(l => l.paymentMethod === 'gcash').reduce((sum, l) => sum + Number(l.amount), 0);
+    const bankAmt = disbursedL.filter(l => l.paymentMethod === 'bank').reduce((sum, l) => sum + Number(l.amount), 0);
+    const cashAmt = disbursedL.filter(l => l.paymentMethod === 'cash').reduce((sum, l) => sum + Number(l.amount), 0);
+    const totalAmt = gcashAmt + bankAmt + cashAmt;
+    setPaymentMethodData([
+      { name: 'GCash', value: gcashAmt, percentage: totalAmt > 0 ? Math.round((gcashAmt / totalAmt) * 100) : 0 },
+      { name: 'Bank Transfer', value: bankAmt, percentage: totalAmt > 0 ? Math.round((bankAmt / totalAmt) * 100) : 0 },
+      { name: 'Cash', value: cashAmt, percentage: totalAmt > 0 ? Math.round((cashAmt / totalAmt) * 100) : 0 }
+    ]);
+
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const flowData = months.map(m => ({ month: m, released: 0 }));
+    disbursedL.forEach(l => {
+      if (!l.disbursementDate) return;
+      const d = new Date(l.disbursementDate);
+      if (d.getFullYear() === chartYear) {
+        flowData[d.getMonth()].released += Number(l.amount) || 0;
+      }
+    });
+    setMoneyFlowData(flowData);
+  }, [rawLoans, chartYear]);
+
   const dash = (v) => loading ? '—' : v;
+
+  const now = new Date();
+  const currentMonthLabel = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+  // Filtered loans for This Month modal
+  const filteredMonthLoans = disbursedLoans.filter(l => {
+    if (!l.disbursementDate) return false;
+    const d = new Date(l.disbursementDate);
+    return d.getMonth() === parseInt(monthModalMonth) && d.getFullYear() === monthModalYear;
+  });
+
+  // Filtered loans for All Disbursements modal
+  const filteredDisbLoans = disbursedLoans.filter(l => {
+    if (!l.disbursementDate) return false;
+    const d = new Date(l.disbursementDate);
+    if (disbModalYear !== 'all' && d.getFullYear() !== parseInt(disbModalYear)) return false;
+    if (disbModalMonth !== 'all' && d.getMonth() !== parseInt(disbModalMonth)) return false;
+    return true;
+  });
+
+  const getMonthModalLabel = () => `${MONTH_NAMES[parseInt(monthModalMonth)]} ${monthModalYear}`;
+  const getDisbModalLabel = () => {
+    if (disbModalYear === 'all' && disbModalMonth === 'all') return 'All Time';
+    if (disbModalYear !== 'all' && disbModalMonth === 'all') return `Year ${disbModalYear}`;
+    if (disbModalYear === 'all' && disbModalMonth !== 'all') return `${MONTH_NAMES[parseInt(disbModalMonth)]} (All Years)`;
+    return `${MONTH_NAMES[parseInt(disbModalMonth)]} ${disbModalYear}`;
+  };
+
+  const openMonthModal = () => {
+    setMonthModalMonth(new Date().getMonth().toString());
+    setMonthModalYear(new Date().getFullYear());
+    setShowMonthModal(true);
+  };
+  const openDisbModal = () => {
+    setDisbModalMonth('all');
+    setDisbModalYear('all');
+    setShowDisbursedModal(true);
+  };
 
   return (
     <div className="sec-admin-dashboard-page">
@@ -100,16 +184,16 @@ export default function SecretaryAdminDashboard() {
         <h1 className="admin-dashboard-title">Secretary Dashboard</h1>
 
         {loading ? (
-          <div style={{ padding: '40px', textAlign: 'center', color: '#9CA3AF', fontSize: 13 }}>Loading dashboard data...</div>
+          <div className="adm-loading-msg">Loading dashboard data...</div>
         ) : (
           <>
             {/* Row 1 — 4 Stat Cards */}
-            <div className="adm-stats-grid" style={{ width: '100%', gridTemplateColumns: 'repeat(4, 1fr)' }}>
+            <div className="adm-stats-grid sec-adm-stats-grid-4">
               <div className="adm-stat-card">
                 <div className="adm-stat-top">
                   <span className="adm-stat-label">Awaiting Processing</span>
-                  <div className="adm-stat-icon" style={{ background: '#FEF3C7' }}>
-                    <Circle size={16} color="#F59E0B" />
+                  <div className="adm-stat-icon adm-icon-yellow">
+                    <Clock size={16} color="white" />
                   </div>
                 </div>
                 <span className="adm-stat-value">{dash(stats.awaiting)}</span>
@@ -119,23 +203,23 @@ export default function SecretaryAdminDashboard() {
                 <div className="adm-stat-top">
                   <span className="adm-stat-label">Processed Today</span>
                   <div className="adm-stat-icon adm-icon-blue">
-                    <Circle size={16} color="white" />
+                    <CheckCircle size={16} color="white" />
                   </div>
                 </div>
                 <span className="adm-stat-value">{dash(stats.today)}</span>
               </div>
 
-              <div className="adm-stat-card">
+              <div className="adm-stat-card sec-adm-clickable-card" onClick={openMonthModal}>
                 <div className="adm-stat-top">
                   <span className="adm-stat-label">This Month</span>
                   <div className="adm-stat-icon adm-icon-blue">
-                    <Circle size={16} color="white" />
+                    <CalendarDays size={16} color="white" />
                   </div>
                 </div>
                 <span className="adm-stat-value">{dash(stats.month)}</span>
               </div>
 
-              <div className="adm-stat-card">
+              <div className="adm-stat-card sec-adm-clickable-card" onClick={openDisbModal}>
                 <div className="adm-stat-top">
                   <span className="adm-stat-label">Total Disbursed</span>
                   <div className="adm-stat-icon adm-icon-green">
@@ -147,13 +231,18 @@ export default function SecretaryAdminDashboard() {
             </div>
 
             {/* Row 2 — Charts */}
-            <div className="adm-analytics-row" style={{ gridTemplateColumns: '1fr 280px' }}>
+            <div className="adm-analytics-row adm-analytics-row-sec">
               {/* Monthly Disbursements */}
               <div className="adm-card">
                 <div className="adm-card-header">
-                  <div>
-                    <h3 className="adm-card-title">Monthly Disbursements</h3>
-                    <span className="adm-card-sub">Funds released per month this year</span>
+                  <div className="adm-card-header-row adm-chart-header-full">
+                    <div>
+                      <h3 className="adm-card-title">Monthly Disbursements</h3>
+                      <span className="adm-card-sub">Funds released per month</span>
+                    </div>
+                    <select value={chartYear} onChange={e => setChartYear(parseInt(e.target.value))} className="adm-filter-select">
+                      {YEAR_OPTIONS.map(y => <option key={y} value={y}>{y}</option>)}
+                    </select>
                   </div>
                 </div>
                 <ResponsiveContainer width="100%" height={220}>
@@ -185,7 +274,7 @@ export default function SecretaryAdminDashboard() {
                     <Tooltip formatter={(value) => '₱' + value.toLocaleString()} />
                   </PieChart>
                 </ResponsiveContainer>
-                <div className="adm-pie-legend" style={{ marginTop: '8px' }}>
+                <div className="adm-pie-legend adm-pie-legend-spaced">
                   {paymentMethodData.map((entry, i) => (
                     <div key={i} className="adm-pie-legend-item">
                       <div className="adm-pie-dot" style={{ background: COLORS[i] }} />
@@ -227,6 +316,128 @@ export default function SecretaryAdminDashboard() {
           </>
         )}
       </div>
+
+      {/* ── This Month Modal ── */}
+      {showMonthModal && (
+        <div className="sec-adm-modal-overlay" onClick={() => setShowMonthModal(false)}>
+          <div className="sec-adm-modal" onClick={e => e.stopPropagation()}>
+            <div className="sec-adm-modal-header">
+              <div>
+                <h2 className="sec-adm-modal-title">Monthly Disbursements</h2>
+                <p className="sec-adm-modal-subtitle">{getMonthModalLabel()} — {filteredMonthLoans.length} loan(s) processed</p>
+              </div>
+              <button className="sec-adm-modal-close" onClick={() => setShowMonthModal(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="sec-adm-modal-filters">
+              <Filter size={14} color="#6B7280" />
+              <select value={monthModalMonth} onChange={e => setMonthModalMonth(e.target.value)} className="sec-adm-modal-filter-select">
+                {MONTH_NAMES.map((m, i) => <option key={i} value={i}>{m}</option>)}
+              </select>
+              <select value={monthModalYear} onChange={e => setMonthModalYear(parseInt(e.target.value))} className="sec-adm-modal-filter-select">
+                {YEAR_OPTIONS.map(y => <option key={y} value={y}>{y}</option>)}
+              </select>
+            </div>
+            <div className="sec-adm-modal-body">
+              {filteredMonthLoans.length === 0 ? (
+                <div className="sec-adm-modal-empty">No disbursements for {getMonthModalLabel()}.</div>
+              ) : (
+                <div className="sec-adm-modal-table-wrapper">
+                  <table className="sec-adm-modal-table">
+                    <thead>
+                      <tr>
+                        <th>Loan ID</th>
+                        <th>Member</th>
+                        <th>Amount</th>
+                        <th>Method</th>
+                        <th>Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredMonthLoans.map(l => (
+                        <tr key={l._id}>
+                          <td className="sec-adm-modal-loan-id">{l.loanId}</td>
+                          <td>{l.memberName || 'N/A'}</td>
+                          <td className="sec-adm-modal-amount">{fmt(l.amount)}</td>
+                          <td><span className={`sec-adm-method-badge sec-adm-method-${(l.paymentMethod || 'cash').toLowerCase()}`}>{l.paymentMethod || 'Cash'}</span></td>
+                          <td>{fmtDate(l.disbursementDate)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              <div className="sec-adm-modal-summary">
+                <span>Total for {getMonthModalLabel()}</span>
+                <span className="sec-adm-modal-summary-value">{fmt(filteredMonthLoans.reduce((s, l) => s + (Number(l.amount) || 0), 0))}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Total Disbursed Modal ── */}
+      {showDisbursedModal && (
+        <div className="sec-adm-modal-overlay" onClick={() => setShowDisbursedModal(false)}>
+          <div className="sec-adm-modal" onClick={e => e.stopPropagation()}>
+            <div className="sec-adm-modal-header">
+              <div>
+                <h2 className="sec-adm-modal-title">All Disbursements</h2>
+                <p className="sec-adm-modal-subtitle">{getDisbModalLabel()} — {filteredDisbLoans.length} loan(s) — {fmt(filteredDisbLoans.reduce((s, l) => s + (Number(l.amount) || 0), 0))}</p>
+              </div>
+              <button className="sec-adm-modal-close" onClick={() => setShowDisbursedModal(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="sec-adm-modal-filters">
+              <Filter size={14} color="#6B7280" />
+              <select value={disbModalMonth} onChange={e => setDisbModalMonth(e.target.value)} className="sec-adm-modal-filter-select">
+                <option value="all">All Months</option>
+                {MONTH_NAMES.map((m, i) => <option key={i} value={i}>{m}</option>)}
+              </select>
+              <select value={disbModalYear} onChange={e => setDisbModalYear(e.target.value)} className="sec-adm-modal-filter-select">
+                <option value="all">All Years</option>
+                {YEAR_OPTIONS.map(y => <option key={y} value={y}>{y}</option>)}
+              </select>
+            </div>
+            <div className="sec-adm-modal-body">
+              {filteredDisbLoans.length === 0 ? (
+                <div className="sec-adm-modal-empty">No disbursements for {getDisbModalLabel()}.</div>
+              ) : (
+                <div className="sec-adm-modal-table-wrapper">
+                  <table className="sec-adm-modal-table">
+                    <thead>
+                      <tr>
+                        <th>Loan ID</th>
+                        <th>Member</th>
+                        <th>Amount</th>
+                        <th>Method</th>
+                        <th>Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredDisbLoans.map(l => (
+                        <tr key={l._id}>
+                          <td className="sec-adm-modal-loan-id">{l.loanId}</td>
+                          <td>{l.memberName || 'N/A'}</td>
+                          <td className="sec-adm-modal-amount">{fmt(l.amount)}</td>
+                          <td><span className={`sec-adm-method-badge sec-adm-method-${(l.paymentMethod || 'cash').toLowerCase()}`}>{l.paymentMethod || 'Cash'}</span></td>
+                          <td>{fmtDate(l.disbursementDate)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              <div className="sec-adm-modal-summary">
+                <span>Total ({getDisbModalLabel()})</span>
+                <span className="sec-adm-modal-summary-value">{fmt(filteredDisbLoans.reduce((s, l) => s + (Number(l.amount) || 0), 0))}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

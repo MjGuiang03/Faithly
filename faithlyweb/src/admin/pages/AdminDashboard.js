@@ -10,7 +10,7 @@ import {
 import '../styles/AdminDashboard.css';
 
 import API from '../../utils/api';
-import { Banknote, Heart, Printer, Users } from 'lucide-react';
+import { Banknote, Heart, Printer, Users, MapPin } from 'lucide-react';
 
 
 
@@ -35,6 +35,17 @@ export default function AdminDashboard() {
   const [growthData, setGrowthData] = useState([]);
   const [attendVsDonData, setAttendVsDonData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [rawMembers, setRawMembers] = useState([]);
+  const [rawAttendance, setRawAttendance] = useState([]);
+  
+  const [growthYear, setGrowthYear] = useState(new Date().getFullYear());
+  const [growthMonth, setGrowthMonth] = useState('all');
+  const [growthView, setGrowthView] = useState('both'); // 'both', 'total', 'new'
+  
+  const [attYear, setAttYear] = useState(new Date().getFullYear());
+  const [attMonth, setAttMonth] = useState('all');
+  const [attBranch, setAttBranch] = useState('all');
+
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -61,6 +72,7 @@ export default function AdminDashboard() {
 
       // --- 1. Recalculate Member Stats (Active/Verified Only) ---
       if (membersData.success && membersData.members) {
+        setRawMembers(membersData.members);
         const activeMembers = membersData.members.filter(m => {
           const s = (m.status || '').toLowerCase();
           return s === 'active' || s === 'verified';
@@ -110,6 +122,7 @@ export default function AdminDashboard() {
 
       // Members by branch
       if (membersData.success && membersData.members) {
+        setRawMembers(membersData.members);
         const branchMap = {};
         membersData.members.forEach(m => {
           const b = m.branch || 'Unknown';
@@ -140,72 +153,6 @@ export default function AdminDashboard() {
         })));
       }
 
-      // ── Process Time Series Data (Jan-Dec current year) ──
-      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      // currentYear is already defined above
-      const allMonths = monthNames.map((m, i) => ({
-        monthStr: m,
-        year: currentYear,
-        monthIndex: i
-      }));
-
-      // 1. Member Growth
-      if (membersData.success && membersData.members) {
-        const growth = allMonths.map(m => ({ month: m.monthStr, totalMembers: 0, newMembers: 0 }));
-        let runningTotal = 0;
-        
-        // count members that successfully registered (active or verified)
-        const validMembers = membersData.members.filter(m => {
-          const s = (m.status || '').toLowerCase();
-          return s === 'active' || s === 'verified';
-        });
-
-        // sort members by date ascending
-        const sortedMembers = validMembers.sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt));
-        
-        // Count base total before Jan 1 of the current year
-        const windowStartDate = new Date(currentYear, 0, 1);
-        sortedMembers.forEach(m => {
-          const date = new Date(m.createdAt);
-          if (date < windowStartDate) runningTotal++;
-        });
-
-        growth.forEach(g => {
-          let newThisMonth = 0;
-          sortedMembers.forEach(m => {
-            const date = new Date(m.createdAt);
-            if (date.getFullYear() === g.year && date.getMonth() === g.monthIndex) {
-              newThisMonth++;
-            }
-          });
-          runningTotal += newThisMonth;
-          g.totalMembers = runningTotal;
-          g.newMembers = newThisMonth;
-        });
-        setGrowthData(growth);
-      }
-
-      // 2. Attendance vs Donations
-      const attendDonData = allMonths.map(m => ({ month: m.monthStr, attendance: 0, donations: 0, year: m.year, monthIndex: m.monthIndex }));
-      
-      if (attendData.success && attendData.attendance) {
-        attendData.attendance.forEach(a => {
-          const d = new Date(a.date || a.createdAt);
-          const match = attendDonData.find(m => m.year === d.getFullYear() && m.monthIndex === d.getMonth());
-          if (match) match.attendance += (Number(a.adultsCount) || 0) + (Number(a.kidsCount) || 0);
-        });
-      }
-      
-      if (donationsData.success && donationsData.donations) {
-        const confirmedDonations = donationsData.donations.filter(d => (d.status || '').toLowerCase() === 'confirmed');
-        confirmedDonations.forEach(d => {
-          const date = new Date(d.createdAt || d.date);
-          const match = attendDonData.find(m => m.year === date.getFullYear() && m.monthIndex === date.getMonth());
-          if (match) match.donations += Number(d.amount) || 0;
-        });
-      }
-      setAttendVsDonData(attendDonData);
-
     } catch (err) {
       console.error(err);
       toast.error('Failed to fetch dashboard data');
@@ -220,6 +167,98 @@ export default function AdminDashboard() {
     fetchAll();
   }, [navigate, fetchAll]);
 
+
+  // --- Derived Growth Data ---
+  useEffect(() => {
+    if (!rawMembers.length) return;
+    
+    const validMembers = rawMembers.filter(m => {
+      const s = (m.status || '').toLowerCase();
+      return s === 'active' || s === 'verified';
+    }).sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+    let growth = [];
+    if (growthMonth === 'all') {
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      growth = monthNames.map((m, i) => ({ label: m, totalMembers: 0, newMembers: 0, sortKey: i }));
+      
+      let runningTotal = 0;
+      const windowStartDate = new Date(growthYear, 0, 1);
+      validMembers.forEach(m => {
+        if (new Date(m.createdAt) < windowStartDate) runningTotal++;
+      });
+
+      growth.forEach(g => {
+        let newThisMonth = 0;
+        validMembers.forEach(m => {
+          const date = new Date(m.createdAt);
+          if (date.getFullYear() === growthYear && date.getMonth() === g.sortKey) {
+            newThisMonth++;
+          }
+        });
+        runningTotal += newThisMonth;
+        g.totalMembers = runningTotal;
+        g.newMembers = newThisMonth;
+      });
+    } else {
+      // Days in month
+      const daysInMonth = new Date(growthYear, parseInt(growthMonth) + 1, 0).getDate();
+      growth = Array.from({length: daysInMonth}, (_, i) => ({ label: `${i+1}`, totalMembers: 0, newMembers: 0, sortKey: i+1 }));
+      
+      let runningTotal = 0;
+      const windowStartDate = new Date(growthYear, parseInt(growthMonth), 1);
+      validMembers.forEach(m => {
+        if (new Date(m.createdAt) < windowStartDate) runningTotal++;
+      });
+
+      growth.forEach(g => {
+        let newThisDay = 0;
+        validMembers.forEach(m => {
+          const date = new Date(m.createdAt);
+          if (date.getFullYear() === growthYear && date.getMonth() === parseInt(growthMonth) && date.getDate() === g.sortKey) {
+            newThisDay++;
+          }
+        });
+        runningTotal += newThisDay;
+        g.totalMembers = runningTotal;
+        g.newMembers = newThisDay;
+      });
+    }
+    setGrowthData(growth);
+  }, [rawMembers, growthYear, growthMonth]);
+
+  // --- Derived Attendance Data ---
+  useEffect(() => {
+    let att = [];
+    let filteredAtt = rawAttendance;
+    if (attBranch !== 'all') {
+      filteredAtt = filteredAtt.filter(a => a.branch === attBranch || a.community === attBranch);
+    }
+
+    if (attMonth === 'all') {
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      att = monthNames.map((m, i) => ({ label: m, attendance: 0, sortKey: i }));
+      
+      filteredAtt.forEach(a => {
+        const d = new Date(a.date || a.createdAt);
+        if (d.getFullYear() === attYear) {
+          att[d.getMonth()].attendance += (Number(a.adultsCount) || 0) + (Number(a.kidsCount) || 0);
+        }
+      });
+    } else {
+      const daysInMonth = new Date(attYear, parseInt(attMonth) + 1, 0).getDate();
+      att = Array.from({length: daysInMonth}, (_, i) => ({ label: `${i+1}`, attendance: 0, sortKey: i+1 }));
+      
+      filteredAtt.forEach(a => {
+        const d = new Date(a.date || a.createdAt);
+        if (d.getFullYear() === attYear && d.getMonth() === parseInt(attMonth)) {
+          const dayMatch = att.find(x => x.sortKey === d.getDate());
+          if (dayMatch) dayMatch.attendance += (Number(a.adultsCount) || 0) + (Number(a.kidsCount) || 0);
+        }
+      });
+    }
+    setAttendVsDonData(att);
+  }, [rawAttendance, attYear, attMonth, attBranch]);
   const dash = (v) => loading ? '—' : v;
 
   return (
@@ -228,7 +267,7 @@ export default function AdminDashboard() {
 
       {/* ── Row 1: 4 Stat Cards ── */}
       <div className="adm-stats-grid">
-        <div className="adm-stat-card blue" onClick={() => navigate('/admin/members')} style={{ cursor: 'pointer' }}>
+        <div className="adm-stat-card blue adm-clickable-card" onClick={() => navigate('/admin/members')}>
           <div className="adm-stat-top">
             <span className="adm-stat-label">Total Members</span>
             <div className="adm-stat-icon adm-icon-blue">
@@ -236,21 +275,21 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div className="adm-stat-value">{dash(memberStats.total.toLocaleString())}</div>
-          <div className="adm-stat-sub"><span style={{ color: '#00A63E', fontWeight: 600 }}>+{dash(memberStats.newThisMonth)} new</span> this month</div>
+          <div className="adm-stat-sub"><span className="adm-stat-sub-highlight">+{dash(memberStats.newThisMonth)} new</span> this month</div>
         </div>
 
-        <div className="adm-stat-card green" onClick={() => navigate('/admin/loans')} style={{ cursor: 'pointer' }}>
+        <div className="adm-stat-card green adm-clickable-card" onClick={() => navigate('/admin/branches')}>
           <div className="adm-stat-top">
-            <span className="adm-stat-label">Active Loans</span>
+            <span className="adm-stat-label">Total Branches</span>
             <div className="adm-stat-icon adm-icon-green">
-              <Banknote size={18} color="white" />
+              <MapPin size={18} color="white" />
             </div>
           </div>
-          <div className="adm-stat-value">{dash(loanStats.active)}</div>
-          <div className="adm-stat-sub"><span style={{ color: '#D97706', fontWeight: 600 }}>{dash(loanStats.pending)} pending</span></div>
+          <div className="adm-stat-value">{dash(membersByBranch.length > 0 ? membersByBranch.length : 68)}</div>
+          <div className="adm-stat-sub"><span className="adm-stat-sub-highlight">Active</span> communities</div>
         </div>
 
-        <div className="adm-stat-card orange" onClick={() => navigate('/admin/donations')} style={{ cursor: 'pointer' }}>
+        <div className="adm-stat-card orange adm-clickable-card" onClick={() => navigate('/admin/donations')}>
           <div className="adm-stat-top">
             <span className="adm-stat-label">Total Donations</span>
             <div className="adm-stat-icon adm-icon-orange">
@@ -258,7 +297,7 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div className="adm-stat-value">{loading ? '—' : `₱${(donationStats.total || 0).toLocaleString()}`}</div>
-          <div className="adm-stat-sub"><span style={{ color: '#00A63E', fontWeight: 600 }}>+₱{loading ? '—' : (donationStats.thisMonth || 0).toLocaleString()}</span> this month</div>
+          <div className="adm-stat-sub"><span className="adm-stat-sub-highlight">+₱{loading ? '—' : (donationStats.thisMonth || 0).toLocaleString()}</span> this month</div>
         </div>
       </div>
 
@@ -269,7 +308,7 @@ export default function AdminDashboard() {
           <div className="adm-card-header">
             <h3 className="adm-card-title">Donation Categories</h3>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div className="adm-pie-chart-container">
             <ResponsiveContainer width="100%" height={160}>
               <PieChart>
                 <Pie data={pieData} cx="50%" cy="50%" innerRadius={45} outerRadius={72} paddingAngle={2} dataKey="value">
@@ -293,18 +332,18 @@ export default function AdminDashboard() {
         </div>
 
         {/* Members by Branch Bar */}
-        <div className="adm-card adm-card-bar" style={{ display: 'flex', flexDirection: 'column' }}>
+        <div className="adm-card adm-card-bar" >
           <div className="adm-card-header">
             <h3 className="adm-card-title">Members by Branch</h3>
           </div>
-          <div style={{ flex: 1, minHeight: '220px', width: '100%' }}>
+          <div className="adm-bar-chart-container">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={membersByBranch.length > 0 ? membersByBranch : [{ branch: 'No data', count: 0 }]} margin={{ top: 10, right: 8, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
                 <XAxis dataKey="branch" stroke="#9CA3AF" fontSize={11} angle={-15} textAnchor="end" height={35} tickMargin={5} />
                 <YAxis stroke="#9CA3AF" fontSize={11} />
                 <Tooltip cursor={{ fill: '#F9FAFB' }} />
-                <Bar dataKey="count" fill="#155DFC" radius={[4, 4, 0, 0]} name="Members" barSize={32} />
+                <Bar dataKey="count" fill="#0D1F45" radius={[4, 4, 0, 0]} name="Members" barSize={32} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -314,44 +353,72 @@ export default function AdminDashboard() {
       {/* ── Row 3 & 4: Charts ── */}
       <div className="adm-charts-row">
         <div className="adm-card adm-chart-full">
-          <div className="adm-card-header">
-            <h3 className="adm-card-title">Member Growth Trends</h3>
-            <span className="adm-card-sub">Total vs new registrations this year</span>
+          <div className="adm-card-header adm-card-header-col">
+            <div className="adm-card-header-row">
+              <h3 className="adm-card-title">Member Growth Trends</h3>
+              <div className="adm-filter-group">
+                <select value={growthView} onChange={e => setGrowthView(e.target.value)} className="adm-filter-select">
+                  <option value="both">Total & New</option>
+                  <option value="total">Total Only</option>
+                  <option value="new">New Only</option>
+                </select>
+                <select value={growthMonth} onChange={e => setGrowthMonth(e.target.value)} className="adm-filter-select">
+                  <option value="all">All Months</option>
+                  {['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map((m,i) => <option key={i} value={i}>{m}</option>)}
+                </select>
+                <select value={growthYear} onChange={e => setGrowthYear(parseInt(e.target.value))} className="adm-filter-select">
+                  {[2023, 2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
+                </select>
+              </div>
+            </div>
           </div>
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={growthData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-              <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
+              <XAxis dataKey="label" stroke="#9CA3AF" fontSize={12} />
               <YAxis stroke="#9CA3AF" fontSize={12} />
               <Tooltip />
               <Legend iconType="circle" wrapperStyle={{ paddingTop: '12px', fontSize: '12px' }} />
-              <Line type="monotone" dataKey="totalMembers" stroke="#155DFC" strokeWidth={2} dot={{ r: 3 }} name="Total Members" />
-              <Line type="monotone" dataKey="newMembers"   stroke="#00A63E" strokeWidth={2} dot={{ r: 3 }} name="New Members" />
+              {(growthView === 'both' || growthView === 'total') && <Line type="monotone" dataKey="totalMembers" stroke="#155DFC" strokeWidth={2} dot={{ r: 3 }} name="Total Members" />}
+              {(growthView === 'both' || growthView === 'new') && <Line type="monotone" dataKey="newMembers"   stroke="#00A63E" strokeWidth={2} dot={{ r: 3 }} name="New Members" />}
             </LineChart>
           </ResponsiveContainer>
         </div>
 
-        <div className="adm-card adm-chart-full">
-          <div className="adm-card-header">
-            <h3 className="adm-card-title">Attendance vs Donations</h3>
-            <span className="adm-card-sub">Correlation by month</span>
+<div className="adm-card adm-chart-full">
+          <div className="adm-card-header adm-card-header-col">
+            <div className="adm-card-header-row">
+              <h3 className="adm-card-title">Attendance Trends</h3>
+              <div className="adm-filter-group">
+                <select value={attBranch} onChange={e => setAttBranch(e.target.value)} className="adm-filter-select adm-filter-select-sm">
+                  <option value="all">All Branches</option>
+                  {membersByBranch.map((b,i) => <option key={i} value={b.branch}>{b.branch}</option>)}
+                </select>
+                <select value={attMonth} onChange={e => setAttMonth(e.target.value)} className="adm-filter-select">
+                  <option value="all">All Months</option>
+                  {['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map((m,i) => <option key={i} value={i}>{m}</option>)}
+                </select>
+                <select value={attYear} onChange={e => setAttYear(parseInt(e.target.value))} className="adm-filter-select">
+                  {[2023, 2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
+                </select>
+              </div>
+            </div>
           </div>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={attendVsDonData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-              <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
+              <XAxis dataKey="label" stroke="#9CA3AF" fontSize={12} />
               <YAxis stroke="#9CA3AF" fontSize={12} />
               <Tooltip />
               <Legend iconType="square" wrapperStyle={{ paddingTop: '12px', fontSize: '12px' }} />
               <Bar dataKey="attendance" fill="#00A63E" radius={[6, 6, 0, 0]} name="Attendance" />
-              <Bar dataKey="donations"  fill="#155DFC" radius={[6, 6, 0, 0]} name="Donations" />
             </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
 
       {/* Footer Export Button */}
-      <div className="admin-dashboard-footer" style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '16px' }}>
+      <div className="admin-dashboard-footer" >
         <button
           className="admin-dashboard-export-btn"
           onClick={() => window.print()}

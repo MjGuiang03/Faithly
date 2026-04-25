@@ -33,14 +33,14 @@
 .admin-branch-stats {
   display: grid;
   grid-template-columns: 1fr 1.1fr 1.1fr 1fr;
-  gap: 24px;
+  gap: 12px;
   margin-bottom: 32px;
 }
 
 .admin-branch-stat-card {
   background: white;
   border: 1px solid #e5e7eb;
-  border-radius: 2px;
+  border-radius: 10px;
   padding: 24.8px;
   min-height: 60px;
 }
@@ -72,21 +72,21 @@
 .admin-branch-grid {
   display: grid;
   grid-template-columns: 1.1fr 1fr;
-  gap: 24px;
+  gap: 12px;
 }
 
 .admin-branch-card {
   background: white;
   border: 1px solid #e5e7eb;
-  border-radius: 2px;
+  border-radius: 10px;
   padding: 24.8px;
 }
 
 .admin-branch-card-header {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   align-items: flex-start;
-  margin-bottom: 24px;
+  margin-bottom: 0px;
 }
 
 .admin-branch-icon {
@@ -145,7 +145,7 @@
 /* Branch Details */
 .admin-branch-card-details {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   padding-top: 8px;
 }
 
@@ -173,7 +173,7 @@
 
 .admin-branch-detail-members {
   font-weight: 700;
-  color: #1E3A8A;
+  color: #0D1F45;
 }
 
 .admin-branch-detail-services {
@@ -217,3 +217,20 @@
 
 .admin-branch-card { transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; }
 .admin-branch-card:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.08); }
+
+.adm-stat-icon-wrap {
+  background: #0D1F45 !important;
+  border-radius: 50px !important;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-branch-search-wrapper {
+  width: 300px;
+}
+.admin-branch-pagination {
+  margin-top: 24px;
+}

@@ -82,6 +82,18 @@
   margin-bottom: 0px;
 }
 
+/* Right column container */
+.user-donations-right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.user-giving-goes-header {
+  margin-bottom: 12px;
+  justify-content: center;
+}
+
 /* ── Left card: Make a Donation ── */
 .user-donation-form-card {
   background: var(--card);
@@ -1650,8 +1662,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 8px 4px 12px;
+  padding: 24px 16px;
   gap: 0;
+  background: linear-gradient(to bottom, #ffffff, #fcfdfe);
+  border-radius: 12px;
 }
 
 .user-donation-empty-icon-wrap {
@@ -1712,23 +1726,54 @@
 
 .user-donation-empty-categories {
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
 }
 
 .user-donation-empty-category-item {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 9px 12px;
-  border-radius: 10px;
-  border: 1px solid;
-  transition: transform 0.15s ease;
+  text-align: center;
+  gap: 12px;
+  padding: 16px 12px;
+  border-radius: 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .user-donation-empty-category-item:hover {
-  transform: translateX(3px);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
+  border-color: var(--primary-muted);
+}
+
+.user-donation-3d-icon-wrap {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.user-3d-cat-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.user-donation-empty-category-icon-bg {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2px;
 }
 
 .user-donation-empty-category-icon {
@@ -1746,17 +1791,19 @@
 .user-donation-empty-category-name {
   font-family: 'Inter', sans-serif;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
+  color: var(--foreground);
   margin: 0;
-  line-height: 18px;
+  line-height: 1.2;
 }
 
 .user-donation-empty-category-desc {
   font-family: 'Inter', sans-serif;
   font-size: 11px;
-  color: #9CA3AF;
+  color: var(--text-muted);
   margin: 0;
-  line-height: 15px;
+  line-height: 1.4;
+  margin-top: 4px;
 }
 
 /* Dark mode for empty state */

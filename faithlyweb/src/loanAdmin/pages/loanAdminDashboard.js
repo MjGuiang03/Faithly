@@ -6,7 +6,7 @@ import LoanAdminSidebar from './loanAdminSidebar';
 import '../../admin/styles/AdminDashboard.css';
 import '../styles/loanAdminDashboard.css';
 import API from '../../utils/api';
-import { Banknote, CheckCircle, LayoutDashboard, PiggyBank } from 'lucide-react';
+import { Banknote, CheckCircle, LayoutDashboard, PiggyBank, X, Filter } from 'lucide-react';
 
 
 const fmt = (n) =>
@@ -19,15 +19,27 @@ const fmtDate = (d) => {
   });
 };
 
+const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const YEAR_OPTIONS = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() + i);
+
 export default function LoanAdminDashboard() {
   const navigate = useNavigate();
   const [stats, setStats] = useState({ pending: 0, active: 0, totalThisMonth: 0, totalDisbursed: 0 });
   const [recentLoans, setRecentLoans] = useState([]);
+  const [allLoans, setAllLoans] = useState([]);
   const [monthlyData, setMonthlyData] = useState([]);
   const [disbursementByType, setDisbursementByType] = useState([]);
   const [totalSavings, setTotalSavings] = useState(0);
   const [savingsMonthly, setSavingsMonthly] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Modal states
+  const [showMonthModal, setShowMonthModal] = useState(false);
+  const [showDisbursedModal, setShowDisbursedModal] = useState(false);
+  const [monthModalMonth, setMonthModalMonth] = useState(new Date().getMonth().toString());
+  const [monthModalYear, setMonthModalYear] = useState(new Date().getFullYear());
+  const [disbModalMonth, setDisbModalMonth] = useState('all');
+  const [disbModalYear, setDisbModalYear] = useState('all');
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
@@ -57,6 +69,8 @@ export default function LoanAdminDashboard() {
           totalThisMonth: data.stats?.totalThisMonth || 0,
           totalDisbursed: data.stats?.totalDisbursed || 0,
         });
+
+        setAllLoans(data.loans || []);
 
         const upcoming = (data.loans || [])
           .filter(l => l.status === 'active' || l.status === 'pending')
@@ -100,6 +114,42 @@ export default function LoanAdminDashboard() {
 
   const dash = (v) => loading ? '—' : v;
 
+  // Derived: all disbursed loans
+  const allDisbursedLoans = allLoans.filter(l => l.disbursed && l.disbursementDate);
+
+  // Filtered loans for This Month modal
+  const filteredMonthLoans = allDisbursedLoans.filter(l => {
+    const d = new Date(l.disbursementDate);
+    return d.getMonth() === parseInt(monthModalMonth) && d.getFullYear() === monthModalYear;
+  });
+
+  // Filtered loans for All Disbursements modal
+  const filteredDisbLoans = allDisbursedLoans.filter(l => {
+    const d = new Date(l.disbursementDate);
+    if (disbModalYear !== 'all' && d.getFullYear() !== parseInt(disbModalYear)) return false;
+    if (disbModalMonth !== 'all' && d.getMonth() !== parseInt(disbModalMonth)) return false;
+    return true;
+  });
+
+  const getMonthModalLabel = () => `${MONTH_NAMES[parseInt(monthModalMonth)]} ${monthModalYear}`;
+  const getDisbModalLabel = () => {
+    if (disbModalYear === 'all' && disbModalMonth === 'all') return 'All Time';
+    if (disbModalYear !== 'all' && disbModalMonth === 'all') return `Year ${disbModalYear}`;
+    if (disbModalYear === 'all' && disbModalMonth !== 'all') return `${MONTH_NAMES[parseInt(disbModalMonth)]} (All Years)`;
+    return `${MONTH_NAMES[parseInt(disbModalMonth)]} ${disbModalYear}`;
+  };
+
+  const openMonthModal = () => {
+    setMonthModalMonth(new Date().getMonth().toString());
+    setMonthModalYear(new Date().getFullYear());
+    setShowMonthModal(true);
+  };
+  const openDisbModal = () => {
+    setDisbModalMonth('all');
+    setDisbModalYear('all');
+    setShowDisbursedModal(true);
+  };
+
   return (
     <div className="loan-admin-dashboard-page">
       <LoanAdminSidebar />
@@ -107,29 +157,29 @@ export default function LoanAdminDashboard() {
         {/* Header */}
         <h1 className="admin-dashboard-title">Loan Dashboard</h1>
 
-        {/* Row 1 — 4 Stat Cards */}
+        {/* Row 1 — 5 Stat Cards */}
         <div className="adm-stats-grid">
-          <div className="adm-stat-card">
+          <div className="adm-stat-card adm-clickable-card" onClick={() => navigate('/loan-admin/loan-management')}>
             <div className="adm-stat-top">
               <span className="adm-stat-label">Pending Review</span>
-              <div className="adm-stat-icon" style={{ background: '#FEF3C7' }}>
-                <LayoutDashboard size={16} color="#F59E0B" />
+              <div className="adm-stat-icon adm-icon-yellow">
+                <LayoutDashboard size={16} color="white" />
               </div>
             </div>
             <span className="adm-stat-value">{dash(stats.pending)}</span>
           </div>
 
-          <div className="adm-stat-card">
+          <div className="adm-stat-card adm-clickable-card" onClick={() => navigate('/loan-admin/loan-management')}>
             <div className="adm-stat-top">
               <span className="adm-stat-label">Approved Loans</span>
-              <div className="adm-stat-icon" style={{ background: '#DCFCE7' }}>
-                <CheckCircle size={16} color="#00A63E" />
+              <div className="adm-stat-icon adm-icon-green">
+                <CheckCircle size={16} color="white" />
               </div>
             </div>
             <span className="adm-stat-value">{dash(stats.active)}</span>
           </div>
 
-          <div className="adm-stat-card">
+          <div className="adm-stat-card la-clickable-card" onClick={openMonthModal}>
             <div className="adm-stat-top">
               <span className="adm-stat-label">Total This Month</span>
               <div className="adm-stat-icon adm-icon-blue">
@@ -139,7 +189,7 @@ export default function LoanAdminDashboard() {
             <span className="adm-stat-value">{dash(stats.totalThisMonth)}</span>
           </div>
 
-          <div className="adm-stat-card">
+          <div className="adm-stat-card la-clickable-card" onClick={openDisbModal}>
             <div className="adm-stat-top">
               <span className="adm-stat-label">Total Disbursed</span>
               <div className="adm-stat-icon adm-icon-navy">
@@ -149,11 +199,11 @@ export default function LoanAdminDashboard() {
             <span className="adm-stat-value">{dash(fmt(stats.totalDisbursed))}</span>
           </div>
 
-          <div className="adm-stat-card">
+          <div className="adm-stat-card adm-clickable-card" onClick={() => navigate('/loan-admin/payments/savings')}>
             <div className="adm-stat-top">
               <span className="adm-stat-label">Total Savings</span>
-              <div className="adm-stat-icon" style={{ background: '#EDE9FE' }}>
-                <PiggyBank size={16} color="#8B5CF6" />
+              <div className="adm-stat-icon adm-icon-purple">
+                <PiggyBank size={16} color="white" />
               </div>
             </div>
             <span className="adm-stat-value">{dash(fmt(totalSavings))}</span>
@@ -161,7 +211,7 @@ export default function LoanAdminDashboard() {
         </div>
 
         {/* Row 2 — Charts */}
-        <div className="adm-analytics-row" style={{ gridTemplateColumns: '1fr 320px' }}>
+        <div className="adm-analytics-row adm-analytics-row-loan">
           {/* Money In vs Money Out */}
           <div className="adm-card">
             <div className="adm-card-header">
@@ -257,6 +307,128 @@ export default function LoanAdminDashboard() {
         </div>
 
       </div>
+
+      {/* ── This Month Modal ── */}
+      {showMonthModal && (
+        <div className="la-modal-overlay" onClick={() => setShowMonthModal(false)}>
+          <div className="la-modal" onClick={e => e.stopPropagation()}>
+            <div className="la-modal-header">
+              <div>
+                <h2 className="la-modal-title">Monthly Disbursements</h2>
+                <p className="la-modal-subtitle">{getMonthModalLabel()} — {filteredMonthLoans.length} loan(s) processed</p>
+              </div>
+              <button className="la-modal-close" onClick={() => setShowMonthModal(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="la-modal-filters">
+              <Filter size={14} color="#6B7280" />
+              <select value={monthModalMonth} onChange={e => setMonthModalMonth(e.target.value)} className="la-modal-filter-select">
+                {MONTH_NAMES.map((m, i) => <option key={i} value={i}>{m}</option>)}
+              </select>
+              <select value={monthModalYear} onChange={e => setMonthModalYear(parseInt(e.target.value))} className="la-modal-filter-select">
+                {YEAR_OPTIONS.map(y => <option key={y} value={y}>{y}</option>)}
+              </select>
+            </div>
+            <div className="la-modal-body">
+              {filteredMonthLoans.length === 0 ? (
+                <div className="la-modal-empty">No disbursements for {getMonthModalLabel()}.</div>
+              ) : (
+                <div className="la-modal-table-wrapper">
+                  <table className="la-modal-table">
+                    <thead>
+                      <tr>
+                        <th>Loan ID</th>
+                        <th>Member</th>
+                        <th>Amount</th>
+                        <th>Method</th>
+                        <th>Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredMonthLoans.map(l => (
+                        <tr key={l._id}>
+                          <td className="la-modal-loan-id">{l.loanId}</td>
+                          <td>{l.memberName || 'N/A'}</td>
+                          <td className="la-modal-amount">{fmt(l.amount)}</td>
+                          <td><span className={`la-method-badge la-method-${(l.paymentMethod || 'cash').toLowerCase()}`}>{l.paymentMethod || 'Cash'}</span></td>
+                          <td>{fmtDate(l.disbursementDate)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              <div className="la-modal-summary">
+                <span>Total for {getMonthModalLabel()}</span>
+                <span className="la-modal-summary-value">{fmt(filteredMonthLoans.reduce((s, l) => s + (Number(l.amount) || 0), 0))}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Total Disbursed Modal ── */}
+      {showDisbursedModal && (
+        <div className="la-modal-overlay" onClick={() => setShowDisbursedModal(false)}>
+          <div className="la-modal" onClick={e => e.stopPropagation()}>
+            <div className="la-modal-header">
+              <div>
+                <h2 className="la-modal-title">All Disbursements</h2>
+                <p className="la-modal-subtitle">{getDisbModalLabel()} — {filteredDisbLoans.length} loan(s) — {fmt(filteredDisbLoans.reduce((s, l) => s + (Number(l.amount) || 0), 0))}</p>
+              </div>
+              <button className="la-modal-close" onClick={() => setShowDisbursedModal(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="la-modal-filters">
+              <Filter size={14} color="#6B7280" />
+              <select value={disbModalMonth} onChange={e => setDisbModalMonth(e.target.value)} className="la-modal-filter-select">
+                <option value="all">All Months</option>
+                {MONTH_NAMES.map((m, i) => <option key={i} value={i}>{m}</option>)}
+              </select>
+              <select value={disbModalYear} onChange={e => setDisbModalYear(e.target.value)} className="la-modal-filter-select">
+                <option value="all">All Years</option>
+                {YEAR_OPTIONS.map(y => <option key={y} value={y}>{y}</option>)}
+              </select>
+            </div>
+            <div className="la-modal-body">
+              {filteredDisbLoans.length === 0 ? (
+                <div className="la-modal-empty">No disbursements for {getDisbModalLabel()}.</div>
+              ) : (
+                <div className="la-modal-table-wrapper">
+                  <table className="la-modal-table">
+                    <thead>
+                      <tr>
+                        <th>Loan ID</th>
+                        <th>Member</th>
+                        <th>Amount</th>
+                        <th>Method</th>
+                        <th>Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredDisbLoans.map(l => (
+                        <tr key={l._id}>
+                          <td className="la-modal-loan-id">{l.loanId}</td>
+                          <td>{l.memberName || 'N/A'}</td>
+                          <td className="la-modal-amount">{fmt(l.amount)}</td>
+                          <td><span className={`la-method-badge la-method-${(l.paymentMethod || 'cash').toLowerCase()}`}>{l.paymentMethod || 'Cash'}</span></td>
+                          <td>{fmtDate(l.disbursementDate)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              <div className="la-modal-summary">
+                <span>Total ({getDisbModalLabel()})</span>
+                <span className="la-modal-summary-value">{fmt(filteredDisbLoans.reduce((s, l) => s + (Number(l.amount) || 0), 0))}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
