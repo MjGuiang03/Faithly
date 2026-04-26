@@ -33,10 +33,10 @@ export default function WelcomePage() {
           FaithLy<span>by PUAC</span>
         </div>
         <ul className="nav-links">
-          <li><a href="#">Home</a></li>
-          <li><a href="#">Features</a></li>
-          <li><a href="#">Branches</a></li>
-          <li><a href="#">Contact</a></li>
+          <li><a href="#/">Home</a></li>
+          <li><a href="#/">Features</a></li>
+          <li><a href="#/">Branches</a></li>
+          <li><a href="#/">Contact</a></li>
         </ul>
         <button className="nav-signin">Sign In</button>
       </nav>
@@ -199,7 +199,7 @@ export default function WelcomePage() {
               <circle cx="18" cy="16" r="8" strokeWidth="1" />
               <circle cx="18" cy="16" r="2.5" fill="#C9A84C" opacity="0.5" stroke="none" />
               <path d="M 18 24 L 18 30" strokeWidth="1" />
-              <path d="M 14" y="29" d="M 14 29 L 22 29" strokeWidth="0.75" />
+              <path d="M 14 29 L 22 29" strokeWidth="0.75" />
               <circle cx="18" cy="8" r="1.2" fill="#C9A84C" opacity="0.6" stroke="none" />
               <circle cx="25" cy="11" r="1.2" fill="#C9A84C" opacity="0.6" stroke="none" />
               <circle cx="25" cy="21" r="1.2" fill="#C9A84C" opacity="0.6" stroke="none" />
@@ -369,10 +369,10 @@ export default function WelcomePage() {
           <small>Philippine United Apostolic Church</small>
         </div>
         <ul className="footer-links">
-          <li><a href="#">Home</a></li>
-          <li><a href="#">Features</a></li>
-          <li><a href="#">Login</a></li>
-          <li><a href="#">Contact</a></li>
+          <li><a href="#/">Home</a></li>
+          <li><a href="#/">Features</a></li>
+          <li><a href="#/">Login</a></li>
+          <li><a href="#/">Contact</a></li>
         </ul>
         <div className="footer-copy">
           © 2026 FaithLy · PUAC. All rights reserved.

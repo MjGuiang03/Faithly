@@ -5,7 +5,6 @@ import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recha
 import '../styles/Donation.css';
 import gcashLogo from '../../assets/gcashlogo.png';
 import bank from '../../assets/bank.png';
-import gcashQr from '../../assets/gcash_qr.png';
 import iconGeneral from '../../assets/icon_general.png';
 import iconChildren from '../../assets/icon_children.png';
 import iconBuilding from '../../assets/icon_building.png';
@@ -54,12 +53,12 @@ export default function Donation() {
   const [donationAmount, setDonationAmount] = useState('');
   const [donationCategory, setDonationCategory] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
-  const [isRecurring, setIsRecurring] = useState(false);
+  const [isRecurring] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
   const [stats, setStats] = useState({ totalDonated: 0, thisYearTotal: 0, totalCount: 0 });
   const [loading, setLoading] = useState(true);
-  const [historyPage, setHistoryPage] = useState(1);
+  const [historyPage] = useState(1);
   const [successModal, setSuccessModal] = useState(null);
   const [selectedDonation, setSelectedDonation] = useState(null);
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);

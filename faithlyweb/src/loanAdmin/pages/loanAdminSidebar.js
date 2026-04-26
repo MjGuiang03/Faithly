@@ -2,8 +2,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 import { toast } from 'sonner';
 import {
-  LayoutGrid, Bell, FileText, CreditCard, AlertTriangle, Settings, LogOut,
-  ChevronDown, PiggyBank, FileBarChart2
+  LayoutGrid, Bell, FileText, CreditCard, AlertTriangle, Settings, LogOut, PiggyBank
 } from 'lucide-react';
 import puacLogo from '../../assets/puaclogo.png';
 import '../styles/loanAdminSidebar.css';
@@ -20,9 +19,7 @@ export default function LoanAdminSidebar() {
   const [unreadCount, setUnreadCount] = useState(0);
   const prevNotifIdsRef = useRef(new Set());
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [paymentsOpen, setPaymentsOpen] = useState(
-    location.pathname.startsWith('/loan-admin/payments')
-  );
+
 
   const handleSignOut = () => {
     localStorage.removeItem('adminToken');

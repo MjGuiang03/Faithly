@@ -53,7 +53,6 @@ export default function AdminDonationsNew() {
 
   /* ── Detail modal ── */
   const [detailModal, setDetailModal] = useState(null);
-  const [actionLoading, setActionLoading] = useState(false);
 
   /* ── Auth guard ── */
   useEffect(() => {

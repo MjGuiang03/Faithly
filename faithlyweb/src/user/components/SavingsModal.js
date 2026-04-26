@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import '../styles/SavingsModal.css';
 import API from '../../utils/api';
-import { CheckCircle, FileText, X, ArrowDownRight, ArrowUpLeft, Repeat, History, CreditCard, Smartphone, Building2, Info } from 'lucide-react';
+import { CheckCircle, X, ArrowDownRight, ArrowUpLeft, Repeat, History, CreditCard, Smartphone, Building2, Info } from 'lucide-react';
 
 
 const fmt = (n) =>
@@ -44,8 +44,6 @@ function DepositModal({ goals, onClose }) {
     const [amount, setAmount] = useState('');
     const [note, setNote] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('cash');
-    const [referenceNumber, setReferenceNumber] = useState('');
-    const [receipt, setReceipt] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -420,8 +418,6 @@ function QuickDepositModal({ goal, goals, onClose }) {
     const [amount, setAmount] = useState('');
     const [note, setNote] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('cash');
-    const [referenceNumber, setReferenceNumber] = useState('');
-    const [receipt, setReceipt] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
