@@ -1,8 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { toast } from 'sonner';
 import '../styles/LoanApplicationModal.css';
 import API from '../../utils/api';
-import { Banknote, CheckCircle, X } from 'lucide-react';
+import { Banknote, CheckCircle, X, Pencil } from 'lucide-react';
 
 
 /* ── File → base64 helper ── */
@@ -87,6 +87,9 @@ export default function LoanApplicationModal({
   const [disbursementAccount, setDisbursementAccount] = useState('');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [savedAccounts, setSavedAccounts] = useState([]);
+  const [selectedAccountIdx, setSelectedAccountIdx] = useState(-1); // -1 means "new/manual"
+  const [editingAccountIdx, setEditingAccountIdx] = useState(null); // which saved account is being edited inline
 
   /* ── derived ── */
   const selectedType = LOAN_TYPES.find((t) => t.key === loanType) || null;
@@ -113,8 +116,23 @@ export default function LoanApplicationModal({
     return { principal, totalInterest, totalRepayment, monthly, rate: selectedType.rate, months };
   }, [amount, termMonths, selectedType]);
 
-  if (!isOpen) return null;
+  /* ── fetch saved accounts ── */
+  useEffect(() => {
+    if (!isOpen) return;
+    const fetchAccounts = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API}/api/saved-accounts`, { headers: { Authorization: `Bearer ${token}` } });
+        const data = await res.json();
+        if (data.success) setSavedAccounts(data.accounts || []);
+      } catch { /* silent */ }
+    };
+    fetchAccounts();
+  }, [isOpen]);
 
+  const filteredAccounts = savedAccounts.filter(a => a.method === disbursementMethod);
+
+  if (!isOpen) return null;
 
   /* ── eligibility ── */
   const savingsOk = totalSavings >= 1000;
@@ -173,6 +191,23 @@ export default function LoanApplicationModal({
       if (!res.ok) throw new Error(data.message || 'Failed to submit application');
 
       toast.success('Loan application submitted successfully!');
+
+      // Save or update account for future use
+      if ((disbursementMethod === 'gcash' || disbursementMethod === 'bank') && disbursementAccount) {
+        try {
+          await fetch(`${API}/api/saved-accounts`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify({
+              method: disbursementMethod,
+              accountNumber: disbursementAccount,
+              accountName: '',
+              label: disbursementAccount,
+            }),
+          });
+        } catch { /* silent — don't block the success flow */ }
+      }
+
       setLoanType('');
       setAmount('');
       setTermMonths('');
@@ -314,7 +349,7 @@ export default function LoanApplicationModal({
                 </div>
                 <div className="ula-calc-row">
                   <span>Interest rate</span>
-                  <span>{(calc.rate * 100).toFixed(1)}% per month</span>
+                  <span>{calc.rate * 100}% per month</span>
                 </div>
                 <div className="ula-calc-row">
                   <span>Term</span>
@@ -442,7 +477,7 @@ export default function LoanApplicationModal({
                   key={opt.id}
                   type="button"
                   className={`ula-disbursement-btn ${disbursementMethod === opt.id ? 'ula-disbursement-btn--active' : ''}`}
-                  onClick={() => setDisbursementMethod(opt.id)}
+                  onClick={() => { setDisbursementMethod(opt.id); setSelectedAccountIdx(-1); setDisbursementAccount(''); }}
                 >
                   <div className={`ula-disbursement-radio ${disbursementMethod === opt.id ? 'active' : ''}`} />
                   {opt.label}
@@ -452,17 +487,84 @@ export default function LoanApplicationModal({
             
             {(disbursementMethod === 'gcash' || disbursementMethod === 'bank') && (
               <div className="ula-disbursement-account">
-                <label className="user-loan-application-label">
-                  {disbursementMethod === 'gcash' ? 'GCash Name & Number' : 'Bank Name, Account Name & Number'}
-                </label>
-                <input
-                  type="text"
-                  className="user-loan-application-input"
-                  placeholder={disbursementMethod === 'gcash' ? 'e.g. Juan Dela Cruz - 09123456789' : 'e.g. BDO - Juan Dela Cruz - 1234567890'}
-                  value={disbursementAccount}
-                  onChange={(e) => setDisbursementAccount(e.target.value)}
-                  required
-                />
+                {filteredAccounts.length > 0 && (
+                  <>
+                    <label className="user-loan-application-label">Select a saved account</label>
+                    <div className="ula-saved-accounts">
+                      {filteredAccounts.map((acc, idx) => (
+                        <div key={idx} className={`ula-saved-account-btn ${selectedAccountIdx === idx ? 'ula-saved-account-btn--active' : ''}`}>
+                          {editingAccountIdx === idx ? (
+                            <>
+                              <div className={`ula-disbursement-radio ${selectedAccountIdx === idx ? 'active' : ''}`} />
+                              <input
+                                type="text"
+                                className="ula-saved-account-edit-input"
+                                value={disbursementAccount}
+                                onChange={(e) => setDisbursementAccount(e.target.value)}
+                                onBlur={() => setEditingAccountIdx(null)}
+                                onKeyDown={(e) => { if (e.key === 'Enter') setEditingAccountIdx(null); }}
+                                autoFocus
+                              />
+                            </>
+                          ) : (
+                            <>
+                              <div
+                                className="ula-saved-account-select-area"
+                                onClick={() => {
+                                  setSelectedAccountIdx(idx);
+                                  setDisbursementAccount(acc.label);
+                                  setEditingAccountIdx(null);
+                                }}
+                              >
+                                <div className={`ula-disbursement-radio ${selectedAccountIdx === idx ? 'active' : ''}`} />
+                                <div className="ula-saved-account-info">
+                                  <span className="ula-saved-account-label">{acc.label}</span>
+                                  <span className="ula-saved-account-source">{acc.source}</span>
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                className="ula-saved-account-edit-btn"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedAccountIdx(idx);
+                                  setDisbursementAccount(acc.label);
+                                  setEditingAccountIdx(idx);
+                                }}
+                                title="Edit account info"
+                              >
+                                <Pencil size={14} />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        className={`ula-saved-account-btn ${selectedAccountIdx === -1 ? 'ula-saved-account-btn--active' : ''}`}
+                        onClick={() => { setSelectedAccountIdx(-1); setDisbursementAccount(''); setEditingAccountIdx(null); }}
+                      >
+                        <div className={`ula-disbursement-radio ${selectedAccountIdx === -1 ? 'active' : ''}`} />
+                        <span className="ula-saved-account-label">Enter new account</span>
+                      </button>
+                    </div>
+                  </>
+                )}
+                {(filteredAccounts.length === 0 || selectedAccountIdx === -1) && (
+                  <>
+                    <label className="user-loan-application-label" style={{ marginTop: filteredAccounts.length > 0 ? '12px' : 0 }}>
+                      {disbursementMethod === 'gcash' ? 'GCash Name & Number' : 'Bank Name, Account Name & Number'}
+                    </label>
+                    <input
+                      type="text"
+                      className="user-loan-application-input"
+                      placeholder={disbursementMethod === 'gcash' ? 'e.g. Juan Dela Cruz - 09123456789' : 'e.g. BDO - Juan Dela Cruz - 1234567890'}
+                      value={disbursementAccount}
+                      onChange={(e) => setDisbursementAccount(e.target.value)}
+                      required
+                    />
+                  </>
+                )}
               </div>
             )}
           </div>

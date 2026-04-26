@@ -1,128 +1,12 @@
 /* ─── Header ─────────────────────────────────────────────── */
-.user-branches-page-header {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 0px;
-}
-
-.user-branches-page-title {
-  font-family: 'Inter', sans-serif;
-  font-size: 26px;
-  font-weight: 700;
-  color: var(--foreground);
-  margin: 0;
-  line-height: 34px;
-}
-
-.user-branches-page-subtitle {
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin: 0;
-  line-height: 20px;
-}
 
 /* ─── My Community Banner ────────────────────────────────── */
-.user-my-community-banner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  background: linear-gradient(135deg, #eff4ff 0%, #e0eaff 100%);
-  border: 1.5px solid #c7d7fe;
-  border-radius: 5px;
-  padding: 14px 18px;
-  margin-bottom: 16px;
-  cursor: pointer;
-  transition: box-shadow 0.2s, transform 0.15s;
-}
-
-.user-my-community-banner:hover {
-  box-shadow: 0 4px 18px rgba(21, 93, 252, 0.13);
-  transform: translateY(-1px);
-}
-
-.user-mcb-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.user-mcb-icon {
-  width: 40px;
-  height: 40px;
-  background: var(--card);
-  border-radius: 5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 1px 4px rgba(21, 93, 252, 0.12);
-}
-
-.user-mcb-text {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.user-mcb-eyebrow {
-  font-size: 10px;
-  font-weight: 700;
-  color: #1E3A8A;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  font-family: 'Inter', sans-serif;
-}
-
-.user-mcb-name {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--foreground);
-  font-family: 'Inter', sans-serif;
-  line-height: 22px;
-}
-
-.user-mcb-province {
-  font-size: 12px;
-  color: var(--text-muted);
-  font-family: 'Inter', sans-serif;
-}
-
-.user-mcb-right {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
-}
-
-.user-mcb-services {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  justify-content: flex-end;
-}
-
-.user-mcb-day-tag {
-  font-size: 11px;
-  font-weight: 600;
-  font-family: 'Inter', sans-serif;
-  border-radius: 5px;
-  padding: 3px 8px;
-}
-
-.user-mcb-chevron {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-}
 
 /* ─── Community Spotlight ─────────────────────────────────── */
 .ubr-community-spotlight {
   display: flex;
   background: var(--card);
-  border-radius: 5px;
+  border-radius: 12px;
   border: 1px solid var(--border);
   margin-bottom: 24px;
   overflow: hidden;
@@ -287,6 +171,7 @@
   .ubr-community-spotlight {
     flex-direction: column;
   }
+
   .ubr-spotlight-map {
     height: 250px;
     border-left: none;
@@ -295,262 +180,16 @@
 }
 
 /* ─── Filter Bar ─────────────────────────────────────────── */
-.user-branches-filter-bar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: var(--card);
-  border: 0.8px solid var(--border);
-  border-radius: 5px;
-  padding: 16px 20px;
-  margin-bottom: 12px;
-  flex-wrap: wrap;
-}
-
-.user-branches-search-wrap {
-  position: relative;
-  flex: 1;
-  min-width: 130px;
-}
-
-.user-branches-search-icon {
-  position: absolute;
-  left: 9px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 14px;
-  height: 14px;
-  pointer-events: none;
-}
-
-.user-branches-search-input {
-  width: 100%;
-  height: 33px;
-  padding: 0 10px 0 29px;
-  border: 0.8px solid var(--border);
-  border-radius: 5px;
-  font-size: 13px;
-  color: var(--foreground);
-  font-family: 'Inter', sans-serif;
-  background: var(--input-background);
-  box-sizing: border-box;
-  outline: none;
-  transition: border-color 0.2s;
-}
-
-.user-branches-search-input:focus {
-  border-color: #1E3A8A;
-  background: var(--card);
-}
-
-.user-branches-filter-group {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.user-branches-filter-label {
-  font-size: 12px;
-  color: var(--text-muted);
-  font-family: 'Inter', sans-serif;
-  white-space: nowrap;
-}
-
-.user-branches-filter-select {
-  height: 33px;
-  padding: 0 24px 0 9px;
-  border: 0.8px solid var(--border);
-  border-radius: 5px;
-  font-size: 13px;
-  color: var(--foreground);
-  font-family: 'Inter', sans-serif;
-  background: var(--input-background) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M4 6L8 10L12 6' stroke='%2399A1AF' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 8px center;
-  appearance: none;
-  cursor: pointer;
-  outline: none;
-  transition: border-color 0.2s;
-}
-
-.user-branches-filter-select:focus {
-  border-color: #1E3A8A;
-  background-color: white;
-}
-
-.user-branches-filter-count {
-  margin-left: auto;
-  font-size: 12px;
-  color: var(--text-muted);
-  font-family: 'Inter', sans-serif;
-  white-space: nowrap;
-  padding: 3px 10px;
-  background: var(--secondary);
-  border-radius: 20px;
-}
 
 /* ─── Branch Groups ──────────────────────────────────────── */
-.user-branch-group {
-  margin-bottom: 12px;
-}
-
-.user-branch-group-header {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  margin-bottom: 8px;
-  padding: 0 2px;
-}
-
-.user-group-region-badge {
-  font-size: 10px;
-  font-family: 'Inter', sans-serif;
-  font-weight: 700;
-  color: #1E3A8A;
-  background: #eff4ff;
-  border: 0.8px solid #c7d7fe;
-  border-radius: 20px;
-  padding: 1px 7px;
-  white-space: nowrap;
-  letter-spacing: 0.02em;
-}
-
-.user-group-province {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--foreground);
-  font-family: 'Inter', sans-serif;
-}
-
-.user-group-count {
-  font-size: 11px;
-  color: #9ca3af;
-  font-family: 'Inter', sans-serif;
-  background: var(--secondary);
-  border-radius: 10px;
-  padding: 1px 7px;
-  margin-left: auto;
-}
 
 /* ─── Card Grid ──────────────────────────────────────────── */
-.user-branch-card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 8px;
-}
 
 /* ─── Branch Card Item ───────────────────────────────────── */
-.user-branch-card-item {
-  position: relative;
-  background: var(--input-background);
-  border: 0.8px solid var(--border);
-  border-radius: 5px;
-  padding: 12px;
-  cursor: pointer;
-  text-align: left;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  transition: border-color 0.18s, box-shadow 0.18s, transform 0.15s;
-  width: 100%;
-  overflow: hidden;
-}
-
-.user-branch-card-item:hover {
-  border-color: rgba(255, 255, 255, 0.72);
-  box-shadow: 0 3px 12px rgba(21, 93, 252, 0.08);
-  transform: translateY(-1px);
-}
-
-.user-branch-card-item:active {
-  transform: translateY(0);
-}
 
 /* My Community highlighted card */
-.user-branch-card-item.user-my-branch {
-  border-color: #1E3A8A;
-  background: linear-gradient(135deg, #f5f8ff 0%, #eef3ff 100%);
-  box-shadow: 0 2px 10px rgba(21, 93, 252, 0.12);
-}
-
-.user-branch-card-item.user-my-branch:hover {
-  box-shadow: 0 5px 18px rgba(21, 93, 252, 0.18);
-}
 
 /* "My Community" badge on card */
-.user-my-branch-badge {
-  position: absolute;
-  top: 0;
-  right: 0;
-  background: #1E3A8A;
-  color: white;
-  font-size: 9px;
-  font-weight: 700;
-  font-family: 'Inter', sans-serif;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  padding: 3px 8px;
-  border-bottom-left-radius: 5px;
-}
-
-.user-bci-top {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.user-bci-icon {
-  width: 30px;
-  height: 30px;
-  flex-shrink: 0;
-  background: #eff4ff;
-  border-radius: 5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.user-bci-icon.user-my-branch-icon {
-  background: #1E3A8A;
-}
-
-.user-bci-name {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--foreground);
-  font-family: 'Inter', sans-serif;
-  line-height: 17px;
-  flex: 1;
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.user-bci-arrow {
-  width: 14px;
-  height: 14px;
-  flex-shrink: 0;
-  opacity: 0;
-  transition: opacity 0.15s;
-}
-
-.user-branch-card-item:hover .user-bci-arrow {
-  opacity: 1;
-}
-
-.user-bci-days {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 3px;
-}
-
-.user-bci-day-tag {
-  font-size: 10px;
-  font-weight: 600;
-  font-family: 'Inter', sans-serif;
-  border-radius: 4px;
-  padding: 2px 6px;
-  letter-spacing: 0.01em;
-}
 
 /* ─── Drawer Overlay ─────────────────────────────────────── */
 .user-drawer-overlay {
@@ -826,16 +465,6 @@
 }
 
 /* ─── Misc ───────────────────────────────────────────────── */
-.user-no-results {
-  padding: 40px;
-  text-align: center;
-  color: var(--text-muted);
-  font-family: 'Inter', sans-serif;
-  font-size: 13px;
-  background: var(--card);
-  border: 0.8px solid var(--border);
-  border-radius: 5px;
-}
 
 /* ─── Responsive ─────────────────────────────────────────── */
 @media (max-width: 1200px) {
@@ -848,40 +477,11 @@
   .user-branch-drawer {
     width: 100vw;
   }
-
-  .user-branch-card-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .user-my-community-banner {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-
-  .user-mcb-right {
-    width: 100%;
-    justify-content: space-between;
-  }
 }
 
 @media (max-width: 600px) {
   .user-branches-stats {
     grid-template-columns: repeat(2, 1fr);
-  }
-
-  .user-branches-filter-bar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .user-branches-filter-count {
-    margin-left: 0;
-    text-align: center;
-  }
-
-  .user-branch-card-grid {
-    grid-template-columns: 1fr;
   }
 }
 
@@ -1029,6 +629,7 @@
     opacity: 0;
     transform: translateY(-12px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1235,67 +836,12 @@
    DARK MODE OVERRIDES
    ============================================================ */
 
-.dark .user-branches-page-title,
-.dark .user-mcb-name,
-.dark .user-branch-stat-value,
-.dark .user-bci-name,
 .dark .user-drawer-branch-name {
   color: var(--foreground);
 }
 
-.dark .user-branches-page-subtitle,
-.dark .user-mcb-province,
-.dark .user-branch-stat-label,
-.dark .user-drawer-province,
-.dark .user-bci-days {
+.dark .user-drawer-province {
   color: var(--text-secondary);
-}
-
-.dark .user-my-community-banner {
-  background: var(--card);
-  border-color: var(--primary);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.dark .user-mcb-icon {
-  background: var(--blue-tint);
-}
-
-.dark .user-branch-stat-card,
-.dark .user-branches-filter-bar,
-.dark .user-branch-card-item {
-  background: var(--card);
-  border-color: var(--border);
-}
-
-.dark .user-branches-search-input,
-.dark .user-branches-filter-select {
-  background: var(--input-background);
-  border-color: var(--border);
-  color: var(--foreground);
-}
-
-.dark .user-branches-search-input:focus,
-.dark .user-branches-filter-select:focus {
-  border-color: var(--primary);
-}
-
-.dark .user-branches-filter-count {
-  background: var(--muted);
-  color: var(--text-muted);
-}
-
-.dark .user-branch-card-item.user-my-branch {
-  background: var(--blue-tint);
-  border-color: var(--primary);
-}
-
-.dark .user-bci-icon {
-  background: var(--muted);
-}
-
-.dark .user-bci-icon.user-my-branch-icon {
-  background: var(--primary);
 }
 
 .dark .user-branch-drawer {
@@ -1316,12 +862,6 @@
   background: var(--input-background);
   border-color: var(--border);
   color: var(--foreground);
-}
-
-.dark .user-no-results {
-  background: var(--card);
-  border-color: var(--border);
-  color: var(--text-muted);
 }
 
 /* ── Additional dark mode overrides ── */
@@ -1373,14 +913,6 @@
 
 .dark .user-drawer-contact-val {
   color: var(--text-secondary);
-}
-
-.dark .user-mcb-name {
-  color: var(--foreground);
-}
-
-.dark .user-mcb-eyebrow {
-  color: var(--primary);
 }
 
 /* ============================================================
@@ -1723,6 +1255,7 @@
   .ubr-region-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
   .ubr-branch-list-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -1732,6 +1265,7 @@
   .ubr-region-grid {
     grid-template-columns: 1fr 1fr;
   }
+
   .ubr-branch-list-grid {
     grid-template-columns: 1fr;
   }

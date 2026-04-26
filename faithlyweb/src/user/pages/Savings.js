@@ -25,11 +25,11 @@ const GOAL_COLORS = {
 
 
 const TxnArrowIn = () => (
-    <ArrowDownLeft size={14} color="#27500a" />
+    <ArrowDownLeft size={14} color="#0D1F45" />
 );
 
 const TxnArrowOut = () => (
-    <ArrowUpRight size={14} color="#991b1b" />
+    <ArrowUpRight size={14} color="#0D1F45" />
 );
 
 export default function Savings() {
@@ -303,7 +303,7 @@ export default function Savings() {
                                 <div className="sv-txn-date-row">
                                     <span className="sv-txn-date">{fmtDate(txn.date)}{txn.source ? ` · ${txn.source}` : ''}</span>
                                     <span className={`sv-txn-status-badge sv-txn-status--${txn.status || 'pending'}`}>
-                                        {txn.status === 'confirmed' ? 'Validated' : txn.status === 'rejected' ? 'Rejected' : 'Pending'}
+                                        {txn.status === 'confirmed' ? 'Successful' : txn.status === 'rejected' ? 'Failed' : 'Pending'}
                                     </span>
                                 </div>
                             </div>
@@ -361,20 +361,20 @@ export default function Savings() {
 
                                 {/* Stats */}
                                 <div className="sv-stats">
-                                    <div className={`sv-stat-card ${stats.totalSavings > 0 ? 'sv-stat-card--green' : ''}`}>
+                                    <div className="sv-stat-card sv-stat-card--primary">
                                         <div className="sv-stat-header">
                                             <label className="sv-stat-label">Total savings</label>
-                                            <PiggyBank size={20} color="#155DFC" />
+                                            <PiggyBank size={20} color="white" />
                                         </div>
                                         <div className={`sv-stat-value ${stats.totalSavings <= 0 ? 'sv-stat-value--muted' : ''}`}>
                                             {fmt(stats.totalSavings)}
                                         </div>
                                         <div className="sv-stat-sub">{stats.totalSavings > 0 ? 'Current balance' : 'No balance yet'}</div>
                                     </div>
-                                    <div className="sv-stat-card">
+                                    <div className="sv-stat-card sv-stat-card--blue-text">
                                         <div className="sv-stat-header">
                                             <label className="sv-stat-label">This month</label>
-                                            <TrendingUp size={20} color="#155DFC" />
+                                            <TrendingUp size={20} color="#0D1F45" />
                                         </div>
                                         <div className={`sv-stat-value ${!stats.thisMonth ? 'sv-stat-value--muted' : ''}`}>
                                             {stats.thisMonth > 0 ? fmt(stats.thisMonth) : '₱0.00'}
@@ -385,24 +385,26 @@ export default function Savings() {
                                                 : `No deposits in ${new Date().toLocaleDateString('en-PH', { month: 'short', year: 'numeric' })}`}
                                         </div>
                                     </div>
-                                    <div className="sv-stat-card">
+                                    <div className="sv-stat-card sv-stat-card--blue-text">
                                         <div className="sv-stat-header">
                                             <label className="sv-stat-label">Active goals</label>
-                                            <Target size={20} color="#155DFC" />
+                                            <Target size={20} color="#0D1F45" />
                                         </div>
                                         <div className={`sv-stat-value ${goals.length <= 0 ? 'sv-stat-value--muted' : ''}`}>
-                                            {goals.length > 0 ? stats.activeGoals || goals.filter(g => g.status !== 'completed').length : '—'}
+                                            {goals.length > 0 
+                                                ? goals.filter(g => g.status !== 'completed' && (!g.targetAmount || (g.savedAmount || 0) < g.targetAmount)).length 
+                                                : '—'}
                                         </div>
                                         <div className="sv-stat-sub">
                                             {goals.length > 0
-                                                ? `${goals.filter(g => g.status !== 'completed').length} in progress · ${goals.filter(g => g.status === 'completed').length} done`
+                                                ? `${goals.filter(g => g.status !== 'completed' && (!g.targetAmount || (g.savedAmount || 0) < g.targetAmount)).length} in progress · ${goals.filter(g => g.status === 'completed' || (g.targetAmount && (g.savedAmount || 0) >= g.targetAmount)).length} done`
                                                 : 'No goals set'}
                                         </div>
                                     </div>
-                                    <div className="sv-stat-card">
+                                    <div className="sv-stat-card sv-stat-card--blue-text">
                                         <div className="sv-stat-header">
                                             <label className="sv-stat-label">Max loanable</label>
-                                            <Banknote size={20} color="#155DFC" />
+                                            <Banknote size={20} color="#0D1F45" />
                                         </div>
                                         <div className={`sv-stat-value ${stats.totalSavings <= 0 ? 'sv-stat-value--muted' : ''}`}>
                                             {stats.totalSavings > 0 ? fmt(stats.totalSavings * 2) : '—'}

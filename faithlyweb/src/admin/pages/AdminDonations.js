@@ -5,7 +5,7 @@ import useDebounce from '../../hooks/useDebounce';
 import '../styles/AdminDonations.css';
 
 import API from '../../utils/api';
-import { Banknote, Users, Calculator, Search, XCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Banknote, Users, Calculator, Search, XCircle, ChevronLeft, ChevronRight, Heart } from 'lucide-react';
 
 
 const fmt = (n) =>
@@ -20,8 +20,8 @@ const fmtDate = (d) => {
 
 const StatusBadge = ({ status }) => {
   const map = {
-    confirmed: { label: 'Confirmed', cls: 'admin-don-status-confirmed' },
-    rejected:  { label: 'Rejected',  cls: 'admin-don-status-rejected'  },
+    confirmed: { label: 'Successful', cls: 'admin-don-status-confirmed' },
+    rejected:  { label: 'Failed',  cls: 'admin-don-status-rejected'  },
     pending:   { label: 'Pending',   cls: 'admin-don-status-pending'   },
   };
   const s = map[status] || map.pending;
@@ -46,7 +46,6 @@ export default function AdminDonationsNew() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('active'); // Changed default to 'active'
   const [showRejectedModal, setShowRejectedModal] = useState(false);
-  const [rejectReason, setRejectReason] = useState('Incomplete or unreadable proof of payment');
   const [rejectedLoading, setRejectedLoading] = useState(false);
   const [rejectedList, setRejectedList] = useState([]);
   const debouncedSearch = useDebounce(search, 400);
@@ -55,7 +54,6 @@ export default function AdminDonationsNew() {
   /* ── Detail modal ── */
   const [detailModal, setDetailModal] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
-  const [showRejectInput, setShowRejectInput] = useState(false);
 
   /* ── Auth guard ── */
   useEffect(() => {
@@ -112,47 +110,6 @@ export default function AdminDonationsNew() {
   const goPrev = () => goTo(currentPage - 1);
   const goNext = () => goTo(currentPage + 1);
 
-  /* ── Admin actions ── */
-  const handleConfirm = async (id) => {
-    setActionLoading(true);
-    try {
-      const token = localStorage.getItem('adminToken');
-      const res = await fetch(`${API}/api/admin/donations/${id}/confirm`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
-      toast.success('Donation confirmed!');
-      setDetailModal(null);
-      fetchDonations();
-    } catch (err) {
-      toast.error(err.message || 'Failed to confirm donation');
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleReject = async (id) => {
-    setActionLoading(true);
-    try {
-      const token = localStorage.getItem('adminToken');
-      const res = await fetch(`${API}/api/admin/donations/${id}/reject`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reason: rejectReason }), // Uses the drafted reason
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
-      toast.success('Donation rejected.');
-      setDetailModal(null);
-      fetchDonations();
-    } catch (err) {
-      toast.error(err.message || 'Failed to reject donation');
-    } finally {
-      setActionLoading(false);
-    }
-  };
 
   /* ── Render ── */
   return (
@@ -335,139 +292,62 @@ export default function AdminDonationsNew() {
       {/* ── Detail Modal ── */}
       {detailModal && (
         <div className="admin-don-modal-overlay" onClick={() => !actionLoading && setDetailModal(null)}>
-          <div className="admin-don-modal-content" onClick={(e) => e.stopPropagation()}>
-            {/* Header */}
-            <div className="admin-don-modal-header">
-              <h2 className="admin-don-modal-title">Donation Details</h2>
-              <button className="admin-don-modal-close" onClick={() => { setDetailModal(null); setShowRejectInput(false); }}>×</button>
+          <div className="admin-don-modal-content admin-don-modal-enhanced" onClick={(e) => e.stopPropagation()}>
+            <div className="admin-don-modal-header-enhanced">
+              <div className="admin-don-modal-icon-wrapper">
+                  <Heart size={24} />
+              </div>
+              <div className="admin-don-modal-header-info">
+                  <div className="admin-don-modal-header-top">
+                      <div>
+                          <h2 className="admin-don-modal-title">Donation Details</h2>
+                          <span className="admin-don-modal-ref">Reference: {detailModal.donationId}</span>
+                      </div>
+                      <button className="admin-don-modal-close-btn" onClick={() => setDetailModal(null)}>×</button>
+                  </div>
+              </div>
             </div>
 
-            {/* Info Grid */}
-            <div className="admin-don-modal-body">
-              <div className="admin-don-modal-grid">
-                <div className="admin-don-modal-field">
-                  <span className="admin-don-modal-label">Donation ID</span>
-                  <span className="admin-don-modal-value">{detailModal.donationId}</span>
+            <div className="admin-don-modal-body-enhanced">
+              <div className="admin-don-modal-details-container">
+                <div className="admin-don-modal-detail-row">
+                  <span className="admin-don-modal-detail-label">Status</span>
+                  <div className="admin-don-modal-detail-value-container">
+                    <StatusBadge status={detailModal.status || 'pending'} />
+                  </div>
                 </div>
-                <div className="admin-don-modal-field">
-                  <span className="admin-don-modal-label">Status</span>
-                  <StatusBadge status={detailModal.status || 'pending'} />
+                <div className="admin-don-modal-detail-row">
+                  <span className="admin-don-modal-detail-label">Member</span>
+                  <span className="admin-don-modal-detail-value">{detailModal.member}</span>
                 </div>
-                <div className="admin-don-modal-field">
-                  <span className="admin-don-modal-label">Member</span>
-                  <span className="admin-don-modal-value">{detailModal.member}</span>
+                <div className="admin-don-modal-detail-row">
+                  <span className="admin-don-modal-detail-label">Amount</span>
+                  <span className="admin-don-modal-detail-value admin-don-modal-amount">{fmt(detailModal.amount)}</span>
                 </div>
-                <div className="admin-don-modal-field">
-                  <span className="admin-don-modal-label">Amount</span>
-                  <span className="admin-don-modal-value admin-don-modal-amount">{fmt(detailModal.amount)}</span>
+                <div className="admin-don-modal-detail-row">
+                  <span className="admin-don-modal-detail-label">Purpose</span>
+                  <span className="admin-don-modal-detail-value">{detailModal.category || 'General Fund'}</span>
                 </div>
-                <div className="admin-don-modal-field">
-                  <span className="admin-don-modal-label">Purpose</span>
-                  <span className="admin-don-modal-value">{detailModal.category || 'General Fund'}</span>
+                <div className="admin-don-modal-detail-row">
+                  <span className="admin-don-modal-detail-label">Payment Method</span>
+                  <span className="admin-don-modal-detail-value">{detailModal.method || '—'}</span>
                 </div>
-                <div className="admin-don-modal-field">
-                  <span className="admin-don-modal-label">Payment Method</span>
-                  <span className="admin-don-modal-value">{detailModal.method || '—'}</span>
+                <div className="admin-don-modal-detail-row">
+                  <span className="admin-don-modal-detail-label">Date Submitted</span>
+                  <span className="admin-don-modal-detail-value">{fmtDate(detailModal.createdAt || detailModal.date)}</span>
                 </div>
-                <div className="admin-don-modal-field">
-                  <span className="admin-don-modal-label">Date Submitted</span>
-                  <span className="admin-don-modal-value">{fmtDate(detailModal.createdAt || detailModal.date)}</span>
+                <div className="admin-don-modal-detail-row">
+                  <span className="admin-don-modal-detail-label">Type</span>
+                  <span className="admin-don-modal-detail-value">{detailModal.type || 'One-time'}</span>
                 </div>
-                <div className="admin-don-modal-field">
-                  <span className="admin-don-modal-label">Type</span>
-                  <span className="admin-don-modal-value">{detailModal.type || 'One-time'}</span>
-                </div>
-              </div>
-
-              {/* Proof of Payment */}
-              <div className="admin-don-modal-proof-section">
-                <p className="admin-don-modal-proof-label">Proof of Payment</p>
-                {detailModal.proofImage ? (
-                  <img
-                    src={detailModal.proofImage}
-                    alt="Proof of payment"
-                    className="admin-don-modal-proof-img"
-                    onClick={() => window.open(detailModal.proofImage, '_blank')}
-                  />
-                ) : (
-                  <div className="admin-don-modal-no-proof">No proof of payment uploaded</div>
-                )}
               </div>
 
               {detailModal.rejectReason && (
-                <div className="admin-don-modal-reject-reason">
-                  <span className="admin-don-modal-label">Reject Reason</span>
+                <div className="admin-don-modal-reject-reason-enhanced">
+                  <span className="admin-don-modal-reject-label">Reject Reason</span>
                   <p>{detailModal.rejectReason}</p>
                 </div>
               )}
-            </div>
-
-            {/* Footer Actions */}
-            <div className="admin-don-modal-footer admin-don-modal-footer-col">
-              {(!detailModal.status || detailModal.status === 'pending') && (
-                <div className="admin-don-reject-box">
-                  {showRejectInput && (
-                    <>
-                      <p className="admin-don-reject-label">Rejection Reason</p>
-                      <select 
-                        className="admin-don-reject-select"
-                        value={rejectReason}
-                        onChange={(e) => setRejectReason(e.target.value)}
-                      >
-                        <option value="Incomplete or unreadable proof of payment">Incomplete or unreadable proof of payment</option>
-                        <option value="Amount deposited does not match the entered amount">Amount deposited does not match the entered amount</option>
-                        <option value="Duplicate payment proof uploaded">Duplicate payment proof uploaded</option>
-                        <option value="Invalid transaction reference number">Invalid transaction reference number</option>
-                        <option value="Other / Suspected fraudulent submission">Other / Suspected fraudulent submission</option>
-                      </select>
-                    </>
-                  )}
-                  
-                  <div className="admin-don-flex-gap-10">
-                    <button
-                      className="admin-don-action-btn admin-don-action-reject admin-don-btn-flex-1"
-                      onClick={() => {
-                        if (!showRejectInput) {
-                          setShowRejectInput(true);
-                        } else {
-                          handleReject(detailModal._id);
-                        }
-                      }}
-                      disabled={actionLoading}
-                    >
-                      {actionLoading ? <span className="btn-spinner" /> : showRejectInput ? 'Submit Rejection' : 'Reject'}
-                    </button>
-                    
-                    {!showRejectInput && (
-                      <button
-                        className="admin-don-action-btn admin-don-action-confirm admin-don-btn-flex-2"
-                        onClick={() => handleConfirm(detailModal._id)}
-                        disabled={actionLoading}
-                      >
-                        {actionLoading ? <span className="btn-spinner" /> : 'Confirm Donation'}
-                      </button>
-                    )}
-
-                    {showRejectInput && (
-                      <button
-                        className="admin-don-action-btn admin-don-action-view admin-don-btn-flex-1"
-                        onClick={() => setShowRejectInput(false)}
-                        disabled={actionLoading}
-                      >
-                        Cancel
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
-              <div className="admin-don-flex-end">
-                <button
-                  className="admin-don-action-btn admin-don-action-view admin-don-btn-standard"
-                  onClick={() => { setDetailModal(null); setShowRejectInput(false); }}
-                >
-                  Close
-                </button>
-              </div>
             </div>
           </div>
         </div>

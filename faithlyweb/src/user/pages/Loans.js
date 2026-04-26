@@ -1,8 +1,10 @@
 import { useNavigate } from 'react-router';
 import { useState, useEffect, useCallback } from 'react';
+import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
 import LoanApplicationModal from '../components/LoanApplicationModal';
 import '../styles/Loans.css';
+import '../styles/LoanApplicationModal.css';
 
 import API from '../../utils/api';
 import { Banknote, Lock as LockIcon, X, Wallet, ShieldAlert, Clock, CheckCircle2 } from 'lucide-react';
@@ -23,6 +25,7 @@ const STATUS_CLASS = {
   completed:  'ul-badge-completed',
   rejected:   'ul-badge-rejected',
   overdue:    'ul-badge-overdue',
+  cancelled:  'ul-badge-rejected',
 };
 
 const STATUS_TEXT = {
@@ -33,6 +36,7 @@ const STATUS_TEXT = {
   rejected:   'Rejected',
   overdue:    'Overdue',
   awaiting_member_approval: 'Review requested',
+  cancelled:  'Cancelled',
 };
 
 export default function Loans() {
@@ -49,6 +53,11 @@ export default function Loans() {
   const [totalSavings, setTotalSavings] = useState(0);
   const [pendingSavings, setPendingSavings] = useState(0);
   const [isLoanModalOpen, setIsLoanModalOpen] = useState(false);
+
+  const [cancelModalData, setCancelModalData] = useState({ open: false, loanId: null });
+  const [cancelReason, setCancelReason] = useState('');
+  const [cancelReasonOther, setCancelReasonOther] = useState('');
+  const [isCancelling, setIsCancelling] = useState(false);
 
   /* ── Verification & Active Loan Logic ── */
   const profile = user;
@@ -111,6 +120,54 @@ export default function Loans() {
 
   const handleLoanClose = () => { setIsLoanModalOpen(false); fetchAll(); };
 
+  const handleCancelClick = (loanId) => {
+    setCancelModalData({ open: true, loanId });
+    setCancelReason('');
+    setCancelReasonOther('');
+  };
+
+  const closeCancelModal = () => {
+    setCancelModalData({ open: false, loanId: null });
+  };
+
+  const handleCancelSubmit = async (e) => {
+    e.preventDefault();
+    if (!cancelReason) {
+      toast.error('Please select a reason for cancellation');
+      return;
+    }
+    const finalReason = cancelReason === 'Other' ? cancelReasonOther : cancelReason;
+    if (!finalReason.trim()) {
+      toast.error('Please specify the reason');
+      return;
+    }
+
+    setIsCancelling(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API}/api/loans/${cancelModalData.loanId}/cancel`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify({ reason: finalReason })
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Loan application cancelled");
+        closeCancelModal();
+        fetchAll();
+      } else {
+        toast.error(data.message || "Failed to cancel loan");
+      }
+    } catch (err) {
+      toast.error("Network error. Please try again.");
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
 
   const renderLockedNotice = () => (
     <div className="ul-locked-banner user-fade-in">
@@ -119,9 +176,9 @@ export default function Loans() {
           <LockIcon size={20} />
         </div>
         <div className="ul-locked-text">
-          <h3 className="ul-locked-title">Loan Application Locked</h3>
+          <h3 className="ul-locked-title">Unlock Your Loan Privileges</h3>
           <p className="ul-locked-sub">
-            To apply for a loan, you must have a minimum savings balance of <strong>₱1,000</strong>.
+            Grow your savings to <strong>₱1,000</strong> to unlock access to our loan programs.
           </p>
           <div style={{ marginTop: '8px', fontSize: '13px', display: 'flex', gap: '16px', opacity: 0.9 }}>
             <span><strong>Confirmed:</strong> ₱{Number(totalSavings).toLocaleString()}</span>
@@ -234,19 +291,7 @@ export default function Loans() {
               <p className="ul-page-subtitle">Manage your loan applications and payments</p>
             </div>
 
-            {isVerified && !hasActiveLoan && totalSavings >= 1000 ? (
-              <button className="ul-apply-btn user-fade-in" onClick={handleApplyClick}>
-                + Apply for Loan
-              </button>
-            ) : isVerified && !hasActiveLoan && totalSavings < 1000 ? (
-              <div className="ul-apply-btn-disabled" title="You need at least ₱1,000 in savings to apply for a loan">
-                <LockIcon size={16} /> Apply for Loan
-              </div>
-            ) : isVerified && hasActiveLoan ? (
-              <div className="ul-apply-btn-disabled" title="You already have an active or pending loan">
-                <LockIcon size={16} /> Apply for Loan
-              </div>
-            ) : null}
+
           </div>
 
           {/* Error */}
@@ -264,7 +309,7 @@ export default function Loans() {
 
               {/* Stats */}
               <div className="ul-stats-grid">
-                <div className="ul-stat-card">
+                <div className="ul-stat-card ul-stat-card--primary">
                   <label className="ul-stat-label">Total Borrowed</label>
                   <div className="ul-stat-value">{fmt(stats.totalBorrowed)}</div>
                   <div className="ul-stat-sub">
@@ -276,7 +321,7 @@ export default function Loans() {
                     }
                   </div>
                 </div>
-                <div className="ul-stat-card">
+                <div className="ul-stat-card ul-stat-card--primary">
                   <label className="ul-stat-label">Remaining Balance</label>
                   <div className="ul-stat-value">
                     {stats.activeCount > 0 ? fmt(stats.remainingBalance) : '₱0.00'}
@@ -287,7 +332,7 @@ export default function Loans() {
                       : 'No active repayments'}
                   </div>
                 </div>
-                <div className={`ul-stat-card ${nextDueLoan && nextDueLoan.nextPaymentDate && new Date(nextDueLoan.nextPaymentDate) < new Date() ? 'ul-stat-card--overdue' : ''}`}>
+                <div className={`ul-stat-card ${nextDueLoan && nextDueLoan.nextPaymentDate && new Date(nextDueLoan.nextPaymentDate) < new Date() ? 'ul-stat-card--overdue' : 'ul-stat-card--primary'}`}>
                   {nextDueLoan ? (
                     <>
                       <label className="ul-stat-label">Next Payment</label>
@@ -317,12 +362,8 @@ export default function Loans() {
                       </div>
                       <div className="ul-empty-title">No active loan</div>
                       <p className="ul-empty-sub">You haven't taken out a loan yet. Apply now and get funds disbursed directly to your account.</p>
-                      {totalSavings >= 1000 ? (
+                      {totalSavings >= 1000 && (
                         <button className="ul-empty-apply-btn user-fade-in" onClick={handleApplyClick}>Apply for a loan</button>
-                      ) : (
-                        <div className="ul-empty-apply-btn-disabled" title="You need at least ₱1,000 in savings to apply for a loan">
-                          <LockIcon size={14} /> Apply for a loan
-                        </div>
                       )}
                     </div>
                   ) : (
@@ -379,28 +420,36 @@ export default function Loans() {
                                 </div>
                               </div>
                             </>
-                          ) : (
-                            <div className="ul-disbursement-notice">
-                              <ShieldAlert size={16} />
-                              <span>Payment schedule will appear once funds are released.</span>
-                            </div>
-                          )}
+                          ) : null}
 
-                          <div className="ul-loan-actions">
-                            <button className="ul-action-btn" onClick={() => navigate(`/loans/${loan.loanId}?tab=schedule`)}>
-                              View schedule
-                            </button>
-                            <button className="ul-action-btn" onClick={() => navigate(`/loans/${loan.loanId}`)}>
-                              Loan details
-                            </button>
+                          <div className="ul-loan-actions" style={{ marginTop: ['pending', 'awaiting_member_approval', 'approved'].includes(loan.status) ? '16px' : '0' }}>
+                            {loan.status !== 'pending' && loan.status !== 'awaiting_member_approval' && (
+                              <>
+                                <button className="ul-action-btn" onClick={() => navigate(`/loans/${loan.loanId}?tab=schedule`)}>
+                                  View schedule
+                                </button>
+                                <button className="ul-action-btn" onClick={() => navigate(`/loans/${loan.loanId}`)}>
+                                  Loan details
+                                </button>
+                              </>
+                            )}
                             {loan.status === 'active' && (
-                              <button className="ul-action-btn ul-action-btn--primary" onClick={() => navigate(`/loans/${loan.loanId}?pay=true`)}>
+                              <button className="ul-action-btn ul-action-btn--primary" style={{ marginLeft: 'auto' }} onClick={() => navigate(`/loans/${loan.loanId}?pay=true`)}>
                                 Pay now
                               </button>
                             )}
                             {loan.status === 'approved' && (
-                              <button className="ul-action-btn" disabled title="Awaiting secretary disbursement" style={{ opacity: 0.6, cursor: 'not-allowed' }}>
+                              <button className="ul-action-btn" disabled title="Awaiting secretary disbursement" style={{ marginLeft: 'auto', opacity: 0.6, cursor: 'not-allowed' }}>
                                 Awaiting disbursement
+                              </button>
+                            )}
+                            {['pending', 'awaiting_member_approval', 'approved'].includes(loan.status) && (
+                              <button 
+                                className="ul-action-btn ul-action-btn--cancel" 
+                                style={{ marginLeft: loan.status === 'approved' ? '0' : 'auto' }}
+                                onClick={() => handleCancelClick(loan._id)}
+                              >
+                                Cancel application
                               </button>
                             )}
                           </div>
@@ -412,7 +461,7 @@ export default function Loans() {
               )}
 
               {/* Loan history / loan types */}
-              {loans.length > 0 ? (
+              {loans.filter(l => ['completed', 'rejected', 'cancelled'].includes(l.status)).length > 0 ? (
                 <div className="ul-section">
                   <div className="ul-section-head">
                     <div className="ul-section-title">Loan history</div>
@@ -424,22 +473,16 @@ export default function Loans() {
                   </div>
 
                   <div className="ul-history-list user-fade-in">
-                    {loans.map((loan) => {
-                      let iconColor = "#000000";
-                      let iconBg = "rgba(0, 0, 0, 0.05)";
+                    {loans.filter(l => ['completed', 'rejected', 'cancelled'].includes(l.status)).map((loan) => {
+                      let iconColor = "#0D1F45";
+                      let iconBg = "rgba(13, 31, 69, 0.1)";
                       let Icon = CheckCircle2;
 
                       if (loan.status === 'active') {
-                        iconColor = "#10B981";
-                        iconBg = "rgba(16, 185, 129, 0.1)";
                         Icon = Banknote;
                       } else if (loan.status === 'pending' || loan.status === 'approved' || loan.status === 'overdue' || loan.status === 'awaiting_member_approval') {
-                        iconColor = "#F59E0B";
-                        iconBg = "rgba(245, 158, 11, 0.1)";
                         Icon = Clock;
-                      } else if (loan.status === 'rejected') {
-                        iconColor = "#EF4444";
-                        iconBg = "rgba(239, 68, 68, 0.1)";
+                      } else if (loan.status === 'rejected' || loan.status === 'cancelled') {
                         Icon = X;
                       }
 
@@ -499,9 +542,9 @@ export default function Loans() {
                     </div>
                   )}
                 </div>
-              ) : (
+              ) : loans.length === 0 ? (
                 renderLoanTypes()
-              )}
+              ) : null}
             </>
           )}
         </div>
@@ -514,6 +557,57 @@ export default function Loans() {
         existingLoanBalance={stats.remainingBalance || 0}
         hasOverdueLoans={loans.some(l => l.status === 'overdue')}
       />
+
+      {cancelModalData.open && (
+        <div className="user-loan-application-overlay">
+          <div className="user-loan-application-content" style={{ maxWidth: '400px', margin: 'auto' }}>
+            <div className="user-loan-application-header">
+              <h2 className="user-loan-application-title">Cancel Application</h2>
+              <button className="user-loan-application-close-btn" onClick={closeCancelModal}><X size={20} /></button>
+            </div>
+            <div className="ula-modal-body" style={{ padding: '24px' }}>
+              <form onSubmit={handleCancelSubmit}>
+                <div className="ula-form-group" style={{ marginBottom: '16px' }}>
+                  <label className="user-loan-application-label">Reason for cancellation</label>
+                  <select 
+                    className="user-loan-application-select"
+                    value={cancelReason}
+                    onChange={(e) => setCancelReason(e.target.value)}
+                    required
+                  >
+                    <option value="" disabled>Select a reason...</option>
+                    <option value="Found a better alternative">Found a better alternative</option>
+                    <option value="No longer need the loan">No longer need the loan</option>
+                    <option value="Applied by mistake">Applied by mistake</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                {cancelReason === 'Other' && (
+                  <div className="ula-form-group" style={{ marginBottom: '16px' }}>
+                    <label className="user-loan-application-label">Please specify</label>
+                    <input 
+                      type="text" 
+                      className="user-loan-application-input"
+                      value={cancelReasonOther}
+                      onChange={(e) => setCancelReasonOther(e.target.value)}
+                      placeholder="Type your reason here..."
+                      required
+                    />
+                  </div>
+                )}
+                <div style={{ marginTop: '24px', display: 'flex', gap: '12px' }}>
+                  <button type="button" className="ul-action-btn" onClick={closeCancelModal} style={{ flex: 1, justifyContent: 'center' }}>
+                    Keep application
+                  </button>
+                  <button type="submit" className="ul-action-btn" disabled={isCancelling} style={{ flex: 1, justifyContent: 'center', color: '#fff', background: '#dc2626', borderColor: '#dc2626' }}>
+                    {isCancelling ? 'Cancelling...' : 'Cancel Loan'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
 
     </>
   );

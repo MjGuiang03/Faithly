@@ -247,4 +247,108 @@ router.get('/notifications/feed', authenticateUser, async (req, res) => {
   }
 });
 
+/* ================== SAVED PAYMENT ACCOUNTS ================== */
+router.get('/saved-accounts', authenticateUser, async (req, res) => {
+  try {
+    const email = req.user.email;
+    const accounts = [];
+    const seen = new Set();
+
+    // 1. From user's manually saved accounts
+    const user = await users.findOne({ email });
+    if (user?.savedAccounts && Array.isArray(user.savedAccounts)) {
+      for (const sa of user.savedAccounts) {
+        const key = `${sa.method}-${sa.accountNumber}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          accounts.push({
+            method: sa.method,
+            accountNumber: sa.accountNumber,
+            accountName: sa.accountName || '',
+            source: 'Saved',
+            label: sa.label || `${sa.accountName || ''} - ${sa.accountNumber}`.trim(),
+          });
+        }
+      }
+    }
+
+    // 2. From savings withdrawals (have sendMethod, accountNumber, accountName)
+    const withdrawals = await savingsTransactions
+      .find({ email, type: 'withdrawal', status: 'confirmed', accountNumber: { $exists: true, $ne: '' } })
+      .sort({ date: -1 })
+      .limit(20)
+      .toArray();
+
+    for (const w of withdrawals) {
+      const key = `${w.sendMethod || 'gcash'}-${w.accountNumber}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        accounts.push({
+          method: w.sendMethod || 'gcash',
+          accountNumber: w.accountNumber,
+          accountName: w.accountName || '',
+          source: 'Savings Withdrawal',
+          label: `${w.accountName || ''} - ${w.accountNumber}`.trim(),
+        });
+      }
+    }
+
+    // 3. From user profile (phone as GCash)
+    if (user?.phone) {
+      const key = `gcash-${user.phone}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        accounts.push({
+          method: 'gcash',
+          accountNumber: user.phone,
+          accountName: user.fullName || '',
+          source: 'Profile',
+          label: `${user.fullName || ''} - ${user.phone}`.trim(),
+        });
+      }
+    }
+
+    res.json({ success: true, accounts });
+  } catch (err) {
+    console.error('Failed to fetch saved accounts:', err);
+    res.status(500).json({ success: false, message: 'Failed to fetch saved accounts' });
+  }
+});
+
+/* ================== SAVE A NEW PAYMENT ACCOUNT ================== */
+router.post('/saved-accounts', authenticateUser, async (req, res) => {
+  try {
+    const email = req.user.email;
+    const { method, accountNumber, accountName, label } = req.body;
+
+    if (!method || !accountNumber) {
+      return res.status(400).json({ success: false, message: 'Method and account number are required' });
+    }
+
+    const user = await users.findOne({ email });
+    const existing = (user?.savedAccounts || []);
+
+    // Check for duplicates
+    const isDuplicate = existing.some(a => a.method === method && a.accountNumber === accountNumber);
+    if (isDuplicate) {
+      return res.json({ success: true, message: 'Account already saved' });
+    }
+
+    const newAccount = {
+      method,
+      accountNumber,
+      accountName: accountName || '',
+      label: label || `${accountName || ''} - ${accountNumber}`.trim(),
+      addedAt: new Date(),
+    };
+
+    await users.updateOne({ email }, { $push: { savedAccounts: newAccount } });
+
+    res.json({ success: true, message: 'Account saved successfully' });
+  } catch (err) {
+    console.error('Failed to save account:', err);
+    res.status(500).json({ success: false, message: 'Failed to save account' });
+  }
+});
+
 export default router;

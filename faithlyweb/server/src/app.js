@@ -17,7 +17,7 @@ import notificationRoutes from './routes/notifications.js';
 import announcementRoutes from './routes/announcements.js';
 import savingsRoutes      from './routes/savings.js';
 import prayerRoutes       from './routes/prayers.js';
-
+import webhookRoutes      from './routes/webhooks.js';
 
 const app = express();
 
@@ -66,6 +66,7 @@ app.use('/api/admin', notificationRoutes);
 app.use('/api', announcementRoutes);
 app.use('/api', savingsRoutes);
 app.use('/api', prayerRoutes);
+app.use('/api', webhookRoutes);
 
 /* ================== GLOBAL ERROR HANDLER ================== */
 // This ensures even 500 errors carry CORS headers so the browser doesn't hide the real error

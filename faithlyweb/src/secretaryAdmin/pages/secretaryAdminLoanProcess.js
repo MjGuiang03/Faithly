@@ -51,15 +51,26 @@ export default function SecretaryLoanProcess() {
     const processedCount = loans.filter(l => l.disbursed).length;
 
     const handleViewDetails = async (loan) => {
-        // Calculate Loan History from current loans list
-        const memberLoans = loans.filter(l => l.email === loan.email);
-        const loanHistoryCount = memberLoans.length;
+        let loanHistoryCount = 0;
+        const token = localStorage.getItem('secretaryToken') || localStorage.getItem('adminToken') || localStorage.getItem('token');
+        const headers = { Authorization: `Bearer ${token}` };
+
+        try {
+            // Fetch real loan history for this member
+            const histRes = await fetch(`${API}/api/admin/loans?search=${encodeURIComponent(loan.email)}&limit=100`, { headers });
+            if (histRes.ok) {
+                const histData = await histRes.json();
+                if (histData.success && histData.loans) {
+                    loanHistoryCount = histData.loans.filter(l => l.status === 'completed').length;
+                }
+            }
+        } catch (err) {
+            console.error('Failed to fetch user loan history:', err);
+        }
 
         let totalDonations = 0;
         let userChurchId = 'N/A';
         let userPosition = 'Member';
-        const token = localStorage.getItem('secretaryToken') || localStorage.getItem('adminToken') || localStorage.getItem('token');
-        const headers = { Authorization: `Bearer ${token}` };
 
         try {
             // Fetch donations for this specific member
@@ -127,7 +138,7 @@ export default function SecretaryLoanProcess() {
         setShowReceiptModal(true);
     };
 
-    const handleProcessLoan = async (paymentMethod, processReason, proofData, proofFileName) => {
+    const handleProcessLoan = async (paymentMethod, processReason) => {
         if (!selectedLoan || !selectedLoan._id) return;
 
         try {
@@ -137,10 +148,6 @@ export default function SecretaryLoanProcess() {
             const payload = { paymentMethod };
             if (paymentMethod !== selectedLoan.disbursementMethod && processReason) {
                 payload.processReason = processReason;
-            }
-            if (proofData) {
-                payload.proofData = proofData;
-                payload.proofFileName = proofFileName || null;
             }
 
             const res = await fetch(`${API}/api/admin/loans/${selectedLoan._id}/process`, {
@@ -158,7 +165,7 @@ export default function SecretaryLoanProcess() {
                     ...selectedLoan,
                     paymentMethod,
                     disbursementDate: new Date().toISOString(),
-                    referenceNumber: data.referenceNumber // Assuming backend returns this
+                    referenceNumber: data.referenceNumber
                 };
                 setSelectedLoan(updatedLoan);
                 setShowReceiptModal(true);

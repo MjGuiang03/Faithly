@@ -25,7 +25,7 @@ export default function SecretaryAdminSidebar() {
 
     /* ── Fetch admin unread count ── */
     useEffect(() => {
-        const token = localStorage.getItem('secretaryToken'); // Note: Make sure they authenticate using secretaryToken or adminToken
+        const token = localStorage.getItem('secretaryToken') || localStorage.getItem('adminToken') || localStorage.getItem('token');
         if (!token) return;
 
         const calcUnread = async () => {
@@ -38,11 +38,11 @@ export default function SecretaryAdminSidebar() {
                 if (data.success) {
                     const readIds = new Set(data.readIds || []);
                     const allNotifs = data.notifications || [];
-                    const count = allNotifs.filter(n => !readIds.has(n.id)).length;
+                    const count = allNotifs.filter(n => n.type === 'loan' && !readIds.has(n.id)).length;
                     setUnreadCount(count);
 
                     /* ── Desktop push notifications ── */
-                    const unreadNotifs = allNotifs.filter(n => !readIds.has(n.id));
+                    const unreadNotifs = allNotifs.filter(n => n.type === 'loan' && !readIds.has(n.id));
                     prevNotifIdsRef.current = processNewNotifications(
                       prevNotifIdsRef.current,
                       unreadNotifs,

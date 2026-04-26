@@ -1,21 +1,11 @@
 import { useState } from 'react';
 import '../styles/secProcessLoanModal.css';
-import { Banknote, Check, Smartphone, Building2, Upload, X } from 'lucide-react';
+import { Banknote, Check, Smartphone, Building2, X, AlertTriangle } from 'lucide-react';
 
-
-/* ── File → base64 helper ── */
-const fileToBase64 = (file) =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
 
 export default function SecProcessLoanModal({ loan, onClose, onProcess }) {
     const [paymentMethod, setPaymentMethod] = useState(loan.disbursementMethod || 'gcash');
     const [reason, setReason] = useState('');
-    const [proofFile, setProofFile] = useState(null);
     const [processing, setProcessing] = useState(false);
 
     const handleProcess = async () => {
@@ -23,21 +13,18 @@ export default function SecProcessLoanModal({ loan, onClose, onProcess }) {
             alert('Please provide a reason for changing the payment method.');
             return;
         }
-        if (!proofFile) {
-            alert('Please upload proof of disbursement.');
-            return;
-        }
 
         setProcessing(true);
         try {
-            const proofData = await fileToBase64(proofFile);
-            onProcess(paymentMethod, reason, proofData, proofFile.name);
+            await onProcess(paymentMethod, reason);
         } catch {
-            alert('Failed to process proof file.');
+            alert('Failed to process disbursement.');
         } finally {
             setProcessing(false);
         }
     };
+
+    const isDigital = paymentMethod === 'gcash' || paymentMethod === 'bank';
 
     return (
         <div className="sec-process-modal-overlay" onClick={onClose}>
@@ -136,65 +123,24 @@ export default function SecProcessLoanModal({ loan, onClose, onProcess }) {
                     )}
                 </div>
 
-                {/* Proof of Disbursement Upload */}
-                <div className="sec-process-modal-payment-section">
-                    <label className="sec-process-modal-label">
-                        Upload Proof of Disbursement <span style={{ color: 'red' }}>*</span>
-                    </label>
-                    <p style={{ fontSize: '12px', color: '#6B7280', margin: '0 0 8px 0', fontFamily: 'Inter' }}>
-                        Upload a screenshot or photo of the transaction (receipt, GCash confirmation, bank transfer proof)
-                    </p>
-                    <label
-                        htmlFor="proof-upload"
-                        style={{
-                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                            padding: proofFile ? '6px' : '15px',
-                            border: `1.5px dashed ${proofFile ? '#16A34A' : '#D1D5DB'}`,
-                            borderRadius: '10px',
-                            cursor: 'pointer',
-                            background: proofFile ? '#F0FDF4' : '#F9FAFB',
-                            transition: 'all 0.15s',
-                            overflow: 'hidden',
-                        }}
-                    >
-                        {proofFile ? (
-                            <>
-                                {proofFile.type.startsWith('image/') && (
-                                    <img
-                                        src={URL.createObjectURL(proofFile)}
-                                        alt="Proof preview"
-                                        style={{
-                                            maxWidth: '100%', maxHeight: '120px',
-                                            borderRadius: '6px', objectFit: 'contain', marginBottom: '6px',
-                                        }}
-                                    />
-                                )}
-                                <p style={{ margin: 0, fontSize: '12px', color: '#16A34A', fontWeight: 600, fontFamily: 'Inter' }}>
-                                    ✓ {proofFile.name}
-                                </p>
-                                <p style={{ margin: '2px 0 0 0', fontSize: '11px', color: '#6B7280', fontFamily: 'Inter' }}>
-                                    Click to change
-                                </p>
-                            </>
-                        ) : (
-                            <>
-                                <Upload size={20} color="#99A1AF" />
-                                <p style={{ margin: 0, fontSize: '13px', color: '#6B7280', fontFamily: 'Inter' }}>
-                                    Click to upload proof
-                                </p>
-                                <p style={{ margin: '2px 0 0 0', fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>
-                                    PNG, JPG
-                                </p>
-                            </>
-                        )}
-                        <input
-                            type="file"
-                            id="proof-upload"
-                            accept="image/png, image/jpeg"
-                            onChange={(e) => setProofFile(e.target.files[0] || null)}
-                            hidden
-                        />
-                    </label>
+                {/* Disbursement info notice */}
+                <div className="sec-process-modal-notice">
+                    {isDigital ? (
+                        <>
+                            <Smartphone size={16} color="#155DFC" />
+                            <p>
+                                The amount of <strong>₱{loan.amount.toLocaleString()}</strong> will be sent via <strong>PayMongo</strong> to{' '}
+                                <strong>{loan.disbursementAccount || 'the member\'s account'}</strong>.
+                            </p>
+                        </>
+                    ) : (
+                        <>
+                            <AlertTriangle size={16} color="#D97706" />
+                            <p>
+                                Cash disbursement of <strong>₱{loan.amount.toLocaleString()}</strong> — the member must pick up at the office.
+                            </p>
+                        </>
+                    )}
                 </div>
 
                 {/* Action Buttons */}
@@ -204,7 +150,7 @@ export default function SecProcessLoanModal({ loan, onClose, onProcess }) {
                     </button>
                     <button className="sec-process-btn-confirm" onClick={handleProcess} disabled={processing}>
                         <Check size={16} color="white" />
-                        {processing ? <span className="btn-spinner" /> : 'Process Payment'}
+                        {processing ? <span className="btn-spinner" /> : isDigital ? 'Send via PayMongo' : 'Confirm Cash Disbursement'}
                     </button>
                 </div>
             </div>

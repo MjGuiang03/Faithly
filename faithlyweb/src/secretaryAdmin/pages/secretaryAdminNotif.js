@@ -97,9 +97,6 @@ export default function SecretaryAdminNotif() {
                 <div className="sec-admin-notif-header">
                     <div className="sec-admin-notif-header-left">
                         <h1 className="sec-admin-notif-title">Notifications</h1>
-                        {unreadCount > 0 && (
-                            <div className="admin-notif-badge">{unreadCount}</div>
-                        )}
                     </div>
                     <p className="sec-admin-notif-subtitle">
 
@@ -187,32 +184,35 @@ export default function SecretaryAdminNotif() {
 
             {/* ── Notification Detail Modal ── */}
             {detailModal && (
-                <div className="sec-admin-mgmt-modal-overlay" onClick={() => setDetailModal(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0, 0, 0, 0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 24 }}>
-                    <div className="sec-admin-mgmt-modal-container" onClick={(e) => e.stopPropagation()} style={{ background: 'white', borderRadius: 16, width: '100%', maxWidth: 500, display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)' }}>
-                        <div className="sec-admin-mgmt-modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 24px', borderBottom: '0.8px solid #E5E7EB' }}>
-                            <h2 className="sec-admin-mgmt-modal-title" style={{ fontFamily: 'Inter', fontSize: 18, fontWeight: 700, margin: 0, color: '#101828' }}>{detailModal.title}</h2>
-                            <button className="sec-admin-mgmt-modal-close" onClick={() => setDetailModal(null)} style={{ width: 32, height: 32, border: 'none', background: '#F3F4F6', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6A7282' }}>×</button>
-                        </div>
-                        <div style={{ padding: '20px 24px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                                <span style={{ fontSize: '12px', color: '#1E3A8A', background: '#EFF6FF', padding: '2px 8px', borderRadius: 999, fontWeight: 600, textTransform: 'capitalize' }}>
-                                    Loan
-                                </span>
-                                <span style={{ fontSize: '12px', color: '#9CA3AF', marginLeft: 'auto', fontFamily: 'Inter' }}>
-                                    {detailModal.date} {detailModal.time}
-                                </span>
+                <div className="sec-admin-notif-modal-overlay" onClick={() => setDetailModal(null)}>
+                    <div className="sec-admin-notif-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="sec-admin-notif-modal-header-row">
+                            <div className="sec-admin-notif-modal-icon-wrapper">
+                                <Banknote size={24} />
                             </div>
-                            <p style={{ fontFamily: 'Inter', fontSize: '14px', color: '#374151', lineHeight: '22px', margin: 0 }}>
-                                {detailModal.message}
-                            </p>
+                            <div className="sec-admin-notif-modal-header-info">
+                                <div className="sec-admin-notif-modal-header">
+                                    <h2 className="sec-admin-notif-modal-title">{detailModal.title}</h2>
+                                    <button className="sec-admin-notif-modal-close" onClick={() => setDetailModal(null)}>
+                                        ×
+                                    </button>
+                                </div>
+                                <div className="sec-admin-notif-modal-meta">
+                                    <span className="sec-admin-notif-modal-tag">
+                                        Loan
+                                    </span>
+                                    <span className="sec-admin-notif-modal-datetime">
+                                        {detailModal.date} • {detailModal.time}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
-                        <div style={{ padding: '0 24px 20px', display: 'flex', justifyContent: 'flex-end' }}>
-                            <button
-                                style={{ padding: '10px 20px', background: '#1E3A8A', color: 'white', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}
-                                onClick={() => setDetailModal(null)}
-                            >
-                                Close
-                            </button>
+                        <div className="sec-admin-notif-modal-message-row">
+                            <div className="sec-admin-notif-modal-message-box">
+                                <p className="sec-admin-notif-modal-message">
+                                    {detailModal.message}
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>

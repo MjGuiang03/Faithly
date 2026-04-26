@@ -1,16 +1,24 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import LoanAdminSidebar from './loanAdminSidebar';
 import '../../admin/styles/AdminDashboard.css';
 import '../styles/loanAdminDashboard.css';
 import API from '../../utils/api';
-import { Banknote, CheckCircle, LayoutDashboard, PiggyBank, X, Filter } from 'lucide-react';
+import { Banknote, CheckCircle, LayoutDashboard, PiggyBank, X, Filter, Expand } from 'lucide-react';
 
 
 const fmt = (n) =>
   n != null ? `₱${Number(n).toLocaleString('en-PH')}` : '₱0';
+
+const formatYAxis = (num) => {
+  if (num >= 1000000) return `${(num / 1000000).toFixed(1).replace(/\.0$/, '')}M`;
+  if (num >= 1000) return `${(num / 1000).toFixed(1).replace(/\.0$/, '')}k`;
+  return num;
+};
+
+const CHART_TICKS = [0, 100000, 200000, 300000, 400000, 500000];
 
 const fmtDate = (d) => {
   if (!d) return 'N/A';
@@ -40,6 +48,7 @@ export default function LoanAdminDashboard() {
   const [monthModalYear, setMonthModalYear] = useState(new Date().getFullYear());
   const [disbModalMonth, setDisbModalMonth] = useState('all');
   const [disbModalYear, setDisbModalYear] = useState('all');
+  const [expandedChart, setExpandedChart] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
@@ -219,16 +228,19 @@ export default function LoanAdminDashboard() {
                 <h3 className="adm-card-title">Money In vs Money Out</h3>
                 <span className="adm-card-sub">Monthly comparison of received funds and loan disbursements</span>
               </div>
+              <button className="la-chart-expand-btn" onClick={() => setExpandedChart('moneyIn')} title="Expand Chart">
+                <Expand size={18} color="#4B5563" strokeWidth={2.5} />
+              </button>
             </div>
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={monthlyData} margin={{ top: 4, right: 8, left: -10, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
                 <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
-                <YAxis stroke="#9CA3AF" fontSize={12} />
+                <YAxis stroke="#9CA3AF" fontSize={12} tickFormatter={formatYAxis} width={45} ticks={CHART_TICKS} domain={[0, 500000]} />
                 <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #E5E7EB' }} formatter={(v) => '₱' + v.toLocaleString()} />
                 <Legend iconType="circle" wrapperStyle={{ paddingTop: '12px' }} />
-                <Bar dataKey="received" fill="#00A63E" name="Money Received" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="disbursed" fill="#FF6467" name="Money Released" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="received" fill="#0D1F45" name="Money Received" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="disbursed" fill="#60A5FA" name="Money Released" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -240,14 +252,22 @@ export default function LoanAdminDashboard() {
                 <h3 className="adm-card-title">Disbursements by Type</h3>
                 <span className="adm-card-sub">Funds allocated by loan type</span>
               </div>
+              <button className="la-chart-expand-btn" onClick={() => setExpandedChart('disbursements')} title="Expand Chart">
+                <Expand size={18} color="#4B5563" strokeWidth={2.5} />
+              </button>
             </div>
             <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={disbursementByType} layout="vertical" margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+              <BarChart data={disbursementByType} layout="vertical" margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-                <XAxis type="number" stroke="#9CA3AF" fontSize={12} />
+                <XAxis type="number" stroke="#9CA3AF" fontSize={12} tickFormatter={formatYAxis} ticks={CHART_TICKS} domain={[0, 500000]} />
                 <YAxis dataKey="type" type="category" stroke="#9CA3AF" fontSize={12} width={90} />
                 <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #E5E7EB' }} formatter={(v) => '₱' + v.toLocaleString()} />
-                <Bar dataKey="amount" fill="#155DFC" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="amount" radius={[0, 4, 4, 0]}>
+                  {disbursementByType.map((entry, index) => {
+                    const MONOCHROMATIC_BLUES = ['#0D1F45', '#1E3A8A', '#3B82F6', '#60A5FA', '#93C5FD'];
+                    return <Cell key={`cell-${index}`} fill={MONOCHROMATIC_BLUES[index % MONOCHROMATIC_BLUES.length]} />;
+                  })}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -260,14 +280,17 @@ export default function LoanAdminDashboard() {
               <h3 className="adm-card-title">Savings Trend</h3>
               <span className="adm-card-sub">Monthly member savings deposits this year</span>
             </div>
+            <button className="la-chart-expand-btn" onClick={() => setExpandedChart('savings')} title="Expand Chart">
+              <Expand size={18} color="#4B5563" strokeWidth={2.5} />
+            </button>
           </div>
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={savingsMonthly} margin={{ top: 4, right: 8, left: -10, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
               <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
-              <YAxis stroke="#9CA3AF" fontSize={12} />
+              <YAxis stroke="#9CA3AF" fontSize={12} tickFormatter={formatYAxis} width={45} ticks={CHART_TICKS} domain={[0, 500000]} />
               <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #E5E7EB' }} formatter={(v) => '₱' + v.toLocaleString()} />
-              <Line type="monotone" dataKey="savings" stroke="#8B5CF6" strokeWidth={2} dot={{ r: 3 }} name="Savings" />
+              <Line type="monotone" dataKey="savings" stroke="#0D1F45" strokeWidth={2} dot={{ r: 3, fill: '#0D1F45' }} name="Savings" />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -425,6 +448,64 @@ export default function LoanAdminDashboard() {
                 <span>Total ({getDisbModalLabel()})</span>
                 <span className="la-modal-summary-value">{fmt(filteredDisbLoans.reduce((s, l) => s + (Number(l.amount) || 0), 0))}</span>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Expanded Chart Modal ── */}
+      {expandedChart && (
+        <div className="la-modal-overlay" onClick={() => setExpandedChart(null)}>
+          <div className="la-modal la-chart-modal" onClick={e => e.stopPropagation()}>
+            <div className="la-modal-header">
+              <div>
+                <h2 className="la-modal-title">
+                  {expandedChart === 'moneyIn' && 'Money In vs Money Out'}
+                  {expandedChart === 'disbursements' && 'Disbursements by Type'}
+                  {expandedChart === 'savings' && 'Savings Trend'}
+                </h2>
+              </div>
+              <button className="la-modal-close" onClick={() => setExpandedChart(null)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="la-modal-body" style={{ height: '60vh', minHeight: '400px', display: 'flex', flexDirection: 'column' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                {expandedChart === 'moneyIn' && (
+                  <BarChart data={monthlyData} margin={{ top: 20, right: 20, left: 10, bottom: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+                    <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
+                    <YAxis stroke="#9CA3AF" fontSize={12} tickFormatter={formatYAxis} width={55} ticks={CHART_TICKS} domain={[0, 500000]} />
+                    <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #E5E7EB' }} formatter={(v) => '₱' + v.toLocaleString()} />
+                    <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
+                    <Bar dataKey="received" fill="#0D1F45" name="Money Received" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="disbursed" fill="#60A5FA" name="Money Released" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                )}
+                {expandedChart === 'disbursements' && (
+                  <BarChart data={disbursementByType} layout="vertical" margin={{ top: 20, right: 30, left: 10, bottom: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+                    <XAxis type="number" stroke="#9CA3AF" fontSize={12} tickFormatter={formatYAxis} ticks={CHART_TICKS} domain={[0, 500000]} />
+                    <YAxis dataKey="type" type="category" stroke="#9CA3AF" fontSize={12} width={110} />
+                    <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #E5E7EB' }} formatter={(v) => '₱' + v.toLocaleString()} />
+                    <Bar dataKey="amount" radius={[0, 4, 4, 0]}>
+                      {disbursementByType.map((entry, index) => {
+                        const MONOCHROMATIC_BLUES = ['#0D1F45', '#1E3A8A', '#3B82F6', '#60A5FA', '#93C5FD'];
+                        return <Cell key={`cell-${index}`} fill={MONOCHROMATIC_BLUES[index % MONOCHROMATIC_BLUES.length]} />;
+                      })}
+                    </Bar>
+                  </BarChart>
+                )}
+                {expandedChart === 'savings' && (
+                  <LineChart data={savingsMonthly} margin={{ top: 20, right: 20, left: 10, bottom: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+                    <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
+                    <YAxis stroke="#9CA3AF" fontSize={12} tickFormatter={formatYAxis} width={55} ticks={CHART_TICKS} domain={[0, 500000]} />
+                    <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #E5E7EB' }} formatter={(v) => '₱' + v.toLocaleString()} />
+                    <Line type="monotone" dataKey="savings" stroke="#0D1F45" strokeWidth={3} dot={{ r: 4, fill: '#0D1F45' }} name="Savings" />
+                  </LineChart>
+                )}
+              </ResponsiveContainer>
             </div>
           </div>
         </div>

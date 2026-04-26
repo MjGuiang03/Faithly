@@ -83,11 +83,10 @@ function PayNowModal({ loan, onClose, onSuccess }) {
             ),
             iconBg: 'ld-method-icon--bank',
             instructions: [
-                `Transfer to Account No. 1234-5678-90 · BDO · Faithly Inc.`,
-                `Use reference: ${loan?.loanId} in the remarks field.`,
-                `Upload your proof of transfer after confirming below.`
+                `You will be redirected to PayMongo to securely complete your bank transfer.`,
+                `Please complete the payment on the next page.`
             ],
-            needsReceipt: true,
+            needsReceipt: false,
         },
         {
             id: 'gcash',
@@ -98,11 +97,10 @@ function PayNowModal({ loan, onClose, onSuccess }) {
             ),
             iconBg: 'ld-method-icon--gcash',
             instructions: [
-                `Send to GCash number 0917-XXX-XXXX · Faithly Inc.`,
-                `Use reference: ${loan?.loanId} in the message field.`,
-                `Upload your GCash screenshot after confirming below.`
+                `You will be redirected to PayMongo to securely complete your GCash payment.`,
+                `Please complete the payment on the next page.`
             ],
-            needsReceipt: true,
+            needsReceipt: false,
         },
     ];
 
@@ -130,8 +128,12 @@ function PayNowModal({ loan, onClose, onSuccess }) {
             });
             const data = await res.json();
             if (res.ok && data.success) {
-                setSubmitted(true);
-                setTimeout(() => { onSuccess?.(); onClose(); }, 2000);
+                if (data.checkoutUrl) {
+                    window.location.href = data.checkoutUrl;
+                } else {
+                    setSubmitted(true);
+                    setTimeout(() => { onSuccess?.(); onClose(); }, 2000);
+                }
             } else {
                 setError(data.message || 'Payment submission failed. Please try again.');
             }
@@ -244,7 +246,7 @@ function PayNowModal({ loan, onClose, onSuccess }) {
                     <div className="ld-modal-footer">
                         <button className="ld-footer-btn-cancel" onClick={onClose}>Cancel</button>
                         <button className="ld-footer-btn-confirm" onClick={handleConfirm} disabled={uploading}>
-                            {uploading ? <span className="btn-spinner" /> : 'Submit Payment'}
+                            {uploading ? <span className="btn-spinner" /> : (method === 'cash' ? 'Submit Payment' : 'Proceed to PayMongo')}
                         </button>
                     </div>
                 )}
@@ -542,7 +544,7 @@ export default function LoanDetail() {
                                 </div>
                                 <div className="ld-detail-row">
                                     <span className="ld-detail-label">Interest rate</span>
-                                    <span className="ld-detail-val">{loan.interestRate}% per month</span>
+                                    <span className="ld-detail-val">{(loan.interestRate < 1 ? loan.interestRate * 100 : loan.interestRate) || 0}% per month</span>
                                 </div>
                             </div>
                             <div className="ld-detail-col ld-detail-col--right">

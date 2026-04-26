@@ -149,16 +149,16 @@
 .sv-stat-card {
     background: var(--card);
     border: 0.8px solid var(--border);
-    border-radius: 5px;
+    border-radius: 12px;
     padding: 14px 16px;
     display: flex;
     flex-direction: column;
     gap: 3px;
 }
 
-.sv-stat-card--green {
-    background: #eaf3de;
-    border-color: #c0dd97;
+.sv-stat-card--primary {
+    background: #0D1F45;
+    border-color: #0D1F45;
 }
 
 .sv-stat-label {
@@ -170,8 +170,12 @@
     font-family: 'Inter', sans-serif;
 }
 
-.sv-stat-card--green .sv-stat-label {
-    color: #3b6d11;
+.sv-stat-card--primary .sv-stat-label {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.sv-stat-card--blue-text .sv-stat-label {
+    color: #0D1F45;
 }
 
 .sv-stat-header {
@@ -190,11 +194,14 @@
 
 .sv-stat-value--muted {
     color: var(--text-muted);
-    font-size: 18px;
 }
 
-.sv-stat-card--green .sv-stat-value {
-    color: #27500a;
+.sv-stat-card--primary .sv-stat-value {
+    color: #ffffff;
+}
+
+.sv-stat-card--blue-text .sv-stat-value {
+    color: #0D1F45;
 }
 
 .sv-stat-sub {
@@ -203,8 +210,8 @@
     font-family: 'Inter', sans-serif;
 }
 
-.sv-stat-card--green .sv-stat-sub {
-    color: #3b6d11;
+.sv-stat-card--primary .sv-stat-sub {
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .dark .sv-stat-card {
@@ -227,7 +234,7 @@
 .sv-section {
     background: var(--card);
     border: 0.8px solid var(--border);
-    border-radius: 5px;
+    border-radius: 12px;
     overflow: hidden;
     margin-bottom: 16px;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
@@ -301,16 +308,6 @@
 
 .sv-goal-row:hover {
     background: var(--secondary);
-}
-
-.sv-goal-icon {
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
 }
 
 .sv-goal-info {
@@ -395,28 +392,6 @@
     color: #166534;
 }
 
-.sv-goal-more-btn {
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
-    border: 0.8px solid var(--border);
-    background: transparent;
-    color: var(--text-muted);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    flex-shrink: 0;
-    transition: all 0.15s;
-    margin-left: 4px;
-}
-
-.sv-goal-more-btn:hover {
-    background: var(--secondary);
-    border-color: #1E3A8A;
-    color: #1E3A8A;
-}
-
 /* ── Goals empty state ───────────────────────────────────── */
 .sv-goals-empty {
     display: flex;
@@ -476,61 +451,6 @@
 }
 
 /* ── Inline deposit strip ────────────────────────────────── */
-.sv-deposit-strip {
-    padding: 14px 20px;
-    background: var(--secondary);
-    border-top: 0.8px solid var(--border);
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-.sv-deposit-input {
-    flex: 1;
-    border: 0.8px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 12px;
-    font-size: 13px;
-    background: var(--card);
-    color: var(--foreground);
-    font-family: 'Inter', sans-serif;
-    outline: none;
-    cursor: pointer;
-}
-
-.sv-deposit-input:focus {
-    border-color: #1E3A8A;
-}
-
-.sv-deposit-select {
-    border: 0.8px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 12px;
-    font-size: 13px;
-    background: var(--card);
-    color: var(--foreground);
-    font-family: 'Inter', sans-serif;
-    outline: none;
-    cursor: pointer;
-}
-
-.sv-deposit-btn {
-    background: #1E3A8A;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    padding: 8px 16px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: 'Inter', sans-serif;
-    white-space: nowrap;
-    transition: background 0.2s;
-}
-
-.sv-deposit-btn:hover {
-    background: #1447e6;
-}
 
 /* ── Loanable banner ─────────────────────────────────────── */
 .sv-loanable-banner {
@@ -653,11 +573,11 @@
 }
 
 .sv-txn-dot-wrap--in {
-    background: #eaf3de;
+    background: #e6f1fb;
 }
 
 .sv-txn-dot-wrap--out {
-    background: #fee2e2;
+    background: #e6f1fb;
 }
 
 .sv-txn-info {
@@ -855,15 +775,6 @@
         text-align: right;
     }
 
-    .sv-deposit-strip {
-
-        flex-wrap: wrap;
-    }
-
-    .sv-deposit-input {
-        min-width: 0;
-    }
-
     .sv-loanable-banner {
         flex-direction: column;
         align-items: flex-start;
@@ -939,13 +850,6 @@
 
 .dark .sv-goal-pct--done {
     color: #4ade80;
-}
-
-.dark .sv-deposit-input,
-.dark .sv-deposit-select {
-    background: var(--card);
-    border-color: var(--border);
-    color: var(--foreground);
 }
 
 .dark .sv-loanable-pill--muted {

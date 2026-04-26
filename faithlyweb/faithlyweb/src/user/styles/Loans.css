@@ -29,11 +29,6 @@
   background: #1246d1;
 }
 
-.btn-icon {
-  width: 20px;
-  height: 20px;
-}
-
 /* Loans Stats */
 .loans-stats {
   display: grid;
@@ -129,22 +124,6 @@
   display: flex;
   gap: 16px;
   align-items: flex-start;
-}
-
-.loan-icon-box {
-  width: 48px;
-  height: 48px;
-  background: #dbeafe;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.loan-icon {
-  width: 24px;
-  height: 24px;
 }
 
 .loan-item-info {
@@ -276,6 +255,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -298,6 +278,7 @@
     transform: translateY(20px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -305,13 +286,6 @@
 }
 
 /* Modal Header */
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 24px;
-  border-bottom: 0.8px solid #e5e7eb;
-}
 
 .modal-title {
   font-family: Arial, sans-serif;
@@ -322,40 +296,13 @@
   line-height: 32px;
 }
 
-.modal-close-btn {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  transition: background 0.2s;
-}
-
-.modal-close-btn:hover {
-  background: #f3f4f6;
-}
-
 /* Modal Form */
-.modal-form {
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
 
 /* Form Groups */
 .form-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
-
-.form-group-half {
-  flex: 1;
-  min-width: 0;
 }
 
 .form-row {
@@ -372,10 +319,6 @@
 }
 
 /* Form Inputs */
-.form-input-wrapper {
-  position: relative;
-  width: 100%;
-}
 
 .form-input,
 .form-select {
@@ -470,11 +413,6 @@
 }
 
 /* Form Actions */
-.form-actions {
-  display: flex;
-  gap: 12px;
-  padding-top: 16px;
-}
 
 .submit-btn {
   flex: 1;
@@ -550,19 +488,8 @@
   .form-row {
     flex-direction: column;
   }
-
-  .form-group-half {
-    width: 100%;
-  }
-
-  .modal-form {
-    padding: 16px;
-  }
-
-  .modal-header {
-    padding: 16px;
-  }
 }
+
 /* ============================================================
    Loans.css ADDITIONS — paste these at the end of your
    existing Loans.css file
@@ -630,7 +557,9 @@
   font-family: Arial, sans-serif;
 }
 
-.verify-badge-link:hover { color: #1246d1; }
+.verify-badge-link:hover {
+  color: #1246d1;
+}
 
 /* ── Apply button locked state ───────────────────────────── */
 .apply-loan-btn-locked {
@@ -646,7 +575,8 @@
 }
 
 .apply-loan-btn:disabled {
-  pointer-events: auto !important; /* keeps native title tooltip */
+  pointer-events: auto !important;
+  /* keeps native title tooltip */
 }
 
 /* ── Locked banner ───────────────────────────────────────── */
@@ -660,10 +590,12 @@
   border: 1.5px solid #bfdbfe;
   border-radius: 12px;
   padding: 1.5rem 2rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
-.loans-locked-icon { display: none; }
+.loans-locked-icon {
+  display: none;
+}
 
 .loans-locked-content {
   display: flex;
@@ -704,7 +636,9 @@
   margin-top: 0.25rem;
 }
 
-.loans-locked-cta:hover { background: #1246d1; }
+.loans-locked-cta:hover {
+  background: #1246d1;
+}
 
 /* ── Loading ─────────────────────────────────────────────── */
 .loans-loading {
@@ -729,7 +663,9 @@
 }
 
 @keyframes loans-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ── Error banner ────────────────────────────────────────── */
@@ -761,7 +697,9 @@
   white-space: nowrap;
 }
 
-.loans-retry-btn:hover { background: #b91c1c; }
+.loans-retry-btn:hover {
+  background: #b91c1c;
+}
 
 /* ── Empty state ─────────────────────────────────────────── */
 .loans-empty {
@@ -788,10 +726,25 @@
 }
 
 /* ── Loan status badge variants ──────────────────────────── */
-.loan-status-active    { background: #dcfce7; color: #166534; }
-.loan-status-pending   { background: #fef9c3; color: #854d0e; }
-.loan-status-completed { background: #dbeafe; color: #1e3a8a; }
-.loan-status-rejected  { background: #fee2e2; color: #991b1b; }
+.loan-status-active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.loan-status-pending {
+  background: #fef9c3;
+  color: #854d0e;
+}
+
+.loan-status-completed {
+  background: #dbeafe;
+  color: #1e3a8a;
+}
+
+.loan-status-rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
 
 /* ── OfficerVerification error banner ────────────────────── */
 .vm-error-banner {
@@ -808,7 +761,10 @@
   margin-bottom: 1rem;
 }
 
-.vm-error-icon { flex-shrink: 0; color: #dc2626; }
+.vm-error-icon {
+  flex-shrink: 0;
+  color: #dc2626;
+}
 
 /* ── Verification pill (inside pi-card-badges) ───────────── */
 /*
@@ -823,7 +779,8 @@
   font-size: 12px;
   font-weight: 600;
   font-family: Arial, sans-serif;
-  overflow: hidden;           /* keeps children inside the pill shape */
+  overflow: hidden;
+  /* keeps children inside the pill shape */
   flex-shrink: 0;
 }
 
@@ -857,34 +814,54 @@
   text-underline-offset: 2px;
 }
 
-.pi-verify-pill__action:hover { opacity: 0.75; }
+.pi-verify-pill__action:hover {
+  opacity: 0.75;
+}
 
 /* ── Status variants ─────────────────────────── */
 .pi-verify-pill--unverified {
   background: rgba(0, 0, 0, 0.30);
   color: #ffffff;
 }
-.pi-verify-pill--unverified .pi-verify-pill__sep  { background: rgba(255,255,255,0.5); }
-.pi-verify-pill--unverified .pi-verify-pill__action { color: #93c5fd; }
+
+.pi-verify-pill--unverified .pi-verify-pill__sep {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.pi-verify-pill--unverified .pi-verify-pill__action {
+  color: #93c5fd;
+}
 
 .pi-verify-pill--pending {
   background: rgba(234, 179, 8, 0.25);
   color: #fef08a;
 }
-.pi-verify-pill--pending .pi-verify-pill__sep { background: rgba(254,240,138,0.4); }
+
+.pi-verify-pill--pending .pi-verify-pill__sep {
+  background: rgba(254, 240, 138, 0.4);
+}
 
 .pi-verify-pill--verified {
   background: rgba(34, 197, 94, 0.25);
   color: #bbf7d0;
 }
-.pi-verify-pill--verified .pi-verify-pill__sep { background: rgba(187,247,208,0.4); }
+
+.pi-verify-pill--verified .pi-verify-pill__sep {
+  background: rgba(187, 247, 208, 0.4);
+}
 
 .pi-verify-pill--rejected {
   background: rgba(239, 68, 68, 0.25);
   color: #fca5a5;
 }
-.pi-verify-pill--rejected .pi-verify-pill__sep    { background: rgba(252,165,165,0.4); }
-.pi-verify-pill--rejected .pi-verify-pill__action { color: #fca5a5; }
+
+.pi-verify-pill--rejected .pi-verify-pill__sep {
+  background: rgba(252, 165, 165, 0.4);
+}
+
+.pi-verify-pill--rejected .pi-verify-pill__action {
+  color: #fca5a5;
+}
 
 /* ── Remove scrollbar from OfficerVerification modal ─────── */
 .vm-overlay {
@@ -894,12 +871,15 @@
 .vm-container {
   overflow-y: auto;
   max-height: 90vh;
-  scrollbar-width: none;       /* Firefox */
-  -ms-overflow-style: none;    /* IE/Edge */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE/Edge */
 }
 
 .vm-container::-webkit-scrollbar {
-  display: none;               /* Chrome/Safari */
+  display: none;
+  /* Chrome/Safari */
 }
 
 /* ── Upload box "done" state ─────────────────────────────── */

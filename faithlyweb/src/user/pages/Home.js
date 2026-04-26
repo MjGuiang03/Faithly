@@ -51,7 +51,7 @@ export default function Home() {
       const headers = { Authorization: `Bearer ${token}` };
 
       const branch = profile?.branch || '';
-      const [loansRes, donationsRes, attendanceRes, annRes, savingsRes, savingsGoalsRes, prayersRes] = await Promise.all([
+      const [loansRes, donationsRes, attendanceRes, annRes, savingsRes, savingsGoalsRes, prayersRes, savingsTxnRes] = await Promise.all([
         fetch(`${API}/api/loans/my-loans`, { headers }),
         fetch(`${API}/api/donations/my-donations`, { headers }),
         fetch(`${API}/api/attendance/my-attendance`, { headers }),
@@ -59,9 +59,10 @@ export default function Home() {
         fetch(`${API}/api/savings/stats`, { headers }),
         fetch(`${API}/api/savings/goals`, { headers }),
         fetch(`${API}/api/prayers`, { headers }),
+        fetch(`${API}/api/savings/transactions?limit=5`, { headers }),
       ]);
 
-      const [loansData, donationsData, attendanceData, annData, savingsData, savingsGoalsData, prayersData] = await Promise.all([
+      const [loansData, donationsData, attendanceData, annData, savingsData, savingsGoalsData, prayersData, savingsTxnData] = await Promise.all([
         loansRes.ok ? loansRes.json() : { success: false },
         donationsRes.ok ? donationsRes.json() : { success: false },
         attendanceRes.ok ? attendanceRes.json() : { success: false },
@@ -69,6 +70,7 @@ export default function Home() {
         savingsRes.ok ? savingsRes.json() : { success: false },
         savingsGoalsRes.ok ? savingsGoalsRes.json() : { success: false },
         prayersRes.ok ? prayersRes.json() : { success: false },
+        savingsTxnRes.ok ? savingsTxnRes.json() : { success: false },
       ]);
 
       const now = new Date();
@@ -193,8 +195,24 @@ export default function Home() {
         });
       }
 
+      if (savingsTxnData.success && savingsTxnData.transactions?.length) {
+        savingsTxnData.transactions
+          .filter(txn => txn.type === 'deposit')
+          .slice(0, 5)
+          .forEach(txn => {
+            activities.push({
+              type: 'savings',
+              title: txn.status === 'confirmed' ? 'Savings Validated' : 'Savings Deposit',
+              category: txn.goalName || 'General Savings',
+              amount: `₱${Number(txn.amount).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+              date: new Date(txn.date),
+              status: txn.status
+            });
+          });
+      }
+
       activities.sort((a, b) => b.date - a.date);
-      setRecentActivity(activities.slice(0, 8));
+      setRecentActivity(activities.slice(0, 5));
 
     } catch (err) {
       console.error('Failed to fetch dashboard data:', err);
@@ -223,6 +241,7 @@ export default function Home() {
     if (activity.type === 'loan') return <Banknote size={16} />;
     if (activity.type === 'donation') return <Heart size={16} />;
     if (activity.type === 'attendance') return <CalendarDays size={16} />;
+    if (activity.type === 'savings') return <PiggyBank size={16} />;
     return <CheckCircle size={16} />;
   };
 
@@ -561,7 +580,6 @@ export default function Home() {
         <div className="uh-card uh-card--activity">
           <div className="uh-card__header-row">
             <h2 className="uh-card__heading">Recent Activity</h2>
-            {!loading && <span className="uh-badge">{recentActivity.length}</span>}
           </div>
           {loading ? (
             <div className="uh-activity-scroll">
@@ -619,7 +637,7 @@ export default function Home() {
           </div>
           <p className="uh-community-text">Stay updated with your local branch and upcoming events in your area.</p>
           <button className="uh-cta" onClick={() => navigate('/branches')}>
-            <span>Explore Branches</span>
+            <span>Explore Community</span>
             <ArrowRight size={14} />
           </button>
         </div>

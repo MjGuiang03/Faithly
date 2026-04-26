@@ -444,9 +444,15 @@ export default function LoanAdminLoanManagement() {
                         <p className="loan-admin-mgmt-modal-text">
                             Are you sure you want to approve loan <strong>{selectedLoan.loanId}</strong> for {selectedLoan.memberName}?
                         </p>
-                        <div className="loan-admin-mgmt-modal-details">
-                            <p><strong>Amount:</strong> {fmt(selectedLoan.amount)}</p>
-                            <p><strong>Purpose:</strong> {selectedLoan.purpose}</p>
+                        <div className="loan-admin-mgmt-modal-details-enhanced">
+                            <div className="la-modal-detail-row">
+                                <span className="la-modal-detail-label">Amount</span>
+                                <span className="la-modal-detail-value amount">{fmt(selectedLoan.amount)}</span>
+                            </div>
+                            <div className="la-modal-detail-row">
+                                <span className="la-modal-detail-label">Purpose</span>
+                                <span className="la-modal-detail-value">{selectedLoan.purpose}</span>
+                            </div>
                         </div>
                         <div className="loan-admin-mgmt-modal-actions">
                             <button className="loan-admin-mgmt-modal-btn cancel" onClick={() => setShowApproveModal(false)}>Cancel</button>
@@ -469,9 +475,15 @@ export default function LoanAdminLoanManagement() {
                         <p className="loan-admin-mgmt-modal-text">
                             Are you sure you want to reject loan <strong>{selectedLoan.loanId}</strong> for {selectedLoan.memberName}?
                         </p>
-                        <div className="loan-admin-mgmt-modal-details">
-                            <p><strong>Amount:</strong> {fmt(selectedLoan.amount)}</p>
-                            <p><strong>Purpose:</strong> {selectedLoan.purpose}</p>
+                        <div className="loan-admin-mgmt-modal-details-enhanced">
+                            <div className="la-modal-detail-row">
+                                <span className="la-modal-detail-label">Amount</span>
+                                <span className="la-modal-detail-value amount">{fmt(selectedLoan.amount)}</span>
+                            </div>
+                            <div className="la-modal-detail-row">
+                                <span className="la-modal-detail-label">Purpose</span>
+                                <span className="la-modal-detail-value">{selectedLoan.purpose}</span>
+                            </div>
                         </div>
                         <div className="loan-admin-mgmt-modal-form">
                             <label className="loan-admin-mgmt-modal-label">

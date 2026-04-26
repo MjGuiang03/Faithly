@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb';
 
 import { users, savingsGoals, savingsTransactions, loans } from '../config/db.js';
 import { authenticateUser } from '../middleware/auth.js';
+import { generatePaymentLink } from '../utils/paymongo.js';
 
 const router = Router();
 
@@ -203,7 +204,7 @@ router.delete('/savings/goals/:id', authenticateUser, async (req, res) => {
 router.post('/savings/deposit', authenticateUser, async (req, res) => {
   try {
     const email = req.user.email;
-    const { goalId, amount, description, source, paymentMethod, referenceNumber, proofOfPayment } = req.body;
+    const { goalId, amount, description, source, paymentMethod } = req.body;
 
     if (!goalId || !amount || amount <= 0) {
       return res.status(400).json({ success: false, message: 'Goal and a positive amount are required' });
@@ -217,8 +218,24 @@ router.post('/savings/deposit', authenticateUser, async (req, res) => {
     // Fetch user to get memberName for the admin views
     const user = await users.findOne({ email });
 
+    const txnId = new ObjectId();
+    
+    // Generate PayMongo Checkout Session
+    const paymentDesc = `Savings Deposit to ${goal.name} by ${req.user.fullName}`;
+    const billing = { name: user?.fullName || req.user.fullName, email, phone: user?.phone || null };
+    const paymentLinkData = await generatePaymentLink(
+      depositAmount, 
+      paymentDesc, 
+      txnId.toString(), 
+      paymentMethod,
+      'http://localhost:3000/savings', // successUrl
+      'http://localhost:3000/savings', // cancelUrl
+      billing
+    );
+
     // Create transaction record
     const txn = {
+      _id: txnId,
       email,
       memberName: user?.fullName || 'Unknown Member',
       goalId: new ObjectId(goalId),
@@ -227,9 +244,9 @@ router.post('/savings/deposit', authenticateUser, async (req, res) => {
       amount: depositAmount,
       description: description || 'Deposit',
       source: source || 'Manual',
-      paymentMethod: paymentMethod || 'cash',
-      referenceNumber: referenceNumber || '',
-      proofOfPayment: proofOfPayment || null,
+      paymentMethod: paymentMethod || 'PayMongo',
+      paymongoLinkId: paymentLinkData.id,
+      checkoutUrl: paymentLinkData.attributes.checkout_url,
       status: 'pending',
       date: new Date(),
     };
@@ -237,8 +254,8 @@ router.post('/savings/deposit', authenticateUser, async (req, res) => {
 
     res.json({
       success: true,
-      message: `₱${depositAmount.toLocaleString()} deposit submitted for ${goal.name} (Pending Admin Approval)`,
-      newSavedAmount: goal.savedAmount || 0,
+      message: 'Redirecting to payment...',
+      checkoutUrl: paymentLinkData.attributes.checkout_url,
     });
   } catch (err) {
     console.error('Deposit error:', err);
@@ -250,7 +267,7 @@ router.post('/savings/deposit', authenticateUser, async (req, res) => {
 router.post('/savings/withdraw', authenticateUser, async (req, res) => {
   try {
     const email = req.user.email;
-    const { goalId, amount, reason } = req.body;
+    const { goalId, amount, reason, sendMethod, accountNumber, accountName } = req.body;
 
     if (!goalId || !amount || amount <= 0) {
       return res.status(400).json({ success: false, message: 'Goal and a positive amount are required' });
@@ -267,7 +284,16 @@ router.post('/savings/withdraw', authenticateUser, async (req, res) => {
 
     const user = await users.findOne({ email });
 
-    // Create withdrawal transaction (pending admin approval)
+    // Immediately deduct from goal balance
+    const newSaved = Math.max(0, (goal.savedAmount || 0) - withdrawAmount);
+    const goalUpdates = { savedAmount: newSaved, updatedAt: new Date() };
+    // If deducting brings it below target, mark as active again
+    if (goal.status === 'completed' && newSaved < goal.targetAmount) {
+      goalUpdates.status = 'active';
+    }
+    await savingsGoals.updateOne({ _id: new ObjectId(goalId) }, { $set: goalUpdates });
+
+    // Create withdrawal transaction (immediately confirmed)
     const txn = {
       email,
       memberName: user?.fullName || 'Unknown Member',
@@ -275,16 +301,20 @@ router.post('/savings/withdraw', authenticateUser, async (req, res) => {
       goalName: goal.name,
       type: 'withdrawal',
       amount: withdrawAmount,
-      description: reason || 'Withdrawal request',
+      description: reason || 'Withdrawal',
+      sendMethod: sendMethod || 'gcash',
+      accountNumber: accountNumber || '',
+      accountName: accountName || user?.fullName || '',
       source: 'Manual',
-      status: 'pending',
+      status: 'confirmed',
       date: new Date(),
+      confirmedAt: new Date(),
     };
     await savingsTransactions.insertOne(txn);
 
     res.json({
       success: true,
-      message: `₱${withdrawAmount.toLocaleString()} withdrawal request submitted for ${goal.name} (Pending Admin Approval)`,
+      message: `₱${withdrawAmount.toLocaleString()} withdrawn successfully from ${goal.name}`,
     });
   } catch (err) {
     console.error('Withdraw error:', err);

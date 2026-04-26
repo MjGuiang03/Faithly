@@ -414,22 +414,38 @@
     margin: 0 0 14px 0;
 }
 
-.loan-admin-mgmt-modal-details {
+.loan-admin-mgmt-modal-details-enhanced {
     background: #f9fafb;
     border: 1px solid #e5e7eb;
-    border-radius: 2px;
-    padding: 16px; /* Compacted */
+    border-radius: 4px;
+    padding: 16px 20px;
     margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
-.loan-admin-mgmt-modal-details p {
+.la-modal-detail-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.la-modal-detail-label {
     font-size: 13px;
-    color: #111827;
-    margin: 0 0 6px 0;
+    font-weight: 600;
+    color: #4b5563;
 }
 
-.loan-admin-mgmt-modal-details p:last-child {
-    margin-bottom: 0;
+.la-modal-detail-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.la-modal-detail-value.amount {
+    color: #166534;
+    font-size: 15px;
 }
 
 .loan-admin-mgmt-modal-form {

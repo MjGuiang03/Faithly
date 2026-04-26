@@ -335,7 +335,7 @@
 .admin-don-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -343,92 +343,138 @@
   padding: 24px;
 }
 
-.admin-don-modal-content {
+.admin-don-modal-enhanced {
   background: white;
-  border-radius: 2px;
+  border-radius: 16px;
   width: 100%;
-  max-width: 560px;
-  max-height: 90vh;
-  overflow-y: auto;
+  max-width: 520px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
-.admin-don-modal-header {
+.admin-don-modal-header-enhanced {
+  display: flex;
+  gap: 16px;
+  padding: 24px 24px 0 24px;
+}
+
+.admin-don-modal-icon-wrapper {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #F0FDF4;
+  border: 1px solid #DCFCE7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #16A34A;
+}
+
+.admin-don-modal-header-info {
+  flex: 1;
+}
+
+.admin-don-modal-header-top {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px 16px;
-  border-bottom: 1px solid #f1f5f9;
+  align-items: flex-start;
 }
 
 .admin-don-modal-title {
   font-family: 'Inter', sans-serif;
   font-size: 18px;
   font-weight: 700;
-  color: #101828;
-  margin: 0;
+  margin: 0 0 4px 0;
+  color: #111827;
+  line-height: 1.4;
 }
 
-.admin-don-modal-close {
-  background: none;
-  border: none;
-  font-size: 22px;
+.admin-don-modal-ref {
+  font-size: 13px;
   color: #6B7280;
-  cursor: pointer;
-  padding: 0;
-  line-height: 1;
+  font-family: 'Inter', sans-serif;
+}
+
+.admin-don-modal-close-btn {
   width: 28px;
   height: 28px;
+  border: none;
+  background: #F3F4F6;
+  border-radius: 8px;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 2px;
-  transition: background 0.15s;
+  color: #6A7282;
+  margin-top: -4px;
+  flex-shrink: 0;
+  transition: background 0.2s;
+  font-size: 18px;
+  padding: 0;
 }
 
-.admin-don-modal-close:hover {
-  background: #f3f4f6;
+.admin-don-modal-close-btn:hover {
+  background: #E5E7EB;
 }
 
-.admin-don-modal-body {
-  padding: 20px 24px;
-  flex: 1;
-}
-
-.admin-don-modal-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  margin-bottom: 0px;
-}
-
-.admin-don-modal-field {
+.admin-don-modal-body-enhanced {
+  padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 20px;
 }
 
-.admin-don-modal-label {
+.admin-don-modal-details-container {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.admin-don-modal-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid #F3F4F6;
+  background: #FFFFFF;
+}
+
+.admin-don-modal-detail-row:last-child {
+  border-bottom: none;
+}
+
+.admin-don-modal-detail-row:nth-child(even) {
+  background: #F9FAFB;
+}
+
+.admin-don-modal-detail-label {
   font-family: 'Inter', sans-serif;
-  font-size: 11px;
-  font-weight: 600;
-  color: #9CA3AF;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6B7280;
 }
 
-.admin-don-modal-value {
+.admin-don-modal-detail-value-container {
+  display: flex;
+  align-items: center;
+}
+
+.admin-don-modal-detail-value {
   font-family: 'Inter', sans-serif;
   font-size: 14px;
+  font-weight: 600;
   color: #111827;
-  font-weight: 500;
+  text-align: right;
 }
 
 .admin-don-modal-amount {
-  font-size: 18px;
-  font-weight: 700;
-  color: #e60076;
+  font-size: 16px;
+  color: #16A34A; /* changed from pink to green for donations */
 }
 
 .admin-don-modal-proof-section {

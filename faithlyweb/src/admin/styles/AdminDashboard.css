@@ -107,7 +107,7 @@
 }
 
 .adm-analytics-row-loan {
-  grid-template-columns: 1fr 320px;
+  grid-template-columns: 6fr 4fr;
 }
 
 .adm-analytics-row-sec {

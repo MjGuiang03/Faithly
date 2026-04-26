@@ -224,13 +224,13 @@ export default function Notifications() {
       });
 
       /* Savings → notifications */
-      (sData.transactions || []).filter(t => t.type === 'deposit').forEach((s) => {
+      (sData.transactions || []).filter(t => t.type === 'deposit' && t.status === 'confirmed').forEach((s) => {
         items.push({
           id: `savings-${s._id}`,
           type: 'savings',
           timestamp: s.date,
-          title: 'Savings Deposit',
-          message: `A deposit of ₱${Number(s.amount).toLocaleString()} was added to ${s.goalName}.`,
+          title: 'Savings Validated',
+          message: `Your deposit of ₱${Number(s.amount).toLocaleString()} is now confirmed.`,
           amount: s.amount,
           goalName: s.goalName
         });

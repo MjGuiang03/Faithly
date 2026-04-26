@@ -6,14 +6,16 @@ import { authenticateUser, authenticateAdmin } from '../middleware/auth.js';
 
 const router = Router();
 
+import { generatePaymentLink } from '../utils/paymongo.js';
+
 /* ================== USER - MAKE A DONATION ================== */
 router.post('/donations', authenticateUser, async (req, res) => {
   try {
     const email = req.user.email;
-    const { amount, category, paymentMethod, isRecurring, proofImage } = req.body;
+    const { amount, category, isRecurring, paymentMethod } = req.body;
 
-    if (!amount || !category || !proofImage) {
-      return res.status(400).json({ success: false, message: 'Amount, category, and proof of payment are required' });
+    if (!amount || !category) {
+      return res.status(400).json({ success: false, message: 'Amount and category are required' });
     }
 
     const user = await users.findOne({ email });
@@ -22,25 +24,39 @@ router.post('/donations', authenticateUser, async (req, res) => {
     const count      = await donations.countDocuments();
     const donationId = `D-${new Date().getFullYear()}-${String(count + 1).padStart(3, '0')}`;
 
+    // Generate PayMongo Link and pre-select the method
+    const description = `Donation for ${category} by ${user.fullName}`;
+    const billing = { name: user.fullName, email: user.email, phone: user.phone || null };
+    const paymentLinkData = await generatePaymentLink(
+      amount, 
+      description, 
+      donationId, 
+      paymentMethod,
+      'http://localhost:3000/donation', // successUrl
+      'http://localhost:3000/donation', // cancelUrl
+      billing
+    );
+
     const newDonation = {
       donationId,
       email,
       member: user.fullName,
       amount: Number(amount),
       category,
-      method: paymentMethod || 'GCash',
+      method: paymentMethod || 'PayMongo', // Store the specific method chosen
       type: isRecurring ? 'Recurring' : 'One-time',
-      status: 'pending',          // requires admin confirmation
-      proofImage: proofImage || null,
+      status: 'pending',
+      paymongoLinkId: paymentLinkData.id,
+      checkoutUrl: paymentLinkData.attributes.checkout_url,
       date: new Date(),
       createdAt: new Date(),
     };
 
     await donations.insertOne(newDonation);
-    res.status(201).json({ success: true, message: 'Donation submitted and pending confirmation', donationId });
+    res.status(201).json({ success: true, message: 'Redirecting to payment...', checkoutUrl: paymentLinkData.attributes.checkout_url });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ success: false, message: 'Failed to record donation' });
+    res.status(500).json({ success: false, message: 'Failed to initialize payment' });
   }
 });
 
@@ -188,43 +204,6 @@ router.get('/admin/donations', authenticateAdmin, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Failed to fetch donations' });
-  }
-});
-
-/* ================== ADMIN - CONFIRM DONATION ================== */
-router.put('/admin/donations/:id/confirm', authenticateAdmin, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const result = await donations.updateOne(
-      { _id: new ObjectId(id) },
-      { $set: { status: 'confirmed', confirmedAt: new Date() } }
-    );
-    if (result.matchedCount === 0) {
-      return res.status(404).json({ success: false, message: 'Donation not found' });
-    }
-    res.status(200).json({ success: true, message: 'Donation confirmed successfully' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: 'Failed to confirm donation' });
-  }
-});
-
-/* ================== ADMIN - REJECT DONATION ================== */
-router.put('/admin/donations/:id/reject', authenticateAdmin, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { reason } = req.body;
-    const result = await donations.updateOne(
-      { _id: new ObjectId(id) },
-      { $set: { status: 'rejected', rejectReason: reason || '', rejectedAt: new Date() } }
-    );
-    if (result.matchedCount === 0) {
-      return res.status(404).json({ success: false, message: 'Donation not found' });
-    }
-    res.status(200).json({ success: true, message: 'Donation rejected' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: 'Failed to reject donation' });
   }
 });
 

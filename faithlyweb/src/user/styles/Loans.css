@@ -56,16 +56,6 @@
   background: #1746c7;
 }
 
-.ul-apply-btn--locked {
-  background: #e5e7eb;
-  color: #9ca3af;
-  cursor: not-allowed;
-}
-
-.ul-apply-btn--locked:hover {
-  background: #e5e7eb;
-}
-
 .ul-apply-btn-disabled {
   display: inline-flex;
   align-items: center;
@@ -187,7 +177,7 @@
 /* Policy Bar */
 .ul-policy-bar {
   background: #eff6ff;
-  border: 1px solid #bfdbfe;
+  border: 1px solid #1665d8;
   border-radius: 8px;
   padding: 10px 16px;
 }
@@ -196,7 +186,7 @@
   font-family: 'Inter', sans-serif;
   font-size: 13px;
   color: #1e40af;
-  line-height: 20px;
+  line-height: 16px;
 }
 
 /* Stats Grid */
@@ -209,11 +199,25 @@
 .ul-stat-card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 5px;
+  border-radius: 12px;
   padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+.ul-stat-card--primary {
+  background: #0D1F45;
+  border-color: #0D1F45;
+}
+
+.ul-stat-card--primary .ul-stat-label,
+.ul-stat-card--primary .ul-stat-sub {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.ul-stat-card--primary .ul-stat-value {
+  color: #ffffff;
 }
 
 .ul-stat-card--overdue {
@@ -248,7 +252,7 @@
 .ul-section {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 5px;
+  border-radius: 12px;
   overflow: hidden;
 }
 
@@ -326,21 +330,6 @@
 
 .ul-empty-apply-btn:hover {
   background: #1746c7;
-}
-
-.ul-empty-apply-btn-disabled {
-  margin-top: 8px;
-  padding: 9px 20px;
-  background: #e5e7eb;
-  color: #9ca3af;
-  border-radius: 9px;
-  font-size: 13px;
-  font-weight: 600;
-  font-family: 'Inter', sans-serif;
-  cursor: not-allowed;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
 }
 
 /* Active Loan Card */
@@ -479,6 +468,20 @@
   gap: 12px;
 }
 
+.ul-disbursement-notice-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+@media (max-width: 600px) {
+  .ul-disbursement-notice-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
 .ul-disbursement-notice {
   display: flex;
   align-items: center;
@@ -489,8 +492,20 @@
   padding: 14px 16px;
   color: #991b1b;
   font-size: 13px;
-  font-family: 'Inter', sans-serif;
-  margin: 4px 0;
+  font-weight: 500;
+  flex: 1;
+}
+
+button.ul-action-btn.ul-action-btn--cancel {
+  background: #dc2626;
+  color: #fff;
+  border-color: #dc2626;
+  white-space: nowrap;
+}
+
+button.ul-action-btn.ul-action-btn--cancel:hover {
+  background: #b91c1c;
+  border-color: #b91c1c;
 }
 
 .ul-disbursement-notice svg {

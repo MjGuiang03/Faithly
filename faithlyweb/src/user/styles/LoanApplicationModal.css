@@ -155,7 +155,7 @@
 .user-loan-application-input:focus,
 .user-loan-application-select:focus {
   border-color: var(--primary);
-  background: var(--card);
+  background-color: var(--card);
   box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.08);
 }
 
@@ -392,7 +392,7 @@
 
 .ula-filled-input .user-loan-application-input:focus,
 .ula-filled-input .user-loan-application-select:focus {
-  background: var(--card);
+  background-color: var(--card);
   border-color: #1E3A8A;
 }
 
@@ -746,15 +746,121 @@
   background: #7090d0;
 }
 
-.ula-disbursement-icon {
-  font-size: 16px;
-}
-
 .ula-disbursement-account {
   margin-top: 4px;
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+/* ── Saved Accounts ── */
+.ula-saved-accounts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ula-saved-account-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: var(--foreground);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  width: 100%;
+}
+
+.ula-saved-account-btn:hover {
+  border-color: var(--border-strong);
+  background: var(--secondary);
+}
+
+.ula-saved-account-btn--active {
+  border-color: #1E3A8A;
+  background: #e6f1fb;
+  box-shadow: 0 0 0 1px #1E3A8A;
+}
+
+.dark .ula-saved-account-btn--active {
+  background: rgba(30, 58, 138, 0.12);
+}
+
+.ula-saved-account-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ula-saved-account-label {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ula-saved-account-source {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.ula-saved-account-select-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.ula-saved-account-edit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+.ula-saved-account-edit-btn:hover {
+  background: var(--secondary);
+  color: #1E3A8A;
+}
+
+.ula-saved-account-edit-input {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 10px;
+  border: 1.5px solid #1E3A8A;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--foreground);
+  background: var(--card);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.08);
+}
+
+.dark .ula-saved-account-edit-input {
+  border-color: #7090d0;
+  box-shadow: 0 0 0 3px rgba(112, 144, 208, 0.12);
 }
 
 /* ── Terms & Conditions ── */

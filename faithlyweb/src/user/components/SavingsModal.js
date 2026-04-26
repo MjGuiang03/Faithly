@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import '../styles/SavingsModal.css';
 import API from '../../utils/api';
 import { CheckCircle, FileText, X, ArrowDownRight, ArrowUpLeft, Repeat, History, CreditCard, Smartphone, Building2, Info } from 'lucide-react';
@@ -65,32 +66,26 @@ function DepositModal({ goals, onClose }) {
     const handleSubmit = async () => {
         if (!numAmt || numAmt <= 0) { setError('Please enter a valid amount.'); return; }
         if (!selectedGoal) { setError('Please select a goal.'); return; }
-        if (paymentMethod !== 'cash' && !referenceNumber) { setError('Please provide a reference number.'); return; }
-        if (!receipt) { setError('Please upload proof of payment.'); return; }
+        if (!paymentMethod) { setError('Please select a payment method.'); return; }
         setError('');
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            // Convert file to base64
-            let proofOfPayment = null;
-            if (receipt) {
-                const reader = new FileReader();
-                proofOfPayment = await new Promise((resolve) => {
-                    reader.onload = () => resolve(reader.result);
-                    reader.readAsDataURL(receipt);
-                });
-            }
             const res = await fetch(`${API}/api/savings/deposit`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ goalId: selectedGoal, amount: numAmt, note, paymentMethod, referenceNumber, proofOfPayment }),
+                body: JSON.stringify({ goalId: selectedGoal, amount: numAmt, note, paymentMethod }),
             });
             const data = await res.json();
             if (!res.ok || !data.success) throw new Error(data.message || 'Deposit failed.');
-            onClose();
+            
+            if (data.checkoutUrl) {
+                window.location.href = data.checkoutUrl;
+            } else {
+                onClose();
+            }
         } catch (err) {
             setError(err.message);
-        } finally {
             setLoading(false);
         }
     };
@@ -149,9 +144,8 @@ function DepositModal({ goals, onClose }) {
                         <label className="svm-label">Payment Method</label>
                         <div className="svm-payment-options">
                             {[
-                                { id: 'cash', label: 'Cash (Pay at Office)' },
-                                { id: 'gcash', label: 'GCash' },
-                                { id: 'bank', label: 'Bank Transfer' },
+                                { id: 'GCash', label: 'GCash' },
+                                { id: 'Bank', label: 'Bank Transfer' },
                             ].map(opt => (
                                 <button
                                     key={opt.id}
@@ -164,23 +158,10 @@ function DepositModal({ goals, onClose }) {
                                 </button>
                             ))}
                         </div>
-                    </div>
-
-                    {(paymentMethod === 'gcash' || paymentMethod === 'bank') && (
-                        <div className="svm-field">
-                            <label className="svm-label">Reference Number</label>
-                            <input
-                                className="svm-input"
-                                type="text"
-                                placeholder={`Enter ${paymentMethod === 'gcash' ? 'GCash' : 'Bank'} reference no.`}
-                                value={referenceNumber}
-                                onChange={e => setReferenceNumber(e.target.value)}
-                            />
-                            <div className="svm-info-text">
-                                Please transfer to Faithly Inc. ({paymentMethod === 'gcash' ? 'GCash: 0917-XXX-XXXX' : 'BDO Acc: 1234-5678'}) and provide the reference number.
-                            </div>
+                        <div className="svm-info-text" style={{ marginTop: '8px' }}>
+                            You will be redirected to PayMongo to securely complete your payment. No manual proof upload is required!
                         </div>
-                    )}
+                    </div>
 
                     <div className="svm-field">
                         <label className="svm-label">
@@ -189,30 +170,10 @@ function DepositModal({ goals, onClose }) {
                         <input
                             className="svm-input"
                             type="text"
-                            placeholder="e.g. March paycheck"
+                            placeholder="e.g. March savings"
                             value={note}
                             onChange={e => setNote(e.target.value)}
                         />
-                    </div>
-
-                    <div className="svm-field">
-                        <label className="svm-label">Proof of payment</label>
-                        <label className={`svm-upload-box ${receipt ? 'svm-upload-box--done' : ''}`}>
-                            <input
-                                type="file"
-                                accept="image/*,application/pdf"
-                                style={{ display: 'none' }}
-                                onChange={(e) => { setReceipt(e.target.files[0]); setError(''); }}
-                            />
-                            {receipt ? (
-                                <span className="svm-upload-done-text">✓ {receipt.name}</span>
-                            ) : (
-                                <>
-                                    <FileText size={20} />
-                                    <span>Click to upload screenshot or receipt</span>
-                                </>
-                            )}
-                        </label>
                     </div>
 
                     {goal && numAmt > 0 && (
@@ -473,32 +434,27 @@ function QuickDepositModal({ goal, goals, onClose }) {
 
     const handleSubmit = async () => {
         if (!numAmt || numAmt <= 0) { setError('Enter a valid amount.'); return; }
-        if (paymentMethod !== 'cash' && !referenceNumber) { setError('Please provide a reference number.'); return; }
-        if (!receipt) { setError('Please upload proof of payment.'); return; }
+        if (!paymentMethod) { setError('Please select a payment method.'); return; }
         setError('');
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            let proofOfPayment = null;
-            if (receipt) {
-                const reader = new FileReader();
-                proofOfPayment = await new Promise((resolve) => {
-                    reader.onload = () => resolve(reader.result);
-                    reader.readAsDataURL(receipt);
-                });
-            }
             const res = await fetch(`${API}/api/savings/deposit`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ goalId: goal._id, amount: numAmt, note, paymentMethod, referenceNumber, proofOfPayment }),
+                body: JSON.stringify({ goalId: goal._id, amount: numAmt, note, paymentMethod }),
             });
             const data = await res.json();
             if (!res.ok || !data.success) throw new Error(data.message || 'Deposit failed.');
-            setSuccess(true);
-            setTimeout(onClose, 1200);
+            
+            if (data.checkoutUrl) {
+                window.location.href = data.checkoutUrl;
+            } else {
+                setSuccess(true);
+                setTimeout(onClose, 1200);
+            }
         } catch (err) {
             setError(err.message);
-        } finally {
             setLoading(false);
         }
     };
@@ -563,9 +519,8 @@ function QuickDepositModal({ goal, goals, onClose }) {
                                 <label className="svm-label">Payment Method</label>
                                 <div className="svm-payment-options">
                                     {[
-                                        { id: 'cash', label: 'Cash (Office)' },
-                                        { id: 'gcash', label: 'GCash' },
-                                        { id: 'bank', label: 'Bank' },
+                                        { id: 'GCash', label: 'GCash' },
+                                        { id: 'Bank', label: 'Bank' },
                                     ].map(opt => (
                                         <button
                                             key={opt.id}
@@ -581,22 +536,6 @@ function QuickDepositModal({ goal, goals, onClose }) {
                                 </div>
                             </div>
 
-                            {(paymentMethod === 'gcash' || paymentMethod === 'bank') && (
-                                <div className="svm-field">
-                                    <label className="svm-label">Reference Number</label>
-                                    <input
-                                        className="svm-input"
-                                        type="text"
-                                        placeholder={`Enter ${paymentMethod === 'gcash' ? 'GCash' : 'Bank'} ref. no.`}
-                                        value={referenceNumber}
-                                        onChange={e => setReferenceNumber(e.target.value)}
-                                    />
-                                    <div className="svm-info-text">
-                                        Faithly Inc. ({paymentMethod === 'gcash' ? 'GCash: 0917-XXX-XXXX' : 'BDO: 1234-5678'})
-                                    </div>
-                                </div>
-                            )}
-
                             <div className="svm-field">
                                 <label className="svm-label">Note <span className="svm-label-opt">(optional)</span></label>
                                 <input
@@ -606,26 +545,6 @@ function QuickDepositModal({ goal, goals, onClose }) {
                                     value={note}
                                     onChange={e => setNote(e.target.value)}
                                 />
-                            </div>
-
-                            <div className="svm-field">
-                                <label className="svm-label">Proof of payment</label>
-                                <label className={`svm-upload-box ${receipt ? 'svm-upload-box--done' : ''}`}>
-                                    <input
-                                        type="file"
-                                        accept="image/*,application/pdf"
-                                        style={{ display: 'none' }}
-                                        onChange={(e) => { setReceipt(e.target.files[0]); setError(''); }}
-                                    />
-                                    {receipt ? (
-                                        <span className="svm-upload-done-text">✓ {receipt.name}</span>
-                                    ) : (
-                                        <>
-                                            <FileText size={18} />
-                                            <span>Upload receipt</span>
-                                        </>
-                                    )}
-                                </label>
                             </div>
                         </>
                     )}
@@ -1132,18 +1051,25 @@ function GoalInfoModal({ goal, onClose, onEdit, onTransfer, onQuickDeposit }) {
                                     const isTransfer = txn.source === 'Transfer';
                                     
                                     let Icon = ArrowDownRight;
-                                    let iconClass = 'svm-hist-icon--deposit';
-                                    if (isNeg) { Icon = ArrowUpLeft; iconClass = 'svm-hist-icon--withdrawal'; }
-                                    if (isTransfer) { Icon = Repeat; iconClass = 'svm-hist-icon--transfer'; }
+                                    let txLabel = 'Deposit';
+                                    
+                                    if (isNeg) { 
+                                        Icon = ArrowUpLeft; 
+                                        txLabel = 'Withdrawal'; 
+                                    }
+                                    if (isTransfer) { 
+                                        Icon = Repeat; 
+                                        txLabel = 'Transfer'; 
+                                    }
 
                                     return (
                                         <div key={txn._id} className="svm-history-row">
-                                            <div className={`svm-hist-icon-wrap ${iconClass}`}>
-                                                <Icon size={16} />
+                                            <div className="svm-hist-icon-wrap" style={{ backgroundColor: '#e6f1fb' }}>
+                                                <Icon size={16} color="#0D1F45" />
                                             </div>
                                             <div className="svm-hist-main">
-                                                <div className="svm-hist-type">
-                                                    {txn.source === 'Transfer' && ' (Transfer)'}
+                                                <div className="svm-hist-type" style={{ fontSize: '13px', fontWeight: 600, color: 'var(--foreground)' }}>
+                                                    {txLabel}
                                                 </div>
                                                 <div className="svm-hist-date">{fmtDateShort(txn.date)}</div>
                                             </div>
@@ -1194,7 +1120,7 @@ function TransactionInfoModal({ transaction, onClose }) {
 
     let Icon = ArrowDownRight;
     let iconClass = 'svm-tx-icon--in';
-    let statusText = transaction.status === 'confirmed' ? 'Validated' : transaction.status === 'rejected' ? 'Rejected' : 'Pending';
+    let statusText = transaction.status === 'confirmed' ? 'Successful' : transaction.status === 'rejected' ? 'Failed' : 'Pending';
 
     if (isOut) { Icon = ArrowUpLeft; iconClass = 'svm-tx-icon--out'; }
     if (isTransfer) { Icon = Repeat; iconClass = 'svm-tx-icon--transfer'; }
@@ -1299,10 +1225,15 @@ function TransactionInfoModal({ transaction, onClose }) {
    8.  WITHDRAW MODAL
 ───────────────────────────────────────────────────────────── */
 function WithdrawModal({ goals, onClose }) {
+    const { profile } = useAuth();
     const activeGoals = goals.filter(g => (g.savedAmount || 0) > 0);
     const [selectedGoal, setSelectedGoal] = useState(activeGoals[0]?._id || '');
     const [amount, setAmount] = useState('');
-    const [reason, setReason] = useState('');
+    const [reasonOption, setReasonOption] = useState('');
+    const [customReason, setCustomReason] = useState('');
+    const [sendMethod, setSendMethod] = useState('gcash');
+    const [accountNumber, setAccountNumber] = useState(profile?.phone || '');
+    const [accountName, setAccountName] = useState(profile?.fullName || '');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
@@ -1316,10 +1247,14 @@ function WithdrawModal({ goals, onClose }) {
         : 0;
 
     const handleSubmit = async () => {
+        const finalReason = reasonOption === 'Others' ? customReason : reasonOption;
+
         if (!numAmt || numAmt <= 0) { setError('Please enter a valid amount.'); return; }
         if (!selectedGoal) { setError('Please select a goal.'); return; }
         if (numAmt > balance) { setError(`Insufficient balance. Available: ${fmt(balance)}`); return; }
-        if (!reason.trim()) { setError('Please provide a reason for withdrawal.'); return; }
+        if (!finalReason.trim()) { setError('Please provide a reason for withdrawal.'); return; }
+        if (!accountNumber.trim()) { setError('Please provide your account number.'); return; }
+        if (!accountName.trim()) { setError('Please provide the account holder name.'); return; }
         setError('');
         setLoading(true);
         try {
@@ -1327,7 +1262,14 @@ function WithdrawModal({ goals, onClose }) {
             const res = await fetch(`${API}/api/savings/withdraw`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ goalId: selectedGoal, amount: numAmt, reason }),
+                body: JSON.stringify({ 
+                    goalId: selectedGoal, 
+                    amount: numAmt, 
+                    reason: finalReason,
+                    sendMethod,
+                    accountNumber: accountNumber.trim(),
+                    accountName: accountName.trim()
+                }),
             });
             const data = await res.json();
             if (!res.ok || !data.success) throw new Error(data.message || 'Withdrawal failed.');
@@ -1382,7 +1324,7 @@ function WithdrawModal({ goals, onClose }) {
                     {success ? (
                         <div className="svm-success">
                             <CheckCircle size={20} color="#fff" />
-                            Withdrawal of {fmt(numAmt)} submitted for admin approval!
+                            Withdrawal of {fmt(numAmt)} — Successful!
                         </div>
                     ) : (
                         <>
@@ -1465,19 +1407,76 @@ function WithdrawModal({ goals, onClose }) {
                             )}
 
                             <div className="svm-field">
-                                <label className="svm-label">Reason for withdrawal</label>
+                                <label className="svm-label">Send to</label>
+                                <div className="svm-payment-options">
+                                    {[
+                                        { id: 'gcash', label: 'GCash' },
+                                        { id: 'bank', label: 'Bank Transfer' },
+                                    ].map(opt => (
+                                        <button
+                                            key={opt.id}
+                                            type="button"
+                                            className={`svm-payment-btn ${sendMethod === opt.id ? 'active' : ''}`}
+                                            onClick={() => setSendMethod(opt.id)}
+                                        >
+                                            <div className={`svm-radio ${sendMethod === opt.id ? 'active' : ''}`} />
+                                            {opt.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="svm-field">
+                                <label className="svm-label">{sendMethod === 'gcash' ? 'GCash Number' : 'Bank Account Number'}</label>
                                 <input
                                     className="svm-input"
                                     type="text"
-                                    placeholder="e.g. Personal emergency, tuition payment"
-                                    value={reason}
-                                    onChange={e => setReason(e.target.value)}
+                                    placeholder={sendMethod === 'gcash' ? '09XX XXX XXXX' : 'Account number'}
+                                    value={accountNumber}
+                                    onChange={e => setAccountNumber(e.target.value)}
                                 />
                             </div>
 
-                            <div className="svm-withdraw-notice">
-                                <Info size={14} />
-                                <span>Withdrawal requests require admin approval. Your funds will be released once confirmed.</span>
+                            <div className="svm-field">
+                                <label className="svm-label">Account Holder Name</label>
+                                <input
+                                    className="svm-input"
+                                    type="text"
+                                    placeholder="Full name as registered"
+                                    value={accountName}
+                                    onChange={e => setAccountName(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="svm-field">
+                                <label className="svm-label">Reason for withdrawal</label>
+                                <select
+                                    className="svm-select"
+                                    value={reasonOption}
+                                    onChange={e => {
+                                        setReasonOption(e.target.value);
+                                        if (e.target.value !== 'Others') setCustomReason('');
+                                    }}
+                                >
+                                    <option value="" disabled>Select a reason...</option>
+                                    <option value="Emergency">Emergency</option>
+                                    <option value="Medical Expenses">Medical Expenses</option>
+                                    <option value="Tuition / Education">Tuition / Education</option>
+                                    <option value="Home Repair">Home Repair</option>
+                                    <option value="Personal Use">Personal Use</option>
+                                    <option value="Others">Others (Please specify)</option>
+                                </select>
+
+                                {reasonOption === 'Others' && (
+                                    <input
+                                        className="svm-input"
+                                        style={{ marginTop: '8px' }}
+                                        type="text"
+                                        placeholder="Please specify your reason..."
+                                        value={customReason}
+                                        onChange={e => setCustomReason(e.target.value)}
+                                    />
+                                )}
                             </div>
                         </>
                     )}

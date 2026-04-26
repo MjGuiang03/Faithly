@@ -46,41 +46,52 @@ export default function UserHeader({ toggleSidebar, collapsed }) {
       if (loansDataFeed) {
         loansDataFeed.forEach(l => {
           if (l.status === 'awaiting_member_approval') {
-            items.push({ id: `loan-terms-${l._id}`, type: 'loan', title: 'Terms Modified', message: `Review proposed terms for loan ${l.loanId}.`, timestamp: l.updatedAt });
+            items.push({ id: `loan-terms-${l._id}`, type: 'loan', title: 'Terms Modified', message: `Review proposed terms for loan ${l.loanId}.`, timestamp: l.updatedAt || l.createdAt });
           }
-          if (l.status === 'approved') items.push({ id: `loan-app-${l._id}`, type: 'loan', title: 'Loan Approved', message: `Your loan ${l.loanId} has been approved.`, timestamp: l.updatedAt });
+          if (l.status === 'approved') items.push({ id: `loan-app-${l._id}`, type: 'loan', title: 'Loan Approved', message: `Your loan ${l.loanId} has been approved.`, timestamp: l.updatedAt || l.createdAt });
         });
       }
       if (payments) {
         payments.forEach(p => {
-          items.push({ id: `payment-pending-${p._id}`, type: 'payment_pending', title: 'Payment Submitted', message: `Month #${p.monthNumber} payment for ${p.loanId} is pending.`, timestamp: p.submittedAt });
+          items.push({ id: `payment-pending-${p._id}`, type: 'payment_pending', title: 'Payment Submitted', message: `Month #${p.monthNumber} payment for ${p.loanId} is pending.`, timestamp: p.submittedAt || p.createdAt });
         });
       }
       if (donationsDataFeed) {
         donationsDataFeed.filter(d => d.status === 'confirmed').forEach(d => {
-          items.push({ id: `don-${d._id}`, type: 'donation', title: 'Donation Received', message: `₱${d.amount.toLocaleString()} donation confirmed.`, timestamp: d.updatedAt });
+          items.push({ id: `don-${d._id}`, type: 'donation', title: 'Donation Received', message: `₱${d.amount.toLocaleString()} donation confirmed.`, timestamp: d.updatedAt || d.date || d.createdAt });
         });
       }
       if (attendanceDataFeed) {
         attendanceDataFeed.slice(0, 5).forEach(a => {
-          items.push({ id: `att-${a._id}`, type: 'attendance', title: 'Attendance Recorded', message: `Attended ${a.service || 'Sunday Service'}.`, timestamp: a.createdAt });
+          items.push({ id: `att-${a._id}`, type: 'attendance', title: 'Attendance Recorded', message: `Attended ${a.service || 'Sunday Service'}.`, timestamp: a.createdAt || a.date });
         });
       }
       if (savingsDataFeed) {
-        savingsDataFeed.filter(s => s.type === 'deposit').forEach(s => {
+        savingsDataFeed.filter(s => s.type === 'deposit' && s.status === 'confirmed').forEach(s => {
           items.push({ 
             id: `sav-${s._id}`, 
             type: 'savings', 
-            title: s.status === 'confirmed' ? 'Savings Validated' : 'Savings Deposit', 
-            message: s.status === 'confirmed' 
-              ? `Your deposit of ₱${s.amount.toLocaleString()} is now confirmed.` 
-              : `A deposit of ₱${s.amount.toLocaleString()} has been recorded.`, 
+            title: 'Savings Validated', 
+            message: `Your deposit of ₱${s.amount.toLocaleString()} is now confirmed.`, 
             timestamp: s.date || s.createdAt 
+          });
+        });
+        savingsDataFeed.filter(s => s.type === 'withdrawal' && s.status === 'confirmed').forEach(s => {
+          items.push({ 
+            id: `sav-wd-${s._id}`, 
+            type: 'savings_withdrawal', 
+            title: 'Withdrawal Successful', 
+            message: `Your withdrawal of ₱${s.amount.toLocaleString()} from ${s.goalName || 'your savings'} has been approved.`, 
+            timestamp: s.confirmedAt || s.date || s.createdAt 
           });
         });
       }
 
-      items.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      items.sort((a, b) => {
+        const timeA = new Date(a.timestamp || 0).getTime();
+        const timeB = new Date(b.timestamp || 0).getTime();
+        return (isNaN(timeB) ? 0 : timeB) - (isNaN(timeA) ? 0 : timeA);
+      });
       setNotifItems(items.slice(0, 5)); // Show exactly 5 items as requested
       setUnreadNotifCount(items.filter(it => !currentReadIds.has(it.id)).length);
     } catch (err) {
@@ -201,6 +212,7 @@ export default function UserHeader({ toggleSidebar, collapsed }) {
                          item.type === 'donation' ? <Heart size={14} color="#155DFC" /> :
                          item.type === 'attendance' ? <CalendarDays size={14} color="#155DFC" /> :
                          item.type === 'savings' ? <Banknote size={14} color="#155DFC" /> :
+                         item.type === 'savings_withdrawal' ? <Banknote size={14} color="#16A34A" /> :
                          <Circle size={8} color="#155DFC" />}
                       </div>
                       <div className="user-header-notif-content">

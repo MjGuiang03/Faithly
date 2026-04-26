@@ -4,6 +4,7 @@ import { ObjectId } from 'mongodb';
 import { users, loans, savingsGoals, loanPayments, savingsTransactions } from '../config/db.js';
 import { authenticateUser } from '../middleware/auth.js';
 import { authenticateAdmin } from '../middleware/auth.js';
+import { generatePaymentLink, sendPaymongoTransfer } from '../utils/paymongo.js';
 
 const router = Router();
 
@@ -37,13 +38,10 @@ function enrichLoanWithNextPayment(loan) {
   const paidMonths = loan.paidMonths || 0;
   if (paidMonths >= term) return loan; // fully paid
 
-  // Use disbursementDate as the definitive start.
-  // approvedDate is when the loan was approved — disbursement may happen the same day,
-  // so using it would make the next due date appear to be the same day.
-  // We ONLY fall back if disbursementDate is truly not set.
-  const startDate = new Date(loan.disbursementDate || loan.approvedDate || loan.appliedDate);
+  if (!loan.disbursementDate) return loan;
 
   // Next payment is due (paidMonths + 1) months after disbursement
+  const startDate = new Date(loan.disbursementDate);
   const nextDue = new Date(startDate);
   nextDue.setMonth(startDate.getMonth() + paidMonths + 1);
 
@@ -186,7 +184,12 @@ router.get('/admin/loans', authenticateAdmin, async (req, res) => {
     const skip  = (page - 1) * limit;
 
     const query = {};
-    if (status && status !== 'all') query.status = status;
+    if (status && status !== 'all') {
+      query.status = status;
+    } else {
+      query.status = { $ne: 'cancelled' };
+    }
+
     if (search) {
       query.$or = [
         { memberName: { $regex: search, $options: 'i' } },
@@ -215,7 +218,7 @@ router.get('/admin/loans', authenticateAdmin, async (req, res) => {
       active:         await loans.countDocuments({ status: 'active' }),
       completed:      await loans.countDocuments({ status: 'completed' }),
       rejected:       await loans.countDocuments({ status: 'rejected' }),
-      totalThisMonth: await loans.countDocuments({ appliedDate: { $gte: monthStart } }),
+      totalThisMonth: await loans.countDocuments({ appliedDate: { $gte: monthStart }, status: { $ne: 'cancelled' } }),
       totalDisbursed
     };
 
@@ -383,11 +386,43 @@ router.put('/loans/:id/respond-terms', authenticateUser, async (req, res) => {
   }
 });
 
+/* ================== USER - CANCEL LOAN ================== */
+router.put('/loans/:id/cancel', authenticateUser, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+    const email = req.user.email;
+
+    const loan = await loans.findOne({ _id: new ObjectId(id) });
+    if (!loan) return res.status(404).json({ success: false, message: 'Loan not found' });
+    if (loan.email !== email) return res.status(403).json({ success: false, message: 'Unauthorized' });
+    
+    if (loan.status !== 'pending' && loan.status !== 'awaiting_member_approval' && loan.status !== 'approved') {
+      return res.status(400).json({ success: false, message: 'Only pending or approved loans can be cancelled' });
+    }
+
+    const cancelReason = reason || 'Cancelled by user';
+
+    await loans.updateOne(
+      { _id: new ObjectId(id) },
+      { 
+        $set: { status: 'cancelled', cancelledDate: new Date(), updatedAt: new Date(), cancellationReason: cancelReason },
+        $push: { statusHistory: { status: 'cancelled', date: new Date(), reason: cancelReason } }
+      }
+    );
+
+    res.status(200).json({ success: true, message: 'Loan cancelled successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to cancel loan' });
+  }
+});
+
 /* ================== ADMIN - PROCESS LOAN DISBURSEMENT ================== */
 router.put('/admin/loans/:id/process', authenticateAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { paymentMethod, processReason, proofData, proofFileName } = req.body;
+    const { paymentMethod, processReason } = req.body;
 
     if (!paymentMethod) {
       return res.status(400).json({ success: false, message: 'Payment method is required' });
@@ -404,6 +439,33 @@ router.put('/admin/loans/:id/process', authenticateAdmin, async (req, res) => {
       return res.status(400).json({ success: false, message: 'This loan has already been disbursed' });
     }
 
+    let transferResult = null;
+
+    // For GCash/Bank: send via PayMongo
+    if (paymentMethod === 'gcash' || paymentMethod === 'bank') {
+      // Parse account info from the disbursement account string
+      const accountInfo = loan.disbursementAccount || '';
+      // Try to extract account name and number from "Name - Number" format
+      const parts = accountInfo.split(' - ');
+      const accountName = parts.length > 1 ? parts.slice(0, -1).join(' - ').trim() : accountInfo;
+      const accountNumber = parts.length > 1 ? parts[parts.length - 1].trim() : accountInfo;
+
+      transferResult = await sendPaymongoTransfer({
+        amount: loan.amount,
+        accountNumber,
+        accountName,
+        method: paymentMethod,
+        referenceId: loan.loanId || id,
+      });
+
+      if (!transferResult.success) {
+        return res.status(500).json({
+          success: false,
+          message: `PayMongo transfer failed: ${transferResult.error || 'Unknown error'}. Please try again or use cash disbursement.`
+        });
+      }
+    }
+
     await loans.updateOne(
       { _id: new ObjectId(id) },
       { 
@@ -413,8 +475,7 @@ router.put('/admin/loans/:id/process', authenticateAdmin, async (req, res) => {
           disbursementDate: new Date(), 
           paymentMethod,
           processReason: processReason || null,
-          proofData: proofData || null,
-          proofFileName: proofFileName || null,
+          transferResult: transferResult?.data || null,
           updatedAt: new Date() 
         },
         $push: { statusHistory: { status: 'processed', date: new Date() } }
@@ -483,7 +544,7 @@ router.get('/loans/:id/schedule', authenticateUser, async (req, res) => {
     // Simple schedule generation if not stored
     const schedule = [];
     const term = loan.termMonths || 12;
-    const startDate = new Date(loan.disbursementDate || loan.appliedDate);
+    const startDate = loan.disbursementDate ? new Date(loan.disbursementDate) : null;
     
     // Calculate using exact saved values if available, fallback to manual math
     const principalPerMonth = loan.amount / term;
@@ -498,8 +559,11 @@ router.get('/loans/:id/schedule', authenticateUser, async (req, res) => {
     const paymentPerMonth = loan.monthlyPayment || (principalPerMonth + interestPerMonth);
 
     for (let i = 1; i <= term; i++) {
-        const dueDate = new Date(startDate);
-        dueDate.setMonth(startDate.getMonth() + i);
+        let dueDate = null;
+        if (startDate) {
+            dueDate = new Date(startDate);
+            dueDate.setMonth(startDate.getMonth() + i);
+        }
         
         let currentInterest = interestPerMonth;
         let currentPayment = paymentPerMonth;
@@ -507,7 +571,7 @@ router.get('/loans/:id/schedule', authenticateUser, async (req, res) => {
         const isNext = i === (loan.paidMonths || 0) + 1;
         let isLate = false;
         
-        if (isNext) {
+        if (isNext && dueDate) {
             const cutoffDate = new Date(dueDate);
             cutoffDate.setDate(dueDate.getDate() + 3);
             cutoffDate.setHours(23, 59, 59, 999);
@@ -540,7 +604,7 @@ router.get('/loans/:id/schedule', authenticateUser, async (req, res) => {
 router.post('/loans/:id/pay', authenticateUser, async (req, res) => {
     try {
         const { id } = req.params;
-        const { paymentMethod, proofData, proofFileName } = req.body;
+        const { paymentMethod, proofData, proofFileName, successUrl, cancelUrl } = req.body;
         const email = req.user.email;
 
         let query = { loanId: id, email };
@@ -553,25 +617,65 @@ router.post('/loans/:id/pay', authenticateUser, async (req, res) => {
         if (dbLoan.status !== 'active') return res.status(400).json({ success: false, message: 'Only active loans can receive payments' });
 
         const loan = enrichLoanWithNextPayment(dbLoan);
+        const amountToPay = loan.upcomingPaymentAmount || loan.monthlyPayment || 0;
+
+        if (paymentMethod === 'cash') {
+            const payment = {
+                loanId: loan.loanId,
+                loanObjectId: loan._id,
+                email,
+                memberName: loan.memberName,
+                amount: amountToPay,
+                paymentMethod: 'cash',
+                proofData: proofData || null,
+                proofFileName: proofFileName || null,
+                status: 'pending',
+                submittedAt: new Date(),
+                monthNumber: (loan.paidMonths || 0) + 1,
+                isLate: loan.isLate || false,
+                interestMultiplier: loan.interestMultiplier || 1
+            };
+
+            await loanPayments.insertOne(payment);
+            return res.status(201).json({ success: true, message: 'Payment submitted for verification' });
+        }
+
+        // --- DIGITAL PAYMENT VIA PAYMONGO ---
+        const monthNum = (loan.paidMonths || 0) + 1;
+        const description = `FaithLy Loan Repayment - ${loan.loanId} (Month ${monthNum})`;
+        
+        // Generate Link
+        const sUrl = successUrl || `http://localhost:3000/loans/${loan.loanId}?pay_success=true`;
+        const cUrl = cancelUrl || `http://localhost:3000/loans/${loan.loanId}?pay_cancelled=true`;
+        
+        const user = await users.findOne({ email });
+        const billing = { name: user?.fullName || loan.memberName, email, phone: user?.phone || null };
+        const checkoutSession = await generatePaymentLink(amountToPay, description, `LOAN-${loan.loanId}-${monthNum}-${Date.now()}`, paymentMethod, sUrl, cUrl, billing);
 
         const payment = {
             loanId: loan.loanId,
             loanObjectId: loan._id,
             email,
             memberName: loan.memberName,
-            amount: loan.upcomingPaymentAmount || loan.monthlyPayment || 0,
-            paymentMethod: paymentMethod || 'cash',
-            proofData: proofData || null,
-            proofFileName: proofFileName || null,
+            amount: amountToPay,
+            paymentMethod,
+            paymongoLinkId: checkoutSession.id,
+            checkoutUrl: checkoutSession.attributes.checkout_url,
             status: 'pending',
             submittedAt: new Date(),
-            monthNumber: (loan.paidMonths || 0) + 1,
+            monthNumber: monthNum,
             isLate: loan.isLate || false,
             interestMultiplier: loan.interestMultiplier || 1
         };
 
         await loanPayments.insertOne(payment);
-        res.status(201).json({ success: true, message: 'Payment submitted for verification' });
+        
+        res.status(201).json({ 
+            success: true, 
+            message: 'Checkout session created', 
+            checkoutUrl: checkoutSession.attributes.checkout_url 
+        });
+
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, message: 'Failed to submit payment' });
@@ -718,16 +822,22 @@ router.get('/admin/loan-reports', authenticateAdmin, async (req, res) => {
       l => l.status === 'active' || l.status === 'completed'
     );
 
+    // Actual payments received in the selected year
+    const confirmedPayments = await loanPayments.find({
+      status: 'confirmed',
+      submittedAt: { $gte: yearStart, $lt: yearEnd }
+    }).toArray();
+
     // ── Summary cards ──
-    const totalReceived = activeCompletedLoans.reduce((sum, l) => sum + (l.totalRepayment || l.amount || 0), 0);
+    const totalReceived = confirmedPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
     const totalReleased = disbursedLoans.reduce((sum, l) => sum + (l.amount || 0), 0);
     const totalInterest = activeCompletedLoans.reduce((sum, l) => sum + (l.totalInterest || 0), 0);
 
     // ── Monthly chart data (Money In vs Money Out) ──
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const monthlyData = months.map((month, idx) => {
-      const monthLoansReceived = activeCompletedLoans.filter(l => {
-        const d = new Date(l.appliedDate);
+      const monthPayments = confirmedPayments.filter(p => {
+        const d = new Date(p.submittedAt);
         return d.getMonth() === idx;
       });
       const monthLoansDisbursed = disbursedLoans.filter(l => {
@@ -737,7 +847,7 @@ router.get('/admin/loan-reports', authenticateAdmin, async (req, res) => {
 
       return {
         month,
-        received: monthLoansReceived.reduce((s, l) => s + (l.totalRepayment || l.amount || 0), 0),
+        received: monthPayments.reduce((s, p) => s + (p.amount || 0), 0),
         disbursed: monthLoansDisbursed.reduce((s, l) => s + (l.amount || 0), 0),
       };
     });

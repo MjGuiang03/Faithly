@@ -17,11 +17,11 @@ import { Banknote, Heart, Printer, Users, MapPin } from 'lucide-react';
 
 
 const INITIAL_DONATION_CATEGORIES = [
-  { name: 'General Fund',      value: 0, color: '#155DFC' },
-  { name: 'Children Ministry', value: 0, color: '#00A63E' },
-  { name: 'Building Fund',     value: 0, color: '#F59E0B' },
-  { name: 'Youth Ministry',    value: 0, color: '#E60076' },
-  { name: 'Mission Fund',      value: 0, color: '#8B5CF6' },
+  { name: 'General Fund',      value: 0, color: '#0D1F45' },
+  { name: 'Children Ministry', value: 0, color: '#152B5C' },
+  { name: 'Building Fund',     value: 0, color: '#1C3873' },
+  { name: 'Youth Ministry',    value: 0, color: '#23448A' },
+  { name: 'Mission Fund',      value: 0, color: '#2B51A1' },
 ];
 
 export default function AdminDashboard() {
