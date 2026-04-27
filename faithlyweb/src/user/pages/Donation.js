@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Banknote, CalendarDays, CheckCircle, ChevronDown, Download, Heart, Receipt, Share2, X } from 'lucide-react';
+import { Banknote, CalendarDays, ChevronDown, Download, Heart, Receipt, Share2, X } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import '../styles/Donation.css';
 import gcashLogo from '../../assets/gcashlogo.png';
