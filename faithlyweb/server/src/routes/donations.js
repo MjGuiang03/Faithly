@@ -69,7 +69,7 @@ router.get('/donations/my-donations', authenticateUser, async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip  = (page - 1) * limit;
 
-    const findQuery = { email };
+    const findQuery = { email, status: { $ne: 'pending' } };
     if (category) findQuery.category = category;
     if (req.query.paymentMethod) findQuery.method = req.query.paymentMethod;
 
@@ -125,9 +125,9 @@ router.get('/admin/donations', authenticateAdmin, async (req, res) => {
     const query = {};
     if (status && status !== 'all') {
       if (status === 'active') {
-        query.status = { $ne: 'rejected' };
+        query.status = { $nin: ['rejected', 'pending'] };
       } else {
-        query.status = status; // 'pending' | 'confirmed' | 'rejected'
+        query.status = status; // 'confirmed' | 'rejected'
       }
     }
 

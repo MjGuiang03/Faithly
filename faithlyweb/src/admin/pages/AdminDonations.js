@@ -22,7 +22,7 @@ const StatusBadge = ({ status }) => {
   const map = {
     confirmed: { label: 'Successful', cls: 'admin-don-status-confirmed' },
     rejected:  { label: 'Failed',  cls: 'admin-don-status-rejected'  },
-    pending:   { label: 'Pending',   cls: 'admin-don-status-pending'   },
+    pending:   { label: 'Unpaid/Incomplete',   cls: 'admin-don-status-pending'   },
   };
   const s = map[status] || map.pending;
   return <span className={`admin-don-status-badge ${s.cls}`}>{s.label}</span>;
@@ -182,8 +182,8 @@ export default function AdminDonationsNew() {
             onChange={(e) => setStatusFilter(e.target.value)}
           >
             <option value="active">All Forms</option>
-            <option value="pending">Pending</option>
             <option value="confirmed">Confirmed</option>
+            <option value="rejected">Failed</option>
           </select>
         </div>
 

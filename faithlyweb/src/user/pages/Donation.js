@@ -59,7 +59,6 @@ export default function Donation() {
   const [stats, setStats] = useState({ totalDonated: 0, thisYearTotal: 0, totalCount: 0 });
   const [loading, setLoading] = useState(true);
   const [historyPage] = useState(1);
-  const [successModal, setSuccessModal] = useState(null);
   const [selectedDonation, setSelectedDonation] = useState(null);
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
   const [recentDonations, setRecentDonations] = useState([]);
@@ -372,7 +371,7 @@ export default function Donation() {
                           <div className="user-donation-recent-amount">
                             <span className="user-donation-recent-amt">{fmt(d.amount)}</span>
                             <span className={`user-donation-recent-status status-${d.status || 'pending'}`}>
-                              {d.status === 'confirmed' ? 'Successful' : d.status === 'rejected' ? 'Failed' : 'Pending'}
+                              {d.status === 'confirmed' ? 'Successful' : d.status === 'rejected' ? 'Failed' : 'Incomplete'}
                             </span>
                           </div>
                         </div>
@@ -420,38 +419,7 @@ export default function Donation() {
         </div>
       </div>
 
-      {/* ── Thank You Modal ── */}
-      {successModal && (
-        <div className="user-donation-success-overlay" onClick={() => setSuccessModal(null)}>
-          <div className="user-donation-success-modal" onClick={e => e.stopPropagation()}>
-            {/* Checkmark icon */}
-            <div className="user-donation-success-icon-wrap">
-              <CheckCircle size={44} color="#16a34a" />
-            </div>
 
-            <h2 className="user-donation-success-title">Thank You!</h2>
-            <p className="user-donation-success-subtitle">Your donation has been received and is pending admin confirmation</p>
-
-            {/* Amount + Category box */}
-            <div className="user-donation-success-details">
-              <p className="user-donation-success-detail-label">Donation Amount</p>
-              <p className="user-donation-success-amount">{fmt(successModal.amount)}</p>
-              <div className="user-donation-success-category">
-                <CheckCircle size={15} color="#E60076" />
-                <span>{successModal.category}</span>
-              </div>
-            </div>
-
-            <p className="user-donation-success-note">
-              Your contribution helps us continue our mission and ministry work
-            </p>
-
-            <button className="user-donation-success-close" onClick={() => setSuccessModal(null)}>
-              Close
-            </button>
-          </div>
-        </div>
-      )}
       {/* ── Donation History Modal ── */}
       {isHistoryModalOpen && (
         <div className="user-donation-modal-overlay" onClick={() => setIsHistoryModalOpen(false)}>
@@ -527,7 +495,7 @@ export default function Donation() {
                       <div className="user-donation-history-amount-col">
                         <p className="user-donation-history-amount">{fmt(d.amount)}</p>
                         <span className={`user-donation-status-badge user-donation-status-${d.status || 'pending'}`}>
-                          {d.status === 'confirmed' ? 'Successful' : d.status === 'rejected' ? 'Failed' : 'Pending'}
+                          {d.status === 'confirmed' ? 'Successful' : d.status === 'rejected' ? 'Failed' : 'Incomplete'}
                         </span>
                       </div>
                     </div>
@@ -577,7 +545,7 @@ export default function Donation() {
                 <p className="user-receipt-amount-label">Amount Contributed</p>
                 <h1 className="user-receipt-amount-value">{fmt(selectedDonation.amount)}</h1>
                 <div className={`user-receipt-status-badge user-receipt-status-${selectedDonation.status || 'pending'}`}>
-                  {selectedDonation.status === 'confirmed' ? 'Successful' : selectedDonation.status === 'rejected' ? 'Failed' : 'Pending'}
+                  {selectedDonation.status === 'confirmed' ? 'Successful' : selectedDonation.status === 'rejected' ? 'Failed' : 'Incomplete'}
                 </div>
               </div>
 

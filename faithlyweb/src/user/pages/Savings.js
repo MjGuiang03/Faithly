@@ -303,7 +303,7 @@ export default function Savings() {
                                 <div className="sv-txn-date-row">
                                     <span className="sv-txn-date">{fmtDate(txn.date)}{txn.source ? ` · ${txn.source}` : ''}</span>
                                     <span className={`sv-txn-status-badge sv-txn-status--${txn.status || 'pending'}`}>
-                                        {txn.status === 'confirmed' ? 'Successful' : txn.status === 'rejected' ? 'Failed' : 'Pending'}
+                                        {txn.status === 'confirmed' ? 'Successful' : txn.status === 'rejected' ? 'Failed' : 'Incomplete'}
                                     </span>
                                 </div>
                             </div>

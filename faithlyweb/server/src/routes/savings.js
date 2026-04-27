@@ -33,12 +33,12 @@ router.get('/savings/overview', authenticateUser, async (req, res) => {
 
     // 4. Recent Transactions
     const transactions = await savingsTransactions
-      .find({ email })
+      .find({ email, status: { $ne: 'pending' } })
       .sort({ date: -1 })
       .limit(parseInt(txnLimit))
       .toArray();
     
-    const txnTotal = await savingsTransactions.countDocuments({ email });
+    const txnTotal = await savingsTransactions.countDocuments({ email, status: { $ne: 'pending' } });
 
     res.json({
       success: true,
@@ -331,7 +331,7 @@ router.get('/savings/transactions', authenticateUser, async (req, res) => {
     const l = parseInt(limit);
     const skip = (p - 1) * l;
 
-    const query = { email };
+    const query = { email, status: { $ne: 'pending' } };
     if (goalId && ObjectId.isValid(goalId)) {
       query.goalId = new ObjectId(goalId);
     }
