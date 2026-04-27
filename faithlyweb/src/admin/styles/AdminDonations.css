@@ -220,6 +220,12 @@
   border: 1px solid #E5E7EB;
 }
 
+.admin-don-pagination-numbers {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .admin-don-pagination-number,
 .admin-don-pagination-btn {
   width: 36px;
