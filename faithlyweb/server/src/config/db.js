@@ -8,7 +8,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // Validate environment variables
-const requiredEnv = ['MONGODB_URI', 'DB_NAME', 'JWT_SECRET'];
+const requiredEnv = ['MONGODB_URL', 'DB_NAME', 'JWT_SECRET'];
 requiredEnv.forEach(env => {
   if (!process.env[env]) {
     console.error(`❌ CRITICAL ERROR: Environment variable "${env}" is missing.`);
@@ -18,7 +18,7 @@ requiredEnv.forEach(env => {
 
 let client;
 try {
-  client = new MongoClient(process.env.MONGODB_URI, {
+  client = new MongoClient(process.env.MONGODB_URL, {
     serverSelectionTimeoutMS: 10000, // Increase to 10 seconds for DNS/SRV resolution
     socketTimeoutMS: 45000,
     connectTimeoutMS: 10000,
