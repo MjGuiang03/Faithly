@@ -13,7 +13,9 @@ export const paymongoApi = axios.create({
   },
 });
 
-export const generatePaymentLink = async (amount, description, referenceId = '', paymentMethod = '', successUrl = 'http://localhost:3000/home', cancelUrl = 'http://localhost:3000/home', billing = null) => {
+const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+
+export const generatePaymentLink = async (amount, description, referenceId = '', paymentMethod = '', successUrl = `${frontendUrl}/home`, cancelUrl = `${frontendUrl}/home`, billing = null) => {
   try {
     // Force specific payment methods based on UI selection
     let methodTypes = ['card', 'gcash', 'paymaya', 'dob']; // default shows all

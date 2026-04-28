@@ -228,8 +228,8 @@ router.post('/savings/deposit', authenticateUser, async (req, res) => {
       paymentDesc, 
       txnId.toString(), 
       paymentMethod,
-      'http://localhost:3000/savings', // successUrl
-      'http://localhost:3000/savings', // cancelUrl
+      `${process.env.FRONTEND_URL || 'http://localhost:3000'}/savings`, // successUrl
+      `${process.env.FRONTEND_URL || 'http://localhost:3000'}/savings`, // cancelUrl
       billing
     );
 

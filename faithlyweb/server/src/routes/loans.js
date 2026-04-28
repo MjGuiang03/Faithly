@@ -645,8 +645,8 @@ router.post('/loans/:id/pay', authenticateUser, async (req, res) => {
         const description = `FaithLy Loan Repayment - ${loan.loanId} (Month ${monthNum})`;
         
         // Generate Link
-        const sUrl = successUrl || `http://localhost:3000/loans/${loan.loanId}?pay_success=true`;
-        const cUrl = cancelUrl || `http://localhost:3000/loans/${loan.loanId}?pay_cancelled=true`;
+        const sUrl = successUrl || `${process.env.FRONTEND_URL || 'http://localhost:3000'}/loans/${loan.loanId}?pay_success=true`;
+        const cUrl = cancelUrl || `${process.env.FRONTEND_URL || 'http://localhost:3000'}/loans/${loan.loanId}?pay_cancelled=true`;
         
         const user = await users.findOne({ email });
         const billing = { name: user?.fullName || loan.memberName, email, phone: user?.phone || null };

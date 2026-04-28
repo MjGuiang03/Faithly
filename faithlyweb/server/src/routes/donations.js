@@ -32,8 +32,8 @@ router.post('/donations', authenticateUser, async (req, res) => {
       description, 
       donationId, 
       paymentMethod,
-      'http://localhost:3000/donation', // successUrl
-      'http://localhost:3000/donation', // cancelUrl
+      `${process.env.FRONTEND_URL || 'http://localhost:3000'}/donation`, // successUrl
+      `${process.env.FRONTEND_URL || 'http://localhost:3000'}/donation`, // cancelUrl
       billing
     );
 
