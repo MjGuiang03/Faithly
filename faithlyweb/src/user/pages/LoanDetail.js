@@ -1,4 +1,4 @@
-import { useNavigate, useParams, useSearchParams } from 'react-router';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
 // import Sidebar from '../components/Sidebar'; // Moved to UserLayout
