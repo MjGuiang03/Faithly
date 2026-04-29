@@ -519,14 +519,17 @@ export default function LoanDetail() {
                             <div className="ld-progress-bar">
                                 <div className="ld-progress-fill" style={{ width: `${progressPct}%` }} />
                             </div>
-                            <div className="ld-progress-sub">Loan matures {fmtDate(loan.maturityDate)}</div>
+                            <div className="ld-progress-sub">Loan matures {fmtDate(schedule.length > 0 ? schedule[schedule.length - 1].dueDate : null)}</div>
                         </div>
                     </div>
 
                     {/* ── Loan details ── */}
                     <div className="ld-section">
-                        <div className="ld-section-head">
+                        <div className="ld-section-head" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div className="ld-section-title">Loan details</div>
+                            <button className="ld-view-link" onClick={() => window.print()} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', color: '#1E3A8A', fontWeight: 600, fontSize: '12px' }}>
+                                <Printer size={14} /> Export to PDF
+                            </button>
                         </div>
                         <div className="ld-details-grid">
                             <div className="ld-detail-col">
@@ -554,11 +557,11 @@ export default function LoanDetail() {
                                 </div>
                                 <div className="ld-detail-row">
                                     <span className="ld-detail-label">Disbursement date</span>
-                                    <span className="ld-detail-val">{fmtDate(loan.disbursedDate)}</span>
+                                    <span className="ld-detail-val">{fmtDate(loan.disbursementDate)}</span>
                                 </div>
                                 <div className="ld-detail-row">
                                     <span className="ld-detail-label">Maturity date</span>
-                                    <span className="ld-detail-val">{fmtDate(loan.maturityDate)}</span>
+                                    <span className="ld-detail-val">{fmtDate(schedule.length > 0 ? schedule[schedule.length - 1].dueDate : null)}</span>
                                 </div>
                                 <div className="ld-detail-row">
                                     <span className="ld-detail-label">Payment frequency</span>
@@ -635,6 +638,64 @@ export default function LoanDetail() {
                                 </div>
                             </div>
                         )}
+                    </div>
+
+                    {/* ── Print View (Hidden on screen, visible on print) ── */}
+                    <div className="ld-print-view">
+                        <div className="ld-print-header">
+                            <h2>Loan Statement — {loan.loanId}</h2>
+                            <p>{loan.purpose} · Applied {fmtDate(loan.appliedDate)}</p>
+                        </div>
+                        
+                        <div className="ld-print-stats">
+                            <div className="ld-print-stat-item">
+                                <label>Original amount</label>
+                                <div>{fmt(loan.amount)}</div>
+                            </div>
+                            <div className="ld-print-stat-item">
+                                <label>Remaining balance</label>
+                                <div>{fmt(loan.remainingBalance)}</div>
+                            </div>
+                            <div className="ld-print-stat-item">
+                                <label>Monthly payment</label>
+                                <div>{fmt(loan?.upcomingPaymentAmount || loan?.monthlyPayment)}</div>
+                            </div>
+                            <div className="ld-print-stat-item">
+                                <label>Next due date</label>
+                                <div>{fmtDate(loan.nextPaymentDate)}</div>
+                            </div>
+                        </div>
+
+                        <div className="ld-print-schedule">
+                            <h3>Payment Schedule</h3>
+                            <div className="ld-sched-table-wrap">
+                                <div className="ld-sched-table-head">
+                                    <span>#</span>
+                                    <span style={{ textAlign: 'left' }}>Due date</span>
+                                    <span>Principal</span>
+                                    <span>Interest</span>
+                                    <span>Payment</span>
+                                    <span style={{ textAlign: 'right' }}>Status</span>
+                                </div>
+                                {schedule.map((row, i) => {
+                                    const isPaid = row.status === 'paid';
+                                    return (
+                                        <div key={i} className="ld-sched-row">
+                                            <div className="ld-sched-num">
+                                                {isPaid ? '✓' : i + 1}
+                                            </div>
+                                            <span style={{ textAlign: 'left', fontSize: '12px' }}>{fmtDate(row.dueDate)}</span>
+                                            <span className="ld-sched-cell">{fmt(row.principal)}</span>
+                                            <span className="ld-sched-cell">{fmt(row.interest)}</span>
+                                            <span className="ld-sched-cell">{fmt(row.payment)}</span>
+                                            <span style={{ textAlign: 'right', fontWeight: 600, fontSize: '11px', color: isPaid ? '#16A34A' : '#6B7280' }}>
+                                                {isPaid ? 'Paid' : 'Upcoming'}
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
                     </div>
 
                 </>

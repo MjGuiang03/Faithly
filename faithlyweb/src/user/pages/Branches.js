@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 
 import '../styles/Branches.css';
 import { useState, useMemo, useEffect } from 'react';
-import { MapPin, Search, User, Globe, CalendarDays } from 'lucide-react';
+import { MapPin, Search, User, Globe, CalendarDays, X } from 'lucide-react';
 
 
 // ─── Branch data ordered North → South ───────────────────────────────────────
@@ -446,7 +446,7 @@ export default function Branches() {
           <div className={`user-branch-drawer${drawerVisible ? ' user-visible' : ''}`}>
             <div className="user-drawer-header">
               <div className={`user-drawer-header-icon${userBranchName && drawerBranch?.name === userBranchName ? ' user-my-branch-icon' : ''}`}>
-                <User size={20} />
+                <MapPin size={20} />
               </div>
               <div className="user-drawer-header-text">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -463,7 +463,7 @@ export default function Branches() {
                 </div>
               </div>
               <button className="user-drawer-close" onClick={closeDrawer}>
-                <MapPin size={16} color="#6b7280" />
+                <X size={18} color="#6b7280" />
               </button>
             </div>
 

@@ -58,6 +58,8 @@ export default function Loans() {
   const [cancelReason, setCancelReason] = useState('');
   const [cancelReasonOther, setCancelReasonOther] = useState('');
   const [isCancelling, setIsCancelling] = useState(false);
+  const [showInstruction, setShowInstruction] = useState(false);
+  const [hasClosedInstruction, setHasClosedInstruction] = useState(false);
 
   /* ── Verification & Active Loan Logic ── */
   const profile = user;
@@ -90,6 +92,10 @@ export default function Loans() {
         setStats(loansData.stats || { totalBorrowed: 0, remainingBalance: 0, activeCount: 0 });
         setTotalCount(loansData.pagination?.totalItems || 0);
         setError(null);
+        
+        if ((loansData.loans || []).length === 0 && !hasClosedInstruction) {
+            setShowInstruction(true);
+        }
       } else {
         setError(loansData.message || 'Failed to fetch loans');
       }
@@ -290,8 +296,14 @@ export default function Loans() {
               <h1 className="ul-page-title">My Loans</h1>
               <p className="ul-page-subtitle">Manage your loan applications and payments</p>
             </div>
-
-
+            
+            <div className="ul-header-actions" style={{ display: 'flex', gap: '12px' }}>
+              {loans.length === 0 && (
+                <button className="sv-instruction-header-btn" onClick={() => setShowInstruction(true)}>
+                  See Instructions
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Error */}
@@ -609,6 +621,65 @@ export default function Loans() {
         </div>
       )}
 
+      <LoanInstructionModal 
+        isOpen={showInstruction} 
+        onClose={() => {
+            setShowInstruction(false);
+            setHasClosedInstruction(true);
+        }}
+        onApply={handleApplyClick}
+        isLocked={isVerified && totalSavings < 1000}
+      />
     </>
   );
+}
+
+function LoanInstructionModal({ isOpen, onClose, onApply, isLocked }) {
+    if (!isOpen) return null;
+
+    return (
+        <div className="user-savings-modal-overlay">
+            <div className="user-savings-modal-content sv-instruction-modal user-fade-in" style={{ maxWidth: '700px', padding: 0, overflow: 'hidden' }}>
+                <div className="sv-inst-header">
+                    <h2>How to Apply for a Loan</h2>
+                    <p>Access fast, secure loans straight from your FaithLy account. Here’s how it works.</p>
+                </div>
+                
+                <div className="sv-inst-body" style={{ padding: '32px 24px' }}>
+                    <div className="sv-timeline">
+                        <div className="sv-timeline-item sv-timeline-item--left">
+                            <div className="sv-timeline-dot"></div>
+                            <div className="sv-timeline-content">
+                                <h3>Check Your Eligibility</h3>
+                                <p>To access loans, you must have at least <strong>₱1,000</strong> in confirmed savings. Your loan limits are based on your total savings balance.</p>
+                            </div>
+                        </div>
+                        
+                        <div className="sv-timeline-item sv-timeline-item--right">
+                            <div className="sv-timeline-dot"></div>
+                            <div className="sv-timeline-content">
+                                <h3>Choose Your Loan Type</h3>
+                                <p>We offer <strong>Personal (2x)</strong>, <strong>Emergency (1.5x)</strong>, and <strong>Short-Term (1x)</strong> loans. Pick the one that fits your current needs and repayment capacity.</p>
+                            </div>
+                        </div>
+                        
+                        <div className="sv-timeline-item sv-timeline-item--left">
+                            <div className="sv-timeline-dot"></div>
+                            <div className="sv-timeline-content">
+                                <h3>Apply and Get Funded</h3>
+                                <p>Submit your application in seconds. Once approved by the administration, your funds will be disbursed directly.</p>
+                                {!isLocked && (
+                                    <button className="sv-inst-action-link" onClick={() => { onClose(); onApply(); }}>Apply for a loan now →</button>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div className="sv-inst-footer">
+                    <button className="sv-inst-close-btn" onClick={onClose}>Got it, thanks!</button>
+                </div>
+            </div>
+        </div>
+    );
 }

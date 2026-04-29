@@ -107,7 +107,7 @@ const KB = [
   {
     patterns: ['donat', 'donation', 'donate', 'giving', 'tithe', 'offering', 'how to donate'],
     responses: [
-      "❤️ **How to Make a Donation:**\n\n1. Go to **Donations** in the sidebar\n2. Choose a donation **category** (Tithe, Offering, Building Fund, etc.)\n3. Enter the **amount** and select your payment method\n4. Upload your **proof of payment** (GCash screenshot or bank receipt)\n5. Submit — the admin will confirm and you'll receive a notification\n\n**Accepted Payment Methods:**\n• 📱 GCash\n• 🏦 Bank Transfer\n• 💵 Cash",
+      "❤️ **How to Make a Donation:**\n\n1. Go to **Donations** in the sidebar\n2. Choose a donation **category** (General Fund, Men's Department, etc.)\n3. Enter the **amount** and select your payment method\n4. Upload your **proof of payment** (GCash screenshot or bank receipt)\n5. Submit — the admin will confirm and you'll receive a notification\n\n**Accepted Payment Methods:**\n• 📱 GCash\n• 🏦 Bank Transfer\n• 💵 Cash",
     ],
     quickReplies: ['GCash details', 'Bank details', 'Donation categories'],
   },
@@ -133,9 +133,9 @@ const KB = [
     quickReplies: ['How to donate', 'GCash', 'Bank transfer'],
   },
   {
-    patterns: ['donation category', 'donation categories', 'types of donation', 'tithe', 'offering', 'building fund'],
+    patterns: ['donation category', 'donation categories', 'types of donation', 'tithe', 'offering', 'men\'s department', 'women\'s department', 'youth department', 'children\'s department'],
     responses: [
-      "📋 **Donation Categories Available:**\n\n• 🙏 **Tithe** — 10% of income, the foundational giving\n• 🎁 **Offering** — Voluntary general offerings\n• 🏛️ **Building Fund** — Supporting church facilities\n• 💡 **Mission Fund** — Supporting outreach activities\n• 🤝 **Special Offering** — One-time special campaigns\n\nSelect the appropriate category when making your donation on the **Donations** page.",
+      "📋 **Donation Categories Available:**\n\n• 🙏 **General Fund** — Church operations and ministry\n• 👶 **Children's Department** — Children's programs and activities\n• 👨 **Men's Department** — Men's programs and activities\n• 👩 **Women's Department** — Women's programs and activities\n• 👦 **Youth Department** — Youth programs and events\n• 💡 **Mission Fund** — Missionary work and outreach programs\n\nSelect the appropriate category when making your donation on the **Donations** page.",
     ],
     quickReplies: ['How to donate', 'GCash', 'Bank transfer'],
   },

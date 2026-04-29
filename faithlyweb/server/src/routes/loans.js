@@ -5,6 +5,7 @@ import { users, loans, savingsGoals, loanPayments, savingsTransactions } from '.
 import { authenticateUser } from '../middleware/auth.js';
 import { authenticateAdmin } from '../middleware/auth.js';
 import { generatePaymentLink, sendPaymongoTransfer } from '../utils/paymongo.js';
+import { notifyUser } from '../utils/notifyHelpers.js';
 
 const router = Router();
 
@@ -483,6 +484,15 @@ router.put('/admin/loans/:id/process', authenticateAdmin, async (req, res) => {
     );
 
     res.status(200).json({ success: true, message: 'Loan disbursed successfully' });
+
+    // Send notifications
+    await notifyUser(
+      loan.email,
+      'loan',
+      'Loan Disbursed',
+      `<h2>Loan Disbursed</h2><p>Your loan of ₱${loan.amount.toLocaleString()} has been disbursed via ${paymentMethod}.</p>`,
+      `Your loan of ₱${loan.amount.toLocaleString()} has been disbursed.`
+    );
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Failed to process loan disbursement' });
@@ -745,6 +755,15 @@ router.put('/admin/loan-payments/:id/confirm', authenticateAdmin, async (req, re
         );
 
         res.json({ success: true, message: 'Payment confirmed', newBalance, newPaidMonths });
+
+        // Send notifications
+        await notifyUser(
+          loan.email,
+          'loan',
+          'Loan Payment Confirmed',
+          `<h2>Payment Confirmed</h2><p>Your payment of ₱${paymentAmount.toLocaleString()} has been confirmed. Your remaining balance is ₱${newBalance.toLocaleString()}.</p>`,
+          `Payment of ₱${paymentAmount.toLocaleString()} confirmed. Remaining balance: ₱${newBalance.toLocaleString()}.`
+        );
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, message: 'Failed to confirm payment' });

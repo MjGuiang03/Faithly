@@ -141,3 +141,68 @@ export function processNewNotifications(prevIds, allNotifications, notifPagePath
 
   return currentIds;
 }
+
+/**
+ * Convert VAPID key to Uint8Array for push subscription
+ */
+export function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding)
+    .replace(/\-/g, '+')
+    .replace(/_/g, '/');
+
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+/**
+ * Register Service Worker and subscribe to PushManager
+ */
+export async function subscribeToPushNotifications() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return null;
+
+  try {
+    const registration = await navigator.serviceWorker.register('/sw.js');
+    await navigator.serviceWorker.ready;
+
+    const existingSubscription = await registration.pushManager.getSubscription();
+    if (existingSubscription) return existingSubscription;
+
+    const publicVapidKey = process.env.REACT_APP_VAPID_PUBLIC_KEY;
+    if (!publicVapidKey) {
+      console.warn('VAPID public key not found');
+      return null;
+    }
+
+    const subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
+    });
+
+    return subscription;
+  } catch (error) {
+    console.error('Error subscribing to push notifications:', error);
+    return null;
+  }
+}
+
+/**
+ * Unsubscribe from push notifications
+ */
+export async function unsubscribeFromPushNotifications() {
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    const registration = await navigator.serviceWorker.ready;
+    const subscription = await registration.pushManager.getSubscription();
+    if (subscription) {
+      await subscription.unsubscribe();
+    }
+  } catch (error) {
+    console.error('Error unsubscribing:', error);
+  }
+}

@@ -1212,3 +1212,113 @@
         border-radius: 14px 14px 0 0;
     }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   PRINT STYLES
+   ═══════════════════════════════════════════════════════════ */
+.ld-print-view {
+    display: none;
+}
+
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    .ld-print-view, .ld-print-view * {
+        visibility: visible;
+    }
+
+    .ld-print-view {
+        display: block !important;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 20px;
+        background: #ffffff;
+    }
+
+    .ld-print-header {
+        margin-bottom: 30px;
+        border-bottom: 2px solid #e5e7eb;
+        padding-bottom: 16px;
+    }
+
+    .ld-print-header h2 {
+        font-family: 'Inter', sans-serif;
+        font-size: 24px;
+        color: #111827;
+        margin: 0 0 8px 0;
+    }
+
+    .ld-print-header p {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #6b7280;
+        margin: 0;
+    }
+
+    .ld-print-stats {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 40px;
+        padding: 20px;
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+    }
+
+    .ld-print-stat-item {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .ld-print-stat-item label {
+        font-family: 'Inter', sans-serif;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        color: #6b7280;
+        letter-spacing: 0.05em;
+    }
+
+    .ld-print-stat-item div {
+        font-family: 'Inter', sans-serif;
+        font-size: 18px;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .ld-print-schedule h3 {
+        font-family: 'Inter', sans-serif;
+        font-size: 18px;
+        color: #111827;
+        margin: 0 0 16px 0;
+    }
+
+    .ld-print-schedule .ld-sched-table-wrap {
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .ld-print-schedule .ld-sched-table-head {
+        background: #f9fafb;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .ld-print-schedule .ld-sched-row {
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .ld-print-schedule .ld-sched-row:last-child {
+        border-bottom: none;
+    }
+
+    ::-webkit-scrollbar {
+        display: none;
+    }
+}

@@ -327,4 +327,53 @@ router.post('/admin/attendance/check-card', authenticateAdmin, async (req, res) 
      }
 });
 
+/* ================== USER - GET MY ATTENDANCE ================== */
+router.get('/attendance/my-attendance', authenticateUser, async (req, res) => {
+  try {
+    const email = req.user.email;
+    const page  = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip  = (page - 1) * limit;
+
+    const query = { email };
+
+    const totalCount = await attendance.countDocuments(query);
+    const myAttendance = await attendance.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .toArray();
+
+    // Stats
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    const allMyAttendance = await attendance.find(query).toArray();
+    
+    let thisMonthCount = 0;
+    allMyAttendance.forEach(record => {
+      const d = record.createdAt ? new Date(record.createdAt) : new Date(record.date);
+      if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
+        thisMonthCount++;
+      }
+    });
+
+    res.status(200).json({
+      success: true,
+      attendance: myAttendance,
+      totalCount,
+      totalPages: Math.ceil(totalCount / limit),
+      currentPage: page,
+      stats: { 
+          total: totalCount, 
+          thisMonth: thisMonthCount 
+      }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to fetch attendance' });
+  }
+});
+
 export default router;

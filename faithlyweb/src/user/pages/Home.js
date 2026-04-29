@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 
 import API from '../../utils/api';
 import '../styles/Home.css';
-import { Banknote, CalendarDays, CheckCircle, ChevronRight, Heart, MapPin, PiggyBank, Wallet, FileText, Megaphone, ArrowRight } from 'lucide-react';
+import { Banknote, CalendarDays, CheckCircle, ChevronRight, ChevronLeft, Heart, MapPin, PiggyBank, Wallet, FileText, Megaphone, ArrowRight } from 'lucide-react';
 import { isOfficerPosition } from '../../utils/officerPositions';
 
 
@@ -39,6 +39,8 @@ export default function Home() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showAllEvents, setShowAllEvents] = useState(false);
   const [currentEventIndex, setCurrentEventIndex] = useState(0);
+  const [modalImageIndex, setModalImageIndex] = useState(0);
+  const [isModalExpanded, setIsModalExpanded] = useState(false);
   const [showPrayerModal, setShowPrayerModal] = useState(false);
   const [prayers, setPrayers] = useState([]);
   const [newPrayer, setNewPrayer] = useState("");
@@ -498,7 +500,7 @@ export default function Home() {
         <div className="uh-card uh-card--events">
           <div className="uh-card__header-row">
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <h2 className="uh-card__heading">Church Events</h2>
+              <h2 className="uh-card__heading">Announcements</h2>
               {upcomingEvents.length > 0 && (
                 <span className="uh-events-count-badge">{upcomingEvents.length}</span>
               )}
@@ -513,7 +515,7 @@ export default function Home() {
             {upcomingEvents.length === 0 ? (
               <div className="uh-empty">
                 <CalendarDays size={28} strokeWidth={1.5} />
-                <p>No upcoming events yet.</p>
+                <p>No announcements yet.</p>
               </div>
             ) : (
               <div
@@ -528,18 +530,20 @@ export default function Home() {
                     <div
                       key={i}
                       className="uh-carousel-slide"
+                      onClick={() => { setSelectedEvent(evt); setModalImageIndex(0); setIsModalExpanded(false); }}
                     >
-                      <div className="uh-event-hero" style={{ background: catStyle.bg }}>
+                      <div className={`uh-event-hero ${!hasImage ? 'uh-event-hero--no-image' : ''}`} style={{ background: catStyle.bg }}>
+                        <div className="uh-event-hero__badge" style={{ color: catStyle.color }}>
+                          {evt.category}
+                        </div>
+                        <div className="uh-event-hero__date" style={{ color: catStyle.color }}>
+                          <span className="uh-event-hero__day">{evt.day}</span>
+                          <span className="uh-event-hero__month">{evt.month}</span>
+                        </div>
                         <div className="uh-event-hero__content">
-                          <div className="uh-event-hero__badge" style={{ color: catStyle.color }}>
-                            {evt.category}
+                          <div className="uh-event-hero__main-info">
+                            <h3 className="uh-event-hero__title">{evt.title}</h3>
                           </div>
-                          <div className="uh-event-hero__date">
-                            <span className="uh-event-hero__day">{evt.day}</span>
-                            <span className="uh-event-hero__month">{evt.month}</span>
-                          </div>
-                          <h3 className="uh-event-hero__title">{evt.title}</h3>
-                          <p className="uh-event-hero__body">{evt.body}</p>
                           <div className="uh-event-hero__footer">
                             <MapPin size={12} />
                             <span>{evt.branch.split(',')[0]}</span>
@@ -704,51 +708,116 @@ export default function Home() {
           <div className="uh-modal uh-modal--detail" onClick={e => e.stopPropagation()}>
             <button className="uh-modal__close" onClick={() => setSelectedEvent(null)}>×</button>
 
-            <div className={`ann-card ann-card-modal ann-card-${selectedEvent.template || 'banner'}`}>
+            <div className={`uh-modal-card uh-modal-card-detail uh-modal-card-${selectedEvent.template || 'banner'}`}>
               {(selectedEvent.template === 'banner' || !selectedEvent.template) && (
-                <div className="ann-banner">
+                <div className="uh-modal-banner" style={{ position: 'relative' }}>
+                  <div className="uh-modal-badge" style={{ color: CAT_COLORS[selectedEvent.category]?.color || '#1e293b' }}>
+                    {selectedEvent.category}
+                  </div>
                   {selectedEvent.images && selectedEvent.images.length > 0 ? (
-                    <div className="ann-slider">
-                      {selectedEvent.images.map((img, i) => (
-                        <img key={i} src={img} alt="" onClick={() => window.open(img, '_blank')} title="Click to view full image" />
-                      ))}
+                    <div className="uh-modal-slider" style={{ position: 'relative' }}>
+                      <img 
+                        src={selectedEvent.images[modalImageIndex]} 
+                        alt="" 
+                        onClick={() => window.open(selectedEvent.images[modalImageIndex], '_blank')} 
+                        title="Click to view full image"
+                      />
+                      {selectedEvent.images.length > 1 && (
+                        <>
+                          <button 
+                            className="uh-modal-slider-btn uh-modal-slider-btn--left"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setModalImageIndex(prev => prev === 0 ? selectedEvent.images.length - 1 : prev - 1);
+                            }}
+                          >
+                            <ChevronLeft size={20} />
+                          </button>
+                          <button 
+                            className="uh-modal-slider-btn uh-modal-slider-btn--right"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setModalImageIndex(prev => (prev + 1) % selectedEvent.images.length);
+                            }}
+                          >
+                            <ChevronRight size={20} />
+                          </button>
+                        </>
+                      )}
                     </div>
                   ) : selectedEvent.image ? (
                     <img src={selectedEvent.image} alt="" onClick={() => window.open(selectedEvent.image, '_blank')} title="Click to view full image" />
                   ) : (
-                    <div className="ann-banner-placeholder"><Megaphone size={32} color="#1E3A8A" /></div>
+                    <div className="uh-modal-banner-placeholder"><Megaphone size={32} color="#1E3A8A" /></div>
                   )}
                   {selectedEvent.images?.length > 1 && (
-                    <div className="ann-slider-count">{selectedEvent.images.length} photos</div>
+                    <div className="uh-modal-slider-count">{selectedEvent.images.length} photos</div>
                   )}
                 </div>
               )}
 
               {selectedEvent.template === 'side' && (
-                <div className="ann-side-img">
+                <div className="uh-modal-side-img" style={{ position: 'relative' }}>
+                  <div className="uh-modal-badge" style={{ color: CAT_COLORS[selectedEvent.category]?.color || '#1e293b' }}>
+                    {selectedEvent.category}
+                  </div>
                   {selectedEvent.images && selectedEvent.images.length > 0 ? (
-                    <div className="ann-slider">
-                      {selectedEvent.images.map((img, i) => (
-                        <img key={i} src={img} alt="" onClick={() => window.open(img, '_blank')} title="Click to view full image" />
-                      ))}
+                    <div className="uh-modal-slider" style={{ position: 'relative' }}>
+                      <img 
+                        src={selectedEvent.images[modalImageIndex]} 
+                        alt="" 
+                        onClick={() => window.open(selectedEvent.images[modalImageIndex], '_blank')} 
+                        title="Click to view full image"
+                      />
+                      {selectedEvent.images.length > 1 && (
+                        <>
+                          <button 
+                            className="uh-modal-slider-btn uh-modal-slider-btn--left"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setModalImageIndex(prev => prev === 0 ? selectedEvent.images.length - 1 : prev - 1);
+                            }}
+                          >
+                            <ChevronLeft size={20} />
+                          </button>
+                          <button 
+                            className="uh-modal-slider-btn uh-modal-slider-btn--right"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setModalImageIndex(prev => (prev + 1) % selectedEvent.images.length);
+                            }}
+                          >
+                            <ChevronRight size={20} />
+                          </button>
+                        </>
+                      )}
                     </div>
                   ) : selectedEvent.image ? (
                     <img src={selectedEvent.image} alt="" onClick={() => window.open(selectedEvent.image, '_blank')} title="Click to view full image" />
                   ) : (
-                    <div className="ann-banner-placeholder"><Megaphone size={24} color="#1E3A8A" /></div>
+                    <div className="uh-modal-banner-placeholder"><Megaphone size={24} color="#1E3A8A" /></div>
                   )}
                 </div>
               )}
 
-              <div className="ann-body ann-body-modal">
-                <div className="ann-header-row">
-                  <span className="ann-cat">{selectedEvent.category}</span>
+              <div className="uh-modal-body">
+                <h2 className="uh-modal-title">{selectedEvent.title}</h2>
+                <div className="uh-modal-msg">
+                  {selectedEvent.fullBody?.length > 300 && !isModalExpanded
+                    ? selectedEvent.fullBody.substring(0, 300) + '...'
+                    : selectedEvent.fullBody}
+                  {selectedEvent.fullBody?.length > 300 && (
+                    <button 
+                      className="uh-see-more-btn"
+                      onClick={(e) => { e.stopPropagation(); setIsModalExpanded(!isModalExpanded); }}
+                    >
+                      {isModalExpanded ? 'See less' : 'See more'}
+                    </button>
+                  )}
                 </div>
-                <h2 className="ann-title ann-title-modal">{selectedEvent.title}</h2>
-                <div className="ann-msg ann-msg-modal">{selectedEvent.fullBody}</div>
-                <div className="ann-meta ann-meta-modal">
-                  <span><CalendarDays size={14} /> {selectedEvent.dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}{selectedEvent.time && ` at ${selectedEvent.time}`}</span>
-                  <span><MapPin size={14} /> {selectedEvent.branch}</span>
+                <div className="uh-modal-meta">
+                  <span><CalendarDays size={16} /> {selectedEvent.dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}{selectedEvent.time && ` at ${selectedEvent.time}`}</span>
+                  <span><MapPin size={16} /> {selectedEvent.branch}</span>
                 </div>
               </div>
             </div>
@@ -761,17 +830,17 @@ export default function Home() {
         <div className="uh-overlay" onClick={() => setShowAllEvents(false)}>
           <div className="uh-modal uh-modal--list" onClick={e => e.stopPropagation()}>
             <div className="uh-modal__header">
-              <h2 className="uh-modal__title">All Upcoming Events</h2>
+              <h2 className="uh-modal__title">All Announcements</h2>
               <button className="uh-modal__close-sm" onClick={() => setShowAllEvents(false)}>×</button>
             </div>
             <div className="uh-modal__body">
               {allAnnouncements.length === 0 ? (
-                <div className="uh-empty"><p>No upcoming events are currently scheduled.</p></div>
+                <div className="uh-empty"><p>No announcements are currently posted.</p></div>
               ) : (
                 allAnnouncements.map((evt, i) => {
                   const catStyle = CAT_COLORS[evt.category] || CAT_COLORS.General;
                   return (
-                    <div key={i} className="uh-event" onClick={() => { setShowAllEvents(false); setSelectedEvent(evt); }}>
+                    <div key={i} className="uh-event" onClick={() => { setShowAllEvents(false); setSelectedEvent(evt); setModalImageIndex(0); setIsModalExpanded(false); }}>
                       <div className="uh-event__accent" style={{ background: catStyle.color }} />
                       <div className="uh-event__date">
                         <span className="uh-event__day">{evt.day}</span>

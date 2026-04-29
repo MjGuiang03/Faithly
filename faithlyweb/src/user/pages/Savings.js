@@ -62,7 +62,9 @@ export default function Savings() {
     const [error, setError] = useState('');
     const [txnPage, setTxnPage] = useState(1);
     const [txnTotal, setTxnTotal] = useState(0);
-    const TXN_LIMIT = 5;
+    const TXN_LIMIT = 4;
+    const [showInstruction, setShowInstruction] = useState(false);
+    const [hasClosedInstruction, setHasClosedInstruction] = useState(false);
 
     const fetchAll = useCallback(async (showLoader = true) => {
         if (showLoader) setDataLoading(true);
@@ -93,6 +95,10 @@ export default function Savings() {
                     setTransactions(data.transactions || []);
                     setTxnTotal(data.txnTotal || 0);
                     setStats(data.stats || {});
+                    
+                    if ((data.stats?.totalSavings || 0) <= 0 && !hasClosedInstruction) {
+                        setShowInstruction(true);
+                    }
                 }
             } else {
                 const res = await fetch(`${API}/api/savings/transactions?page=${txnPage}&limit=${TXN_LIMIT}`, { headers });
@@ -173,8 +179,8 @@ export default function Savings() {
                 <div className="sv-section-head">
                     <div className="sv-skeleton" style={{ height: '15px', width: '140px' }} />
                 </div>
-                {[1, 2, 3, 4, 5].map(i => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 20px', borderBottom: i < 5 ? '0.8px solid var(--border)' : 'none' }}>
+                {[1, 2, 3, 4].map(i => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 20px', borderBottom: i < 4 ? '0.8px solid var(--border)' : 'none' }}>
                         <div className="sv-skeleton" style={{ width: '8px', height: '8px', borderRadius: '50%', flexShrink: 0 }} />
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '5px' }}>
                             <div className="sv-skeleton" style={{ height: '13px', width: '180px' }} />
@@ -332,6 +338,11 @@ export default function Savings() {
                                 <p className="sv-page-subtitle">Build your goals and grow your funds</p>
                             </div>
                             <div className="sv-header-actions">
+                                {stats.totalSavings <= 0 && (
+                                    <button className="sv-instruction-header-btn" onClick={() => setShowInstruction(true)}>
+                                        See Instructions
+                                    </button>
+                                )}
                                 <button className="sv-withdraw-header-btn" onClick={openWithdraw}>
                                     <ArrowUpRight size={16} />
                                     Withdraw
@@ -401,7 +412,7 @@ export default function Savings() {
                                                 : 'No goals set'}
                                         </div>
                                     </div>
-                                    <div className="sv-stat-card sv-stat-card--blue-text">
+                                    <div className="sv-stat-card sv-stat-card--blue-text sv-tooltip-container">
                                         <div className="sv-stat-header">
                                             <label className="sv-stat-label">Max loanable</label>
                                             <Banknote size={20} color="#0D1F45" />
@@ -410,8 +421,25 @@ export default function Savings() {
                                             {stats.totalSavings > 0 ? fmt(stats.totalSavings * 2) : '—'}
                                         </div>
                                         <div className="sv-stat-sub">
-                                            {stats.totalSavings > 0 ? 'Personal loan (2x)' : 'Deposit to unlock'}
+                                            {stats.totalSavings > 0 ? 'Hover or click for details' : 'Deposit to unlock'}
                                         </div>
+                                        {stats.totalSavings > 0 && (
+                                            <div className="sv-tooltip-content">
+                                                <div className="sv-tooltip-title">Max Loanable Amounts</div>
+                                                <div className="sv-tooltip-row">
+                                                    <span>Personal (2x)</span>
+                                                    <strong>{fmt(stats.totalSavings * 2)}</strong>
+                                                </div>
+                                                <div className="sv-tooltip-row">
+                                                    <span>Emergency (1.5x)</span>
+                                                    <strong>{fmt(stats.totalSavings * 1.5)}</strong>
+                                                </div>
+                                                <div className="sv-tooltip-row">
+                                                    <span>Short-Term (1x)</span>
+                                                    <strong>{fmt(stats.totalSavings)}</strong>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
@@ -484,6 +512,65 @@ export default function Savings() {
                     setModalData(goal);
                 }}
             />
+
+            <SavingsInstructionModal 
+                isOpen={showInstruction} 
+                onClose={() => {
+                    setShowInstruction(false);
+                    setHasClosedInstruction(true);
+                }}
+                onDeposit={openDeposit}
+                onGoal={openNewGoal}
+            />
         </>
+    );
+}
+
+function SavingsInstructionModal({ isOpen, onClose, onDeposit, onGoal }) {
+    if (!isOpen) return null;
+
+    return (
+        <div className="user-savings-modal-overlay">
+            <div className="user-savings-modal-content sv-instruction-modal user-fade-in" style={{ maxWidth: '700px', padding: 0, overflow: 'hidden' }}>
+                <div className="sv-inst-header">
+                    <h2>Welcome to Savings</h2>
+                    <p>Start building your financial future with FaithLy. Follow these simple steps to begin growing your funds.</p>
+                </div>
+                
+                <div className="sv-inst-body" style={{ padding: '32px 24px' }}>
+                    <div className="sv-timeline">
+                        <div className="sv-timeline-item sv-timeline-item--left">
+                            <div className="sv-timeline-dot"></div>
+                            <div className="sv-timeline-content">
+                                <h3>Set a Savings Goal</h3>
+                                <p>Give your savings a purpose. Whether it's an emergency fund or a new laptop, tracking a specific goal keeps you motivated.</p>
+                                <button className="sv-inst-action-link" onClick={() => { onClose(); onGoal(); }}>Create your first goal →</button>
+                            </div>
+                        </div>
+                        
+                        <div className="sv-timeline-item sv-timeline-item--right">
+                            <div className="sv-timeline-dot"></div>
+                            <div className="sv-timeline-content">
+                                <h3>Deposit Funds</h3>
+                                <p>Click the "+ Deposit" button, enter your amount, and upload your proof of payment. Our admins will verify and confirm your deposit quickly.</p>
+                                <button className="sv-inst-action-link" onClick={() => { onClose(); onDeposit(); }}>Make a deposit now →</button>
+                            </div>
+                        </div>
+                        
+                        <div className="sv-timeline-item sv-timeline-item--left">
+                            <div className="sv-timeline-dot"></div>
+                            <div className="sv-timeline-content">
+                                <h3>Unlock Loan Privileges</h3>
+                                <p>Once you reach <strong>₱1,000</strong> in confirmed savings, you automatically unlock access to personal, emergency, and short-term loans!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div className="sv-inst-footer">
+                    <button className="sv-inst-close-btn" onClick={onClose}>I understand, let's start!</button>
+                </div>
+            </div>
+        </div>
     );
 }

@@ -1,8 +1,7 @@
 import { useNavigate, useLocation } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 import { useState, useEffect } from 'react';
-import { Building2, Calendar, FileText, Heart, LayoutGrid, LogOut, Menu, Settings, Wallet, X } from 'lucide-react';
-import { toast } from 'sonner';
+import { Building2, Calendar, FileText, Heart, LayoutGrid, Menu, Settings, Wallet, X } from 'lucide-react';
 import puacLogo from '../../assets/puaclogo.png';
 import '../styles/Sidebar.css';
 
@@ -11,8 +10,7 @@ import { isOfficerPosition } from '../../utils/officerPositions';
 export default function Sidebar({ collapsed, setCollapsed, toggleCollapsed }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, profile, signOut } = useAuth();
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const { profile } = useAuth();
   
   // collapsed state moved to UserLayout
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -48,14 +46,7 @@ export default function Sidebar({ collapsed, setCollapsed, toggleCollapsed }) {
     }
   };
 
-  const handleSignOut = async () => {
-    const result = await signOut();
-    if (result.success) {
-      toast.success('Signed out successfully');
-      navigate('/');
-    }
-    setShowLogoutModal(false);
-  };
+
 
   const isActive = (path) => location.pathname === path;
 
@@ -126,57 +117,7 @@ export default function Sidebar({ collapsed, setCollapsed, toggleCollapsed }) {
           ))}
         </div>
 
-        {/* User Profile */}
-        <div className="user-sidebar-profile">
-          <div
-            className={`user-sidebar-profile-info ${isActive('/settings') ? 'active' : ''} ${collapsed ? 'collapsed' : ''}`}
-            onClick={() => navigate('/settings')}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => e.key === 'Enter' && navigate('/settings')}
-            title={collapsed ? profile?.fullName || 'Settings' : undefined}
-          >
-            <div className="user-sidebar-profile-avatar">
-              {profile?.photoUrl ? (
-                <img src={profile.photoUrl} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
-              ) : (
-                <p>{profile?.fullName?.charAt(0)?.toUpperCase() || 'M'}</p>
-              )}
-            </div>
-            {!collapsed && (
-              <div className="user-sidebar-profile-details">
-                <p className="user-sidebar-profile-name">{profile?.fullName || 'Member'}</p>
-                <p className="user-sidebar-profile-email">{user?.email || 'member@puac.org'}</p>
-              </div>
-            )}
-          </div>
-
-          <button
-            onClick={() => setShowLogoutModal(true)}
-            className={`user-sidebar-profile-signout ${collapsed ? 'collapsed' : ''}`}
-            title={collapsed ? 'Sign Out' : undefined}
-          >
-            <LogOut size={20} />
-            {!collapsed && 'Sign Out'}
-          </button>
-        </div>
-
       </div>
-
-      {/* Logout Modal */}
-      {showLogoutModal && (
-        <div className="user-logout-modal-overlay" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 99999 }}>
-          <div className="user-logout-modal-content">
-            <h2 className="user-logout-modal-title">Confirm Logout</h2>
-            <p className="user-logout-modal-message">Are you sure you want to log out?</p>
-            <div className="user-logout-modal-actions">
-              <button className="user-logout-modal-cancel" onClick={() => setShowLogoutModal(false)}>Cancel</button>
-              <button className="user-logout-modal-confirm" onClick={handleSignOut}>Sign Out</button>
-            </div>
-          </div>
-        </div>
-      )}
-
     </>
   );
 }

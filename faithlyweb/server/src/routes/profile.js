@@ -14,7 +14,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
 router.put('/update-profile', authenticateUser, async (req, res) => {
   try {
     const email = req.user.email;
-    const { fullName, phone, branch, position, dateOfBirth } = req.body;
+    const { fullName, phone, branch, position, dateOfBirth, emailNotifications, pushNotifications, notifPrefs, pushSubscription } = req.body;
 
     const user = await users.findOne({ email });
     if (!user) return res.status(404).json({ message: 'User not found' });
@@ -25,6 +25,10 @@ router.put('/update-profile', authenticateUser, async (req, res) => {
     if (branch      !== undefined) updateData.branch      = branch;
     if (position    !== undefined) updateData.position    = position;
     if (dateOfBirth !== undefined) updateData.dateOfBirth = dateOfBirth;
+    if (emailNotifications !== undefined) updateData.emailNotifications = emailNotifications;
+    if (pushNotifications !== undefined) updateData.pushNotifications = pushNotifications;
+    if (notifPrefs !== undefined) updateData.notifPrefs = notifPrefs;
+    if (pushSubscription !== undefined) updateData.pushSubscription = pushSubscription;
 
     await users.updateOne({ email }, { $set: updateData });
     const updatedUser = await users.findOne({ email });
@@ -42,6 +46,9 @@ router.put('/update-profile', authenticateUser, async (req, res) => {
         birthday:    updatedUser.birthday,
         dateOfBirth: updatedUser.dateOfBirth,
         createdAt:   updatedUser.createdAt,
+        emailNotifications: updatedUser.emailNotifications,
+        pushNotifications: updatedUser.pushNotifications,
+        notifPrefs: updatedUser.notifPrefs,
       }
     });
   } catch (err) {

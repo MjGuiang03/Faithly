@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { donations, loans, savingsTransactions, savingsGoals, loanPayments } from '../config/db.js';
 import { ObjectId } from 'mongodb';
+import { notifyUser } from '../utils/notifyHelpers.js';
 
 const router = Router();
 
@@ -28,6 +29,15 @@ router.post('/webhooks/paymongo', async (req, res) => {
           { $set: { status: 'confirmed', confirmedAt: new Date() } }
         );
         console.log(`[Webhook] Confirmed donation ${donation.donationId}`);
+        
+        await notifyUser(
+          donation.email,
+          'donation',
+          'Donation Confirmed',
+          `<h2>Donation Received</h2><p>Thank you for your generous donation of ₱${donation.amount.toLocaleString()}.</p>`,
+          `Your donation of ₱${donation.amount.toLocaleString()} was successful.`
+        );
+
         return res.status(200).send('OK');
       }
 
@@ -50,6 +60,15 @@ router.post('/webhooks/paymongo', async (req, res) => {
         }
         
         console.log(`[Webhook] Confirmed savings deposit to ${savingsTxn.goalName}`);
+        
+        await notifyUser(
+          savingsTxn.email,
+          'savings',
+          'Savings Deposit Confirmed',
+          `<h2>Deposit Successful</h2><p>Your deposit of ₱${savingsTxn.amount.toLocaleString()} to "${savingsTxn.goalName || 'Savings'}" has been confirmed.</p>`,
+          `Deposit of ₱${savingsTxn.amount.toLocaleString()} confirmed.`
+        );
+
         return res.status(200).send('OK');
       }
 
@@ -97,6 +116,14 @@ router.post('/webhooks/paymongo', async (req, res) => {
             }
           );
           console.log(`[Webhook] Confirmed loan payment for ${loan.loanId}`);
+          
+          await notifyUser(
+            loan.email,
+            'loan',
+            'Loan Payment Confirmed',
+            `<h2>Payment Confirmed</h2><p>Your payment of ₱${paymentAmount.toLocaleString()} via PayMongo has been confirmed. Remaining balance: ₱${newBalance.toLocaleString()}.</p>`,
+            `Payment of ₱${paymentAmount.toLocaleString()} confirmed. Remaining balance: ₱${newBalance.toLocaleString()}.`
+          );
         } else {
           console.log(`[Webhook] Warning: Loan not found for payment ${loanPayment._id}`);
         }

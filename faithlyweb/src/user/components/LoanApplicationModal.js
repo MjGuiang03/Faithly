@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { toast } from 'sonner';
 import '../styles/LoanApplicationModal.css';
 import API from '../../utils/api';
-import { Banknote, CheckCircle, X, Pencil } from 'lucide-react';
+import { Banknote, CheckCircle, X, Pencil, ChevronDown, ChevronUp, ChevronRight, ChevronLeft } from 'lucide-react';
 
 
 /* ── File → base64 helper ── */
@@ -90,6 +90,7 @@ export default function LoanApplicationModal({
   const [savedAccounts, setSavedAccounts] = useState([]);
   const [selectedAccountIdx, setSelectedAccountIdx] = useState(-1); // -1 means "new/manual"
   const [editingAccountIdx, setEditingAccountIdx] = useState(null); // which saved account is being edited inline
+  const [expandedInfoId, setExpandedInfoId] = useState(null);
 
   /* ── derived ── */
   const selectedType = LOAN_TYPES.find((t) => t.key === loanType) || null;
@@ -260,22 +261,47 @@ export default function LoanApplicationModal({
                 const isSelected = loanType === lt.key;
                 const ltMax = Math.max(0, totalSavings * lt.multiplier - existingLoanBalance);
                 return (
-                  <button
-                    key={lt.key}
-                    type="button"
-                    className={`ula-type-card ula-type-card--${lt.color} ${isSelected ? 'ula-type-card--active' : ''}`}
-                    onClick={() => { setLoanType(lt.key); setTermMonths(''); setAmount(ltMax > 0 ? String(ltMax) : ''); }}
+                  <div 
+                    key={lt.key} 
+                    className={`ula-type-card-wrapper ${expandedInfoId === lt.key ? 'expanded' : ''}`}
+                    onMouseEnter={() => setExpandedInfoId(lt.key)}
+                    onMouseLeave={() => setExpandedInfoId(null)}
                   >
-                    <div className={`ula-type-icon ula-type-icon--${lt.color}`}>{lt.icon}</div>
-                    <div className="ula-type-name">{lt.name}</div>
-                    <div className="ula-type-mult">{lt.multiplier}× savings</div>
-                    <div className="ula-type-desc">{lt.desc}</div>
-                    <div className="ula-type-meta">
-                      <span>{lt.rateLabel}</span>
-                      <span>{lt.minTerm}–{lt.maxTerm} mo</span>
+                    <div
+                      className={`ula-type-card ula-type-card--${lt.color} ${isSelected ? 'ula-type-card--active' : ''}`}
+                      onClick={() => { setLoanType(lt.key); setTermMonths(''); setAmount(ltMax > 0 ? String(ltMax) : ''); }}
+                    >
+                      <div className="ula-type-header">
+                        <div className={`ula-type-icon ula-type-icon--${lt.color}`}>{lt.icon}</div>
+                        <div className="ula-type-header-text">
+                          <div className="ula-type-name">{lt.name}</div>
+                          <div className="ula-type-mult">{lt.multiplier}× savings</div>
+                        </div>
+                      </div>
+                      
+                      <button 
+                        type="button" 
+                        className="ula-type-expand-btn" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setExpandedInfoId(expandedInfoId === lt.key ? null : lt.key);
+                        }}
+                      >
+                        {expandedInfoId === lt.key ? <ChevronUp size={14} /> : <ChevronDown size={14} />} {expandedInfoId === lt.key ? 'Less Info' : 'More Info'}
+                      </button>
+
+                      <div className={`ula-type-expanded-info-wrapper ${expandedInfoId === lt.key ? 'expanded' : ''}`}>
+                        <div className="ula-type-expanded-info">
+                          <div className="ula-type-desc">{lt.desc}</div>
+                          <div className="ula-type-meta">
+                            <span>{lt.rateLabel}</span>
+                            <span>{lt.minTerm}–{lt.maxTerm} mo</span>
+                          </div>
+                          <div className="ula-type-max">Max: {fmt(ltMax)}</div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="ula-type-max">Max: {fmt(ltMax)}</div>
-                  </button>
+                  </div>
                 );
               })}
             </div>
@@ -640,6 +666,7 @@ export default function LoanApplicationModal({
           </div>
 
         </form>
+
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
-import { BarChart, Bar, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, Cell, LineChart, Line, PieChart, Pie, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import LoanAdminSidebar from './loanAdminSidebar';
 import '../../admin/styles/AdminDashboard.css';
 import '../styles/loanAdminDashboard.css';
@@ -165,7 +165,7 @@ export default function LoanAdminDashboard() {
       <div className="loan-admin-dashboard-content">
         {/* Header */}
         <h1 className="admin-dashboard-title">Loan Dashboard</h1>
-
+        {!expandedChart && (<>
         {/* Row 1 — 5 Stat Cards */}
         <div className="adm-stats-grid">
           <div className="adm-stat-card adm-clickable-card" onClick={() => navigate('/loan-admin/loan-management')}>
@@ -328,6 +328,7 @@ export default function LoanAdminDashboard() {
             )}
           </div>
         </div>
+        </>)}
 
       </div>
 
@@ -453,59 +454,143 @@ export default function LoanAdminDashboard() {
         </div>
       )}
 
-      {/* ── Expanded Chart Modal ── */}
+      {/* ── Expanded Chart View ── */}
       {expandedChart && (
-        <div className="la-modal-overlay" onClick={() => setExpandedChart(null)}>
-          <div className="la-modal la-chart-modal" onClick={e => e.stopPropagation()}>
-            <div className="la-modal-header">
-              <div>
-                <h2 className="la-modal-title">
-                  {expandedChart === 'moneyIn' && 'Money In vs Money Out'}
-                  {expandedChart === 'disbursements' && 'Disbursements by Type'}
-                  {expandedChart === 'savings' && 'Savings Trend'}
-                </h2>
-              </div>
-              <button className="la-modal-close" onClick={() => setExpandedChart(null)}>
-                <X size={20} />
-              </button>
+        <div className="adm-expand-overlay">
+          <div className="adm-expand-modal">
+            <div className="adm-expand-header">
+              <h2 className="adm-expand-title">
+                {expandedChart === 'moneyIn' && 'Money In vs Money Out — Detailed View'}
+                {expandedChart === 'disbursements' && 'Disbursements by Type — Detailed View'}
+                {expandedChart === 'savings' && 'Savings Trend — Detailed View'}
+              </h2>
+              <button className="adm-expand-close" onClick={() => setExpandedChart(null)}><X size={20} /></button>
             </div>
-            <div className="la-modal-body" style={{ height: '60vh', minHeight: '400px', display: 'flex', flexDirection: 'column' }}>
-              <ResponsiveContainer width="100%" height="100%">
-                {expandedChart === 'moneyIn' && (
-                  <BarChart data={monthlyData} margin={{ top: 20, right: 20, left: 10, bottom: 20 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-                    <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
-                    <YAxis stroke="#9CA3AF" fontSize={12} tickFormatter={formatYAxis} width={55} ticks={CHART_TICKS} domain={[0, 500000]} />
-                    <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #E5E7EB' }} formatter={(v) => '₱' + v.toLocaleString()} />
-                    <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
-                    <Bar dataKey="received" fill="#0D1F45" name="Money Received" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="disbursed" fill="#60A5FA" name="Money Released" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                )}
-                {expandedChart === 'disbursements' && (
-                  <BarChart data={disbursementByType} layout="vertical" margin={{ top: 20, right: 30, left: 10, bottom: 20 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-                    <XAxis type="number" stroke="#9CA3AF" fontSize={12} tickFormatter={formatYAxis} ticks={CHART_TICKS} domain={[0, 500000]} />
-                    <YAxis dataKey="type" type="category" stroke="#9CA3AF" fontSize={12} width={110} />
-                    <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #E5E7EB' }} formatter={(v) => '₱' + v.toLocaleString()} />
-                    <Bar dataKey="amount" radius={[0, 4, 4, 0]}>
-                      {disbursementByType.map((entry, index) => {
-                        const MONOCHROMATIC_BLUES = ['#0D1F45', '#1E3A8A', '#3B82F6', '#60A5FA', '#93C5FD'];
-                        return <Cell key={`cell-${index}`} fill={MONOCHROMATIC_BLUES[index % MONOCHROMATIC_BLUES.length]} />;
-                      })}
-                    </Bar>
-                  </BarChart>
-                )}
-                {expandedChart === 'savings' && (
-                  <LineChart data={savingsMonthly} margin={{ top: 20, right: 20, left: 10, bottom: 20 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-                    <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
-                    <YAxis stroke="#9CA3AF" fontSize={12} tickFormatter={formatYAxis} width={55} ticks={CHART_TICKS} domain={[0, 500000]} />
-                    <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #E5E7EB' }} formatter={(v) => '₱' + v.toLocaleString()} />
-                    <Line type="monotone" dataKey="savings" stroke="#0D1F45" strokeWidth={3} dot={{ r: 4, fill: '#0D1F45' }} name="Savings" />
-                  </LineChart>
-                )}
-              </ResponsiveContainer>
+            <div className="adm-expand-body">
+              {expandedChart === 'moneyIn' && (
+                <>
+                  <div className="adm-expand-grid">
+                    <div className="adm-expand-panel">
+                      <h4 className="adm-expand-panel-title">Monthly Comparison (Bar)</h4>
+                      <div className="adm-expand-panel-chart">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={monthlyData} margin={{ top: 10, right: 10, left: -10, bottom: 10 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+                            <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
+                            <YAxis stroke="#9CA3AF" fontSize={12} tickFormatter={formatYAxis} ticks={CHART_TICKS} domain={[0, 500000]} />
+                            <Tooltip formatter={(v) => '₱' + v.toLocaleString()} />
+                            <Legend iconType="circle" />
+                            <Bar dataKey="received" fill="#0D1F45" name="Money Received" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="disbursed" fill="#60A5FA" name="Money Released" radius={[4, 4, 0, 0]} />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                    <div className="adm-expand-panel">
+                      <h4 className="adm-expand-panel-title">Net Cash Flow (Line)</h4>
+                      <div className="adm-expand-panel-chart">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={monthlyData.map(d => ({ ...d, net: (d.received || 0) - (d.disbursed || 0) }))} margin={{ top: 10, right: 10, left: -10, bottom: 10 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+                            <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
+                            <YAxis stroke="#9CA3AF" fontSize={12} tickFormatter={formatYAxis} />
+                            <Tooltip formatter={(v) => '₱' + v.toLocaleString()} />
+                            <Legend iconType="circle" />
+                            <Line type="monotone" dataKey="net" stroke="#155DFC" strokeWidth={2.5} dot={{ r: 3 }} name="Net Flow" />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="adm-expand-interpretation">
+                    <strong>Interpretation:</strong> The left panel compares money received (repayments) vs money released (disbursements) per month. The right panel shows the net cash flow trend — positive values indicate surplus, negative values indicate more was released than received. This dual view helps assess the lending portfolio's financial health.
+                  </div>
+                </>
+              )}
+
+              {expandedChart === 'disbursements' && (
+                <>
+                  <div className="adm-expand-grid">
+                    <div className="adm-expand-panel">
+                      <h4 className="adm-expand-panel-title">Amount by Type (Bar)</h4>
+                      <div className="adm-expand-panel-chart">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={disbursementByType} layout="vertical" margin={{ top: 10, right: 10, left: 0, bottom: 10 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+                            <XAxis type="number" stroke="#9CA3AF" fontSize={12} tickFormatter={formatYAxis} ticks={CHART_TICKS} domain={[0, 500000]} />
+                            <YAxis dataKey="type" type="category" stroke="#9CA3AF" fontSize={12} width={90} />
+                            <Tooltip formatter={(v) => '₱' + v.toLocaleString()} />
+                            <Bar dataKey="amount" radius={[0, 4, 4, 0]}>
+                              {disbursementByType.map((_, index) => {
+                                const blues = ['#0D1F45', '#1E3A8A', '#3B82F6', '#60A5FA', '#93C5FD'];
+                                return <Cell key={`cell-${index}`} fill={blues[index % blues.length]} />;
+                              })}
+                            </Bar>
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                    <div className="adm-expand-panel">
+                      <h4 className="adm-expand-panel-title">Distribution (%)</h4>
+                      <div className="adm-expand-panel-chart">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie data={disbursementByType.map(d => ({ name: d.type, value: d.amount }))} cx="50%" cy="50%" innerRadius={50} outerRadius={100} paddingAngle={2} dataKey="value" label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}>
+                              {disbursementByType.map((_, index) => {
+                                const blues = ['#0D1F45', '#1E3A8A', '#3B82F6', '#60A5FA', '#93C5FD'];
+                                return <Cell key={`pie-${index}`} fill={blues[index % blues.length]} />;
+                              })}
+                            </Pie>
+                            <Tooltip formatter={(v) => '₱' + v.toLocaleString()} />
+                            <Legend />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="adm-expand-interpretation">
+                    <strong>Interpretation:</strong> The left panel shows absolute disbursement amounts per loan type as a horizontal bar chart. The right panel presents the same data as a pie chart to visualize percentage share. This helps identify the most in-demand loan products for data-driven fund allocation decisions.
+                  </div>
+                </>
+              )}
+
+              {expandedChart === 'savings' && (
+                <>
+                  <div className="adm-expand-grid">
+                    <div className="adm-expand-panel">
+                      <h4 className="adm-expand-panel-title">Savings Trend (Line)</h4>
+                      <div className="adm-expand-panel-chart">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={savingsMonthly} margin={{ top: 10, right: 10, left: -10, bottom: 10 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+                            <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
+                            <YAxis stroke="#9CA3AF" fontSize={12} tickFormatter={formatYAxis} ticks={CHART_TICKS} domain={[0, 500000]} />
+                            <Tooltip formatter={(v) => '₱' + v.toLocaleString()} />
+                            <Line type="monotone" dataKey="savings" stroke="#0D1F45" strokeWidth={2.5} dot={{ r: 3 }} name="Savings" />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                    <div className="adm-expand-panel">
+                      <h4 className="adm-expand-panel-title">Monthly Deposits (Bar)</h4>
+                      <div className="adm-expand-panel-chart">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={savingsMonthly} margin={{ top: 10, right: 10, left: -10, bottom: 10 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
+                            <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
+                            <YAxis stroke="#9CA3AF" fontSize={12} tickFormatter={formatYAxis} ticks={CHART_TICKS} domain={[0, 500000]} />
+                            <Tooltip formatter={(v) => '₱' + v.toLocaleString()} />
+                            <Bar dataKey="savings" fill="#0D1F45" radius={[4, 4, 0, 0]} name="Savings" />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="adm-expand-interpretation">
+                    <strong>Interpretation:</strong> The left panel shows the savings deposit trend over time as a line chart. The right panel visualizes the same monthly data as a bar chart for easier period-to-period comparison. An upward trend indicates growing participation in the savings program.
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

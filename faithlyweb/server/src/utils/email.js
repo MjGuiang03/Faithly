@@ -31,3 +31,19 @@ export const sendOTP = async (email, otp, subject = 'Your Email Verification Cod
     console.error('❌ Email Error:', error);
   }
 };
+
+export const sendEmailNotification = async (email, subject, htmlContent) => {
+  try {
+    const info = await transporter.sendMail({
+      from: `"FaithLy" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: subject,
+      html: htmlContent,
+    });
+    console.log(`✅ Notification Email [${subject}] sent successfully: %s`, info.messageId);
+    return { success: true };
+  } catch (error) {
+    console.error('❌ Notification Email Error:', error);
+    return { success: false, error };
+  }
+};

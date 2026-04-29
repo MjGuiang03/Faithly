@@ -199,9 +199,9 @@
 }
 
 .user-notif-prefs-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
   margin-bottom: 8px;
 }
 
@@ -210,13 +210,11 @@
   align-items: center;
   gap: 10px;
   cursor: pointer;
-  padding: 10px 12px;
+  padding: 12px 14px;
   border-radius: 10px;
   transition: all 0.15s;
   background: var(--secondary);
   border: 1px solid var(--border);
-  min-width: 120px;
-  flex: 1;
 }
 
 .user-notif-pref-item:hover {
@@ -239,7 +237,7 @@
   background: #fff;
 }
 
-.user-notif-pref-item input:checked + .user-notif-checkbox-box {
+.user-notif-pref-item input:checked+.user-notif-checkbox-box {
   background: #2563EB;
   border-color: #2563EB;
 }
@@ -251,7 +249,7 @@
   transition: all 0.2s;
 }
 
-.user-notif-pref-item input:checked + .user-notif-checkbox-box .check-icon {
+.user-notif-pref-item input:checked+.user-notif-checkbox-box .check-icon {
   opacity: 1;
   transform: scale(1);
 }
@@ -448,7 +446,8 @@
 }
 
 .user-reset-btn {
-  flex: 1; /* Reset to match Save button */
+  flex: 1;
+  /* Reset to match Save button */
   height: 48px;
   background: var(--secondary);
   border: 0.8px solid var(--border);
@@ -857,12 +856,15 @@
 /* Uppercase small label (like in the image) */
 .user-pi-form-label {
   font-size: 11px;
-  font-weight: 600; /* Softer weight */
+  font-weight: 600;
+  /* Softer weight */
   letter-spacing: 0.06em;
-  color: #6B7280; /* Softer color */
+  color: #6B7280;
+  /* Softer color */
   font-family: 'Inter', sans-serif;
   text-transform: uppercase;
-  margin-bottom: 6px; /* Increased breathing room */
+  margin-bottom: 6px;
+  /* Increased breathing room */
 }
 
 /* Standard input */
@@ -1268,3 +1270,480 @@
 .dark .user-pi-btn-edit:hover {
   background: var(--muted);
 }
+
+/* ============================================================
+   SETTINGS IMPROVEMENTS — append to Settings.css
+   ============================================================ */
+
+/* ── Toast notification ──────────────────────────────────────────────── */
+.user-settings-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  z-index: 9999;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  animation: user-toast-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+}
+
+@keyframes user-toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.user-settings-toast--success {
+  background: #F0FDF4;
+  border: 1px solid #BBF7D0;
+  color: #16A34A;
+}
+
+.user-settings-toast--error {
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  color: #B91C1C;
+}
+
+/* ── Coming soon badge ───────────────────────────────────────────────── */
+.user-coming-soon-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  padding: 2px 8px;
+  background: #FEF3C7;
+  color: #92400E;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  font-style: normal;
+  vertical-align: middle;
+}
+
+.dark .user-coming-soon-badge {
+  background: rgba(251, 191, 36, 0.15);
+  color: #FCD34D;
+}
+
+/* ── Disabled toggle row ─────────────────────────────────────────────── */
+.user-toggle-setting--disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ── Notification categories header row ──────────────────────────────── */
+.user-notif-categories-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.user-notif-select-all-btn {
+  background: none;
+  border: none;
+  color: #2563EB;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 0;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: opacity 0.2s;
+}
+
+.user-notif-select-all-btn:hover {
+  opacity: 0.75;
+}
+
+.dark .user-notif-select-all-btn {
+  color: #60A5FA;
+}
+
+/* ── Grouped notification layout ─────────────────────────────────────── */
+.user-notif-groups-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: opacity 0.25s ease;
+}
+
+.user-notif-groups-wrap--dimmed {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.user-notif-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.user-notif-group-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #9CA3AF;
+  margin: 0;
+}
+
+.dark .user-notif-group-label {
+  color: #6B7280;
+}
+
+/* ── Pill toggles ────────────────────────────────────────────────────── */
+.user-notif-pills-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.user-notif-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  border-radius: 20px;
+  border: 1px solid #D1D5DB;
+  background: #F9FAFB;
+  color: #6B7280;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  user-select: none;
+}
+
+.user-notif-pill:hover:not(:disabled) {
+  border-color: #93C5FD;
+  color: #1D4ED8;
+  background: #EFF6FF;
+}
+
+.user-notif-pill--on {
+  background: #EFF6FF;
+  border-color: #93C5FD;
+  color: #1D4ED8;
+}
+
+.user-notif-pill:disabled {
+  cursor: not-allowed;
+}
+
+.dark .user-notif-pill {
+  background: var(--input-background);
+  border-color: var(--border);
+  color: var(--text-secondary);
+}
+
+.dark .user-notif-pill--on {
+  background: rgba(37, 99, 235, 0.15);
+  border-color: rgba(96, 165, 250, 0.4);
+  color: #60A5FA;
+}
+
+.dark .user-notif-pill:hover:not(:disabled) {
+  background: rgba(37, 99, 235, 0.1);
+  border-color: rgba(96, 165, 250, 0.3);
+  color: #93C5FD;
+}
+
+.user-notif-pill-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.65;
+  flex-shrink: 0;
+}
+
+/* ── Password input wrapper (eye toggle) ─────────────────────────────── */
+.user-pass-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.user-pass-input {
+  padding-right: 40px !important;
+  width: 100%;
+}
+
+.user-pass-eye-btn {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #9CA3AF;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+
+.user-pass-eye-btn:hover {
+  color: #374151;
+}
+
+.dark .user-pass-eye-btn {
+  color: #6B7280;
+}
+
+.dark .user-pass-eye-btn:hover {
+  color: #D1D5DB;
+}
+
+/* Input border variants for match validation */
+.user-pass-input--error {
+  border-color: #F87171 !important;
+  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.15) !important;
+}
+
+.user-pass-input--success {
+  border-color: #34D399 !important;
+  box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.12) !important;
+}
+
+/* ── Password strength bar ───────────────────────────────────────────── */
+.user-pass-strength {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.user-pass-strength-bars {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+}
+
+.user-pass-strength-bar {
+  height: 4px;
+  flex: 1;
+  border-radius: 4px;
+  background: var(--border);
+}
+
+.user-pass-strength-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  min-width: 40px;
+  text-align: right;
+}
+
+/* ── Password match feedback ─────────────────────────────────────────── */
+.user-pass-match {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 5px;
+}
+
+.user-pass-match--ok {
+  color: #16A34A;
+}
+
+.user-pass-match--err {
+  color: #DC2626;
+}
+
+/* ── Forgot password hint ────────────────────────────────────────────── */
+.user-pass-hint {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 5px;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  color: #9CA3AF;
+}
+
+.user-pass-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #2563EB;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.user-pass-link:hover {
+  opacity: 0.75;
+}
+
+.dark .user-pass-hint {
+  color: #6B7280;
+}
+
+.dark .user-pass-link {
+  color: #60A5FA;
+}
+/* -- Disable Email Modal Redesign -------------------------------------- */
+.user-email-disable-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+}
+
+.user-email-disable-modal {
+  background: white;
+  border-radius: 16px;
+  max-width: 400px;
+  width: 90%;
+  padding: 28px 28px 24px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  font-family: 'Inter', sans-serif;
+  animation: user-toast-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.dark .user-email-disable-modal {
+  background: var(--background);
+  border: 1px solid var(--border);
+}
+
+.user-email-disable-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  margin-bottom: 16px;
+}
+
+.user-email-disable-icon-ring {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.user-email-disable-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.dark .user-email-disable-title {
+  color: var(--text-primary);
+}
+
+.user-email-disable-body {
+  text-align: left;
+  margin-bottom: 24px;
+}
+
+.user-email-disable-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0 0 12px 0;
+}
+
+.user-email-disable-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-start;
+}
+
+.user-email-disable-chip {
+  background: #FEF2F2;
+  color: #B91C1C;
+  border: 0.5px solid #FECACA;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+}
+
+.dark .user-email-disable-chip {
+  background: rgba(185, 28, 28, 0.15);
+  border-color: rgba(248, 113, 113, 0.3);
+  color: #F87171;
+}
+
+.user-email-disable-divider {
+  border: none;
+  border-top: 0.5px solid var(--border);
+  margin: 0 0 24px 0;
+}
+
+.user-email-disable-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.user-email-disable-btn-cancel {
+  background: var(--secondary);
+  border: 0.5px solid var(--border);
+  color: var(--text-secondary);
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.user-email-disable-btn-cancel:hover {
+  background: var(--muted);
+}
+
+.user-email-disable-btn-confirm {
+  background: #DC2626;
+  border: none;
+  color: white;
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.user-email-disable-btn-confirm:hover {
+  opacity: 0.85;
+}
+

@@ -6,6 +6,36 @@ import { CalendarDays, CheckCircle, MapPin, Activity } from 'lucide-react';
 
 const PAGE_SIZE = 5;
 
+const CountUp = ({ end, duration = 1000, suffix = '' }) => {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    let startTimestamp = null;
+    const numericEnd = typeof end === 'number' ? end : parseInt(end) || 0;
+    
+    if (numericEnd === 0) {
+      setCount(0);
+      return;
+    }
+
+    const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      
+      const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+      setCount(Math.floor(easeOutQuart * numericEnd));
+      
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
+      }
+    };
+    
+    window.requestAnimationFrame(step);
+  }, [end, duration]);
+
+  return <>{count}{suffix}</>;
+};
+
 export default function Attendance() {
   const [attendanceData, setAttendanceData] = useState([]);
   const [upcomingData,   setUpcomingData]   = useState([]);
@@ -48,11 +78,10 @@ export default function Attendance() {
   }, [fetchAttendance]);
 
   // Attendance rate = thisMonth / weeks in current month * 100 (capped at 100)
-  const attendanceRate = useMemo(() => {
-    if (!stats.total) return '0%';
+  const attendanceRateNum = useMemo(() => {
+    if (!stats.total) return 0;
     const weeksInMonth = 4;
-    const rate = Math.min(100, Math.round((stats.thisMonth / weeksInMonth) * 100));
-    return `${rate}%`;
+    return Math.min(100, Math.round((stats.thisMonth / weeksInMonth) * 100));
   }, [stats]);
 
   // Pagination
@@ -107,7 +136,7 @@ export default function Attendance() {
               <p className="user-attendance-stat-label">Total Attendance</p>
               <CheckCircle className="user-attendance-stat-icon" size={20} color="#155DFC" />
               </div>
-              {loading ? <div className="user-skeleton" style={{ height: '32px', width: '60px', margin: '8px 0' }}></div> : <p className="user-attendance-stat-value user-fade-in">{stats.total}</p>}
+              {loading ? <div className="user-skeleton" style={{ height: '32px', width: '60px', margin: '8px 0' }}></div> : <p className="user-attendance-stat-value user-fade-in"><CountUp end={stats.total} /></p>}
             </div>
 
           <div className="user-attendance-stat-card">
@@ -115,7 +144,7 @@ export default function Attendance() {
               <p className="user-attendance-stat-label">This Month</p>
               <CalendarDays className="user-attendance-stat-icon" size={20} color="#155DFC" />
               </div>
-              {loading ? <div className="user-skeleton" style={{ height: '32px', width: '60px', margin: '8px 0' }}></div> : <p className="user-attendance-stat-value user-fade-in">{stats.thisMonth}</p>}
+              {loading ? <div className="user-skeleton" style={{ height: '32px', width: '60px', margin: '8px 0' }}></div> : <p className="user-attendance-stat-value user-fade-in"><CountUp end={stats.thisMonth} /></p>}
             </div>
 
           <div className="user-attendance-stat-card">
@@ -123,7 +152,7 @@ export default function Attendance() {
               <p className="user-attendance-stat-label">Attendance Rate</p>
               <Activity className="user-attendance-stat-icon" size={20} color="#155DFC" />
               </div>
-              {loading ? <div className="user-skeleton" style={{ height: '32px', width: '60px', margin: '8px 0' }}></div> : <p className="user-attendance-stat-value user-fade-in">{attendanceRate}</p>}
+              {loading ? <div className="user-skeleton" style={{ height: '32px', width: '60px', margin: '8px 0' }}></div> : <p className="user-attendance-stat-value user-fade-in"><CountUp end={attendanceRateNum} suffix="%" /></p>}
             </div>
         </div>
 
@@ -237,6 +266,7 @@ export default function Attendance() {
                       <th>Service</th>
                       <th>Date</th>
                       <th>Branch</th>
+                      <th>Method</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -245,6 +275,11 @@ export default function Attendance() {
                         <td>{record.service}</td>
                         <td>{record.date}</td>
                         <td>{record.branch}</td>
+                        <td>
+                          <span className={`user-method-badge user-method-${record.method?.toLowerCase()}`}>
+                            {record.method}
+                          </span>
+                        </td>
                       </tr>
                     ))}
                   </tbody>

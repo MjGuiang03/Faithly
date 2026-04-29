@@ -23,9 +23,10 @@ const QUICK_AMOUNTS = [25, 50, 100, 250];
 
 const CATEGORIES = [
   { name: 'General Fund', description: 'Church operations and ministry', icon: <img src={iconGeneral} alt="General Fund" className="user-3d-cat-icon" /> },
-  { name: 'Children Ministry', description: "Children's programs and activities", icon: <img src={iconChildren} alt="Children Ministry" className="user-3d-cat-icon" /> },
-  { name: 'Building Fund', description: 'Infrastructure and facility improvements', icon: <img src={iconBuilding} alt="Building Fund" className="user-3d-cat-icon" /> },
-  { name: 'Youth Ministry', description: 'Youth programs and events', icon: <img src={iconYouth} alt="Youth Ministry" className="user-3d-cat-icon" /> },
+  { name: 'Children\'s Department', description: "Children's programs and activities", icon: <img src={iconChildren} alt="Children's Department" className="user-3d-cat-icon" /> },
+  { name: 'Men\'s Department', description: 'Men\'s programs and activities', icon: <img src={iconBuilding} alt="Men's Department" className="user-3d-cat-icon" /> },
+  { name: 'Women\'s Department', description: 'Women\'s programs and activities', icon: <img src={iconGeneral} alt="Women's Department" className="user-3d-cat-icon" /> },
+  { name: 'Youth Department', description: 'Youth programs and events', icon: <img src={iconYouth} alt="Youth Department" className="user-3d-cat-icon" /> },
   { name: 'Mission Fund', description: 'Missionary work and outreach programs', icon: <img src={iconMission} alt="Mission Fund" className="user-3d-cat-icon" /> },
 ];
 

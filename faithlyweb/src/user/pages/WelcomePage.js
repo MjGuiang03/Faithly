@@ -270,18 +270,18 @@ export default function WelcomePage() {
             <p className="fund-desc">Church operations and ministry</p>
           </div>
 
-          {/* Children Ministry */}
+          {/* Children's Department */}
           <div className="fund-card">
             <svg className="fund-glyph" viewBox="0 0 36 36" fill="none" stroke="#C9A84C">
               <path d="M 18 30 C 18 20 8 18 8 10 C 12 10 18 16 18 22" strokeWidth="1" />
               <path d="M 18 30 C 18 22 26 20 26 14 C 22 14 18 18 18 22" strokeWidth="1" />
               <circle cx="18" cy="8" r="2.5" fill="#C9A84C" opacity="0.4" stroke="none" />
             </svg>
-            <h3 className="fund-name">Children Ministry</h3>
+            <h3 className="fund-name">Children's Department</h3>
             <p className="fund-desc">Children's programs and activities</p>
           </div>
 
-          {/* Building Fund */}
+          {/* Men's Department */}
           <div className="fund-card">
             <svg className="fund-glyph" viewBox="0 0 36 36" fill="none" stroke="#C9A84C">
               <path d="M 6 30 L 30 30" strokeWidth="1.2" />
@@ -290,17 +290,30 @@ export default function WelcomePage() {
               <path d="M 26 28 L 26 14" strokeWidth="1" />
               <path d="M 4 14 L 32 14 L 18 4 Z" strokeWidth="1" />
             </svg>
-            <h3 className="fund-name">Building Fund</h3>
-            <p className="fund-desc">Infrastructure and facility improvements</p>
+            <h3 className="fund-name">Men's Department</h3>
+            <p className="fund-desc">Men's programs and activities</p>
           </div>
 
-          {/* Youth Ministry */}
+          {/* Women's Department */}
+          <div className="fund-card">
+            <svg className="fund-glyph" viewBox="0 0 36 36" fill="none" stroke="#C9A84C">
+              <path d="M 18 6 L 30 14 L 30 28 L 6 28 L 6 14 Z" strokeWidth="1" />
+              <rect x="14" y="20" width="8" height="8" strokeWidth="0.75" />
+              <line x1="18" y1="20" x2="18" y2="28" strokeWidth="0.75" />
+              <line x1="18" y1="1" x2="18" y2="6" strokeWidth="1" />
+              <line x1="15" y1="3" x2="21" y2="3" strokeWidth="1" />
+            </svg>
+            <h3 className="fund-name">Women's Department</h3>
+            <p className="fund-desc">Women's programs and activities</p>
+          </div>
+
+          {/* Youth Department */}
           <div className="fund-card">
             <svg className="fund-glyph" viewBox="0 0 36 36" fill="none" stroke="#C9A84C">
               <path d="M 18 30 C 10 30 10 18 18 6 C 26 18 26 30 18 30 Z" strokeWidth="1" />
               <path d="M 18 26 C 14 26 14 18 18 12 C 22 18 22 26 18 26 Z" fill="#C9A84C" opacity="0.3" stroke="none" />
             </svg>
-            <h3 className="fund-name">Youth Ministry</h3>
+            <h3 className="fund-name">Youth Department</h3>
             <p className="fund-desc">Youth programs and events</p>
           </div>
 
