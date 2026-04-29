@@ -353,7 +353,7 @@ export default function LoanAdminPaymentStatus() {
         )}
 
         {isSavingsRoute && (
-          <div className="loan-admin-mgmt-stats" style={{ gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+          <div className="loan-admin-mgmt-stats" style={{ gridTemplateColumns: 'repeat(1, 1fr)' }}>
             <div className="loan-admin-mgmt-stat-card">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                 <p className="loan-admin-mgmt-stat-label" style={{ margin: 0 }}>Total Savings</p>
@@ -365,56 +365,10 @@ export default function LoanAdminPaymentStatus() {
               </div>
               <p className="loan-admin-mgmt-stat-value approved">{fmt(totalSavingsFiltered)}</p>
             </div>
-            <div className="loan-admin-mgmt-stat-card">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <p className="loan-admin-mgmt-stat-label" style={{ margin: 0 }}>Total Income from Interest</p>
-                <select value={interestFilter} onChange={e => setInterestFilter(e.target.value)} style={{ fontSize: '12px', padding: '4px 6px', borderRadius: '6px', border: '1px solid #D1D5DB' }}>
-                  <option value="all">All Multipliers</option>
-                  <option value="2x">2x Savings (Personal)</option>
-                  <option value="1.5x">1.5x Savings (Emergency)</option>
-                  <option value="1x">1x Savings (Short-term)</option>
-                </select>
-              </div>
-              <p className="loan-admin-mgmt-stat-value" style={{ color: '#155DFC' }}>{fmt(totalInterestFiltered)}</p>
-            </div>
           </div>
         )}
 
-        {/* Tabs */}
-        {/* Tabs */}
-        <div style={{ display: 'flex', gap: '6px', marginBottom: '16px' }}>
-          {!isSavingsRoute ? (
-            <>
-              <button
-                onClick={() => setActiveTab('loans')}
-                style={{
-                  padding: '8px 18px', borderRadius: '8px', border: 'none', fontFamily: 'Inter',
-                  fontSize: '13px', fontWeight: 600, cursor: 'pointer',
-                  background: activeTab === 'loans' ? '#155DFC' : '#F3F4F6',
-                  color: activeTab === 'loans' ? '#fff' : '#6B7280',
-                }}
-              >Active Loans</button>
-              <button
-                onClick={() => setActiveTab('payments')}
-                style={{
-                  padding: '8px 18px', borderRadius: '8px', border: 'none', fontFamily: 'Inter',
-                  fontSize: '13px', fontWeight: 600, cursor: 'pointer', position: 'relative',
-                  background: activeTab === 'payments' ? '#155DFC' : '#F3F4F6',
-                  color: activeTab === 'payments' ? '#fff' : '#6B7280',
-                }}
-              >
-                Pending Payments
-                {pendingCount > 0 && (
-                  <span style={{
-                    position: 'absolute', top: -6, right: -6, background: '#DC2626', color: '#fff',
-                    borderRadius: '50%', width: 20, height: 20, fontSize: '11px', fontWeight: 700,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}>{pendingCount}</span>
-                )}
-              </button>
-            </>
-          ) : null}
-        </div>
+
 
         <div className="loan-admin-mgmt-search">
           <Search size={20} color="#9CA3AF" />
@@ -470,105 +424,7 @@ export default function LoanAdminPaymentStatus() {
           </div>
         )}
 
-        {/* Pending Payments Tab */}
-        {activeTab === 'payments' && (
-          <div>
-            {/* Payment Method Filter Pills */}
-            <div style={{ display: 'flex', gap: '6px', marginBottom: '12px', flexWrap: 'wrap' }}>
-              {['all', 'cash', 'gcash', 'bank'].map(method => (
-                <button
-                  key={method}
-                  onClick={() => setPaymentMethodFilter(method)}
-                  style={{
-                    padding: '5px 14px',
-                    borderRadius: '6px',
-                    border: paymentMethodFilter === method ? 'none' : '1px solid #E5E7EB',
-                    fontFamily: 'Inter',
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    background: paymentMethodFilter === method ? '#1E3A8A' : '#fff',
-                    color: paymentMethodFilter === method ? '#fff' : '#6B7280',
-                    transition: 'all 0.15s',
-                    textTransform: method === 'all' ? 'none' : 'capitalize',
-                  }}
-                >
-                  {method === 'all' ? 'All Methods' : method === 'gcash' ? 'GCash' : method.charAt(0).toUpperCase() + method.slice(1)}
-                </button>
-              ))}
-            </div>
-          <div className="loan-admin-mgmt-table-container">
-            <table className="loan-admin-mgmt-table">
-              <thead>
-                <tr>
-                  <th>Loan ID</th>
-                  <th>Member</th>
-                  <th>Amount</th>
-                  <th>Method</th>
-                  <th>Month #</th>
-                  <th>Submitted</th>
-                  <th>Proof</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pendingFiltered.length === 0 ? (
-                  <tr><td colSpan={9} style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>No payment submissions</td></tr>
-                ) : (
-                  pendingFiltered.map(p => (
-                    <tr key={p._id} onClick={() => setSelectedPayment(p)} style={{ cursor: 'pointer' }} className="loan-admin-mgmt-table-row-hover">
-                      <td className="loan-admin-mgmt-table-id">{p.loanId}</td>
-                      <td>
-                        <div className="loan-admin-mgmt-table-member">
-                          <p className="loan-admin-mgmt-table-member-name">{p.memberName}</p>
-                          <p className="loan-admin-mgmt-table-member-email">{p.email}</p>
-                        </div>
-                      </td>
-                      <td className="loan-admin-mgmt-table-amount">
-                        {fmt(p.amount)}
-                        {p.isLate && <span style={{ fontSize: '10px', color: '#DC2626', background: '#FEE2E2', padding: '2px 4px', borderRadius: '4px', marginLeft: '6px', fontWeight: 600 }}>3% Penalty</span>}
-                      </td>
-                      <td style={{ textTransform: 'capitalize', fontSize: '13px' }}>{p.paymentMethod}</td>
-                      <td style={{ fontSize: '13px', textAlign: 'center' }}>{p.monthNumber || '—'}</td>
-                      <td style={{ fontSize: '13px' }}>{fmtDate(p.submittedAt)}</td>
-                      <td>
-                        {p.proofData ? (
-                          <button
-                            onClick={(e) => { e.stopPropagation(); setViewingImage(p.proofData); }}
-                            style={{ background: '#EEF2FF', color: '#155DFC', border: 'none', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}
-                          >View</button>
-                        ) : <span style={{ color: '#9CA3AF', fontSize: '12px' }}>None</span>}
-                      </td>
-                      <td>
-                        <span className={`ps-status-badge ${p.status === 'pending' ? 'reminder' : p.status === 'confirmed' ? 'on-track' : 'default'}`}>
-                          {p.status.charAt(0).toUpperCase() + p.status.slice(1)}
-                        </span>
-                      </td>
-                      <td onClick={(e) => e.stopPropagation()}>
-                        {p.status === 'pending' && (
-                          <div style={{ display: 'flex', gap: '6px' }}>
-                            <button
-                              onClick={() => handleConfirmPayment(p._id)}
-                              disabled={actionLoading}
-                              style={{ background: '#16A34A', color: '#fff', border: 'none', padding: '5px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}
-                            >Confirm</button>
-                            <button
-                              onClick={() => handleRejectPayment(p._id)}
-                              disabled={actionLoading}
-                              style={{ background: '#fff', color: '#DC2626', border: '1px solid #FCA5A5', padding: '5px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}
-                            >Reject</button>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-          </div>
-        )}
+
 
 
 
@@ -576,7 +432,7 @@ export default function LoanAdminPaymentStatus() {
 
         <div className="loan-admin-mgmt-pagination">
           <p className="loan-admin-mgmt-pagination-info">
-            {activeTab === 'loans' ? `Showing ${filtered.length} active loans` : `Showing ${pendingFiltered.length} payment submissions`}
+            {activeTab === 'loans' ? `Showing ${filtered.length} active loans` : ''}
           </p>
         </div>
       </div>
@@ -591,45 +447,75 @@ export default function LoanAdminPaymentStatus() {
                 <X size={16} />
               </button>
             </div>
-            <div style={{ padding: '20px 24px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
-                <div><p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Loan ID</p><p style={{ fontSize: '14px', fontWeight: 600, fontFamily: 'Inter', color: '#111827' }}>{selectedLoan.loanId}</p></div>
-                <div><p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Member</p><p style={{ fontSize: '14px', fontWeight: 600, fontFamily: 'Inter', color: '#111827' }}>{selectedLoan.memberName}</p></div>
-                <div><p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Loan Amount</p><p style={{ fontSize: '14px', fontWeight: 600, fontFamily: 'Inter', color: '#111827' }}>{fmt(selectedLoan.amount)}</p></div>
-                <div><p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Monthly Payment</p><p style={{ fontSize: '14px', fontWeight: 600, fontFamily: 'Inter', color: '#111827' }}>{fmt(selectedLoan.monthlyPayment)}</p></div>
-                <div><p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Term</p><p style={{ fontSize: '14px', fontWeight: 600, fontFamily: 'Inter', color: '#111827' }}>{selectedLoan.termMonths} months</p></div>
-                <div><p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Interest Rate</p><p style={{ fontSize: '14px', fontWeight: 600, fontFamily: 'Inter', color: '#111827' }}>{(selectedLoan.interestRate < 1 ? (selectedLoan.interestRate * 100).toFixed(1) : selectedLoan.interestRate)}%</p></div>
+            <div style={{ padding: '16px 24px 8px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '16px' }}>
+                <div style={{ background: '#F9FAFB', padding: '8px 12px', borderRadius: '8px', border: '1px solid #E5E7EB' }}>
+                  <p style={{ margin: 0, marginBottom: '2px', fontSize: '12px', color: '#6B7280', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Loan ID</p>
+                  <p style={{ margin: 0, fontSize: '17px', fontWeight: 700, fontFamily: 'Inter', color: '#111827' }}>{selectedLoan.loanId}</p>
+                </div>
+                <div style={{ background: '#F9FAFB', padding: '8px 12px', borderRadius: '8px', border: '1px solid #E5E7EB' }}>
+                  <p style={{ margin: 0, marginBottom: '2px', fontSize: '12px', color: '#6B7280', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Member</p>
+                  <p style={{ margin: 0, fontSize: '17px', fontWeight: 700, fontFamily: 'Inter', color: '#111827' }}>{selectedLoan.memberName}</p>
+                </div>
+                <div style={{ background: '#F9FAFB', padding: '8px 12px', borderRadius: '8px', border: '1px solid #E5E7EB' }}>
+                  <p style={{ margin: 0, marginBottom: '2px', fontSize: '12px', color: '#6B7280', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Loan Amount</p>
+                  <p style={{ margin: 0, fontSize: '17px', fontWeight: 700, fontFamily: 'Inter', color: '#111827' }}>{fmt(selectedLoan.amount)}</p>
+                </div>
+                <div style={{ background: '#F9FAFB', padding: '8px 12px', borderRadius: '8px', border: '1px solid #E5E7EB' }}>
+                  <p style={{ margin: 0, marginBottom: '2px', fontSize: '12px', color: '#6B7280', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Monthly Payment</p>
+                  <p style={{ margin: 0, fontSize: '17px', fontWeight: 700, fontFamily: 'Inter', color: '#155DFC' }}>{fmt(selectedLoan.monthlyPayment)}</p>
+                </div>
+                <div style={{ background: '#F9FAFB', padding: '8px 12px', borderRadius: '8px', border: '1px solid #E5E7EB' }}>
+                  <p style={{ margin: 0, marginBottom: '2px', fontSize: '12px', color: '#6B7280', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Term</p>
+                  <p style={{ margin: 0, fontSize: '17px', fontWeight: 700, fontFamily: 'Inter', color: '#111827' }}>{selectedLoan.termMonths} months</p>
+                </div>
+                <div style={{ background: '#F9FAFB', padding: '8px 12px', borderRadius: '8px', border: '1px solid #E5E7EB' }}>
+                  <p style={{ margin: 0, marginBottom: '2px', fontSize: '12px', color: '#6B7280', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Interest Rate</p>
+                  <p style={{ margin: 0, fontSize: '17px', fontWeight: 700, fontFamily: 'Inter', color: '#111827' }}>{(selectedLoan.interestRate < 1 ? (selectedLoan.interestRate * 100).toFixed(1) : selectedLoan.interestRate)}%</p>
+                </div>
               </div>
 
               {/* Progress bar */}
-              <div style={{ background: '#F3F4F6', borderRadius: '10px', padding: '14px 16px', marginBottom: '16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '12px', fontWeight: 600, fontFamily: 'Inter', color: '#374151' }}>Repayment Progress</span>
-                  <span style={{ fontSize: '12px', fontWeight: 600, fontFamily: 'Inter', color: '#155DFC' }}>
-                    {selectedLoan.paidMonths || 0}/{selectedLoan.termMonths || 0} months
+              <div style={{ background: '#EEF2FF', borderRadius: '10px', padding: '12px 16px', marginBottom: '16px', border: '1px solid #E0E7FF' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', alignItems: 'center' }}>
+                  <span style={{ fontSize: '14px', fontWeight: 700, fontFamily: 'Inter', color: '#1E3A8A' }}>Repayment Progress</span>
+                  <span style={{ fontSize: '14px', fontWeight: 700, fontFamily: 'Inter', color: '#155DFC', background: '#DBEAFE', padding: '4px 10px', borderRadius: '20px' }}>
+                    {selectedLoan.paidMonths || 0} / {selectedLoan.termMonths || 0} months
                   </span>
                 </div>
-                <div style={{ background: '#E5E7EB', borderRadius: '6px', height: '8px', overflow: 'hidden' }}>
+                <div style={{ background: '#BFDBFE', borderRadius: '8px', height: '10px', overflow: 'hidden' }}>
                   <div style={{
-                    background: '#155DFC', borderRadius: '6px', height: '100%',
+                    background: '#2563EB', borderRadius: '8px', height: '100%',
                     width: `${Math.max(2, ((selectedLoan.paidMonths || 0) / (selectedLoan.termMonths || 1)) * 100)}%`,
-                    transition: 'width 0.3s',
+                    transition: 'width 0.4s ease-out',
                   }} />
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px' }}>
-                  <span style={{ fontSize: '11px', color: '#6B7280', fontFamily: 'Inter' }}>Balance: {fmt(selectedLoan.remainingBalance)}</span>
-                  <span style={{ fontSize: '11px', color: '#6B7280', fontFamily: 'Inter' }}>Total: {fmt(selectedLoan.totalRepayment)}</span>
+                  <span style={{ fontSize: '13px', fontWeight: 600, color: '#4B5563', fontFamily: 'Inter' }}>Balance: <span style={{ color: '#111827' }}>{fmt(selectedLoan.remainingBalance)}</span></span>
+                  <span style={{ fontSize: '13px', fontWeight: 600, color: '#4B5563', fontFamily: 'Inter' }}>Total: <span style={{ color: '#111827' }}>{fmt(selectedLoan.totalRepayment)}</span></span>
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <div><p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Status</p><span className={`ps-status-badge ${selectedLoan.paymentStatus.cls}`}>{selectedLoan.paymentStatus.label}</span></div>
-                <div><p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Days Late</p><p style={{ fontSize: '14px', fontWeight: 600, fontFamily: 'Inter', color: selectedLoan.daysLate > 0 ? '#DC2626' : '#16A34A' }}>{selectedLoan.daysLate > 0 ? `${selectedLoan.daysLate} days` : 'Current'}</p></div>
-                <div><p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Approved Date</p><p style={{ fontSize: '13px', fontFamily: 'Inter', color: '#374151' }}>{fmtDate(selectedLoan.approvedDate)}</p></div>
-                <div><p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Next Due Date</p><p style={{ fontSize: '13px', fontFamily: 'Inter', color: '#374151' }}>{fmtDate(selectedLoan.effectiveDueDate)}</p></div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <div style={{ padding: '4px' }}>
+                  <p style={{ margin: 0, marginBottom: '4px', fontSize: '12px', color: '#6B7280', fontFamily: 'Inter', fontWeight: 600 }}>Status</p>
+                  <span className={`ps-status-badge ${selectedLoan.paymentStatus.cls}`} style={{ fontSize: '14px', padding: '4px 10px', display: 'inline-block', fontWeight: 600 }}>{selectedLoan.paymentStatus.label}</span>
+                </div>
+                <div style={{ padding: '4px' }}>
+                  <p style={{ margin: 0, marginBottom: '4px', fontSize: '12px', color: '#6B7280', fontFamily: 'Inter', fontWeight: 600 }}>Days Late</p>
+                  <p style={{ margin: 0, fontSize: '16px', fontWeight: 700, fontFamily: 'Inter', color: selectedLoan.daysLate > 0 ? '#DC2626' : '#16A34A' }}>{selectedLoan.daysLate > 0 ? `${selectedLoan.daysLate} days` : 'Current'}</p>
+                </div>
+                <div style={{ padding: '4px' }}>
+                  <p style={{ margin: 0, marginBottom: '4px', fontSize: '12px', color: '#6B7280', fontFamily: 'Inter', fontWeight: 600 }}>Approved Date</p>
+                  <p style={{ margin: 0, fontSize: '15px', fontWeight: 600, fontFamily: 'Inter', color: '#374151' }}>{fmtDate(selectedLoan.approvedDate)}</p>
+                </div>
+                <div style={{ padding: '4px' }}>
+                  <p style={{ margin: 0, marginBottom: '4px', fontSize: '12px', color: '#6B7280', fontFamily: 'Inter', fontWeight: 600 }}>Next Due Date</p>
+                  <p style={{ margin: 0, fontSize: '15px', fontWeight: 600, fontFamily: 'Inter', color: '#374151' }}>{fmtDate(selectedLoan.effectiveDueDate)}</p>
+                </div>
               </div>
             </div>
-            <div style={{ padding: '12px 24px 20px', display: 'flex', justifyContent: 'flex-end' }}>
+            <div style={{ padding: '0 24px 16px', display: 'flex', justifyContent: 'flex-end' }}>
               <button onClick={() => setSelectedLoan(null)} style={{ background: '#155DFC', color: '#fff', border: 'none', padding: '8px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}>Close</button>
             </div>
           </div>

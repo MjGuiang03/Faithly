@@ -64,6 +64,8 @@ export default function LoanAdminLoanManagement() {
     const [selectedLoan, setSelectedLoan] = useState(null);
     const [rejectReason, setRejectReason] = useState('');
     const [loans, setLoans] = useState([]);
+    const [allLoansStats, setAllLoansStats] = useState([]);
+    const [interestFilter, setInterestFilter] = useState('all');
     const [stats, setStats] = useState({ pending: 0, active: 0, rejected: 0 });
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(null);
@@ -120,6 +122,39 @@ export default function LoanAdminLoanManagement() {
 
     useEffect(() => { fetchLoans(); }, [fetchLoans]);
     useEffect(() => { setPage(1); }, [debouncedSearch]);
+
+    const fetchAllLoansStats = useCallback(async () => {
+        try {
+            const token = localStorage.getItem('adminToken');
+            const res = await fetch(`${API}/api/admin/loans?limit=10000`, { headers: { Authorization: `Bearer ${token}` } });
+            const data = await res.json();
+            if (data.success) {
+                setAllLoansStats(data.loans || []);
+            }
+        } catch { /* silent */ }
+    }, []);
+
+    useEffect(() => { fetchAllLoansStats(); }, [fetchAllLoansStats]);
+
+    const totalInterestFiltered = allLoansStats.filter(l => {
+        if (l.status === 'rejected' || l.status === 'pending') return false;
+        const lType = (l.loanType || '').toLowerCase();
+        
+        let mult = '2x';
+        if (lType.includes('emergency')) mult = '1.5x';
+        if (lType.includes('short')) mult = '1x';
+        if (l.multiplier) mult = `${l.multiplier}x`;
+
+        if (interestFilter === '2x' && mult !== '2x') return false;
+        if (interestFilter === '1.5x' && mult !== '1.5x') return false;
+        if (interestFilter === '1x' && mult !== '1x') return false;
+        return true;
+    }).reduce((sum, l) => {
+        const totalRepay = Number(l.totalRepayment || (l.monthlyPayment * l.term)) || 0;
+        const principal = Number(l.amount) || 0;
+        const interest = totalRepay - principal;
+        return sum + (interest > 0 ? interest : 0);
+    }, 0);
 
     /* ── Approve ── */
     const handleApprove = (loan) => {
@@ -334,7 +369,7 @@ export default function LoanAdminLoanManagement() {
                 </div>
 
                 {/* Status Cards */}
-                <div className="loan-admin-mgmt-stats">
+                <div className="loan-admin-mgmt-stats" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
                     <div className="loan-admin-mgmt-stat-card">
                         <p className="loan-admin-mgmt-stat-label">Pending Review</p>
                         <p className="loan-admin-mgmt-stat-value pending">{counts.pending}</p>
@@ -346,6 +381,18 @@ export default function LoanAdminLoanManagement() {
                     <div className="loan-admin-mgmt-stat-card">
                         <p className="loan-admin-mgmt-stat-label">Rejected</p>
                         <p className="loan-admin-mgmt-stat-value rejected">{counts.rejected}</p>
+                    </div>
+                    <div className="loan-admin-mgmt-stat-card">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                            <p className="loan-admin-mgmt-stat-label" style={{ margin: 0 }}>Total Income from Interest</p>
+                            <select value={interestFilter} onChange={e => setInterestFilter(e.target.value)} style={{ fontSize: '11px', padding: '2px 4px', borderRadius: '6px', border: '1px solid #D1D5DB' }}>
+                                <option value="all">All</option>
+                                <option value="2x">2x Savings</option>
+                                <option value="1.5x">1.5x Savings</option>
+                                <option value="1x">1x Savings</option>
+                            </select>
+                        </div>
+                        <p className="loan-admin-mgmt-stat-value" style={{ color: '#155DFC' }}>{fmt(totalInterestFiltered)}</p>
                     </div>
                 </div>
 

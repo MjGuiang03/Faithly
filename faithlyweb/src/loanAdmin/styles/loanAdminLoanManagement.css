@@ -46,17 +46,18 @@
 .loan-admin-mgmt-stat-card {
     background: #ffffff;
     border: 1px solid #e5e7eb;
-    border-radius: 2px;
-    padding: 16px; /* Compacted */
+    border-radius: 10px;
+    padding: 20px 24px;
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 12px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
 }
 
 .loan-admin-mgmt-stat-label {
     font-weight: 500;
-    font-size: 11px;
-    letter-spacing: 0.04em;
+    font-size: 12px;
+    letter-spacing: 0.03em;
     text-transform: uppercase;
     color: #6b7280;
     margin: 0;
@@ -64,9 +65,10 @@
 
 .loan-admin-mgmt-stat-value {
     font-weight: 700;
-    font-size: 20px;
-    line-height: 26px;
+    font-size: 28px;
+    line-height: 1.1;
     margin: 0;
+    color: #0F172A;
 }
 
 .loan-admin-mgmt-stat-value.pending {
