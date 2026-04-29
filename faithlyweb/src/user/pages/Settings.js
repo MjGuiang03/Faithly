@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 
 import '../styles/Settings.css';
@@ -6,7 +6,7 @@ import VerifyEmailModal from '../components/VerifyEmail';
 import { useTheme } from '../../context/ThemeContext';
 
 import API from '../../utils/api';
-import { CalendarDays, Circle, Edit, Mail, User, XCircle, ChevronDown, ChevronUp, Check, Bell, Lock, Clock, Eye, EyeOff, AlertTriangle } from 'lucide-react';
+import { CalendarDays, Edit, Mail, User, XCircle, ChevronDown, ChevronUp, Check, Bell, Lock, Clock, Eye, EyeOff, AlertTriangle } from 'lucide-react';
 import { isOfficerPosition } from '../../utils/officerPositions';
 import { subscribeToPushNotifications, unsubscribeFromPushNotifications } from '../../utils/desktopNotify';
 
@@ -149,7 +149,7 @@ export default function Settings() {
   }, [profile]);
 
   const allSelected = ALL_NOTIF_KEYS.every(k => notifPrefs[k]);
-  const noneSelected = ALL_NOTIF_KEYS.every(k => !notifPrefs[k]);
+
 
   const savePreferencesToBackend = async (updates) => {
     try {

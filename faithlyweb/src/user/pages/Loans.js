@@ -109,7 +109,7 @@ export default function Loans() {
     } finally {
       setDataLoading(false);
     }
-  }, [page]);
+  }, [page, hasClosedInstruction]);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 

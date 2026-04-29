@@ -118,7 +118,7 @@ export default function Savings() {
         } finally {
             setDataLoading(false);
         }
-    }, [txnPage]);
+    }, [txnPage, hasClosedInstruction]);
 
     // Initial data fetch
     useEffect(() => {

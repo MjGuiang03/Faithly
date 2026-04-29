@@ -154,7 +154,7 @@ export default function UserHeader({ toggleSidebar, collapsed }) {
     };
     document.addEventListener('mousedown', handleOutside);
     return () => document.removeEventListener('mousedown', handleOutside);
-  }, [showNotifDropdown]);
+  }, [showNotifDropdown, showProfileDropdown]);
 
   const formatTimeAgo = (date) => {
     const diff = Date.now() - new Date(date).getTime();

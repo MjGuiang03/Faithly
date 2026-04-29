@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 
 import '../styles/Branches.css';
 import { useState, useMemo, useEffect } from 'react';
-import { MapPin, Search, User, Globe, CalendarDays, X } from 'lucide-react';
+import { MapPin, Search, Globe, CalendarDays, X } from 'lucide-react';
 
 
 // ─── Branch data ordered North → South ───────────────────────────────────────

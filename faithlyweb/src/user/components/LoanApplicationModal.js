@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { toast } from 'sonner';
 import '../styles/LoanApplicationModal.css';
 import API from '../../utils/api';
-import { Banknote, CheckCircle, X, Pencil, ChevronDown, ChevronUp, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Banknote, CheckCircle, X, Pencil, ChevronDown, ChevronUp } from 'lucide-react';
 
 
 /* ── File → base64 helper ── */
