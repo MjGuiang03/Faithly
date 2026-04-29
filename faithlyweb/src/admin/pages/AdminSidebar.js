@@ -30,7 +30,6 @@ export default function AdminSidebar() {
   };
 
   const isActive = (path) => location.pathname === path;
-  const isGroupActive = (...paths) => paths.some(p => location.pathname.startsWith(p));
 
   /* ── Fetch admin unread count ── */
   useEffect(() => {

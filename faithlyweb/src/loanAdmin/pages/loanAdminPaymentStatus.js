@@ -31,17 +31,12 @@ export default function LoanAdminPaymentStatus() {
   const isSavingsRoute = location.pathname.includes('/savings');
 
   const [loans, setLoans] = useState([]);
-  const [pendingPayments, setPendingPayments] = useState([]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(isSavingsRoute ? 'savings' : 'loans');
   const [selectedLoan, setSelectedLoan] = useState(null);
-  const [selectedPayment, setSelectedPayment] = useState(null);
 
-  const [viewingImage, setViewingImage] = useState(null);
-  const [actionLoading, setActionLoading] = useState(false);
-  const [paymentMethodFilter, setPaymentMethodFilter] = useState('all');
   
   const [allLoans, setAllLoans] = useState([]);
   const [allSavings, setAllSavings] = useState([]);
@@ -77,13 +72,7 @@ export default function LoanAdminPaymentStatus() {
     finally { setLoading(false); }
   }, [token]);
 
-  const fetchPayments = useCallback(async () => {
-    try {
-      const res = await fetch(`${API}/api/admin/loan-payments`, { headers: { Authorization: `Bearer ${token}` } });
-      const data = await res.json();
-      if (data.success) setPendingPayments(data.payments || []);
-    } catch { /* silent */ }
-  }, [token]);
+
 
   const fetchSavings = useCallback(async () => {
     try {
@@ -104,48 +93,14 @@ export default function LoanAdminPaymentStatus() {
 
 
 
-  useEffect(() => { fetchLoans(); fetchPayments(); fetchSavings(); }, [fetchLoans, fetchPayments, fetchSavings]);
+  useEffect(() => { fetchLoans(); fetchSavings(); }, [fetchLoans, fetchSavings]);
 
   useEffect(() => {
     setActiveTab(isSavingsRoute ? 'savings' : 'loans');
-    setPaymentMethodFilter('all');
     setSearchQuery('');
   }, [isSavingsRoute]);
 
-  const handleConfirmPayment = async (paymentId) => {
-    setActionLoading(true);
-    try {
-      const res = await fetch(`${API}/api/admin/loan-payments/${paymentId}/confirm`, {
-        method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (data.success) {
-        toast.success('Payment confirmed! Balance updated.');
-        setSelectedPayment(null);
-        fetchLoans(); fetchPayments();
-      } else { toast.error(data.message); }
-    } catch { toast.error('Failed to confirm payment'); }
-    finally { setActionLoading(false); }
-  };
 
-  const handleRejectPayment = async (paymentId) => {
-    const reason = window.prompt('Reason for rejection (optional):');
-    setActionLoading(true);
-    try {
-      const res = await fetch(`${API}/api/admin/loan-payments/${paymentId}/reject`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ reason: reason || '' })
-      });
-      const data = await res.json();
-      if (data.success) {
-        toast.success('Payment rejected.');
-        setSelectedPayment(null);
-        fetchPayments();
-      } else { toast.error(data.message); }
-    } catch { toast.error('Failed to reject payment'); }
-    finally { setActionLoading(false); }
-  };
 
 
 
@@ -209,7 +164,7 @@ export default function LoanAdminPaymentStatus() {
         if (data.success) {
           toast.success(data.message);
           setShowWalkinModal(false);
-          fetchLoans(); fetchPayments();
+          fetchLoans();
         } else toast.error(data.message);
       } catch { toast.error('Failed to process payment'); }
       finally { setWalkinLoading(false); }
@@ -497,81 +452,7 @@ export default function LoanAdminPaymentStatus() {
         </div>
       )}
 
-      {/* ── Payment Detail Modal ── */}
-      {selectedPayment && (
-        <div className="loan-admin-mgmt-modal-overlay" onClick={() => setSelectedPayment(null)}>
-          <div className="loan-admin-mgmt-modal-container" style={{ maxWidth: '480px' }} onClick={(e) => e.stopPropagation()}>
-            <div className="loan-admin-mgmt-modal-header">
-              <h2 className="loan-admin-mgmt-modal-title">Payment Details</h2>
-              <button className="loan-admin-mgmt-modal-close" onClick={() => setSelectedPayment(null)}>
-                <X size={16} />
-              </button>
-            </div>
-            <div style={{ padding: '20px 24px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
-                <div><p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Loan ID</p><p style={{ fontSize: '14px', fontWeight: 600, fontFamily: 'Inter', color: '#111827' }}>{selectedPayment.loanId}</p></div>
-                <div><p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Member</p><p style={{ fontSize: '14px', fontWeight: 600, fontFamily: 'Inter', color: '#111827' }}>{selectedPayment.memberName}</p></div>
-                <div>
-                  <p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Expected Amount</p>
-                  <p style={{ fontSize: '14px', fontWeight: 600, fontFamily: 'Inter', color: '#111827' }}>
-                    {fmt(selectedPayment.amount)}
-                    {selectedPayment.isLate && <span style={{ fontSize: '11px', color: '#DC2626', background: '#FEE2E2', padding: '2px 6px', borderRadius: '4px', marginLeft: '8px', verticalAlign: 'middle' }}>Late 3% Penalty Included</span>}
-                  </p>
-                </div>
-                <div><p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Method</p><p style={{ fontSize: '14px', fontWeight: 600, fontFamily: 'Inter', color: '#111827', textTransform: 'capitalize' }}>{selectedPayment.paymentMethod}</p></div>
-                <div><p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Month #</p><p style={{ fontSize: '14px', fontWeight: 600, fontFamily: 'Inter', color: '#111827' }}>{selectedPayment.monthNumber || '—'}</p></div>
-                <div><p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter' }}>Submitted</p><p style={{ fontSize: '13px', fontFamily: 'Inter', color: '#374151' }}>{fmtDate(selectedPayment.submittedAt)}</p></div>
-              </div>
-              {selectedPayment.proofData && (
-                <div style={{ marginBottom: '16px' }}>
-                  <p style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Inter', marginBottom: '6px' }}>Proof of Payment</p>
-                  <img
-                    src={selectedPayment.proofData}
-                    alt="Payment proof"
-                    onClick={() => setViewingImage(selectedPayment.proofData)}
-                    style={{ width: '100%', maxHeight: '200px', objectFit: 'contain', borderRadius: '8px', border: '1px solid #E5E7EB', cursor: 'pointer' }}
-                  />
-                </div>
-              )}
-            </div>
-            <div style={{ padding: '0 24px 20px', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-              {selectedPayment.status === 'pending' ? (
-                <>
-                  <button onClick={() => handleRejectPayment(selectedPayment._id)} disabled={actionLoading}
-                    style={{ background: '#fff', color: '#DC2626', border: '1px solid #FCA5A5', padding: '8px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}>Reject</button>
-                  <button onClick={() => handleConfirmPayment(selectedPayment._id)} disabled={actionLoading}
-                    style={{ background: '#16A34A', color: '#fff', border: 'none', padding: '8px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}>
-                    {actionLoading ? <span className="btn-spinner" /> : 'Confirm Payment'}
-                  </button>
-                </>
-              ) : (
-                <button onClick={() => setSelectedPayment(null)} style={{ background: '#155DFC', color: '#fff', border: 'none', padding: '8px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}>Close</button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
-
-
-
-
-      {/* ── Image Lightbox ── */}
-      {viewingImage && (
-        <div className="loan-admin-mgmt-modal-overlay" onClick={() => setViewingImage(null)} style={{ zIndex: 1100 }}>
-          <div style={{ position: 'relative', maxWidth: '90vw', maxHeight: '90vh' }} onClick={(e) => e.stopPropagation()}>
-            <button onClick={() => setViewingImage(null)} style={{
-              position: 'absolute', top: -12, right: -12, width: 32, height: 32,
-              borderRadius: '50%', background: '#fff', border: '1px solid #e5e7eb',
-              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              zIndex: 1101, boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
-            }}>
-              <X size={16} color="#374151" />
-            </button>
-            <img src={viewingImage} alt="Proof" style={{ maxWidth: '90vw', maxHeight: '90vh', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }} />
-          </div>
-        </div>
-      )}
 
       {/* ── Walk-in Transaction Modal ── */}
       {showWalkinModal && (
