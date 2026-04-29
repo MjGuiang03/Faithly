@@ -100,20 +100,20 @@
 .admin-sidebar-nav-button {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   padding-left: 20px;
-  height: 48px;
+  height: 40px;
   background: transparent;
   border: none;
   color: rgba(255, 255, 255, 0.72);
-  font-size: 16px;
+  font-size: 14px;
   font-family: 'Arial', sans-serif;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
   width: 100%;
   text-align: left;
-  line-height: 24px;
+  line-height: 20px;
   white-space: nowrap;
 }
 
@@ -128,8 +128,8 @@
 }
 
 .admin-sidebar-nav-button svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   flex-shrink: 0;
 }
 

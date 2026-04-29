@@ -46,7 +46,6 @@ export default function LoanAdminPaymentStatus() {
   const [allLoans, setAllLoans] = useState([]);
   const [allSavings, setAllSavings] = useState([]);
   const [savingsFilter, setSavingsFilter] = useState('all'); // 'all', 'this_month', 'this_year'
-  const [interestFilter, setInterestFilter] = useState('all'); // 'all', '2x', '1.5x', '1x'
 
   // Walk-in Feature State
   const [showWalkinModal, setShowWalkinModal] = useState(false);
@@ -261,11 +260,7 @@ export default function LoanAdminPaymentStatus() {
     (l.loanId || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const pendingFiltered = pendingPayments.filter(p =>
-    ((p.memberName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (p.loanId || '').toLowerCase().includes(searchQuery.toLowerCase())) &&
-    (paymentMethodFilter === 'all' || (p.paymentMethod || '').toLowerCase() === paymentMethodFilter)
-  );
+
 
   const counts = {
     onTrack: enriched.filter(l => l.paymentStatus.cls === 'on-track').length,
@@ -274,7 +269,7 @@ export default function LoanAdminPaymentStatus() {
     defaulted: enriched.filter(l => l.paymentStatus.cls === 'default').length,
   };
 
-  const pendingCount = pendingPayments.filter(p => p.status === 'pending').length;
+
 
   const totalSavingsFiltered = allSavings.filter(s => {
     if (s.status !== 'confirmed') return false;
@@ -292,27 +287,7 @@ export default function LoanAdminPaymentStatus() {
     return s.type === 'withdrawal' ? sum - amt : sum + amt;
   }, 0);
 
-  const totalInterestFiltered = allLoans.filter(l => {
-    if (l.status === 'rejected' || l.status === 'pending') return false;
-    const lType = (l.loanType || '').toLowerCase();
-    
-    // Map loan types to multipliers because multiplier isn't always directly saved in DB. 
-    // Usually: Personal = 2x, Emergency = 1.5x, Short-term = 1x.
-    let mult = '2x';
-    if (lType.includes('emergency')) mult = '1.5x';
-    if (lType.includes('short')) mult = '1x';
-    if (l.multiplier) mult = `${l.multiplier}x`;
 
-    if (interestFilter === '2x' && mult !== '2x') return false;
-    if (interestFilter === '1.5x' && mult !== '1.5x') return false;
-    if (interestFilter === '1x' && mult !== '1x') return false;
-    return true;
-  }).reduce((sum, l) => {
-    const totalRepay = Number(l.totalRepayment || (l.monthlyPayment * l.term)) || 0;
-    const principal = Number(l.amount) || 0;
-    const interest = totalRepay - principal;
-    return sum + (interest > 0 ? interest : 0);
-  }, 0);
 
   return (
     <div className="loan-admin-mgmt-page">

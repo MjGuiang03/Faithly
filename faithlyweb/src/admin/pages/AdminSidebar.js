@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import {
   LayoutGrid, Bell, Users, Heart,
   Settings, LogOut,
-  ChevronDown, Megaphone
+  Megaphone, MapPin, Calendar, UserCog
 } from 'lucide-react';
 import puacLogo from '../../assets/puaclogo.png';
 import '../styles/AdminSidebar.css';
@@ -19,19 +19,6 @@ export default function AdminSidebar() {
   const location  = useLocation();
   const [unreadCount, setUnreadCount] = useState(0);
   const prevNotifIdsRef = useRef(new Set());
-  const [isMembersOpen,  setIsMembersOpen]  = useState(() =>
-    location.pathname.startsWith('/admin/members')
-  );
-  const [isFinanceOpen,  setIsFinanceOpen]  = useState(() =>
-    location.pathname.startsWith('/admin/donations') || location.pathname.startsWith('/admin/attendance')
-  );
-  const [isCommsOpen,    setIsCommsOpen]    = useState(() =>
-    location.pathname.startsWith('/admin/announcements')
-  );
-  const [isAdminOpen,    setIsAdminOpen]    = useState(() =>
-    location.pathname.startsWith('/admin/users') ||
-    location.pathname.startsWith('/admin/settings')
-  );
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const handleSignOut = () => {
@@ -109,7 +96,7 @@ export default function AdminSidebar() {
           onClick={() => navigate('/admin/dashboard')}
           className={`admin-sidebar-nav-button ${isActive('/admin/dashboard') || location.pathname === '/admin' ? 'active' : ''}`}
         >
-          <LayoutGrid size={20} />
+          <LayoutGrid size={18} />
           <span>Dashboard</span>
         </button>
 
@@ -118,7 +105,7 @@ export default function AdminSidebar() {
           onClick={() => navigate('/admin/notification')}
           className={`admin-sidebar-nav-button ${isActive('/admin/notification') ? 'active' : ''}`}
         >
-          <Bell size={20} />
+          <Bell size={18} />
           <span>Notification</span>
           {unreadCount > 0 && (
             <span className="sidebar-notif-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>
@@ -126,124 +113,67 @@ export default function AdminSidebar() {
         </button>
 
         {/* ── People ── */}
-        <div className={`admin-sidebar-dropdown ${isMembersOpen ? 'open' : ''}`}>
-          <button
-            onClick={() => setIsMembersOpen(!isMembersOpen)}
-            className={`admin-sidebar-nav-button ${isGroupActive('/admin/members', '/admin/branches') ? 'active' : ''}`}
-          >
-            <Users size={20} />
-            <span>People</span>
-            <ChevronDown
-              size={16}
-              className={`admin-sidebar-dropdown-chevron ${isMembersOpen ? 'open' : ''}`}
-            />
-          </button>
-          {isMembersOpen && (
-            <div className="admin-sidebar-dropdown-content">
-              <button
-                onClick={() => navigate('/admin/members')}
-                className={`admin-sidebar-sub-button ${isActive('/admin/members') ? 'active' : ''}`}
-              >
-                <span>Member List</span>
-              </button>
-              <button
-                onClick={ () => navigate( '/admin/branches' ) }
-                className={`admin-sidebar-sub-button ${isActive('/admin/branches') ? 'active' : ''}`}
-              >
-                <span>Branches</span>
-              </button>
-            </div>
-          )}
-        </div>
+        <span className="admin-sidebar-group-label">People</span>
+        <button
+          onClick={() => navigate('/admin/members')}
+          className={`admin-sidebar-nav-button ${isActive('/admin/members') ? 'active' : ''}`}
+        >
+          <Users size={18} />
+          <span>Member List</span>
+        </button>
+        <button
+          onClick={() => navigate('/admin/branches')}
+          className={`admin-sidebar-nav-button ${isActive('/admin/branches') ? 'active' : ''}`}
+        >
+          <MapPin size={18} />
+          <span>Branches</span>
+        </button>
 
         {/* ── Finance & Activity ── */}
-        <div className={`admin-sidebar-dropdown ${isFinanceOpen ? 'open' : ''}`}>
-          <button
-            onClick={() => setIsFinanceOpen(!isFinanceOpen)}
-            className={`admin-sidebar-nav-button ${isGroupActive('/admin/donations', '/admin/attendance') ? 'active' : ''}`}
-          >
-            <Heart size={20} />
-            <span>Finance & Activity</span>
-            <ChevronDown
-              size={16}
-              className={`admin-sidebar-dropdown-chevron ${isFinanceOpen ? 'open' : ''}`}
-            />
-          </button>
-          {isFinanceOpen && (
-            <div className="admin-sidebar-dropdown-content">
-              <button
-                onClick={() => navigate('/admin/donations')}
-                className={`admin-sidebar-sub-button ${isActive('/admin/donations') ? 'active' : ''}`}
-              >
-                <span>Donations</span>
-              </button>
-              <button
-                onClick={() => navigate('/admin/attendance')}
-                className={`admin-sidebar-sub-button ${isActive('/admin/attendance') ? 'active' : ''}`}
-              >
-                <span>Attendance</span>
-              </button>
-            </div>
-          )}
-        </div>
+        <span className="admin-sidebar-group-label">Finance & Activity</span>
+        <button
+          onClick={() => navigate('/admin/donations')}
+          className={`admin-sidebar-nav-button ${isActive('/admin/donations') ? 'active' : ''}`}
+        >
+          <Heart size={18} />
+          <span>Donations</span>
+        </button>
+        <button
+          onClick={() => navigate('/admin/attendance')}
+          className={`admin-sidebar-nav-button ${isActive('/admin/attendance') ? 'active' : ''}`}
+        >
+          <Calendar size={18} />
+          <span>Attendance</span>
+        </button>
 
         {/* ── Communication ── */}
-        <div className={`admin-sidebar-dropdown ${isCommsOpen ? 'open' : ''}`}>
-          <button
-            onClick={() => setIsCommsOpen(!isCommsOpen)}
-            className={`admin-sidebar-nav-button ${isGroupActive('/admin/announcements') ? 'active' : ''}`}
-          >
-            <Megaphone size={20} />
-            <span>Communication</span>
-            <ChevronDown
-              size={16}
-              className={`admin-sidebar-dropdown-chevron ${isCommsOpen ? 'open' : ''}`}
-            />
-          </button>
-          {isCommsOpen && (
-            <div className="admin-sidebar-dropdown-content">
-              <button
-                onClick={() => navigate('/admin/announcements')}
-                className={`admin-sidebar-sub-button ${isActive('/admin/announcements') ? 'active' : ''}`}
-              >
-                <span>Announcements</span>
-              </button>
-            </div>
-          )}
-        </div>
+        <span className="admin-sidebar-group-label">Communication</span>
+        <button
+          onClick={() => navigate('/admin/announcements')}
+          className={`admin-sidebar-nav-button ${isActive('/admin/announcements') ? 'active' : ''}`}
+        >
+          <Megaphone size={18} />
+          <span>Announcements</span>
+        </button>
 
         {/* ── Admin ── */}
-        <div className={`admin-sidebar-dropdown ${isAdminOpen ? 'open' : ''}`}>
+        <span className="admin-sidebar-group-label">Admin</span>
+        {localStorage.getItem('adminRole') === 'admin' && (
           <button
-            onClick={() => setIsAdminOpen(!isAdminOpen)}
-            className={`admin-sidebar-nav-button ${isGroupActive('/admin/users', '/admin/settings') ? 'active' : ''}`}
+            onClick={() => navigate('/admin/users')}
+            className={`admin-sidebar-nav-button ${isActive('/admin/users') ? 'active' : ''}`}
           >
-            <Settings size={20} />
-            <span>Admin</span>
-            <ChevronDown
-              size={16}
-              className={`admin-sidebar-dropdown-chevron ${isAdminOpen ? 'open' : ''}`}
-            />
+            <UserCog size={18} />
+            <span>User Management</span>
           </button>
-          {isAdminOpen && (
-            <div className="admin-sidebar-dropdown-content">
-              {localStorage.getItem('adminRole') === 'admin' && (
-                <button
-                  onClick={() => navigate('/admin/users')}
-                  className={`admin-sidebar-sub-button ${isActive('/admin/users') ? 'active' : ''}`}
-                >
-                  <span>User Management</span>
-                </button>
-              )}
-              <button
-                onClick={() => navigate('/admin/settings')}
-                className={`admin-sidebar-sub-button ${isActive('/admin/settings') ? 'active' : ''}`}
-              >
-                <span>Settings</span>
-              </button>
-            </div>
-          )}
-        </div>
+        )}
+        <button
+          onClick={() => navigate('/admin/settings')}
+          className={`admin-sidebar-nav-button ${isActive('/admin/settings') ? 'active' : ''}`}
+        >
+          <Settings size={18} />
+          <span>Settings</span>
+        </button>
 
       </div>
 
