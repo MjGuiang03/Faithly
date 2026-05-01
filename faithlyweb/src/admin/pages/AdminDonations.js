@@ -22,7 +22,7 @@ const StatusBadge = ({ status }) => {
   const map = {
     confirmed: { label: 'Successful', cls: 'admin-don-status-confirmed' },
     rejected:  { label: 'Failed',  cls: 'admin-don-status-rejected'  },
-    pending:   { label: 'Unpaid/Incomplete',   cls: 'admin-don-status-pending'   },
+    pending:   { label: 'Pending Review',   cls: 'admin-don-status-pending'   },
   };
   const s = map[status] || map.pending;
   return <span className={`admin-don-status-badge ${s.cls}`}>{s.label}</span>;
@@ -53,7 +53,62 @@ export default function AdminDonationsNew() {
 
   /* ── Detail modal ── */
   const [detailModal, setDetailModal] = useState(null);
-  const [actionLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [rejectReason, setRejectReason] = useState('');
+  const [showRejectInput, setShowRejectInput] = useState(false);
+
+  const handleApprove = async (id) => {
+    setActionLoading(true);
+    try {
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch(`${API}/api/admin/donations/${id}/approve`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        toast.success('Donation approved successfully');
+        setDetailModal(null);
+        fetchDonations();
+      } else {
+        toast.error(data.message || 'Failed to approve donation');
+      }
+    } catch {
+      toast.error('Network error. Could not approve.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleReject = async (id) => {
+    if (!rejectReason.trim()) {
+      toast.error('Please provide a reason for rejection.');
+      return;
+    }
+    setActionLoading(true);
+    try {
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch(`${API}/api/admin/donations/${id}/reject`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ rejectReason })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        toast.success('Donation rejected successfully');
+        setDetailModal(null);
+        setRejectReason('');
+        setShowRejectInput(false);
+        fetchDonations();
+      } else {
+        toast.error(data.message || 'Failed to reject donation');
+      }
+    } catch {
+      toast.error('Network error. Could not reject.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   /* ── Auth guard ── */
   useEffect(() => {
@@ -182,6 +237,7 @@ export default function AdminDonationsNew() {
             onChange={(e) => setStatusFilter(e.target.value)}
           >
             <option value="active">All Forms</option>
+            <option value="pending">Pending</option>
             <option value="confirmed">Confirmed</option>
             <option value="rejected">Failed</option>
           </select>
@@ -346,6 +402,56 @@ export default function AdminDonationsNew() {
                 <div className="admin-don-modal-reject-reason-enhanced">
                   <span className="admin-don-modal-reject-label">Reject Reason</span>
                   <p>{detailModal.rejectReason}</p>
+                </div>
+              )}
+
+              {detailModal.proofData && (
+                <div style={{ marginTop: '16px' }}>
+                  <span className="admin-don-modal-detail-label">Proof of Payment</span>
+                  <img src={detailModal.proofData} alt="Proof" style={{ width: '100%', maxHeight: '200px', objectFit: 'contain', marginTop: '8px', borderRadius: '6px', border: '1px solid #E5E7EB' }} />
+                </div>
+              )}
+
+              {detailModal.status === 'pending' && (
+                <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {!showRejectInput ? (
+                    <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                      <button 
+                        onClick={() => setShowRejectInput(true)} 
+                        disabled={actionLoading}
+                        style={{ padding: '8px 16px', borderRadius: '6px', border: 'none', backgroundColor: '#FEE2E2', color: '#DC2626', fontWeight: 600, cursor: 'pointer' }}>
+                        Reject
+                      </button>
+                      <button 
+                        onClick={() => handleApprove(detailModal._id)} 
+                        disabled={actionLoading}
+                        style={{ padding: '8px 16px', borderRadius: '6px', border: 'none', backgroundColor: '#16A34A', color: 'white', fontWeight: 600, cursor: 'pointer' }}>
+                        {actionLoading ? 'Approving...' : 'Approve'}
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <textarea
+                        value={rejectReason}
+                        onChange={(e) => setRejectReason(e.target.value)}
+                        placeholder="Enter reason for rejection..."
+                        style={{ padding: '10px', borderRadius: '6px', border: '1px solid #D1D5DB', width: '100%', minHeight: '80px', fontFamily: 'inherit', fontSize: '14px' }}
+                      />
+                      <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                        <button 
+                          onClick={() => { setShowRejectInput(false); setRejectReason(''); }}
+                          style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #D1D5DB', backgroundColor: 'white', color: '#374151', fontWeight: 500, cursor: 'pointer' }}>
+                          Cancel
+                        </button>
+                        <button 
+                          onClick={() => handleReject(detailModal._id)} 
+                          disabled={actionLoading || !rejectReason.trim()}
+                          style={{ padding: '8px 16px', borderRadius: '6px', border: 'none', backgroundColor: '#DC2626', color: 'white', fontWeight: 600, cursor: 'pointer' }}>
+                          {actionLoading ? 'Rejecting...' : 'Confirm Rejection'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

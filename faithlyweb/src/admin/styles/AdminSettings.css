@@ -123,7 +123,7 @@
   height: 42px;
   border: 1px solid #d1d5dc;
   border-radius: 2px;
-  padding: 24px; /* Enhanced breathing room */
+  padding: 0 16px;
   font-family: 'Arial:Regular', sans-serif;
   font-size: 16px;
   color: #0a0a0a;
@@ -298,3 +298,77 @@
   background: #1048d4;
 }
 
+/* Modal Styles */
+.admin-settings-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.admin-settings-modal-content {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.admin-settings-modal-title {
+  font-family: 'Arial:Bold', sans-serif;
+  font-size: 18px;
+  color: #101828;
+  margin: 0 0 8px 0;
+}
+
+.admin-settings-modal-description {
+  font-family: 'Arial:Regular', sans-serif;
+  font-size: 14px;
+  color: #6a7282;
+  margin: 0 0 24px 0;
+  line-height: 1.5;
+}
+
+.admin-settings-modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.admin-settings-modal-cancel-btn {
+  padding: 8px 16px;
+  background: white;
+  border: 1px solid #d1d5dc;
+  border-radius: 4px;
+  color: #364153;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.admin-settings-modal-cancel-btn:hover {
+  background: #f9fafb;
+}
+
+.admin-settings-modal-confirm-btn {
+  padding: 8px 16px;
+  background: #0D1F45;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.admin-settings-modal-confirm-btn:hover {
+  background: #1048d4;
+}

@@ -163,9 +163,9 @@ export default function LoanAdminDashboard() {
     <div className="loan-admin-dashboard-page">
       <LoanAdminSidebar />
       <div className="loan-admin-dashboard-content">
+        {!expandedChart && (<>
         {/* Header */}
         <h1 className="admin-dashboard-title">Loan Dashboard</h1>
-        {!expandedChart && (<>
         {/* Row 1 — 5 Stat Cards */}
         <div className="adm-stats-grid">
           <div className="adm-stat-card adm-clickable-card" onClick={() => navigate('/loan-admin/loan-management')}>
@@ -329,8 +329,6 @@ export default function LoanAdminDashboard() {
           </div>
         </div>
         </>)}
-
-      </div>
 
       {/* ── This Month Modal ── */}
       {showMonthModal && (
@@ -595,6 +593,7 @@ export default function LoanAdminDashboard() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

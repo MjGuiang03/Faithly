@@ -652,7 +652,7 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .uh-event-hero__date {
@@ -696,11 +696,11 @@
   font-weight: 700;
   color: var(--foreground);
   margin: 0;
-  line-height: 1;
+  line-height: 1.2;
 }
 
 .uh-event-hero__footer {
-  margin-top: auto;
+  margin-top: 2px;
   display: flex;
   align-items: center;
   gap: 8px;

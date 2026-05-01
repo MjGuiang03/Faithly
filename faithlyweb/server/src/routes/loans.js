@@ -629,14 +629,22 @@ router.post('/loans/:id/pay', authenticateUser, async (req, res) => {
         const loan = enrichLoanWithNextPayment(dbLoan);
         const amountToPay = loan.upcomingPaymentAmount || loan.monthlyPayment || 0;
 
-        if (paymentMethod === 'cash') {
+        const { settings } = await import('../config/db.js');
+        const config = await settings.findOne({ _id: 'global' });
+        const isManual = config?.paymentApprovalMethod === 'manual';
+
+        if (paymentMethod === 'cash' || isManual) {
+            if (isManual && !proofData) {
+                return res.status(400).json({ success: false, message: 'Proof of payment is required for manual approval' });
+            }
+
             const payment = {
                 loanId: loan.loanId,
                 loanObjectId: loan._id,
                 email,
                 memberName: loan.memberName,
                 amount: amountToPay,
-                paymentMethod: 'cash',
+                paymentMethod: isManual ? paymentMethod : 'cash',
                 proofData: proofData || null,
                 proofFileName: proofFileName || null,
                 status: 'pending',

@@ -40,7 +40,17 @@ export default function LoanAdminPaymentStatus() {
   
   const [allLoans, setAllLoans] = useState([]);
   const [allSavings, setAllSavings] = useState([]);
-  const [savingsFilter, setSavingsFilter] = useState('all'); // 'all', 'this_month', 'this_year'
+  const [savingsFilter, setSavingsFilter] = useState('all');
+
+  // Manual Approval State
+  const [approvalMethod, setApprovalMethod] = useState('gateway');
+  const [pendingSavings, setPendingSavings] = useState([]);
+  const [pendingLoanPayments, setPendingLoanPayments] = useState([]);
+  const [pendingLoading, setPendingLoading] = useState(false);
+  const [pendingDetail, setPendingDetail] = useState(null);
+  const [rejectReason, setRejectReason] = useState('');
+  const [showRejectInput, setShowRejectInput] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
 
   // Walk-in Feature State
   const [showWalkinModal, setShowWalkinModal] = useState(false);
@@ -79,21 +89,40 @@ export default function LoanAdminPaymentStatus() {
       const res = await fetch(`${API}/api/admin/savings/deposits`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       if (data.success) {
-        const deposits = data.deposits || [];
-        setAllSavings(deposits);
-      } else {
-        // Fallback if backend doesn't support fetching all without status=pending
-        // Fallback: just set allSavings from pending fetch
-        const resPending = await fetch(`${API}/api/admin/savings/deposits?status=pending`, { headers: { Authorization: `Bearer ${token}` } });
-        const dataPending = await resPending.json();
-        if (dataPending.success) setAllSavings(dataPending.deposits || []);
+        setAllSavings(data.deposits || []);
       }
     } catch { /* silent */ }
   }, [token]);
 
+  const fetchSettings = useCallback(async () => {
+    try {
+      const res = await fetch(`${API}/api/settings/public`);
+      const data = await res.json();
+      if (data.success) setApprovalMethod(data.paymentApprovalMethod || 'gateway');
+    } catch { /* silent */ }
+  }, []);
 
+  const fetchPendingApprovals = useCallback(async () => {
+    setPendingLoading(true);
+    try {
+      if (isSavingsRoute) {
+        const resSav = await fetch(`${API}/api/admin/savings/deposits?status=pending&limit=100`, { headers: { Authorization: `Bearer ${token}` } });
+        const dataSav = await resSav.json();
+        if (dataSav.success) setPendingSavings(dataSav.deposits || []);
+      } else {
+        const resLoan = await fetch(`${API}/api/admin/loans/payments?status=pending&limit=100`, { headers: { Authorization: `Bearer ${token}` } });
+        const dataLoan = await resLoan.json();
+        if (dataLoan.success) setPendingLoanPayments(dataLoan.payments || []);
+      }
+    } catch { /* silent */ }
+    finally { setPendingLoading(false); }
+  }, [token, isSavingsRoute]);
 
-  useEffect(() => { fetchLoans(); fetchSavings(); }, [fetchLoans, fetchSavings]);
+  useEffect(() => { fetchLoans(); fetchSavings(); fetchSettings(); }, [fetchLoans, fetchSavings, fetchSettings]);
+
+  useEffect(() => {
+    if (approvalMethod === 'manual') fetchPendingApprovals();
+  }, [fetchPendingApprovals, approvalMethod]);
 
   useEffect(() => {
     setActiveTab(isSavingsRoute ? 'savings' : 'loans');
@@ -105,6 +134,45 @@ export default function LoanAdminPaymentStatus() {
 
 
 
+
+  const handleApprovePending = async () => {
+    if (!pendingDetail) return;
+    setActionLoading(true);
+    try {
+      const endpoint = isSavingsRoute ? `/api/admin/savings/deposits/${pendingDetail._id}/approve` : `/api/admin/loans/payments/${pendingDetail._id}/approve`;
+      const res = await fetch(`${API}${endpoint}`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('Approved successfully');
+        setPendingDetail(null);
+        fetchPendingApprovals();
+        if (isSavingsRoute) fetchSavings(); else fetchLoans();
+      } else toast.error(data.message || 'Failed to approve');
+    } catch { toast.error('Error approving'); }
+    finally { setActionLoading(false); }
+  };
+
+  const handleRejectPending = async () => {
+    if (!pendingDetail || !rejectReason.trim()) return toast.error('Please provide a reason');
+    setActionLoading(true);
+    try {
+      const endpoint = isSavingsRoute ? `/api/admin/savings/deposits/${pendingDetail._id}/reject` : `/api/admin/loans/payments/${pendingDetail._id}/reject`;
+      const res = await fetch(`${API}${endpoint}`, { 
+        method: 'PUT', 
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ reason: rejectReason })
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('Rejected successfully');
+        setPendingDetail(null);
+        setRejectReason('');
+        setShowRejectInput(false);
+        fetchPendingApprovals();
+      } else toast.error(data.message || 'Failed to reject');
+    } catch { toast.error('Error rejecting'); }
+    finally { setActionLoading(false); }
+  };
 
   /* ── WALKIN FUNCTIONS ── */
   const handleWalkinSearchChange = async (query) => {
@@ -300,6 +368,28 @@ export default function LoanAdminPaymentStatus() {
 
 
 
+        {approvalMethod === 'manual' && (
+          <div style={{ display: 'flex', gap: '16px', marginBottom: '16px', borderBottom: '1px solid #E5E7EB' }}>
+            <button 
+              onClick={() => setActiveTab(isSavingsRoute ? 'savings' : 'loans')}
+              style={{ padding: '8px 16px', background: 'none', border: 'none', borderBottom: activeTab !== 'pending' ? '2px solid #155DFC' : '2px solid transparent', color: activeTab !== 'pending' ? '#155DFC' : '#6B7280', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}
+            >
+              {isSavingsRoute ? 'Savings Records' : 'Active Loans'}
+            </button>
+            <button 
+              onClick={() => setActiveTab('pending')}
+              style={{ padding: '8px 16px', background: 'none', border: 'none', borderBottom: activeTab === 'pending' ? '2px solid #155DFC' : '2px solid transparent', color: activeTab === 'pending' ? '#155DFC' : '#6B7280', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}
+            >
+              Pending Approvals
+              {(isSavingsRoute ? pendingSavings.length : pendingLoanPayments.length) > 0 && (
+                <span style={{ background: '#DC2626', color: '#fff', borderRadius: '12px', padding: '2px 8px', fontSize: '11px', marginLeft: '6px' }}>
+                  {isSavingsRoute ? pendingSavings.length : pendingLoanPayments.length}
+                </span>
+              )}
+            </button>
+          </div>
+        )}
+
         <div className="loan-admin-mgmt-search">
           <Search size={20} color="#9CA3AF" />
           <input type="text" placeholder="Search by member name or loan ID..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
@@ -345,6 +435,49 @@ export default function LoanAdminPaymentStatus() {
                       </td>
                       <td>
                         <span className={`ps-status-badge ${loan.paymentStatus.cls}`}>{loan.paymentStatus.label}</span>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Pending Approvals Tab */}
+        {activeTab === 'pending' && (
+          <div className="loan-admin-mgmt-table-container">
+            <table className="loan-admin-mgmt-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Member</th>
+                  <th>Amount</th>
+                  <th>Method</th>
+                  <th>Reference</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pendingLoading ? (
+                  <tr><td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>Loading...</td></tr>
+                ) : (isSavingsRoute ? pendingSavings : pendingLoanPayments).length === 0 ? (
+                  <tr><td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>No pending approvals</td></tr>
+                ) : (
+                  (isSavingsRoute ? pendingSavings : pendingLoanPayments).map(txn => (
+                    <tr key={txn._id} className="loan-admin-mgmt-table-row-hover">
+                      <td>{fmtDate(txn.submittedAt || txn.createdAt || txn.date)}</td>
+                      <td>
+                        <div className="loan-admin-mgmt-table-member">
+                          <p className="loan-admin-mgmt-table-member-name">{txn.memberName || txn.email}</p>
+                          <p className="loan-admin-mgmt-table-member-email">{isSavingsRoute ? `Goal: ${txn.goalId}` : `Loan: ${txn.loanId}`}</p>
+                        </div>
+                      </td>
+                      <td className="loan-admin-mgmt-table-amount" style={{ color: '#EA580C' }}>{fmt(txn.amount)}</td>
+                      <td style={{ textTransform: 'capitalize' }}>{txn.paymentMethod || 'cash'}</td>
+                      <td>{txn.referenceNumber || '—'}</td>
+                      <td>
+                        <button onClick={() => { setPendingDetail(txn); setShowRejectInput(false); }} style={{ padding: '6px 12px', background: '#DBEAFE', color: '#1E3A8A', border: 'none', borderRadius: '6px', fontWeight: 600, fontSize: '12px', cursor: 'pointer' }}>Review</button>
                       </td>
                     </tr>
                   ))
@@ -447,6 +580,50 @@ export default function LoanAdminPaymentStatus() {
             </div>
             <div style={{ padding: '0 24px 16px', display: 'flex', justifyContent: 'flex-end' }}>
               <button onClick={() => setSelectedLoan(null)} style={{ background: '#155DFC', color: '#fff', border: 'none', padding: '8px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Pending Detail Modal ── */}
+      {pendingDetail && (
+        <div className="loan-admin-mgmt-modal-overlay" onClick={() => !actionLoading && setPendingDetail(null)} style={{ zIndex: 2000 }}>
+          <div className="loan-admin-mgmt-modal-container" style={{ maxWidth: '440px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="loan-admin-mgmt-modal-header">
+              <h2 className="loan-admin-mgmt-modal-title">Review Transaction</h2>
+              <button className="loan-admin-mgmt-modal-close" onClick={() => setPendingDetail(null)}><X size={16} /></button>
+            </div>
+            <div style={{ padding: '16px 24px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '16px' }}>
+                <div><p style={{ margin: 0, fontSize: '12px', color: '#6B7280' }}>Member</p><p style={{ margin: 0, fontWeight: 600 }}>{pendingDetail.memberName || pendingDetail.email}</p></div>
+                <div><p style={{ margin: 0, fontSize: '12px', color: '#6B7280' }}>Amount</p><p style={{ margin: 0, fontWeight: 700, color: '#EA580C' }}>{fmt(pendingDetail.amount)}</p></div>
+                <div><p style={{ margin: 0, fontSize: '12px', color: '#6B7280' }}>Method</p><p style={{ margin: 0, fontWeight: 600, textTransform: 'capitalize' }}>{pendingDetail.paymentMethod || 'cash'}</p></div>
+                <div><p style={{ margin: 0, fontSize: '12px', color: '#6B7280' }}>Reference #</p><p style={{ margin: 0, fontWeight: 600 }}>{pendingDetail.referenceNumber || '—'}</p></div>
+              </div>
+
+              {pendingDetail.proofData && (
+                <div style={{ marginTop: '16px', marginBottom: '16px' }}>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#6B7280', marginBottom: '8px' }}>Proof of Payment</p>
+                  <img src={pendingDetail.proofData} alt="Proof" style={{ width: '100%', maxHeight: '200px', objectFit: 'contain', borderRadius: '8px', border: '1px solid #E5E7EB' }} />
+                </div>
+              )}
+
+              <div style={{ borderTop: '1px solid #E5E7EB', paddingTop: '16px' }}>
+                {!showRejectInput ? (
+                  <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                    <button onClick={() => setShowRejectInput(true)} disabled={actionLoading} style={{ padding: '8px 16px', borderRadius: '6px', border: 'none', backgroundColor: '#FEE2E2', color: '#DC2626', fontWeight: 600, cursor: 'pointer' }}>Reject</button>
+                    <button onClick={handleApprovePending} disabled={actionLoading} style={{ padding: '8px 16px', borderRadius: '6px', border: 'none', backgroundColor: '#16A34A', color: 'white', fontWeight: 600, cursor: 'pointer' }}>{actionLoading ? 'Approving...' : 'Approve'}</button>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <textarea value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} placeholder="Enter reason for rejection..." style={{ padding: '10px', borderRadius: '6px', border: '1px solid #D1D5DB', width: '100%', minHeight: '80px', fontFamily: 'inherit', fontSize: '14px' }} />
+                    <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                      <button onClick={() => { setShowRejectInput(false); setRejectReason(''); }} style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #D1D5DB', backgroundColor: 'white', color: '#374151', fontWeight: 500, cursor: 'pointer' }}>Cancel</button>
+                      <button onClick={handleRejectPending} disabled={actionLoading || !rejectReason.trim()} style={{ padding: '8px 16px', borderRadius: '6px', border: 'none', backgroundColor: '#DC2626', color: 'white', fontWeight: 600, cursor: 'pointer' }}>{actionLoading ? 'Rejecting...' : 'Confirm Rejection'}</button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

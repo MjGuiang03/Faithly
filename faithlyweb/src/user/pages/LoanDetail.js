@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 // import Sidebar from '../components/Sidebar'; // Moved to UserLayout
 import '../styles/Loandetail.css';
 import API from '../../utils/api';
-import { Banknote, CheckCircle, Printer, Settings, X } from 'lucide-react';
+import { Banknote, CheckCircle, Printer, Settings, X, UploadCloud, FileCheck2 } from 'lucide-react';
 
 
 const fileToBase64 = (file) =>
@@ -58,6 +58,20 @@ function PayNowModal({ loan, onClose, onSuccess }) {
     const [receipt, setReceipt] = useState(null);
     const [error, setError] = useState('');
     const [submitted, setSubmitted] = useState(false);
+    const [approvalMethod, setApprovalMethod] = useState('gateway');
+
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const res = await fetch(`${API}/api/settings/public`);
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    setApprovalMethod(data.paymentApprovalMethod || 'gateway');
+                }
+            } catch { /* silent */ }
+        };
+        fetchSettings();
+    }, []);
 
     const METHODS = [
         {
@@ -82,11 +96,13 @@ function PayNowModal({ loan, onClose, onSuccess }) {
                 <Banknote size={20} color="#185fa5" />
             ),
             iconBg: 'ld-method-icon--bank',
-            instructions: [
-                `You will be redirected to PayMongo to securely complete your bank transfer.`,
-                `Please complete the payment on the next page.`
-            ],
-            needsReceipt: false,
+            instructions: approvalMethod === 'manual'
+                ? [`Please transfer to our Bank account and upload your receipt below.`]
+                : [
+                    `You will be redirected to PayMongo to securely complete your bank transfer.`,
+                    `Please complete the payment on the next page.`
+                ],
+            needsReceipt: approvalMethod === 'manual',
         },
         {
             id: 'gcash',
@@ -96,11 +112,13 @@ function PayNowModal({ loan, onClose, onSuccess }) {
                 <CheckCircle size={20} color="#6d28d9" />
             ),
             iconBg: 'ld-method-icon--gcash',
-            instructions: [
-                `You will be redirected to PayMongo to securely complete your GCash payment.`,
-                `Please complete the payment on the next page.`
-            ],
-            needsReceipt: false,
+            instructions: approvalMethod === 'manual'
+                ? [`Please transfer to our GCash account and upload your receipt below.`]
+                : [
+                    `You will be redirected to PayMongo to securely complete your GCash payment.`,
+                    `Please complete the payment on the next page.`
+                ],
+            needsReceipt: approvalMethod === 'manual',
         },
     ];
 
@@ -128,7 +146,10 @@ function PayNowModal({ loan, onClose, onSuccess }) {
             });
             const data = await res.json();
             if (res.ok && data.success) {
-                if (data.checkoutUrl) {
+                if (approvalMethod === 'manual') {
+                    setSubmitted(true);
+                    setTimeout(() => { onSuccess?.(); onClose(); }, 2000);
+                } else if (data.checkoutUrl) {
                     window.location.href = data.checkoutUrl;
                 } else {
                     setSubmitted(true);
@@ -217,22 +238,27 @@ function PayNowModal({ loan, onClose, onSuccess }) {
                         {selected?.needsReceipt && (
                             <div className="ld-pay-upload">
                                 <div className="ld-pay-section-label" style={{ marginBottom: '8px' }}>Upload proof of payment</div>
-                                <label className={`ld-upload-box ${receipt ? 'ld-upload-box--done' : ''}`}>
+                                <label className="user-file-upload-zone" style={{ margin: 0 }}>
                                     <input
                                         type="file"
                                         accept="image/*,application/pdf"
-                                        style={{ display: 'none' }}
+                                        className="user-file-upload-input"
                                         onChange={(e) => { setReceipt(e.target.files[0]); setError(''); }}
                                     />
-                                    {receipt ? (
-                                        <span className="ld-upload-done-text">✓ {receipt.name}</span>
-                                    ) : (
-                                        <>
-                                            <Printer size={20} />
-                                            <span>Click to upload screenshot or PDF</span>
-                                        </>
-                                    )}
+                                    <div className="user-file-upload-content">
+                                        <UploadCloud className="user-file-upload-icon" size={28} />
+                                        <p className="user-file-upload-text"><span>Click to upload</span> or drag and drop</p>
+                                        <p style={{ fontSize: '12px', color: '#9ca3af', margin: 0 }}>PNG, JPG, PDF up to 5MB</p>
+                                    </div>
                                 </label>
+                                {receipt && (
+                                    <div className="user-file-attached">
+                                        <FileCheck2 size={16} />
+                                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                            {receipt.name}
+                                        </span>
+                                    </div>
+                                )}
                             </div>
                         )}
 
@@ -246,7 +272,7 @@ function PayNowModal({ loan, onClose, onSuccess }) {
                     <div className="ld-modal-footer">
                         <button className="ld-footer-btn-cancel" onClick={onClose}>Cancel</button>
                         <button className="ld-footer-btn-confirm" onClick={handleConfirm} disabled={uploading}>
-                            {uploading ? <span className="btn-spinner" /> : (method === 'cash' ? 'Submit Payment' : 'Proceed to PayMongo')}
+                            {uploading ? <span className="btn-spinner" /> : (method === 'cash' || approvalMethod === 'manual' ? 'Submit Payment' : 'Proceed to PayMongo')}
                         </button>
                     </div>
                 )}

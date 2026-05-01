@@ -15,8 +15,8 @@ import { processNewNotifications } from '../../utils/desktopNotify';
 
 export default function AdminSidebar() {
   const { theme, toggleTheme } = useTheme();
-  const navigate  = useNavigate();
-  const location  = useLocation();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [unreadCount, setUnreadCount] = useState(0);
   const prevNotifIdsRef = useRef(new Set());
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -38,7 +38,7 @@ export default function AdminSidebar() {
 
     const calcUnread = async () => {
       try {
-        const res  = await fetch(`${API}/api/admin/notifications`, {
+        const res = await fetch(`${API}/api/admin/notifications`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) return;
@@ -62,7 +62,7 @@ export default function AdminSidebar() {
     };
 
     calcUnread();
-    
+
 
 
     const onUpdate = () => { calcUnread(); };
@@ -125,7 +125,7 @@ export default function AdminSidebar() {
           className={`admin-sidebar-nav-button ${isActive('/admin/branches') ? 'active' : ''}`}
         >
           <MapPin size={18} />
-          <span>Branches</span>
+          <span>Communities</span>
         </button>
 
         {/* ── Finance & Activity ── */}
@@ -181,10 +181,10 @@ export default function AdminSidebar() {
         <div className="admin-theme-switch-wrapper">
           <span className="admin-theme-switch-label">Dark Mode</span>
           <label className="admin-toggle-switch">
-            <input 
-              type="checkbox" 
-              checked={theme === 'dark'} 
-              onChange={toggleTheme} 
+            <input
+              type="checkbox"
+              checked={theme === 'dark'}
+              onChange={toggleTheme}
             />
             <span className="admin-toggle-slider"></span>
           </label>

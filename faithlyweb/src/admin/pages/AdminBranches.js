@@ -65,14 +65,14 @@ export default function AdminBranches() {
       {/* Header */}
       <div className="admin-branch-header">
         <div>
-          <h1 className="admin-branch-title">Branches</h1>
-          <p className="admin-branch-subtitle">Manage church branches and their information</p>
+          <h1 className="admin-branch-title">Communities</h1>
+          <p className="admin-branch-subtitle">Manage church communities and their information</p>
         </div>
         <div className="admin-members-search-wrapper admin-branch-search-wrapper">
           <Search size={18} className="admin-members-search-icon" />
           <input
             type="text"
-            placeholder="Search branches..."
+            placeholder="Search communities..."
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="admin-members-search-input"
@@ -84,7 +84,7 @@ export default function AdminBranches() {
       <div className="admin-branch-stats">
         <div className="admin-branch-stat-card">
           <div className="admin-branch-stat-header">
-            <span className="admin-branch-stat-label">Total Branches</span>
+            <span className="admin-branch-stat-label">Total Communities</span>
             <div className="adm-stat-icon-wrap"><MapPin size={20} color="white" /></div>
           </div>
           <p className="admin-branch-stat-value">{loading ? '—' : totalCount}</p>
@@ -125,7 +125,7 @@ export default function AdminBranches() {
             </div>
           ))
         ) : branches.length === 0 ? (
-          <div className="admin-branch-empty">No branches found.</div>
+          <div className="admin-branch-empty">No communities found.</div>
         ) : (
           branches.map((branch) => (
             <div key={branch._id || branch.id} className="admin-branch-card">

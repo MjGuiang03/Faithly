@@ -38,3 +38,59 @@ code {
 @keyframes btn-spin {
   to { transform: rotate(360deg); }
 }
+
+/* ── Global User File Upload ── */
+.user-file-upload-zone {
+  display: block;
+  border: 2px dashed #d1d5dc;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  background-color: #f9fafb;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.user-file-upload-zone:hover {
+  border-color: #155DFC;
+  background-color: #eff6ff;
+}
+.user-file-upload-input {
+  display: none;
+}
+.user-file-upload-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.user-file-upload-icon {
+  color: #6B7280;
+  transition: color 0.2s;
+}
+.user-file-upload-zone:hover .user-file-upload-icon {
+  color: #155DFC;
+}
+.user-file-upload-text {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: #4b5563;
+  margin: 0;
+}
+.user-file-upload-text span {
+  color: #155DFC;
+  font-weight: 600;
+}
+.user-file-attached {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 10px 14px;
+  background-color: #dcfce7;
+  border: 1px solid #bbf7d0;
+  border-radius: 6px;
+  color: #166534;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+}

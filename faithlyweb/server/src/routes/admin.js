@@ -107,7 +107,13 @@ router.get('/members', authenticateAdmin, async (req, res) => {
       }).length
     };
 
-    const filtered = (status && status !== 'all') ? withStatus.filter(u => u.status === status) : withStatus;
+    let filtered = (status && status !== 'all') ? withStatus.filter(u => u.status === status) : withStatus;
+    if (req.query.isNew === 'true') {
+      filtered = filtered.filter(u => {
+        const created = new Date(u.createdAt);
+        return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
+      });
+    }
     const totalMembers = filtered.length;
     const totalPages = Math.ceil(totalMembers / limit) || 1;
     const pageMembers = filtered.slice(skip, skip + limit);
@@ -987,6 +993,197 @@ router.get('/loans/:id/dss-analysis', authenticateAdmin, async (req, res) => {
   } catch (err) {
     console.error('DSS Analysis Error:', err);
     res.status(500).json({ success: false, message: 'DSS Analysis failed' });
+  }
+});
+
+/* ================== ADMIN - GET LOAN PAYMENTS ================== */
+router.get('/loans/payments', authenticateAdmin, async (req, res) => {
+  try {
+    const { loanPayments, loans, users } = await import('../config/db.js');
+    const { status, limit } = req.query;
+    let query = {};
+    if (status) query.status = status;
+    
+    const payments = await loanPayments.find(query)
+      .sort({ createdAt: -1 })
+      .limit(parseInt(limit) || 100)
+      .toArray();
+
+    const enriched = await Promise.all(payments.map(async p => {
+        const user = await users.findOne({ email: p.email });
+        const loan = await loans.findOne({ loanId: p.loanId });
+        return {
+            ...p,
+            memberName: user ? user.fullName : 'Unknown',
+            loanPurpose: loan ? loan.purpose : 'Unknown'
+        };
+    }));
+
+    res.json({ success: true, payments: enriched });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to fetch loan payments' });
+  }
+});
+
+/* ================== SETTINGS (ADMIN) ================== */
+router.get('/settings', authenticateAdmin, async (req, res) => {
+  try {
+    const { settings } = await import('../config/db.js');
+    const config = await settings.findOne({ _id: 'global' });
+    res.json({ success: true, settings: config });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to fetch settings' });
+  }
+});
+
+router.post('/settings', authenticateAdmin, async (req, res) => {
+  try {
+    const { settings } = await import('../config/db.js');
+    const { paymentApprovalMethod } = req.body;
+    await settings.updateOne(
+      { _id: 'global' },
+      { $set: { paymentApprovalMethod, updatedAt: new Date() } },
+      { upsert: true }
+    );
+    res.json({ success: true, message: 'Settings updated' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to update settings' });
+  }
+});
+
+/* ================== MANUAL APPROVAL - DONATIONS ================== */
+router.put('/donations/:id/approve', authenticateAdmin, async (req, res) => {
+  try {
+    const { ObjectId } = await import('mongodb');
+    const { donations } = await import('../config/db.js');
+    const result = await donations.updateOne(
+      { _id: new ObjectId(req.params.id), status: 'pending' },
+      { $set: { status: 'confirmed', confirmedAt: new Date(), confirmedBy: req.admin.email } }
+    );
+    if (result.matchedCount === 0) return res.status(404).json({ success: false, message: 'Donation not found or not pending' });
+    res.json({ success: true, message: 'Donation approved successfully' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to approve donation' });
+  }
+});
+
+router.put('/donations/:id/reject', authenticateAdmin, async (req, res) => {
+  try {
+    const { ObjectId } = await import('mongodb');
+    const { donations } = await import('../config/db.js');
+    const { reason } = req.body;
+    const result = await donations.updateOne(
+      { _id: new ObjectId(req.params.id), status: 'pending' },
+      { $set: { status: 'rejected', rejectReason: reason || 'Admin review', rejectedAt: new Date(), rejectedBy: req.admin.email } }
+    );
+    if (result.matchedCount === 0) return res.status(404).json({ success: false, message: 'Donation not found or not pending' });
+    res.json({ success: true, message: 'Donation rejected successfully' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to reject donation' });
+  }
+});
+
+/* ================== MANUAL APPROVAL - SAVINGS DEPOSITS ================== */
+router.put('/savings/deposits/:id/approve', authenticateAdmin, async (req, res) => {
+  try {
+    const { ObjectId } = await import('mongodb');
+    const { savingsTransactions, savingsGoals } = await import('../config/db.js');
+    const txn = await savingsTransactions.findOne({ _id: new ObjectId(req.params.id), status: 'pending' });
+    if (!txn) return res.status(404).json({ success: false, message: 'Deposit not found or not pending' });
+
+    // Update Transaction
+    await savingsTransactions.updateOne(
+      { _id: txn._id },
+      { $set: { status: 'confirmed', confirmedAt: new Date(), confirmedBy: req.admin.email } }
+    );
+
+    // Update Goal Balance
+    const goal = await savingsGoals.findOne({ _id: txn.goalId });
+    if (goal) {
+      const newSaved = (goal.savedAmount || 0) + txn.amount;
+      const updates = { savedAmount: newSaved, updatedAt: new Date() };
+      if (newSaved >= goal.targetAmount) updates.status = 'completed';
+      await savingsGoals.updateOne({ _id: txn.goalId }, { $set: updates });
+    }
+    res.json({ success: true, message: 'Deposit approved successfully' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to approve deposit' });
+  }
+});
+
+router.put('/savings/deposits/:id/reject', authenticateAdmin, async (req, res) => {
+  try {
+    const { ObjectId } = await import('mongodb');
+    const { savingsTransactions } = await import('../config/db.js');
+    const { reason } = req.body;
+    const result = await savingsTransactions.updateOne(
+      { _id: new ObjectId(req.params.id), status: 'pending' },
+      { $set: { status: 'rejected', rejectReason: reason || 'Admin review', rejectedAt: new Date(), rejectedBy: req.admin.email } }
+    );
+    if (result.matchedCount === 0) return res.status(404).json({ success: false, message: 'Deposit not found or not pending' });
+    res.json({ success: true, message: 'Deposit rejected successfully' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to reject deposit' });
+  }
+});
+
+/* ================== MANUAL APPROVAL - LOAN PAYMENTS ================== */
+router.put('/loans/payments/:id/approve', authenticateAdmin, async (req, res) => {
+  try {
+    const { ObjectId } = await import('mongodb');
+    const { loanPayments, loans } = await import('../config/db.js');
+    const payment = await loanPayments.findOne({ _id: new ObjectId(req.params.id), status: 'pending' });
+    if (!payment) return res.status(404).json({ success: false, message: 'Payment not found or not pending' });
+
+    await loanPayments.updateOne(
+      { _id: payment._id },
+      { $set: { status: 'confirmed', confirmedAt: new Date(), confirmedBy: req.admin.email } }
+    );
+
+    // Update Loan balance
+    const loanObjectId = payment.loanObjectId ? new ObjectId(payment.loanObjectId) : payment.loanId; // fallback
+    const loan = await loans.findOne({ _id: loanObjectId });
+    if (loan) {
+      const newPaidMonths = (loan.paidMonths || 0) + 1;
+      const newBalance = Math.max(0, (loan.remainingBalance || loan.totalRepayment || loan.amount) - Number(payment.amount));
+      const isComplete = newPaidMonths >= (loan.termMonths || 12);
+
+      const startDate = new Date(loan.disbursementDate || loan.approvedDate || loan.appliedDate || new Date());
+      const nextDue = new Date(startDate);
+      nextDue.setMonth(startDate.getMonth() + newPaidMonths + 1);
+
+      await loans.updateOne(
+        { _id: loan._id },
+        {
+          $set: {
+            remainingBalance: newBalance,
+            paidMonths: newPaidMonths,
+            status: isComplete ? 'completed' : 'active',
+            nextPaymentDate: nextDue,
+            nextDueDate: nextDue
+          }
+        }
+      );
+    }
+    res.json({ success: true, message: 'Loan payment approved successfully' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to approve loan payment' });
+  }
+});
+
+router.put('/loans/payments/:id/reject', authenticateAdmin, async (req, res) => {
+  try {
+    const { ObjectId } = await import('mongodb');
+    const { loanPayments } = await import('../config/db.js');
+    const { reason } = req.body;
+    const result = await loanPayments.updateOne(
+      { _id: new ObjectId(req.params.id), status: 'pending' },
+      { $set: { status: 'rejected', rejectReason: reason || 'Admin review', rejectedAt: new Date(), rejectedBy: req.admin.email } }
+    );
+    if (result.matchedCount === 0) return res.status(404).json({ success: false, message: 'Payment not found or not pending' });
+    res.json({ success: true, message: 'Loan payment rejected successfully' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to reject loan payment' });
   }
 });
 

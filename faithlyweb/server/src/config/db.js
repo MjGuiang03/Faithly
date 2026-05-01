@@ -46,6 +46,7 @@ export const savingsTransactions = db.collection('savings_transactions');
 export const loanPayments        = db.collection('loan_payments');
 export const attendanceSessions  = db.collection('attendance_sessions');
 export const prayers             = db.collection('prayers');
+export const settings            = db.collection('settings');
 
 
 /* ================== DATABASE INDEXES ================== */
@@ -113,3 +114,18 @@ for (const seed of adminSeeds) {
     }
   }
 }
+
+/* ================== INITIALIZE GLOBAL SETTINGS ================== */
+const initializeSettings = async () => {
+  const existing = await settings.findOne({ _id: 'global' });
+  if (!existing) {
+    await settings.insertOne({
+      _id: 'global',
+      paymentApprovalMethod: 'gateway',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+    console.log('✅ Global settings initialized');
+  }
+};
+await initializeSettings();

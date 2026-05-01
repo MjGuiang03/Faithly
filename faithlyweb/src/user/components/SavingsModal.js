@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import '../styles/SavingsModal.css';
 import API from '../../utils/api';
-import { CheckCircle, X, ArrowDownRight, ArrowUpLeft, Repeat, History, CreditCard, Smartphone, Building2, Info } from 'lucide-react';
+import { CheckCircle, X, ArrowDownRight, ArrowUpLeft, Repeat, History, CreditCard, Smartphone, Building2, Info, UploadCloud, FileCheck2 } from 'lucide-react';
 
 
 const fmt = (n) =>
@@ -44,8 +44,36 @@ function DepositModal({ goals, onClose }) {
     const [amount, setAmount] = useState('');
     const [note, setNote] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('cash');
+    const [proofFile, setProofFile] = useState(null);
+    const [proofBase64, setProofBase64] = useState('');
+    const [approvalMethod, setApprovalMethod] = useState('gateway');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const res = await fetch(`${API}/api/settings/public`);
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    setApprovalMethod(data.paymentApprovalMethod || 'gateway');
+                }
+            } catch { /* silent */ }
+        };
+        fetchSettings();
+    }, []);
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setProofFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setProofBase64(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     const goal = goals.find(g => g._id === selectedGoal);
     const numAmt = parseFloat(amount.replace(/,/g, '')) || 0;
@@ -65,6 +93,9 @@ function DepositModal({ goals, onClose }) {
         if (!numAmt || numAmt <= 0) { setError('Please enter a valid amount.'); return; }
         if (!selectedGoal) { setError('Please select a goal.'); return; }
         if (!paymentMethod) { setError('Please select a payment method.'); return; }
+        if (approvalMethod === 'manual' && !proofBase64) {
+            setError('Please upload your proof of payment.'); return;
+        }
         setError('');
         setLoading(true);
         try {
@@ -72,12 +103,15 @@ function DepositModal({ goals, onClose }) {
             const res = await fetch(`${API}/api/savings/deposit`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ goalId: selectedGoal, amount: numAmt, note, paymentMethod }),
+                body: JSON.stringify({ goalId: selectedGoal, amount: numAmt, note, paymentMethod, proofOfPayment: proofBase64 }),
             });
             const data = await res.json();
             if (!res.ok || !data.success) throw new Error(data.message || 'Deposit failed.');
             
-            if (data.checkoutUrl) {
+            if (approvalMethod === 'manual') {
+                alert('Deposit submitted! Your payment is pending manual approval.');
+                onClose();
+            } else if (data.checkoutUrl) {
                 window.location.href = data.checkoutUrl;
             } else {
                 onClose();
@@ -157,7 +191,29 @@ function DepositModal({ goals, onClose }) {
                             ))}
                         </div>
                         <div className="svm-info-text" style={{ marginTop: '8px' }}>
-                            You will be redirected to PayMongo to securely complete your payment. No manual proof upload is required!
+                            {approvalMethod === 'manual' ? (
+                                <div style={{ marginTop: '16px' }}>
+                                    <p style={{ marginBottom: '8px' }}>Please transfer your deposit to our <strong>{paymentMethod}</strong> account and upload the receipt below.</p>
+                                    <label className="user-file-upload-zone">
+                                      <input type="file" accept="image/*" onChange={handleFileChange} className="user-file-upload-input" />
+                                      <div className="user-file-upload-content">
+                                        <UploadCloud className="user-file-upload-icon" size={28} />
+                                        <p className="user-file-upload-text"><span>Click to upload</span> or drag and drop</p>
+                                        <p style={{ fontSize: '12px', color: '#9ca3af', margin: 0 }}>PNG, JPG, JPEG up to 5MB</p>
+                                      </div>
+                                    </label>
+                                    {proofFile && (
+                                      <div className="user-file-attached">
+                                        <FileCheck2 size={16} />
+                                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                          {proofFile.name}
+                                        </span>
+                                      </div>
+                                    )}
+                                </div>
+                            ) : (
+                                "You will be redirected to PayMongo to securely complete your payment. No manual proof upload is required!"
+                            )}
                         </div>
                     </div>
 
@@ -418,9 +474,37 @@ function QuickDepositModal({ goal, goals, onClose }) {
     const [amount, setAmount] = useState('');
     const [note, setNote] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('cash');
+    const [proofFile, setProofFile] = useState(null);
+    const [proofBase64, setProofBase64] = useState('');
+    const [approvalMethod, setApprovalMethod] = useState('gateway');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
+
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const res = await fetch(`${API}/api/settings/public`);
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    setApprovalMethod(data.paymentApprovalMethod || 'gateway');
+                }
+            } catch { /* silent */ }
+        };
+        fetchSettings();
+    }, []);
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setProofFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setProofBase64(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     const numAmt = parseFloat(amount.replace(/,/g, '')) || 0;
     const newSaved = (goal?.savedAmount || 0) + numAmt;
@@ -431,6 +515,9 @@ function QuickDepositModal({ goal, goals, onClose }) {
     const handleSubmit = async () => {
         if (!numAmt || numAmt <= 0) { setError('Enter a valid amount.'); return; }
         if (!paymentMethod) { setError('Please select a payment method.'); return; }
+        if (approvalMethod === 'manual' && !proofBase64) {
+            setError('Please upload your proof of payment.'); return;
+        }
         setError('');
         setLoading(true);
         try {
@@ -438,12 +525,15 @@ function QuickDepositModal({ goal, goals, onClose }) {
             const res = await fetch(`${API}/api/savings/deposit`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ goalId: goal._id, amount: numAmt, note, paymentMethod }),
+                body: JSON.stringify({ goalId: goal._id, amount: numAmt, note, paymentMethod, proofOfPayment: proofBase64 }),
             });
             const data = await res.json();
             if (!res.ok || !data.success) throw new Error(data.message || 'Deposit failed.');
             
-            if (data.checkoutUrl) {
+            if (approvalMethod === 'manual') {
+                setSuccess(true);
+                setTimeout(onClose, 1200);
+            } else if (data.checkoutUrl) {
                 window.location.href = data.checkoutUrl;
             } else {
                 setSuccess(true);
@@ -529,6 +619,30 @@ function QuickDepositModal({ goal, goals, onClose }) {
                                             {opt.label}
                                         </button>
                                     ))}
+                                </div>
+                                <div className="svm-info-text" style={{ marginTop: '8px', fontSize: '11px', color: '#6B7280' }}>
+                                    {approvalMethod === 'manual' ? (
+                                        <div style={{ marginTop: '12px' }}>
+                                            <p style={{ marginBottom: '8px' }}>Please transfer to our <strong>{paymentMethod}</strong> account and upload receipt.</p>
+                                            <label className="user-file-upload-zone" style={{ padding: '12px' }}>
+                                              <input type="file" accept="image/*" onChange={handleFileChange} className="user-file-upload-input" />
+                                              <div className="user-file-upload-content">
+                                                <UploadCloud className="user-file-upload-icon" size={24} />
+                                                <p className="user-file-upload-text" style={{ fontSize: '12px' }}><span>Upload Receipt</span></p>
+                                              </div>
+                                            </label>
+                                            {proofFile && (
+                                              <div className="user-file-attached" style={{ padding: '6px 10px', fontSize: '11px', marginTop: '8px' }}>
+                                                <FileCheck2 size={14} />
+                                                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                  {proofFile.name}
+                                                </span>
+                                              </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        "You will be securely redirected to PayMongo."
+                                    )}
                                 </div>
                             </div>
 

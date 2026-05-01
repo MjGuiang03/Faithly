@@ -592,8 +592,17 @@ export default function AdminMembers() {
   const fetchMembers = useCallback(async () => {
     try {
       setLoadingMembers(true);
-      const isOfficerVal = roleFilter === 'officer' ? 'true' : roleFilter === 'member' ? 'false' : undefined;
-      const q  = buildQuery({ search: debouncedSearchMembers.trim(), page: currentPage, limit: ITEMS_PER_PAGE, isOfficer: isOfficerVal });
+      let isOfficerVal = undefined;
+      let statusVal = undefined;
+      let isNewVal = undefined;
+
+      if (roleFilter === 'officer') isOfficerVal = 'true';
+      else if (roleFilter === 'member') isOfficerVal = 'false';
+      else if (roleFilter === 'active') statusVal = 'active';
+      else if (roleFilter === 'inactive') statusVal = 'inactive';
+      else if (roleFilter === 'new') isNewVal = 'true';
+
+      const q  = buildQuery({ search: debouncedSearchMembers.trim(), page: currentPage, limit: ITEMS_PER_PAGE, isOfficer: isOfficerVal, status: statusVal, isNew: isNewVal });
       const res = await fetch(`${API}/api/admin/members?${q}`, {
         headers: { Authorization: `Bearer ${getToken()}` }
       });
@@ -705,23 +714,23 @@ export default function AdminMembers() {
 
       {/* Stats Grid */}
       <div className="admin-members-stats-grid">
-        <div className="admin-members-stat-card adm-clickable-card" onClick={() => setRoleFilter('all')}>
+        <div className={`admin-members-stat-card adm-clickable-card ${roleFilter === 'all' ? 'active' : ''}`} onClick={() => setRoleFilter('all')} style={roleFilter === 'all' ? { outline: '2px solid #155DFC', outlineOffset: '-2px' } : {}}>
           <p className="admin-members-stat-label">Total Members</p>
           <p className="admin-members-stat-value admin-members-stat-value-blue">{stats.total ?? 0}</p>
         </div>
-        <div className="admin-members-stat-card adm-clickable-card" onClick={() => setRoleFilter('officer')}>
+        <div className={`admin-members-stat-card adm-clickable-card ${roleFilter === 'officer' ? 'active' : ''}`} onClick={() => setRoleFilter('officer')} style={roleFilter === 'officer' ? { outline: '2px solid #155DFC', outlineOffset: '-2px' } : {}}>
           <p className="admin-members-stat-label">Officers</p>
           <p className="admin-members-stat-value admin-members-stat-value-blue">{stats.officers ?? 0}</p>
         </div>
-        <div className="admin-members-stat-card adm-clickable-card" onClick={() => setRoleFilter('member')}>
+        <div className={`admin-members-stat-card adm-clickable-card ${roleFilter === 'active' ? 'active' : ''}`} onClick={() => setRoleFilter('active')} style={roleFilter === 'active' ? { outline: '2px solid #00A63E', outlineOffset: '-2px' } : {}}>
           <p className="admin-members-stat-label">Active Members</p>
           <p className="admin-members-stat-value admin-members-stat-value-green">{stats.active ?? 0}</p>
         </div>
-        <div className="admin-members-stat-card adm-clickable-card" onClick={() => setRoleFilter('inactive')}>
+        <div className={`admin-members-stat-card adm-clickable-card ${roleFilter === 'inactive' ? 'active' : ''}`} onClick={() => setRoleFilter('inactive')} style={roleFilter === 'inactive' ? { outline: '2px solid #F59E0B', outlineOffset: '-2px' } : {}}>
           <p className="admin-members-stat-label">Inactive Members</p>
           <p className="admin-members-stat-value admin-members-stat-value-orange">{stats.inactive ?? 0}</p>
         </div>
-        <div className="admin-members-stat-card adm-clickable-card" onClick={() => setRoleFilter('new')}>
+        <div className={`admin-members-stat-card adm-clickable-card ${roleFilter === 'new' ? 'active' : ''}`} onClick={() => setRoleFilter('new')} style={roleFilter === 'new' ? { outline: '2px solid #155DFC', outlineOffset: '-2px' } : {}}>
           <p className="admin-members-stat-label">New This Month</p>
           <p className="admin-members-stat-value admin-members-stat-value-blue">{stats.newThisMonth ?? 0}</p>
         </div>
@@ -752,9 +761,10 @@ export default function AdminMembers() {
               onChange={e => setRoleFilter(e.target.value)}
               value={roleFilter}
             >
-              <option value="all">All Roles</option>
-              <option value="member">Members</option>
+              <option value="all">All Members</option>
               <option value="officer">Officers</option>
+              <option value="member">Regular Members</option>
+              <option value="active">Active Members</option>
               <option value="inactive">Inactive</option>
               <option value="new">New</option>
             </select>

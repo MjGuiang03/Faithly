@@ -220,6 +220,39 @@ router.post('/savings/deposit', authenticateUser, async (req, res) => {
 
     const txnId = new ObjectId();
     
+    const { settings } = await import('../config/db.js');
+    const config = await settings.findOne({ _id: 'global' });
+    const isManual = config?.paymentApprovalMethod === 'manual';
+
+    if (isManual) {
+      const { proofOfPayment } = req.body;
+      if (!proofOfPayment) {
+        return res.status(400).json({ success: false, message: 'Proof of payment is required for manual approval' });
+      }
+
+      const txn = {
+        _id: txnId,
+        email,
+        memberName: user?.fullName || 'Unknown Member',
+        goalId: new ObjectId(goalId),
+        goalName: goal.name,
+        type: 'deposit',
+        amount: depositAmount,
+        description: description || 'Deposit',
+        source: source || 'Manual',
+        paymentMethod: paymentMethod || 'Manual',
+        proofOfPayment, // Store base64 string
+        status: 'pending',
+        date: new Date(),
+      };
+      await savingsTransactions.insertOne(txn);
+
+      return res.json({
+        success: true,
+        message: 'Deposit submitted and pending approval.',
+      });
+    }
+
     // Generate PayMongo Checkout Session
     const paymentDesc = `Savings Deposit to ${goal.name} by ${req.user.fullName}`;
     const billing = { name: user?.fullName || req.user.fullName, email, phone: user?.phone || null };

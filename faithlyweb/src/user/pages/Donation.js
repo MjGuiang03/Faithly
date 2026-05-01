@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Banknote, CalendarDays, ChevronDown, Download, Heart, Receipt, Share2, X } from 'lucide-react';
+import { Banknote, CalendarDays, ChevronDown, Download, Heart, Receipt, Share2, X, UploadCloud, FileCheck2 } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import '../styles/Donation.css';
 import gcashLogo from '../../assets/gcashlogo.png';
@@ -63,6 +63,11 @@ export default function Donation() {
   const [selectedDonation, setSelectedDonation] = useState(null);
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
   const [recentDonations, setRecentDonations] = useState([]);
+  
+  // Settings
+  const [approvalMethod, setApprovalMethod] = useState('gateway');
+  const [proofFile, setProofFile] = useState(null);
+  const [proofBase64, setProofBase64] = useState('');
 
   /* ── History Modal States ── */
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
@@ -91,6 +96,16 @@ export default function Donation() {
     finally { setLoading(false); }
   }, [historyPage]);
 
+  const fetchSettings = useCallback(async () => {
+    try {
+      const res = await fetch(`${API}/api/settings/public`);
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setApprovalMethod(data.paymentApprovalMethod || 'gateway');
+      }
+    } catch { /* silent */ }
+  }, []);
+
   const fetchModalHistory = useCallback(async () => {
     setModalLoading(true);
     const token = localStorage.getItem('token');
@@ -113,7 +128,22 @@ export default function Donation() {
     if (isHistoryModalOpen) fetchModalHistory();
   }, [isHistoryModalOpen, fetchModalHistory]);
 
-  useEffect(() => { fetchHistory(); }, [fetchHistory]);
+  useEffect(() => { 
+    fetchHistory(); 
+    fetchSettings();
+  }, [fetchHistory, fetchSettings]);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setProofFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProofBase64(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   // const historyTotalPages = Math.max(1, Math.ceil(totalCount / HISTORY_PER_PAGE));
   // const paginatedHistory = donationHistory;
@@ -124,6 +154,9 @@ export default function Donation() {
     if (!num || num <= 0) { setFormError('Please enter a valid donation amount.'); return; }
     if (!donationCategory) { setFormError('Please select a donation category.'); return; }
     if (!paymentMethod) { setFormError('Please select a payment method.'); return; }
+    if (approvalMethod === 'manual' && !proofBase64) {
+      setFormError('Please upload your proof of payment.'); return;
+    }
 
     setSubmitting(true);
     try {
@@ -131,12 +164,21 @@ export default function Donation() {
       const res = await fetch(`${API}/api/donations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ amount: num, category: donationCategory, paymentMethod, isRecurring }),
+        body: JSON.stringify({ amount: num, category: donationCategory, paymentMethod, isRecurring, proofOfPayment: proofBase64 }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Failed to record donation');
       
-      if (data.checkoutUrl) {
+      if (approvalMethod === 'manual') {
+        alert('Donation submitted! Your payment is pending manual approval.');
+        setDonationAmount('');
+        setDonationCategory('');
+        setPaymentMethod('');
+        setProofFile(null);
+        setProofBase64('');
+        fetchHistory();
+        setSubmitting(false);
+      } else if (data.checkoutUrl) {
         window.location.href = data.checkoutUrl;
       } else {
         setFormError('Failed to generate payment link.');
@@ -275,9 +317,35 @@ export default function Donation() {
                 </div>
                 {paymentMethod && (
                   <div className="user-payment-info-wrapper expanded">
-                    <p style={{ fontSize: '14px', color: '#6B7280', marginTop: '10px' }}>
-                      You will be securely redirected to PayMongo to complete your {paymentMethod} transaction.
-                    </p>
+                    {approvalMethod === 'manual' ? (
+                      <div style={{ marginTop: '16px' }}>
+                        <p style={{ fontSize: '14px', color: '#6B7280', marginBottom: '8px' }}>
+                          Please transfer your donation to our <strong>{paymentMethod}</strong> account and upload the receipt below.
+                        </p>
+                        
+                        <label className="user-file-upload-zone">
+                          <input type="file" accept="image/*" onChange={handleFileChange} className="user-file-upload-input" />
+                          <div className="user-file-upload-content">
+                            <UploadCloud className="user-file-upload-icon" size={28} />
+                            <p className="user-file-upload-text"><span>Click to upload</span> or drag and drop</p>
+                            <p style={{ fontSize: '12px', color: '#9ca3af', margin: 0 }}>PNG, JPG, JPEG up to 5MB</p>
+                          </div>
+                        </label>
+
+                        {proofFile && (
+                          <div className="user-file-attached">
+                            <FileCheck2 size={16} />
+                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {proofFile.name}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <p style={{ fontSize: '14px', color: '#6B7280', marginTop: '10px' }}>
+                        You will be securely redirected to PayMongo to complete your {paymentMethod} transaction.
+                      </p>
+                    )}
                   </div>
                 )}
               </div>

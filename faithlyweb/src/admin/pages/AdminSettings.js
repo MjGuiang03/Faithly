@@ -2,31 +2,23 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import '../styles/AdminSettings.css';
-import { ArrowLeft, Bell, Lock, Printer, Settings, Mail } from 'lucide-react';
+import { Settings, Lock, CreditCard, Edit2 } from 'lucide-react';
+import API from '../../utils/api';
 
 
 export default function AdminSettings() {
   const navigate = useNavigate();
   const [settings, setSettings] = useState({
-    churchName: 'Church of Grace',
-    currency: 'PHP',
-    timezone: 'Asia/Manila',
-    language: 'English',
     adminName: 'Admin User',
     adminEmail: 'admin@church.com',
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
-    emailNotifications: true,
-    smsNotifications: false,
-    weeklyReports: true,
-    monthlyReports: true,
-    backupEnabled: true,
-    twoFactorAuth: false,
-    smtpServer: 'smtp.example.com',
-    smtpPort: '587',
-    fromEmail: 'noreply@church.com'
+    approvalMethod: 'gateway'
   });
+  const [savedApprovalMethod, setSavedApprovalMethod] = useState('gateway');
+  const [isEditingPayment, setIsEditingPayment] = useState(false);
+  const [confirmModal, setConfirmModal] = useState({ show: false, section: null });
 
   useEffect(() => {
     const adminEmail = localStorage.getItem('adminEmail');
@@ -34,9 +26,51 @@ export default function AdminSettings() {
       navigate('/');
       return;
     }
+
+    const fetchSettings = async () => {
+      try {
+        const token = localStorage.getItem('adminToken');
+        const res = await fetch(`${API}/api/admin/settings`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success && data.settings) {
+          const currentMethod = data.settings.paymentApprovalMethod || 'gateway';
+          setSettings(prev => ({ ...prev, approvalMethod: currentMethod }));
+          setSavedApprovalMethod(currentMethod);
+        }
+      } catch (err) {
+        console.error('Failed to fetch settings', err);
+      }
+    };
+    fetchSettings();
   }, [navigate]);
 
-  const handleSave = (section) => {
+  const handleSave = async (section) => {
+    if (section === 'Payment') {
+      try {
+        const token = localStorage.getItem('adminToken');
+        const res = await fetch(`${API}/api/admin/settings`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ paymentApprovalMethod: settings.approvalMethod })
+        });
+        const data = await res.json();
+        if (data.success) {
+          toast.success('Payment settings updated successfully');
+          setSavedApprovalMethod(settings.approvalMethod);
+          setIsEditingPayment(false);
+        } else {
+          toast.error(data.message || 'Failed to update payment settings');
+        }
+      } catch (err) {
+        toast.error('Network error');
+      }
+      return;
+    }
     toast.success(`${section} settings saved successfully`);
   };
 
@@ -48,76 +82,6 @@ export default function AdminSettings() {
         <p className="admin-settings-subtitle">Configure system preferences and security</p>
       </div>
 
-      {/* System Settings Section */}
-      <div className="admin-settings-section">
-        <div className="admin-settings-section-header">
-          <div className="admin-settings-section-icon admin-settings-section-icon-blue">
-            <Settings size={20} />
-          </div>
-          <div className="admin-settings-section-title-wrapper">
-            <h2 className="admin-settings-section-title">System Settings</h2>
-            <p className="admin-settings-section-description">General system configurations</p>
-          </div>
-        </div>
-
-        <div className="admin-settings-form-row">
-          <div className="admin-settings-form-group">
-            <label className="admin-settings-form-label">Church Name</label>
-            <input
-              type="text"
-              value={settings.churchName}
-              onChange={(e) => setSettings({ ...settings, churchName: e.target.value })}
-              className="admin-settings-form-input"
-            />
-          </div>
-          <div className="admin-settings-form-group">
-            <label className="admin-settings-form-label">Default Currency</label>
-            <select
-              value={settings.currency}
-              onChange={(e) => setSettings({ ...settings, currency: e.target.value })}
-              className="admin-settings-form-input"
-            >
-              <option value="PHP">PHP (₱)</option>
-              <option value="USD">USD ($)</option>
-              <option value="EUR">EUR (€)</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="admin-settings-form-row">
-          <div className="admin-settings-form-group">
-            <label className="admin-settings-form-label">Timezone</label>
-            <select
-              value={settings.timezone}
-              onChange={(e) => setSettings({ ...settings, timezone: e.target.value })}
-              className="admin-settings-form-input"
-            >
-              <option value="Asia/Manila">Asia/Manila (UTC+8)</option>
-              <option value="America/New_York">America/New_York (UTC-5)</option>
-              <option value="Europe/London">Europe/London (UTC+0)</option>
-            </select>
-          </div>
-          <div className="admin-settings-form-group">
-            <label className="admin-settings-form-label">Language</label>
-            <select
-              value={settings.language}
-              onChange={(e) => setSettings({ ...settings, language: e.target.value })}
-              className="admin-settings-form-input"
-            >
-              <option value="English">English</option>
-              <option value="Filipino">Filipino</option>
-              <option value="Spanish">Spanish</option>
-            </select>
-          </div>
-        </div>
-
-        <button
-          onClick={() => handleSave('System')}
-          className="admin-settings-save-btn"
-        >
-          Save Changes
-        </button>
-      </div>
 
       {/* Account Settings Section */}
       <div className="admin-settings-section">
@@ -153,7 +117,7 @@ export default function AdminSettings() {
         </div>
 
         <button
-          onClick={() => handleSave('Account')}
+          onClick={() => setConfirmModal({ show: true, section: 'Account' })}
           className="admin-settings-save-btn"
         >
           Save Changes
@@ -206,201 +170,142 @@ export default function AdminSettings() {
           </div>
         </div>
 
-        <div className="admin-settings-toggle-item">
-          <div className="admin-settings-toggle-label-wrapper">
-            <p className="admin-settings-toggle-label">Two-Factor Authentication</p>
-            <p className="admin-settings-toggle-description">Add an extra layer of security</p>
-          </div>
-          <label className="admin-settings-toggle">
-            <input
-              type="checkbox"
-              checked={settings.twoFactorAuth}
-              onChange={(e) => setSettings({ ...settings, twoFactorAuth: e.target.checked })}
-            />
-            <span className="admin-settings-toggle-slider"></span>
-          </label>
-        </div>
 
         <button
-          onClick={() => handleSave('Security')}
+          onClick={() => setConfirmModal({ show: true, section: 'Security' })}
           className="admin-settings-save-btn"
         >
           Update Password
         </button>
       </div>
 
-      {/* Notification Settings Section */}
-      <div className="admin-settings-section">
-        <div className="admin-settings-section-header">
-          <div className="admin-settings-section-icon admin-settings-section-icon-orange">
-            <Bell size={20} />
-          </div>
-          <div className="admin-settings-section-title-wrapper">
-            <h2 className="admin-settings-section-title">Notifications</h2>
-            <p className="admin-settings-section-description">Choose how you receive updates</p>
-          </div>
-        </div>
-
-        <div className="admin-settings-toggle-item">
-          <div className="admin-settings-toggle-label-wrapper">
-            <p className="admin-settings-toggle-label">Email Notifications</p>
-            <p className="admin-settings-toggle-description">Receive notifications via email</p>
-          </div>
-          <label className="admin-settings-toggle">
-            <input
-              type="checkbox"
-              checked={settings.emailNotifications}
-              onChange={(e) => setSettings({ ...settings, emailNotifications: e.target.checked })}
-            />
-            <span className="admin-settings-toggle-slider"></span>
-          </label>
-        </div>
-
-        <div className="admin-settings-toggle-item">
-          <div className="admin-settings-toggle-label-wrapper">
-            <p className="admin-settings-toggle-label">SMS Notifications</p>
-            <p className="admin-settings-toggle-description">Receive notifications via SMS</p>
-          </div>
-          <label className="admin-settings-toggle">
-            <input
-              type="checkbox"
-              checked={settings.smsNotifications}
-              onChange={(e) => setSettings({ ...settings, smsNotifications: e.target.checked })}
-            />
-            <span className="admin-settings-toggle-slider"></span>
-          </label>
-        </div>
-
-        <div className="admin-settings-toggle-item">
-          <div className="admin-settings-toggle-label-wrapper">
-            <p className="admin-settings-toggle-label">Weekly Reports</p>
-            <p className="admin-settings-toggle-description">Get weekly summary reports</p>
-          </div>
-          <label className="admin-settings-toggle">
-            <input
-              type="checkbox"
-              checked={settings.weeklyReports}
-              onChange={(e) => setSettings({ ...settings, weeklyReports: e.target.checked })}
-            />
-            <span className="admin-settings-toggle-slider"></span>
-          </label>
-        </div>
-
-        <div className="admin-settings-toggle-item">
-          <div className="admin-settings-toggle-label-wrapper">
-            <p className="admin-settings-toggle-label">Monthly Reports</p>
-            <p className="admin-settings-toggle-description">Get monthly summary reports</p>
-          </div>
-          <label className="admin-settings-toggle">
-            <input
-              type="checkbox"
-              checked={settings.monthlyReports}
-              onChange={(e) => setSettings({ ...settings, monthlyReports: e.target.checked })}
-            />
-            <span className="admin-settings-toggle-slider"></span>
-          </label>
-        </div>
-
-        <button
-          onClick={() => handleSave('Notification')}
-          className="admin-settings-save-btn"
-        >
-          Save Preferences
-        </button>
-      </div>
-
-      {/* Email Configuration Section */}
+      {/* Payment Settings Section */}
       <div className="admin-settings-section">
         <div className="admin-settings-section-header">
           <div className="admin-settings-section-icon admin-settings-section-icon-blue">
-            <Mail size={20} />
+            <CreditCard size={20} />
           </div>
           <div className="admin-settings-section-title-wrapper">
-            <h2 className="admin-settings-section-title">Email Configuration</h2>
-            <p className="admin-settings-section-description">Configure system-wide email server settings</p>
+            <h2 className="admin-settings-section-title">Payment Settings</h2>
+            <p className="admin-settings-section-description">Configure transaction approval methods</p>
           </div>
         </div>
 
         <div className="admin-settings-form-group">
-          <label className="admin-settings-form-label">SMTP Server</label>
-          <input
-            type="text"
-            value={settings.smtpServer}
-            onChange={(e) => setSettings({ ...settings, smtpServer: e.target.value })}
-            placeholder="smtp.gmail.com"
-            className="admin-settings-form-input"
-          />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <label className="admin-settings-form-label" style={{ marginBottom: 0 }}>Payment Processing Mode</label>
+            {!isEditingPayment && (
+              <button 
+                onClick={() => setIsEditingPayment(true)} 
+                className="admin-settings-change-btn" 
+                style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                <Edit2 size={14} /> Edit
+              </button>
+            )}
+          </div>
+          
+          {!isEditingPayment ? (
+            <div style={{ 
+              padding: '12px 16px', 
+              background: '#f9fafb', 
+              border: '1px solid #e5e7eb', 
+              borderRadius: '6px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '12px' 
+            }}>
+              <span style={{ 
+                fontSize: '12px', 
+                fontWeight: 600, 
+                padding: '4px 10px', 
+                borderRadius: '12px', 
+                backgroundColor: savedApprovalMethod === 'manual' ? '#fef3c7' : '#dcfce7', 
+                color: savedApprovalMethod === 'manual' ? '#b45309' : '#166534',
+                border: savedApprovalMethod === 'manual' ? '1px solid #fde68a' : '1px solid #bbf7d0',
+                fontFamily: 'Inter, sans-serif'
+              }}>
+                Active: {savedApprovalMethod === 'manual' ? 'Manual Approval' : 'Automated Gateway'}
+              </span>
+              <span style={{ fontSize: '14px', color: '#4b5563' }}>
+                {savedApprovalMethod === 'manual' 
+                  ? 'Admins manually review transactions.' 
+                  : 'Transactions confirmed automatically.'}
+              </span>
+            </div>
+          ) : (
+            <select
+              value={settings.approvalMethod}
+              onChange={(e) => setSettings({ ...settings, approvalMethod: e.target.value })}
+              className="admin-settings-form-input"
+            >
+              <option value="gateway">Automated Gateway Approval</option>
+              <option value="manual">Manual Approval</option>
+            </select>
+          )}
         </div>
 
-        <div className="admin-settings-form-row">
-          <div className="admin-settings-form-group">
-            <label className="admin-settings-form-label">SMTP Port</label>
-            <input
-              type="text"
-              value={settings.smtpPort}
-              onChange={(e) => setSettings({ ...settings, smtpPort: e.target.value })}
-              placeholder="587"
-              className="admin-settings-form-input"
-            />
+        {isEditingPayment && (
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button
+              onClick={() => {
+                setIsEditingPayment(false);
+                setSettings({ ...settings, approvalMethod: savedApprovalMethod });
+              }}
+              className="admin-settings-reset-btn"
+              style={{ flex: 1 }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => setConfirmModal({ show: true, section: 'Payment' })}
+              className="admin-settings-save-btn"
+            >
+              Save Changes
+            </button>
           </div>
-          <div className="admin-settings-form-group">
-            <label className="admin-settings-form-label">From Email Address</label>
-            <input
-              type="email"
-              value={settings.fromEmail}
-              onChange={(e) => setSettings({ ...settings, fromEmail: e.target.value })}
-              placeholder="noreply@churchofgrace.org"
-              className="admin-settings-form-input"
-            />
-          </div>
-        </div>
-
-        <button
-          onClick={() => handleSave('Email')}
-          className="admin-settings-save-btn"
-        >
-          Save Configuration
-        </button>
+        )}
       </div>
 
-      {/* Data & Backup Section */}
-      <div className="admin-settings-section">
-        <div className="admin-settings-section-header">
-          <div className="admin-settings-section-icon admin-settings-section-icon-pink">
-            <ArrowLeft size={20} />
-          </div>
-          <div className="admin-settings-section-title-wrapper">
-            <h2 className="admin-settings-section-title">Data & Backup</h2>
-            <p className="admin-settings-section-description">Manage data backup and export</p>
+      {/* Confirmation Modal */}
+      {confirmModal.show && (
+        <div className="admin-settings-modal-overlay">
+          <div className="admin-settings-modal-content">
+            <h2 className="admin-settings-modal-title">Confirm Changes</h2>
+            <p className="admin-settings-modal-description" style={{ marginBottom: '12px' }}>
+              Are you sure you want to save changes to your {confirmModal.section} settings?
+            </p>
+            <div style={{ background: '#f9fafb', padding: '12px', borderRadius: '6px', marginBottom: '24px', fontSize: '13px', color: '#4b5563', lineHeight: '1.5' }}>
+              <strong>What happens next:</strong><br />
+              {confirmModal.section === 'Account' && "Your admin profile details such as name and email address will be updated across the system."}
+              {confirmModal.section === 'Security' && "Your password will be updated immediately. Please make sure to remember your new password for your next login."}
+              {confirmModal.section === 'Payment' && (
+                settings.approvalMethod === 'manual' 
+                  ? "Switching to Manual Approval will require users to upload proof of payment for their transactions. Administrators will need to manually review and approve pending transactions from the dashboard."
+                  : "Switching to Automated Gateway Approval will redirect users to PayMongo to securely process their payments. Transactions will be automatically confirmed without requiring manual review."
+              )}
+            </div>
+            <div className="admin-settings-modal-actions">
+              <button 
+                onClick={() => setConfirmModal({ show: false, section: null })} 
+                className="admin-settings-modal-cancel-btn"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => {
+                  handleSave(confirmModal.section);
+                  setConfirmModal({ show: false, section: null });
+                }} 
+                className="admin-settings-modal-confirm-btn"
+              >
+                Confirm
+              </button>
+            </div>
           </div>
         </div>
+      )}
 
-        <div className="admin-settings-toggle-item">
-          <div className="admin-settings-toggle-label-wrapper">
-            <p className="admin-settings-toggle-label">Automatic Backup</p>
-            <p className="admin-settings-toggle-description">Enable daily automatic backups</p>
-          </div>
-          <label className="admin-settings-toggle">
-            <input
-              type="checkbox"
-              checked={settings.backupEnabled}
-              onChange={(e) => setSettings({ ...settings, backupEnabled: e.target.checked })}
-            />
-            <span className="admin-settings-toggle-slider"></span>
-          </label>
-        </div>
-
-        <div className="admin-settings-backup-actions">
-          <button className="admin-settings-backup-btn">
-            <Printer size={20} />
-            Export Data
-          </button>
-          <button className="admin-settings-backup-btn admin-settings-backup-btn-secondary">
-            <Printer size={20} />
-            Backup Now
-          </button>
-        </div>
-      </div>
     </div>
   );
 }

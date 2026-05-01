@@ -24,6 +24,34 @@ router.post('/donations', authenticateUser, async (req, res) => {
     const count      = await donations.countDocuments();
     const donationId = `D-${new Date().getFullYear()}-${String(count + 1).padStart(3, '0')}`;
 
+    const { settings } = await import('../config/db.js');
+    const config = await settings.findOne({ _id: 'global' });
+    const isManual = config?.paymentApprovalMethod === 'manual';
+
+    if (isManual) {
+      const { proofOfPayment } = req.body;
+      if (!proofOfPayment) {
+        return res.status(400).json({ success: false, message: 'Proof of payment is required for manual approval' });
+      }
+
+      const newDonation = {
+        donationId,
+        email,
+        member: user.fullName,
+        amount: Number(amount),
+        category,
+        method: paymentMethod || 'Manual',
+        type: isRecurring ? 'Recurring' : 'One-time',
+        status: 'pending',
+        proofOfPayment, // Store base64 string
+        date: new Date(),
+        createdAt: new Date(),
+      };
+
+      await donations.insertOne(newDonation);
+      return res.status(201).json({ success: true, message: 'Donation submitted and pending approval.' });
+    }
+
     // Generate PayMongo Link and pre-select the method
     const description = `Donation for ${category} by ${user.fullName}`;
     const billing = { name: user.fullName, email: user.email, phone: user.phone || null };

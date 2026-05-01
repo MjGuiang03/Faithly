@@ -37,6 +37,8 @@ export default function AdminDashboard() {
   const [donationsByBranch, setDonationsByBranch] = useState([]);
   const [growthData, setGrowthData] = useState([]);
   const [attendVsDonData, setAttendVsDonData] = useState([]);
+  const [growthByBranch, setGrowthByBranch] = useState([]);
+  const [attendanceByBranch, setAttendanceByBranch] = useState([]);
   const [loading, setLoading] = useState(true);
   const [rawMembers, setRawMembers] = useState([]);
   const [rawAttendance, setRawAttendance] = useState([]);
@@ -129,8 +131,10 @@ export default function AdminDashboard() {
         setRawMembers(membersData.members);
         const branchMap = {};
         membersData.members.forEach(m => {
-          const b = m.branch || 'Unknown';
-          branchMap[b] = (branchMap[b] || 0) + 1;
+          const b = m.branch || m.community;
+          if (b && b !== 'Unknown') {
+            branchMap[b] = (branchMap[b] || 0) + 1;
+          }
         });
         setMembersByBranch(Object.entries(branchMap).map(([branch, count]) => ({ branch, count })));
       }
@@ -159,12 +163,17 @@ export default function AdminDashboard() {
         // ── Donations by Branch ──
         const emailToBranch = {};
         if (membersData.success && membersData.members) {
-          membersData.members.forEach(m => { emailToBranch[m.email] = m.branch || 'Unknown'; });
+          membersData.members.forEach(m => { 
+            const b = m.branch || m.community;
+            if (b && b !== 'Unknown') emailToBranch[m.email] = b; 
+          });
         }
         const branchDonMap = {};
         confirmedDonations.forEach(d => {
-          const branch = emailToBranch[d.email] || 'Unknown';
-          branchDonMap[branch] = (branchDonMap[branch] || 0) + (Number(d.amount) || 0);
+          const branch = emailToBranch[d.email];
+          if (branch) {
+            branchDonMap[branch] = (branchDonMap[branch] || 0) + (Number(d.amount) || 0);
+          }
         });
         setDonationsByBranch(
           Object.entries(branchDonMap)
@@ -245,6 +254,29 @@ export default function AdminDashboard() {
       });
     }
     setGrowthData(growth);
+
+    const branchCounts = {};
+    validMembers.forEach(m => {
+      const date = new Date(m.createdAt);
+      let inPeriod = false;
+      if (growthMonth === 'all') {
+        if (date.getFullYear() === growthYear) inPeriod = true;
+      } else {
+        if (date.getFullYear() === growthYear && date.getMonth() === parseInt(growthMonth)) inPeriod = true;
+      }
+      if (inPeriod) {
+        const b = m.branch || m.community;
+        if (b && b !== 'Unknown') {
+          branchCounts[b] = (branchCounts[b] || 0) + 1;
+        }
+      }
+    });
+    setGrowthByBranch(
+      Object.entries(branchCounts)
+        .map(([branch, count]) => ({ branch, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5)
+    );
   }, [rawMembers, growthYear, growthMonth]);
 
   // --- Derived Attendance Data ---
@@ -278,6 +310,35 @@ export default function AdminDashboard() {
       });
     }
     setAttendVsDonData(att);
+
+    if (attBranch === 'all') {
+      const branchAtt = {};
+      const branchDays = {};
+      rawAttendance.forEach(a => {
+        const d = new Date(a.date || a.createdAt);
+        let inPeriod = false;
+        if (attMonth === 'all') {
+          if (d.getFullYear() === attYear) inPeriod = true;
+        } else {
+          if (d.getFullYear() === attYear && d.getMonth() === parseInt(attMonth)) inPeriod = true;
+        }
+        if (inPeriod) {
+          const b = a.branch || a.community;
+          if (b && b !== 'Unknown') {
+            const totalAtt = (Number(a.adultsCount) || 0) + (Number(a.kidsCount) || 0);
+            branchAtt[b] = (branchAtt[b] || 0) + totalAtt;
+            branchDays[b] = (branchDays[b] || 0) + 1;
+          }
+        }
+      });
+      const avgByBranch = Object.entries(branchAtt).map(([branch, total]) => ({
+        branch,
+        avg: Math.round(total / branchDays[branch])
+      })).sort((a,b) => b.avg - a.avg).slice(0, 5);
+      setAttendanceByBranch(avgByBranch);
+    } else {
+      setAttendanceByBranch([]);
+    }
   }, [rawAttendance, attYear, attMonth, attBranch]);
   const dash = (v) => loading ? '—' : v;
 
@@ -299,7 +360,7 @@ export default function AdminDashboard() {
 
         <div className="adm-stat-card green adm-clickable-card" onClick={() => navigate('/admin/branches')}>
           <div className="adm-stat-top">
-            <span className="adm-stat-label">Total Branches</span>
+            <span className="adm-stat-label">Total Communities</span>
             <div className="adm-stat-icon adm-icon-green">
               <MapPin size={18} color="white" />
             </div>
@@ -354,7 +415,7 @@ export default function AdminDashboard() {
         {/* Members by Branch Bar */}
         <div className="adm-card adm-card-bar" >
           <div className="adm-card-header">
-            <h3 className="adm-card-title">Members by Branch</h3>
+            <h3 className="adm-card-title">Members by Community</h3>
             <button className="adm-chart-expand-btn" onClick={() => setExpandedChart('branches')} title="Expand Chart"><Expand size={16} color="#4B5563" strokeWidth={2.5} /></button>
           </div>
           <div className="adm-bar-chart-container">
@@ -374,25 +435,9 @@ export default function AdminDashboard() {
       {/* ── Row 3 & 4: Charts ── */}
       <div className="adm-charts-row">
         <div className="adm-card adm-chart-full">
-          <div className="adm-card-header adm-card-header-col">
-            <div className="adm-card-header-row">
-              <h3 className="adm-card-title">Member Growth Trends</h3>
-              <div className="adm-filter-group">
-                <select value={growthView} onChange={e => setGrowthView(e.target.value)} className="adm-filter-select">
-                  <option value="both">Total & New</option>
-                  <option value="total">Total Only</option>
-                  <option value="new">New Only</option>
-                </select>
-                <select value={growthMonth} onChange={e => setGrowthMonth(e.target.value)} className="adm-filter-select">
-                  <option value="all">All Months</option>
-                  {['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map((m,i) => <option key={i} value={i}>{m}</option>)}
-                </select>
-                <select value={growthYear} onChange={e => setGrowthYear(parseInt(e.target.value))} className="adm-filter-select">
-                  {[2023, 2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
-                </select>
-                <button className="adm-chart-expand-btn" onClick={() => setExpandedChart('growth')} title="Expand Chart"><Expand size={16} color="#4B5563" strokeWidth={2.5} /></button>
-              </div>
-            </div>
+          <div className="adm-card-header">
+            <h3 className="adm-card-title">Member Growth Trends</h3>
+            <button className="adm-chart-expand-btn" onClick={() => setExpandedChart('growth')} title="Expand Chart"><Expand size={16} color="#4B5563" strokeWidth={2.5} /></button>
           </div>
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={growthData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
@@ -402,30 +447,15 @@ export default function AdminDashboard() {
               <Tooltip />
               <Legend iconType="circle" wrapperStyle={{ paddingTop: '12px', fontSize: '12px' }} />
               {(growthView === 'both' || growthView === 'total') && <Line type="monotone" dataKey="totalMembers" stroke="#155DFC" strokeWidth={2} dot={{ r: 3 }} name="Total Members" />}
-              {(growthView === 'both' || growthView === 'new') && <Line type="monotone" dataKey="newMembers"   stroke="#00A63E" strokeWidth={2} dot={{ r: 3 }} name="New Members" />}
+              {(growthView === 'both' || growthView === 'new') && <Line type="monotone" dataKey="newMembers"   stroke="#0D1F45" strokeWidth={2} dot={{ r: 3 }} name="New Members" />}
             </LineChart>
           </ResponsiveContainer>
         </div>
 
 <div className="adm-card adm-chart-full">
-          <div className="adm-card-header adm-card-header-col">
-            <div className="adm-card-header-row">
-              <h3 className="adm-card-title">Attendance Trends</h3>
-              <div className="adm-filter-group">
-                <select value={attBranch} onChange={e => setAttBranch(e.target.value)} className="adm-filter-select adm-filter-select-sm">
-                  <option value="all">All Branches</option>
-                  {membersByBranch.map((b,i) => <option key={i} value={b.branch}>{b.branch}</option>)}
-                </select>
-                <select value={attMonth} onChange={e => setAttMonth(e.target.value)} className="adm-filter-select">
-                  <option value="all">All Months</option>
-                  {['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map((m,i) => <option key={i} value={i}>{m}</option>)}
-                </select>
-                <select value={attYear} onChange={e => setAttYear(parseInt(e.target.value))} className="adm-filter-select">
-                  {[2023, 2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
-                </select>
-                <button className="adm-chart-expand-btn" onClick={() => setExpandedChart('attendance')} title="Expand Chart"><Expand size={16} color="#4B5563" strokeWidth={2.5} /></button>
-              </div>
-            </div>
+          <div className="adm-card-header">
+            <h3 className="adm-card-title">Attendance Trends</h3>
+            <button className="adm-chart-expand-btn" onClick={() => setExpandedChart('attendance')} title="Expand Chart"><Expand size={16} color="#4B5563" strokeWidth={2.5} /></button>
           </div>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={attendVsDonData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
@@ -434,7 +464,7 @@ export default function AdminDashboard() {
               <YAxis stroke="#9CA3AF" fontSize={12} />
               <Tooltip />
               <Legend iconType="square" wrapperStyle={{ paddingTop: '12px', fontSize: '12px' }} />
-              <Bar dataKey="attendance" fill="#00A63E" radius={[6, 6, 0, 0]} name="Attendance" />
+              <Bar dataKey="attendance" fill="#155DFC" radius={[6, 6, 0, 0]} name="Attendance" />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -461,13 +491,44 @@ export default function AdminDashboard() {
       {expandedChart && (
         <div className="adm-expand-overlay">
           <div className="adm-expand-modal">
-            <div className="adm-expand-header">
+            <div className="adm-expand-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h2 className="adm-expand-title">
                 {expandedChart === 'donations' && 'Donation Categories — Detailed View'}
-                {expandedChart === 'branches' && 'Members by Branch — Detailed View'}
+                {expandedChart === 'branches' && 'Members by Community — Detailed View'}
                 {expandedChart === 'growth' && 'Member Growth Trends — Detailed View'}
                 {expandedChart === 'attendance' && 'Attendance Trends — Detailed View'}
               </h2>
+              {expandedChart === 'growth' && (
+                <div className="adm-filter-group" style={{ marginLeft: 'auto', marginRight: '16px' }}>
+                  <select value={growthView} onChange={e => setGrowthView(e.target.value)} className="adm-filter-select">
+                    <option value="both">Total & New</option>
+                    <option value="total">Total Only</option>
+                    <option value="new">New Only</option>
+                  </select>
+                  <select value={growthMonth} onChange={e => setGrowthMonth(e.target.value)} className="adm-filter-select">
+                    <option value="all">All Months</option>
+                    {['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map((m,i) => <option key={i} value={i}>{m}</option>)}
+                  </select>
+                  <select value={growthYear} onChange={e => setGrowthYear(parseInt(e.target.value))} className="adm-filter-select">
+                    {[2023, 2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
+                  </select>
+                </div>
+              )}
+              {expandedChart === 'attendance' && (
+                <div className="adm-filter-group" style={{ marginLeft: 'auto', marginRight: '16px' }}>
+                  <select value={attBranch} onChange={e => setAttBranch(e.target.value)} className="adm-filter-select adm-filter-select-sm">
+                    <option value="all">All Communities</option>
+                    {membersByBranch.map((b,i) => <option key={i} value={b.branch}>{b.branch}</option>)}
+                  </select>
+                  <select value={attMonth} onChange={e => setAttMonth(e.target.value)} className="adm-filter-select">
+                    <option value="all">All Months</option>
+                    {['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map((m,i) => <option key={i} value={i}>{m}</option>)}
+                  </select>
+                  <select value={attYear} onChange={e => setAttYear(parseInt(e.target.value))} className="adm-filter-select">
+                    {[2023, 2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
+                  </select>
+                </div>
+              )}
               <button className="adm-expand-close" onClick={() => setExpandedChart(null)}><X size={20} /></button>
             </div>
 
@@ -490,7 +551,7 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                     <div className="adm-expand-panel">
-                      <h4 className="adm-expand-panel-title">Top Donor by Branch</h4>
+                      <h4 className="adm-expand-panel-title">Top Donor by Community</h4>
                       <div className="adm-expand-panel-chart">
                         <ResponsiveContainer width="100%" height="100%">
                           <BarChart data={donationsByBranch} margin={{ top: 10, right: 10, left: -10, bottom: 30 }}>
@@ -505,7 +566,7 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                   <div className="adm-expand-interpretation">
-                    <strong>Interpretation:</strong> The left panel shows the proportional distribution of confirmed donations across six ministry fund categories. The right panel ranks branches by their total donation contributions, helping leadership identify which communities are the most active givers and where fundraising support may be needed.
+                    <strong>Interpretation:</strong> The left panel shows the proportional distribution of confirmed donations across six ministry fund categories. The right panel ranks communities by their total donation contributions, helping leadership identify which communities are the most active givers and where fundraising support may be needed.
                   </div>
                 </>
               )}
@@ -523,7 +584,7 @@ export default function AdminDashboard() {
                 <>
                   <div className="adm-expand-grid" style={{ gridTemplateColumns: '8fr 2fr' }}>
                     <div className="adm-expand-panel">
-                      <h4 className="adm-expand-panel-title">Member Count by Branch</h4>
+                      <h4 className="adm-expand-panel-title">Member Count by Community</h4>
                       <div className="adm-expand-panel-chart">
                         <ResponsiveContainer width="100%" height="100%">
                           <BarChart data={membersByBranch.length > 0 ? membersByBranch : [{ branch: 'No data', count: 0 }]} margin={{ top: 10, right: 10, left: -10, bottom: 40 }}>
@@ -547,11 +608,18 @@ export default function AdminDashboard() {
                             <Tooltip />
                           </PieChart>
                         </ResponsiveContainer>
-                        <div style={{ textAlign: 'center', marginTop: '-20px', fontFamily: 'Inter' }}>
-                          <div style={{ fontSize: '22px', fontWeight: 700, color: '#0F172A' }}>{officerPct}%</div>
-                          <div style={{ fontSize: '10px', color: '#6B7280', marginTop: '2px' }}>Officers</div>
+                        <div style={{ textAlign: 'center', marginTop: '-24px', fontFamily: 'Inter', display: 'flex', gap: '32px', justifyContent: 'center', alignItems: 'center' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                            <span style={{ fontSize: '18px', fontWeight: 700, color: '#155DFC', lineHeight: 1 }}>{officerPct}%</span>
+                            <span style={{ fontSize: '10px', color: '#6B7280', fontWeight: 600, marginTop: '4px' }}>Officers</span>
+                          </div>
+                          <div style={{ width: '1px', height: '24px', backgroundColor: '#E5E7EB' }} />
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                            <span style={{ fontSize: '18px', fontWeight: 700, color: '#0D1F45', lineHeight: 1 }}>{100 - officerPct}%</span>
+                            <span style={{ fontSize: '10px', color: '#6B7280', fontWeight: 600, marginTop: '4px' }}>Members</span>
+                          </div>
                         </div>
-                        <div style={{ display: 'flex', gap: '14px', marginTop: '12px', fontSize: '11px', fontFamily: 'Inter' }}>
+                        <div style={{ display: 'flex', gap: '14px', marginTop: '16px', fontSize: '11px', fontFamily: 'Inter' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#0D1F45' }} />
                             <span style={{ color: '#374151' }}>Members ({regularMembers})</span>
@@ -565,7 +633,7 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                   <div className="adm-expand-interpretation">
-                    <strong>Interpretation:</strong> The left panel shows the member count distribution across branches. The right panel displays a gauge showing the proportion of verified officers ({officerPct}%) to total members, helping leadership assess organizational capacity and identify branches that may need more officer appointments.
+                    <strong>Interpretation:</strong> The left panel shows the member count distribution across communities. The right panel displays a gauge showing the proportion of verified officers ({officerPct}%) to total members, helping leadership assess organizational capacity and identify communities that may need more officer appointments.
                   </div>
                 </>
                 );
@@ -573,40 +641,57 @@ export default function AdminDashboard() {
 
               {expandedChart === 'growth' && (
                 <>
-                  <div className="adm-expand-grid">
+                  <div className="adm-expand-grid" style={{ gridTemplateColumns: '4fr 3fr 3fr' }}>
                     <div className="adm-expand-panel">
                       <h4 className="adm-expand-panel-title">Growth Trend (Line)</h4>
                       <div className="adm-expand-panel-chart">
                         <ResponsiveContainer width="100%" height="100%">
-                          <LineChart data={growthData} margin={{ top: 10, right: 10, left: -10, bottom: 10 }}>
+                          <LineChart data={growthData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
                             <XAxis dataKey="label" stroke="#9CA3AF" fontSize={12} />
-                            <YAxis stroke="#9CA3AF" fontSize={12} />
+                            <YAxis stroke="#9CA3AF" fontSize={12} tickFormatter={val => val >= 1000 ? `${(val/1000).toFixed(1)}k` : val} />
                             <Tooltip />
                             <Legend iconType="circle" />
                             {(growthView === 'both' || growthView === 'total') && <Line type="monotone" dataKey="totalMembers" stroke="#155DFC" strokeWidth={2.5} dot={{ r: 3 }} name="Total Members" />}
-                            {(growthView === 'both' || growthView === 'new') && <Line type="monotone" dataKey="newMembers" stroke="#00A63E" strokeWidth={2.5} dot={{ r: 3 }} name="New Members" />}
+                            {(growthView === 'both' || growthView === 'new') && <Line type="monotone" dataKey="newMembers" stroke="#0D1F45" strokeWidth={2.5} dot={{ r: 3 }} name="New Members" />}
                           </LineChart>
                         </ResponsiveContainer>
                       </div>
                     </div>
                     <div className="adm-expand-panel">
-                      <h4 className="adm-expand-panel-title">New Members (Bar)</h4>
+                      <h4 className="adm-expand-panel-title">Growth by Community (Top 5)</h4>
                       <div className="adm-expand-panel-chart">
                         <ResponsiveContainer width="100%" height="100%">
-                          <BarChart data={growthData} margin={{ top: 10, right: 10, left: -10, bottom: 10 }}>
+                          <BarChart data={growthByBranch} margin={{ top: 10, right: 10, left: -20, bottom: 30 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
-                            <XAxis dataKey="label" stroke="#9CA3AF" fontSize={12} />
-                            <YAxis stroke="#9CA3AF" fontSize={12} />
+                            <XAxis dataKey="branch" stroke="#9CA3AF" fontSize={11} angle={-20} textAnchor="end" height={55} />
+                            <YAxis stroke="#9CA3AF" fontSize={12} allowDecimals={false} tickFormatter={val => val >= 1000 ? `${(val/1000).toFixed(1)}k` : val} />
                             <Tooltip />
-                            <Bar dataKey="newMembers" fill="#00A63E" radius={[4, 4, 0, 0]} name="New Members" barSize={28} />
+                            <Bar dataKey="count" fill="#0D1F45" radius={[4, 4, 0, 0]} name="New Members" barSize={28} />
                           </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                    <div className="adm-expand-panel">
+                      <h4 className="adm-expand-panel-title">Active vs Inactive</h4>
+                      <div className="adm-expand-panel-chart">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie data={[
+                              { name: 'Active', value: memberStats.active, fill: '#155DFC' },
+                              { name: 'Inactive', value: memberStats.inactive, fill: '#9CA3AF' }
+                            ]} cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={2} dataKey="value" label={({name, value}) => `${name} (${value})`}>
+                              <Cell fill="#155DFC" />
+                              <Cell fill="#9CA3AF" />
+                            </Pie>
+                            <Tooltip />
+                          </PieChart>
                         </ResponsiveContainer>
                       </div>
                     </div>
                   </div>
                   <div className="adm-expand-interpretation">
-                    <strong>Interpretation:</strong> The left panel shows cumulative membership growth over time as a line chart. The right panel isolates new member registrations per period as a bar chart, making it easier to spot registration spikes from outreach events or seasonal drives. Together, they provide a complete picture of growth momentum.
+                    <strong>Interpretation:</strong> The left panel shows cumulative membership growth. The middle panel highlights the top communities driving new registrations. The right panel contextualizes overall growth against the current ratio of active to inactive members.
                   </div>
                 </>
               )}
@@ -623,25 +708,42 @@ export default function AdminDashboard() {
                             <XAxis dataKey="label" stroke="#9CA3AF" fontSize={12} />
                             <YAxis stroke="#9CA3AF" fontSize={12} />
                             <Tooltip />
-                            <Bar dataKey="attendance" fill="#00A63E" radius={[4, 4, 0, 0]} name="Attendance" barSize={28} />
+                            <Bar dataKey="attendance" fill="#155DFC" radius={[4, 4, 0, 0]} name="Attendance" barSize={28} />
                           </BarChart>
                         </ResponsiveContainer>
                       </div>
                     </div>
-                    <div className="adm-expand-panel">
-                      <h4 className="adm-expand-panel-title">Attendance Trend (Line)</h4>
-                      <div className="adm-expand-panel-chart">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <LineChart data={attendVsDonData} margin={{ top: 10, right: 10, left: -10, bottom: 10 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-                            <XAxis dataKey="label" stroke="#9CA3AF" fontSize={12} />
-                            <YAxis stroke="#9CA3AF" fontSize={12} />
-                            <Tooltip />
-                            <Line type="monotone" dataKey="attendance" stroke="#155DFC" strokeWidth={2.5} dot={{ r: 3 }} name="Attendance" />
-                          </LineChart>
-                        </ResponsiveContainer>
+                    {attBranch === 'all' ? (
+                      <div className="adm-expand-panel">
+                        <h4 className="adm-expand-panel-title">Avg Attendance by Community (Top 5)</h4>
+                        <div className="adm-expand-panel-chart">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={attendanceByBranch} margin={{ top: 10, right: 10, left: -10, bottom: 30 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
+                              <XAxis dataKey="branch" stroke="#9CA3AF" fontSize={11} angle={-20} textAnchor="end" height={55} />
+                              <YAxis stroke="#9CA3AF" fontSize={12} />
+                              <Tooltip />
+                              <Bar dataKey="avg" fill="#0D1F45" radius={[4, 4, 0, 0]} name="Avg Attendance" barSize={28} />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="adm-expand-panel">
+                        <h4 className="adm-expand-panel-title">Attendance Trend (Line)</h4>
+                        <div className="adm-expand-panel-chart">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={attendVsDonData} margin={{ top: 10, right: 10, left: -10, bottom: 10 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+                              <XAxis dataKey="label" stroke="#9CA3AF" fontSize={12} />
+                              <YAxis stroke="#9CA3AF" fontSize={12} />
+                              <Tooltip />
+                              <Line type="monotone" dataKey="attendance" stroke="#155DFC" strokeWidth={2.5} dot={{ r: 3 }} name="Attendance" />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <div className="adm-expand-interpretation">
                     <strong>Interpretation:</strong> The left panel shows attendance volume per period as a bar chart for easy comparison. The right panel presents the same data as a line chart to highlight the overall trend direction. This dual view helps leadership monitor worship service engagement, identify seasonal patterns, and measure the impact of outreach initiatives.
