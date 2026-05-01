@@ -1,13 +1,13 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
-import { Bell, Banknote, Heart, CalendarDays, Circle, X, Menu, LogOut } from 'lucide-react';
+import { Bell, Banknote, Heart, CalendarDays, Circle, X, Menu } from 'lucide-react';
 import API from '../../utils/api';
 import '../styles/UserHeader.css';
 
 export default function UserHeader({ toggleSidebar, collapsed }) {
   const navigate = useNavigate();
-  const { profile, user, signOut } = useAuth();
+  const { profile } = useAuth();
   const token = localStorage.getItem('token');
   const [notifItems, setNotifItems] = useState([]);
   const [readIds, setReadIds] = useState(new Set());

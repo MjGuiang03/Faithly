@@ -345,7 +345,7 @@ function NewGoalModal({ onClose }) {
 
     const isOthers = nameOption === 'others';
     const resolvedName = isOthers ? customName.trim() : nameOption;
-    const today = new Date().toISOString().split('T')[0];
+
 
 
     const handleNameChange = (val) => {
@@ -778,7 +778,7 @@ function EditGoalModal({ goal, onClose }) {
 
     const isOthers = nameOption === 'others';
     const resolvedName = isOthers ? customName.trim() : nameOption;
-    const today = new Date().toISOString().split('T')[0];
+
 
     const handleDates = (start, end) => {
         if (start && end) {
