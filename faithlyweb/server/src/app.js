@@ -18,6 +18,8 @@ import announcementRoutes from './routes/announcements.js';
 import savingsRoutes      from './routes/savings.js';
 import prayerRoutes       from './routes/prayers.js';
 import webhookRoutes      from './routes/webhooks.js';
+import chatRoutes         from './routes/chat.js';
+import aiRoutes           from './routes/ai.js';
 import settingsRoutes     from './routes/settings.js';
 
 const app = express();
@@ -68,6 +70,8 @@ app.use('/api', announcementRoutes);
 app.use('/api', savingsRoutes);
 app.use('/api', prayerRoutes);
 app.use('/api', webhookRoutes);
+app.use('/api', chatRoutes);
+app.use('/api/admin', aiRoutes);
 app.use('/api', settingsRoutes);
 
 /* ================== GLOBAL ERROR HANDLER ================== */

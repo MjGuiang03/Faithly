@@ -37,7 +37,7 @@ import AdminNotifications from './admin/pages/AdminNotification';
 
 import AdminAnnouncements from './admin/pages/AdminAnnouncements';
 import AdminUserManagement from './admin/pages/AdminUserManagement';
-
+import AdminFinancialReport from './admin/pages/AdminFinancialReport';
 import AdminRFIDPreview from './admin/pages/AdminRFIDPreview';
 
 // Loan Admin Pages
@@ -104,6 +104,7 @@ export default function App() {
               <Route path="/admin/announcements" element={<AdminAnnouncements />} />
               <Route path="/admin/users" element={<AdminUserManagement />} />
               <Route path="/admin/settings" element={<AdminSettings />} />
+              <Route path="/admin/financial-report" element={<AdminFinancialReport />} />
 
             </Route>
 

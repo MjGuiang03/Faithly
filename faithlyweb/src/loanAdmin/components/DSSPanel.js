@@ -85,8 +85,21 @@ const DSSPanel = ({ analysis, loading }) => {
         <p className="dss-rec-text">{recommendation}</p>
       </div>
 
+      {/* AI-Powered Analysis */}
+      {analysis.aiSummary && (
+        <div className="dss-ai-summary">
+          <div className="dss-ai-header">
+            <div className="dss-ai-badge">
+              <span className="dss-ai-sparkle">✨</span>
+              AI Analysis
+            </div>
+          </div>
+          <p className="dss-ai-text">{analysis.aiSummary}</p>
+        </div>
+      )}
+
       <p className="dss-disclaimer">
-        * This analysis is advisory only based on system policy. Final decision remains with the Loan Admin.
+        * This analysis is advisory only based on system policy and AI assessment. Final decision remains with the Loan Admin.
       </p>
     </div>
   );

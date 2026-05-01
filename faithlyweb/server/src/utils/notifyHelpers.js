@@ -1,9 +1,11 @@
 import { users } from '../config/db.js';
 import { sendEmailNotification } from './email.js';
 import { sendPushNotification } from './webpush.js';
+import { sendExpoPushNotification } from './expoPush.js';
 
 /**
  * Sends notifications based on user preferences.
+ * Supports both Web Push (browser) and Expo Push (React Native mobile).
  * @param {string} email - The user's email address
  * @param {string} category - The notification category (loan, savings, donation, payment_pending)
  * @param {string} title - The title of the notification (for Push & Email Subject)
@@ -26,7 +28,7 @@ export const notifyUser = async (email, category, title, htmlMessage, plainMessa
       await sendEmailNotification(email, title, htmlMessage);
     }
 
-    // Push Notification
+    // Web Push Notification (Browser / PWA)
     if (user.pushNotifications === true && user.pushSubscription) {
       const payload = {
         title,
@@ -38,6 +40,21 @@ export const notifyUser = async (email, category, title, htmlMessage, plainMessa
       // Clean up expired subscriptions
       if (result && result.expired) {
         await users.updateOne({ email }, { $unset: { pushSubscription: "" }, $set: { pushNotifications: false } });
+      }
+    }
+
+    // Expo Push Notification (React Native Mobile App)
+    if (user.expoPushToken) {
+      const payload = {
+        title,
+        message: plainMessage,
+        data: { url, category }
+      };
+      const result = await sendExpoPushNotification(user.expoPushToken, payload);
+
+      // Clean up expired / invalid tokens
+      if (result && result.expired) {
+        await users.updateOne({ email }, { $unset: { expoPushToken: "" } });
       }
     }
   } catch (error) {

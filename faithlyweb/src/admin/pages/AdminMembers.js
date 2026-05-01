@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ChevronLeft, ChevronRight, Edit, Lock, Search, Trash2, User, UserPlus, Users as UsersIcon, XCircle, X, MoreVertical, Eye, CreditCard, CheckCircle2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Edit, Lock, Search, Trash2, User, UserPlus, Users as UsersIcon, XCircle, X, MoreVertical, Eye, EyeOff, CreditCard, CheckCircle2 } from 'lucide-react';
 import useDebounce from '../../hooks/useDebounce';
 import '../styles/AdminMembers.css';
 import React from 'react';
@@ -31,21 +31,78 @@ const IconTrash = () => (
 function EditModal({ member, onClose, onSave }) {
   const [form, setForm] = useState({
     fullName: member.fullName || member.name || '',
+    email:    member.email    || '',
     phone:    member.phone    || '',
     branch:   member.branch   || '',
-    position: member.position || '',
+    position: member.position || 'Member',
+    churchId: member.churchId || '',
     newPassword: '', // Added for editing password
   });
+  const [errors, setErrors] = useState({});
   const [adminPassword, setAdminPassword] = useState('');
   const [showPassword,  setShowPassword]  = useState(false);
   const [passwordError, setPasswordError] = useState('');
   const [saving,        setSaving]        = useState(false);
 
-  const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
+  const validateField = (name, value, position) => {
+    let error = '';
+    if (name === 'newPassword' && value) {
+      if (value.length < 8) error = 'At least 8 characters';
+      else if (!/[A-Z]/.test(value)) error = 'At least one uppercase letter';
+      else if (!/[a-z]/.test(value)) error = 'At least one lowercase letter';
+      else if (!/[0-9]/.test(value)) error = 'At least one number';
+      else if (!/[^A-Za-z0-9]/.test(value)) error = 'At least one symbol';
+    } else if (name === 'churchId' && position !== 'Member') {
+      if (!value) error = 'Church ID is required';
+      else if (!/^\d{2}-\d{2}-\d{2}$/.test(value)) error = 'Format XX-XX-XX';
+      else {
+        const POSITION_RANGES = {
+          'Deacon': { prefix: '00-00' }, 'Local Evangelist': { prefix: '00-01' },
+          'District Evangelist': { prefix: '00-02' }, 'National Evangelist': { prefix: '00-03' },
+          'Assistant Priest': { prefix: '00-04' }, 'Priest': { prefix: '00-05' },
+          'Elder': { prefix: '00-06' }, 'District Elder': { prefix: '00-06' },
+          'Bishop': { prefix: '00-07' }, 'District Bishop': { prefix: '00-08' },
+          'National Bishop': { prefix: '00-09' }, 'Apostle': { prefix: '00-10' },
+        };
+        const range = POSITION_RANGES[position];
+        if (range) {
+          const parts = value.split('-');
+          const idPrefix = parts[0] + '-' + parts[1];
+          if (idPrefix !== range.prefix) error = `Must start with ${range.prefix} for ${position}`;
+        }
+      }
+    }
+    return error;
+  };
+
+  const handleChange = e => {
+    const { name, value } = e.target;
+    let sanitized = value;
+    if (name === 'churchId') sanitized = value.replace(/[^\d-]/g, '').slice(0, 8);
+    setForm(f => ({ ...f, [name]: sanitized }));
+
+    const error = validateField(name, sanitized, name === 'position' ? sanitized : form.position);
+    setErrors(prev => ({ ...prev, [name]: error }));
+
+    if (name === 'position' && sanitized !== 'Member') {
+      const cidError = validateField('churchId', form.churchId, sanitized);
+      setErrors(prev => ({ ...prev, churchId: cidError }));
+    }
+  };
 
   const handleSubmit = async () => {
     if (!form.fullName.trim()) { toast.error('Full name is required'); return; }
     if (!adminPassword.trim()) { setPasswordError('Admin password is required'); return; }
+
+    const newErrors = {};
+    if (form.newPassword) newErrors.newPassword = validateField('newPassword', form.newPassword);
+    if (form.position !== 'Member') newErrors.churchId = validateField('churchId', form.churchId, form.position);
+    setErrors(newErrors);
+
+    if (Object.values(newErrors).some(err => err)) {
+      return toast.error('Please fix the errors in the form');
+    }
+
     setPasswordError('');
     setSaving(true);
     try {
@@ -53,7 +110,7 @@ function EditModal({ member, onClose, onSave }) {
       const res   = await fetch(`${API}/api/admin/update-member`, {
         method:  'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body:    JSON.stringify({ email: member.email, adminPassword, ...form })
+        body:    JSON.stringify({ originalEmail: member.email, adminPassword, ...form })
       });
       const data = await res.json();
       if (!data.success) {
@@ -90,15 +147,18 @@ function EditModal({ member, onClose, onSave }) {
               <input className="admin-members-form-input" name="fullName" value={form.fullName} onChange={handleChange} />
             </div>
             <div className="admin-members-form-group">
-              <label className="admin-members-form-label">Phone Number</label>
-              <input className="admin-members-form-input" name="phone" value={form.phone} onChange={handleChange} />
+              <label className="admin-members-form-label">Email Address</label>
+              <input className="admin-members-form-input" type="email" name="email" value={form.email} onChange={handleChange} />
             </div>
           </div>
           <div className="admin-members-form-grid-2col">
             <div className="admin-members-form-group">
+              <label className="admin-members-form-label">Phone Number</label>
+              <input className="admin-members-form-input" name="phone" value={form.phone} onChange={handleChange} />
+            </div>
+            <div className="admin-members-form-group">
               <label className="admin-members-form-label">Community</label>
               <select className="admin-members-form-input" name="branch" value={form.branch} onChange={handleChange}>
-                <option value="Bulacan Main">Bulacan Main</option>
                 <optgroup label="Kalinga">
                   <option>Tabuk</option><option>Zapote</option><option>Bliss</option>
                   <option>Libanon</option><option>Batong Buhay</option><option>Balatoc</option><option>Lat-nog</option>
@@ -162,17 +222,29 @@ function EditModal({ member, onClose, onSave }) {
                 <option value="Apostle">Apostle</option>
               </select>
             </div>
+            <div className="admin-members-form-group">
+              <label className="admin-members-form-label">Church ID</label>
+              <input 
+                className={`admin-members-form-input${errors.churchId ? ' admin-members-input-error' : ''}`} 
+                name="churchId" 
+                value={form.churchId} 
+                onChange={handleChange} 
+                disabled={form.position === 'Member'} 
+              />
+              {errors.churchId && <p className="admin-members-field-error" style={{marginTop: '4px'}}>{errors.churchId}</p>}
+            </div>
           </div>
           <div className="admin-members-form-group admin-members-mb-20">
             <label className="admin-members-form-label">New Password (optional)</label>
             <input
-              className="admin-members-form-input"
+              className={`admin-members-form-input${errors.newPassword ? ' admin-members-input-error' : ''}`}
               type="text"
               name="newPassword"
               value={form.newPassword}
               onChange={handleChange}
               placeholder="Enter new password to change"
             />
+            {errors.newPassword && <p className="admin-members-field-error" style={{marginTop: '4px'}}>{errors.newPassword}</p>}
           </div>
           <p className="admin-members-admin-confirm-title">Confirm Changes</p>
           <div className="admin-members-form-row admin-members-mb-0">
@@ -311,23 +383,94 @@ function DeleteModal({ member, onClose, onConfirm }) {
 ═══════════════════════════════════════════════════════════════════════════ */
 function AddMemberModal({ onClose, onSave }) {
   const [form, setForm] = useState({
-    fullName: '', email: '', password: '', phone: '', branch: 'Bulacan Main', position: 'member',
+    fullName: '', email: '', password: '', phone: '', branch: '', position: 'Member', churchId: ''
   });
+  const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
+  const validateField = (name, value, position) => {
+    let error = '';
+    if (name === 'phone') {
+      if (!value) error = 'Phone number is required';
+      else if (!/^\d{10}$/.test(value)) error = 'Exactly 10 digits required';
+      else if (!/^9/.test(value)) error = 'Must start with 9';
+      else if (value.startsWith('0')) error = 'Enter 10 digits (no leading 0)';
+    } else if (name === 'password') {
+      if (!value) error = 'Password is required';
+      else if (value.length < 8) error = 'At least 8 characters';
+      else if (!/[A-Z]/.test(value)) error = 'At least one uppercase letter';
+      else if (!/[a-z]/.test(value)) error = 'At least one lowercase letter';
+      else if (!/[0-9]/.test(value)) error = 'At least one number';
+      else if (!/[^A-Za-z0-9]/.test(value)) error = 'At least one symbol';
+    } else if (name === 'churchId' && position !== 'Member') {
+      if (!value) error = 'Church ID is required';
+      else if (!/^\d{2}-\d{2}-\d{2}$/.test(value)) error = 'Format XX-XX-XX';
+      else {
+        const POSITION_RANGES = {
+          'Deacon': { prefix: '00-00' }, 'Local Evangelist': { prefix: '00-01' },
+          'District Evangelist': { prefix: '00-02' }, 'National Evangelist': { prefix: '00-03' },
+          'Assistant Priest': { prefix: '00-04' }, 'Priest': { prefix: '00-05' },
+          'Elder': { prefix: '00-06' }, 'District Elder': { prefix: '00-06' },
+          'Bishop': { prefix: '00-07' }, 'District Bishop': { prefix: '00-08' },
+          'National Bishop': { prefix: '00-09' }, 'Apostle': { prefix: '00-10' },
+        };
+        const range = POSITION_RANGES[position];
+        if (range) {
+          const parts = value.split('-');
+          const idPrefix = parts[0] + '-' + parts[1];
+          if (idPrefix !== range.prefix) error = `Must start with ${range.prefix} for ${position}`;
+        }
+      }
+    } else if (name === 'branch') {
+      if (!value) error = 'Please select a community';
+    }
+    return error;
+  };
+
+  const handleChange = e => {
+    const { name, value } = e.target;
+    let sanitized = value;
+    if (name === 'phone') sanitized = value.replace(/\D/g, '').slice(0, 10);
+    if (name === 'churchId') sanitized = value.replace(/[^\d-]/g, '').slice(0, 8);
+
+    setForm(f => ({ ...f, [name]: sanitized }));
+    
+    const error = validateField(name, sanitized, name === 'position' ? sanitized : form.position);
+    setErrors(prev => ({ ...prev, [name]: error }));
+
+    if (name === 'position' && sanitized !== 'Member') {
+      const cidError = validateField('churchId', form.churchId, sanitized);
+      setErrors(prev => ({ ...prev, churchId: cidError }));
+    }
+  };
 
   const handleSubmit = async () => {
-    if (!form.fullName.trim() || !form.email.trim() || !form.password.trim() || !form.phone.trim()) {
-      return toast.error('All fields are required');
+    const newErrors = {};
+    newErrors.fullName = !form.fullName.trim() ? 'Required' : '';
+    newErrors.email = !form.email.trim() ? 'Required' : '';
+    newErrors.password = validateField('password', form.password);
+    newErrors.phone = validateField('phone', form.phone);
+    newErrors.branch = validateField('branch', form.branch);
+    if (form.position !== 'Member') {
+      newErrors.churchId = validateField('churchId', form.churchId, form.position);
+    }
+    setErrors(newErrors);
+
+    if (Object.values(newErrors).some(err => err)) {
+      return toast.error('Please fix the errors in the form');
     }
     setSaving(true);
     try {
       const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+      const payload = {
+        ...form,
+        phone: `+63${form.phone}`
+      };
       const res = await fetch(`${API}/api/admin/create-member`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(form)
+        body: JSON.stringify(payload)
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.message || 'Registration failed');
@@ -365,18 +508,32 @@ function AddMemberModal({ onClose, onSave }) {
             </div>
             <div className="admin-members-form-group">
               <label className="admin-members-form-label">Default Password</label>
-              <input className="admin-members-form-input" type="password" name="password" value={form.password} onChange={handleChange} placeholder="Create a password" />
+              <div className="admin-members-password-wrapper">
+                <input 
+                  className={`admin-members-form-input${errors.password ? ' admin-members-input-error' : ''}`} 
+                  type={showPassword ? 'text' : 'password'} 
+                  name="password" 
+                  value={form.password} 
+                  onChange={handleChange} 
+                  placeholder="Create a password" 
+                />
+                <button type="button" className="admin-members-password-toggle" onClick={() => setShowPassword(!showPassword)}>
+                  {showPassword ? <EyeOff size={18} color="#99A1AF" /> : <Eye size={18} color="#99A1AF" />}
+                </button>
+              </div>
+              {errors.password && <p className="admin-members-field-error" style={{marginTop: '4px'}}>{errors.password}</p>}
             </div>
           </div>
           <div className="admin-members-form-grid-2col">
             <div className="admin-members-form-group">
               <label className="admin-members-form-label">Phone Number</label>
-              <input className="admin-members-form-input" type="text" name="phone" value={form.phone} onChange={handleChange} placeholder="+63XXXXXXXXXX" />
+              <input className={`admin-members-form-input${errors.phone ? ' admin-members-input-error' : ''}`} type="text" name="phone" value={form.phone} onChange={handleChange} placeholder="9171234567" />
+              {errors.phone && <p className="admin-members-field-error" style={{marginTop: '4px'}}>{errors.phone}</p>}
             </div>
             <div className="admin-members-form-group">
               <label className="admin-members-form-label">Community</label>
-              <select className="admin-members-form-input" name="branch" value={form.branch} onChange={handleChange}>
-                <option value="Bulacan Main">Bulacan Main</option>
+              <select className={`admin-members-form-input${errors.branch ? ' admin-members-input-error' : ''}`} name="branch" value={form.branch} onChange={handleChange}>
+                <option value="">Select your Community</option>
                 <optgroup label="Kalinga">
                   <option>Tabuk</option><option>Zapote</option><option>Bliss</option>
                   <option>Libanon</option><option>Batong Buhay</option><option>Balatoc</option><option>Lat-nog</option>
@@ -441,6 +598,19 @@ function AddMemberModal({ onClose, onSave }) {
                 <option value="National Bishop">National Bishop</option>
                 <option value="Apostle">Apostle</option>
               </select>
+            </div>
+            <div className="admin-members-form-group">
+              <label className="admin-members-form-label">Church ID</label>
+              <input 
+                className={`admin-members-form-input${errors.churchId ? ' admin-members-input-error' : ''}`} 
+                type="text" 
+                name="churchId" 
+                value={form.churchId} 
+                onChange={handleChange} 
+                placeholder="e.g. 00-00-01" 
+                disabled={form.position === 'Member'}
+              />
+              {errors.churchId && <p className="admin-members-field-error" style={{marginTop: '4px'}}>{errors.churchId}</p>}
             </div>
           </div>
         </div>
@@ -668,15 +838,15 @@ export default function AdminMembers() {
               </div>
               <div className="admin-members-form-grid-2col admin-members-mt-20">
                 <div>
-                  <span className="admin-members-form-label admin-members-label-gray">Phone</span>
+                  <p className="admin-members-form-label admin-members-label-gray">Phone</p>
                   <p className="admin-members-val-dark">{viewMember.phone || '—'}</p>
                 </div>
                 <div>
-                  <span className="admin-members-form-label admin-members-label-gray">Community</span>
+                  <p className="admin-members-form-label admin-members-label-gray">Community</p>
                   <p className="admin-members-val-dark">{viewMember.branch || '—'}</p>
                 </div>
                 <div>
-                  <span className="admin-members-form-label admin-members-label-gray">Position</span>
+                  <p className="admin-members-form-label admin-members-label-gray">Position</p>
                   <p className="admin-members-val-dark-cap">{viewMember.position || 'Member'}</p>
                 </div>
                 <div>
@@ -688,9 +858,9 @@ export default function AdminMembers() {
                   <p className="admin-members-val-dark-mono">{viewMember.rfidCardId || 'Not Linked'}</p>
                 </div>
 
-                {(viewMember.churchId || (viewMember.position !== 'member' && viewMember.position)) && (
+                {(viewMember.churchId || (viewMember.position !== 'member' && viewMember.position !== 'Member')) && (
                   <div>
-                    <span className="admin-members-form-label admin-members-label-gray">Church ID</span>
+                    <p className="admin-members-form-label admin-members-label-gray">Church ID</p>
                     <p className="admin-members-val-dark">{viewMember.churchId || '—'}</p>
                   </div>
                 )}

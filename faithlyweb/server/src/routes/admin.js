@@ -9,6 +9,7 @@ import { users, admins, otps, announcements, savingsTransactions, savingsGoals, 
 import { validate } from '../middleware/validate.js';
 import { loginLimiter } from '../middleware/rateLimiter.js';
 import { authenticateAdmin } from '../middleware/auth.js';
+import { callGemini } from '../utils/gemini.js';
 
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
@@ -70,9 +71,9 @@ router.get('/members', authenticateAdmin, async (req, res) => {
       ];
     }
     if (branch && branch !== 'all') baseQuery.branch = branch;
-    // Officers = verified members (Level 2)
-    if (isOfficer === 'true') baseQuery.verificationStatus = 'verified';
-    if (isOfficer === 'false') baseQuery.verificationStatus = { $ne: 'verified' };
+    // Officers = members with position other than 'Member'
+    if (isOfficer === 'true') baseQuery.position = { $regex: /^(?!member$)/i };
+    if (isOfficer === 'false') baseQuery.position = { $regex: /^member$/i };
 
     const allUsers = await users.find(baseQuery).toArray();
     const now = new Date();
@@ -100,7 +101,7 @@ router.get('/members', authenticateAdmin, async (req, res) => {
       active: statsWithStatus.filter(u => u.status === 'active').length,
       inactive: statsWithStatus.filter(u => u.status === 'inactive').length,
       deactivated: statsWithStatus.filter(u => u.status === 'deactivated').length,
-      officers: allForStats.filter(u => u.verificationStatus === 'verified').length,
+      officers: allForStats.filter(u => u.position && u.position.toLowerCase() !== 'member').length,
       newThisMonth: allForStats.filter(u => {
         const created = new Date(u.createdAt);
         return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
@@ -133,9 +134,10 @@ router.get('/members', authenticateAdmin, async (req, res) => {
 /* ================== UPDATE MEMBER ================== */
 router.put('/update-member', authenticateAdmin, async (req, res) => {
   try {
-    const { email, adminPassword, fullName, phone, branch, position, newPassword } = req.body;
+    const { originalEmail, email, adminPassword, fullName, phone, branch, position, newPassword, churchId } = req.body;
 
-    if (!email) return res.status(400).json({ success: false, message: 'Email is required' });
+    const targetEmail = originalEmail || email;
+    if (!targetEmail) return res.status(400).json({ success: false, message: 'Email is required' });
     if (!adminPassword) return res.status(400).json({ success: false, message: 'Admin password is required' });
 
     const admin = await admins.findOne({ email: req.admin.email });
@@ -146,26 +148,36 @@ router.put('/update-member', authenticateAdmin, async (req, res) => {
       return res.status(401).json({ success: false, wrongPassword: true, message: 'Incorrect admin password' });
     }
 
-    const user = await users.findOne({ email });
+    const user = await users.findOne({ email: targetEmail });
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
+    // If changing email, ensure new email is not already taken
+    if (email && email !== targetEmail) {
+      const existing = await users.findOne({ email });
+      if (existing) {
+        return res.status(400).json({ success: false, message: 'New email is already in use by another user' });
+      }
+    }
+
     const updateData = {};
+    if (email !== undefined) updateData.email = email;
     if (fullName !== undefined) updateData.fullName = fullName;
     if (phone !== undefined) updateData.phone = phone;
     if (branch !== undefined) updateData.branch = branch;
     if (position !== undefined) updateData.position = position;
+    if (churchId !== undefined) updateData.churchId = churchId;
 
     if (newPassword && newPassword.trim() !== '') {
       updateData.passwordHash = await bcrypt.hash(newPassword, 10);
     }
 
-    await users.updateOne({ email }, { $set: updateData });
-    const updated = await users.findOne({ email });
+    await users.updateOne({ email: targetEmail }, { $set: updateData });
+    const updated = await users.findOne({ email: email || targetEmail });
 
     res.status(200).json({
       success: true,
       message: 'Member updated successfully',
-      user: { email: updated.email, fullName: updated.fullName, phone: updated.phone, branch: updated.branch, position: updated.position }
+      user: { email: updated.email, fullName: updated.fullName, phone: updated.phone, branch: updated.branch, position: updated.position, churchId: updated.churchId }
     });
   } catch (err) {
     console.error(err);
@@ -817,7 +829,7 @@ router.post('/process-loan-payment', authenticateAdmin, async (req, res) => {
 /* ================== ADMIN - CREATE NEW MEMBER DIRECTLY ================== */
 router.post('/create-member', authenticateAdmin, async (req, res) => {
   try {
-    const { email, password, fullName, phone, branch, position } = req.body;
+    const { email, password, fullName, phone, branch, position, churchId } = req.body;
 
     if (!email || !password || !fullName || !phone) {
       return res.status(400).json({ success: false, message: 'Email, Default Password, Full Name, and Phone are required' });
@@ -840,6 +852,7 @@ router.post('/create-member', authenticateAdmin, async (req, res) => {
       phone,
       branch: branch || 'Bulacan Main',
       position: position || 'member',
+      churchId: churchId || null,
       gender: null,
       birthday: null,
       isVerified: true,
@@ -962,6 +975,35 @@ router.get('/loans/:id/dss-analysis', authenticateAdmin, async (req, res) => {
       recommendationText = "The system recommends reviewing missing documentation or historical profile.";
     }
 
+    // === AI-Enhanced Summary ===
+    let aiSummary = null;
+    try {
+      const aiPrompt = `You are a loan risk assessment advisor for a church credit program.
+Given this analysis, write a 2-3 sentence narrative summary explaining the risk level and your recommendation in plain, professional language.
+
+Applicant: ${loan.memberName}
+Amount Requested: ₱${loan.amount?.toLocaleString()}
+Loan Type: ${loan.loanType || 'personal'}
+Officer Status: ${isOfficer && isVerified ? 'Verified' : 'Not Verified'}
+Savings: ₱${totalSavings.toLocaleString()}
+Max Loanable: ₱${maxLoanable.toLocaleString()}
+Existing Active Loans: ${unpaidLoans.length}
+Late Payment History: ${historyLate ? 'Yes' : 'No'}
+Currently Overdue: ${currentlyLate ? 'Yes' : 'No'}
+Documents Submitted: ${infoValid ? 'Complete' : 'Incomplete'}
+Risk Level: ${riskTier}
+Eligible: ${eligible ? 'Yes' : 'No'}
+Rule-based Recommendation: ${recommendationText}`;
+
+      aiSummary = await callGemini(
+        'You are a concise loan assessment advisor. Provide a brief 2-3 sentence analysis. Do not use markdown formatting.',
+        aiPrompt,
+        { maxTokens: 200, temperature: 0.4 }
+      );
+    } catch (aiErr) {
+      console.error('[DSS AI Summary] Error:', aiErr.message);
+    }
+
     res.json({
       success: true,
       analysis: {
@@ -986,7 +1028,8 @@ router.get('/loans/:id/dss-analysis', authenticateAdmin, async (req, res) => {
           hasHistoryLate: historyLate
         },
         recommendation: recommendationText,
-        isEligible: eligible
+        isEligible: eligible,
+        aiSummary
       }
     });
 

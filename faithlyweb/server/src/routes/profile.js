@@ -14,7 +14,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
 router.put('/update-profile', authenticateUser, async (req, res) => {
   try {
     const email = req.user.email;
-    const { fullName, phone, branch, position, dateOfBirth, emailNotifications, pushNotifications, notifPrefs, pushSubscription } = req.body;
+    const { fullName, phone, branch, position, dateOfBirth, emailNotifications, pushNotifications, notifPrefs, pushSubscription, expoPushToken } = req.body;
 
     const user = await users.findOne({ email });
     if (!user) return res.status(404).json({ message: 'User not found' });
@@ -29,6 +29,7 @@ router.put('/update-profile', authenticateUser, async (req, res) => {
     if (pushNotifications !== undefined) updateData.pushNotifications = pushNotifications;
     if (notifPrefs !== undefined) updateData.notifPrefs = notifPrefs;
     if (pushSubscription !== undefined) updateData.pushSubscription = pushSubscription;
+    if (expoPushToken !== undefined) updateData.expoPushToken = expoPushToken;
 
     await users.updateOne({ email }, { $set: updateData });
     const updatedUser = await users.findOne({ email });
@@ -167,6 +168,61 @@ router.put('/upload-photo', authenticateUser, async (req, res) => {
   } catch (err) {
     console.error('Error uploading photo:', err);
     res.status(500).json({ success: false, message: 'Failed to upload photo' });
+  }
+});
+
+/* ================== UPLOAD PROFILE PHOTO (Multipart - Mobile) ================== */
+import multer from 'multer';
+const upload = multer({ 
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 2 * 1024 * 1024 } // 2MB
+});
+
+router.put('/upload-photo-file', authenticateUser, upload.single('photo'), async (req, res) => {
+  try {
+    const email = req.user.email;
+    
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'Photo file is required' });
+    }
+
+    // Convert the file buffer to base64 data URI (stored same as web version)
+    const mimeType = req.file.mimetype || 'image/jpeg';
+    const base64 = req.file.buffer.toString('base64');
+    const photoUrl = `data:${mimeType};base64,${base64}`;
+
+    await users.updateOne(
+      { email },
+      { $set: { photoUrl } }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile photo updated successfully',
+      photoUrl
+    });
+  } catch (err) {
+    console.error('Error uploading photo file:', err);
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ success: false, message: 'Image size exceeds 2MB limit' });
+    }
+    res.status(500).json({ success: false, message: 'Failed to upload photo' });
+  }
+});
+
+/* ================== GET CURRENT USER PROFILE ================== */
+router.get('/me', authenticateUser, async (req, res) => {
+  try {
+    const email = req.user.email;
+    const user = await users.findOne({ email });
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    // Return user profile without sensitive fields
+    const { passwordHash, failedLoginAttempts, lockUntil, isPermanentlyLocked, ...safeUser } = user;
+    res.status(200).json({ success: true, user: safeUser });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to fetch profile' });
   }
 });
 

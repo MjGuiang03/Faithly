@@ -169,3 +169,44 @@
 }
 
 @keyframes dss-spin { to { transform: rotate(360deg); } }
+
+/* ── AI Summary Section ── */
+.dss-ai-summary {
+    margin-top: 1rem;
+    padding: 1.25rem;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #faf5ff 0%, #f0f0ff 50%, #f5f3ff 100%);
+    border: 1px solid #e9d5ff;
+    position: relative;
+}
+
+.dss-ai-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.6rem;
+}
+
+.dss-ai-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #7c3aed;
+    background: rgba(139, 92, 246, 0.1);
+    padding: 3px 10px;
+    border-radius: 6px;
+}
+
+.dss-ai-sparkle {
+    font-size: 14px;
+}
+
+.dss-ai-text {
+    font-size: 0.9rem;
+    color: #4c1d95;
+    line-height: 1.65;
+    margin: 0;
+    font-weight: 450;
+}
+

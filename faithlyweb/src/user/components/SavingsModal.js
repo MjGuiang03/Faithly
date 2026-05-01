@@ -82,12 +82,11 @@ function DepositModal({ goals, onClose }) {
         ? Math.min(100, Math.round((newSaved / goal.targetAmount) * 100))
         : 0;
 
-    const handleAmountChange = (e) => {
-        const raw = e.target.value.replace(/[^0-9.]/g, '');
-        setAmount(raw);
+    const handleQuick = (val) => {
+        const maxAllowed = goal?.targetAmount > 0 ? goal.targetAmount - (goal.savedAmount || 0) : Infinity;
+        const toAdd = Math.min(val, maxAllowed);
+        setAmount(toAdd.toLocaleString('en-US'));
     };
-
-    const handleQuick = (val) => setAmount(String(val));
 
     const handleSubmit = async () => {
         if (!numAmt || numAmt <= 0) { setError('Please enter a valid amount.'); return; }
@@ -160,7 +159,19 @@ function DepositModal({ goals, onClose }) {
                                 type="text"
                                 placeholder="0.00"
                                 value={amount}
-                                onChange={handleAmountChange}
+                                onChange={e => {
+                                    let raw = e.target.value.replace(/[^0-9.]/g, '');
+                                    let val = parseFloat(raw) || 0;
+                                    const maxAllowed = goal?.targetAmount > 0 ? goal.targetAmount - (goal.savedAmount || 0) : Infinity;
+                                    if (val > maxAllowed) {
+                                        raw = String(maxAllowed);
+                                    }
+                                    const parts = raw.split('.');
+                                    if (parts[0]) {
+                                        parts[0] = parseInt(parts[0], 10).toLocaleString('en-US');
+                                    }
+                                    setAmount(parts.join('.'));
+                                }}
                             />
                         </div>
                         <div className="svm-quick-pills">
@@ -266,10 +277,6 @@ function NewGoalModal({ onClose }) {
     const [nameOption, setNameOption] = useState('');
     const [customName, setCustomName] = useState('');
     const [targetAmount, setTarget] = useState('');
-    const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
-    const [targetDate, setDate] = useState('');
-    const [dateError, setDateError] = useState('');
-    const [monthly, setMonthly] = useState('');
     const [color, setColor] = useState('blue');
     const [iconType, setIcon] = useState('default');
     const [loading, setLoading] = useState(false);
@@ -279,22 +286,6 @@ function NewGoalModal({ onClose }) {
     const resolvedName = isOthers ? customName.trim() : nameOption;
     const today = new Date().toISOString().split('T')[0];
 
-    const handleDates = (start, end) => {
-        if (start && end) {
-            const s = new Date(start);
-            const e = new Date(end);
-            const minTarget = new Date(s);
-            // Must be at least 1 month forward
-            minTarget.setMonth(s.getMonth() + 1);
-            if (e < minTarget) {
-                setDateError('Target date must be at least 1 month from start date.');
-            } else {
-                setDateError('');
-            }
-        } else {
-            setDateError('');
-        }
-    };
 
     const handleNameChange = (val) => {
         setNameOption(val);
@@ -313,8 +304,7 @@ function NewGoalModal({ onClose }) {
 
     const handleSubmit = async () => {
         if (!resolvedName) { setError('Goal name is required.'); return; }
-        if (!targetAmount || parseFloat(targetAmount) <= 0) { setError('Enter a valid target amount.'); return; }
-        if (dateError) { setError(dateError); return; }
+        if (!targetAmount || parseFloat(targetAmount.replace(/,/g, '')) <= 0) { setError('Enter a valid target amount.'); return; }
         setError('');
         setLoading(true);
         try {
@@ -324,10 +314,7 @@ function NewGoalModal({ onClose }) {
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({
                     name: resolvedName,
-                    targetAmount: parseFloat(targetAmount),
-                    startDate: startDate || undefined,
-                    targetDate: targetDate || undefined,
-                    monthlyContribution: parseFloat(monthly) || 0,
+                    targetAmount: parseFloat(targetAmount.replace(/,/g, '')),
                     color,
                     iconType,
                 }),
@@ -390,55 +377,19 @@ function NewGoalModal({ onClose }) {
                                 type="text"
                                 placeholder="0.00"
                                 value={targetAmount}
-                                onChange={e => setTarget(e.target.value.replace(/[^0-9.]/g, ''))}
+                                onChange={e => {
+                                    const raw = e.target.value.replace(/[^0-9.]/g, '');
+                                    const parts = raw.split('.');
+                                    if (parts[0]) {
+                                        parts[0] = parseInt(parts[0], 10).toLocaleString('en-US');
+                                    }
+                                    setTarget(parts.join('.'));
+                                }}
                             />
                         </div>
                     </div>
 
-                    {/* START DATE + TARGET DATE side by side */}
-                    <div className="svm-field-row">
-                        <div className="svm-field">
-                            <label className="svm-label">Start date</label>
-                            <input
-                                className="svm-input"
-                                type="date"
-                                value={startDate}
-                                min={new Date().toISOString().split('T')[0]}
-                                onChange={e => { setStartDate(e.target.value); handleDates(e.target.value, targetDate); }}
-                            />
-                        </div>
-                        <div className="svm-field">
-                            <label className="svm-label">Target date <span className="svm-label-opt">(optional)</span></label>
-                            <input
-                                className={`svm-input${dateError ? ' svm-input--error' : ''}`}
-                                type="date"
-                                value={targetDate}
-                                min={(() => {
-                                    if (!startDate) return today;
-                                    const d = new Date(startDate);
-                                    d.setMonth(d.getMonth() + 1);
-                                    return d.toISOString().split('T')[0];
-                                })()}
-                                onChange={e => { setDate(e.target.value); handleDates(startDate, e.target.value); }}
-                            />
-                        </div>
-                    </div>
-                    {dateError && <div className="svm-date-error">{dateError}</div>}
-                    <div className="svm-helper-text">When to begin saving</div>
 
-                    <div className="svm-field">
-                        <label className="svm-label">Monthly contribution <span className="svm-label-opt">(optional)</span></label>
-                        <div className="svm-amount-wrap">
-                            <span className="svm-peso">₱</span>
-                            <input
-                                className="svm-input svm-input--amount"
-                                type="text"
-                                placeholder="0.00"
-                                value={monthly}
-                                onChange={e => setMonthly(e.target.value.replace(/[^0-9.]/g, ''))}
-                            />
-                        </div>
-                    </div>
 
                     <div className="svm-field">
                         <label className="svm-label">Color</label>
@@ -576,13 +527,29 @@ function QuickDepositModal({ goal, goals, onClose }) {
                                         type="text"
                                         placeholder="0.00"
                                         value={amount}
-                                        onChange={e => setAmount(e.target.value.replace(/[^0-9.]/g, ''))}
+                                        onChange={e => {
+                                            let raw = e.target.value.replace(/[^0-9.]/g, '');
+                                            let val = parseFloat(raw) || 0;
+                                            const maxAllowed = goal?.targetAmount > 0 ? goal.targetAmount - (goal.savedAmount || 0) : Infinity;
+                                            if (val > maxAllowed) {
+                                                raw = String(maxAllowed);
+                                            }
+                                            const parts = raw.split('.');
+                                            if (parts[0]) {
+                                                parts[0] = parseInt(parts[0], 10).toLocaleString('en-US');
+                                            }
+                                            setAmount(parts.join('.'));
+                                        }}
                                         autoFocus
                                     />
                                 </div>
                                 <div className="svm-quick-pills">
                                     {QUICK_AMOUNTS.map(v => (
-                                        <button key={v} className="svm-quick-pill" onClick={() => setAmount(String(v))}>
+                                        <button key={v} className="svm-quick-pill" onClick={() => {
+                                            const maxAllowed = goal?.targetAmount > 0 ? goal.targetAmount - (goal.savedAmount || 0) : Infinity;
+                                            const toAdd = Math.min(v, maxAllowed);
+                                            setAmount(toAdd.toLocaleString('en-US'));
+                                        }}>
                                             ₱{v.toLocaleString()}
                                         </button>
                                     ))}

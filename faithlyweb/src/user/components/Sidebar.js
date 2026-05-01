@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 import { useState, useEffect } from 'react';
-import { Building2, Calendar, FileText, Heart, LayoutGrid, Menu, Settings, Wallet, X } from 'lucide-react';
+import { Building2, Calendar, FileText, Heart, LayoutGrid, Menu, Settings, Wallet, X, LogOut } from 'lucide-react';
 import puacLogo from '../../assets/puaclogo.png';
 import '../styles/Sidebar.css';
 
@@ -10,8 +10,15 @@ import { isOfficerPosition } from '../../utils/officerPositions';
 export default function Sidebar({ collapsed, setCollapsed, toggleCollapsed }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { profile } = useAuth();
+  const { profile, user, signOut } = useAuth();
   
+  const handleSignOut = async () => {
+    const result = await signOut();
+    if (result.success) {
+      navigate('/');
+    }
+  };
+
   // collapsed state moved to UserLayout
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
@@ -115,6 +122,37 @@ export default function Sidebar({ collapsed, setCollapsed, toggleCollapsed }) {
               {!collapsed && <span>{label}</span>}
             </button>
           ))}
+        </div>
+
+        {/* Profile Section */}
+        <div className="user-sidebar-profile">
+          <div 
+            className={`user-sidebar-profile-info ${collapsed ? 'collapsed' : ''}`}
+            onClick={() => navigate('/settings')}
+            title={collapsed ? 'Settings' : undefined}
+          >
+            <div className="user-sidebar-profile-avatar">
+              {profile?.photoUrl ? (
+                <img src={profile.photoUrl} alt="Profile" style={{width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%'}} />
+              ) : (
+                <p>{profile?.fullName?.charAt(0)?.toUpperCase() || 'M'}</p>
+              )}
+            </div>
+            {!collapsed && (
+              <div className="user-sidebar-profile-details">
+                <p className="user-sidebar-profile-name">{profile?.fullName || 'Member'}</p>
+                <p className="user-sidebar-profile-email">{user?.email || 'member@puac.org'}</p>
+              </div>
+            )}
+          </div>
+          <button 
+            className={`user-sidebar-profile-signout ${collapsed ? 'collapsed' : ''}`}
+            onClick={handleSignOut}
+            title={collapsed ? 'Sign out' : undefined}
+          >
+            <LogOut size={18} />
+            {!collapsed && <span>Sign out</span>}
+          </button>
         </div>
 
       </div>

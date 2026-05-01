@@ -24,6 +24,9 @@ router.post('/webhooks/paymongo', async (req, res) => {
       // 1. Try Donations
       const donation = await donations.findOne({ paymongoLinkId: checkoutSessionId });
       if (donation) {
+        if (donation.status === 'confirmed') {
+          return res.status(200).send('Already processed');
+        }
         await donations.updateOne(
           { _id: donation._id },
           { $set: { status: 'confirmed', confirmedAt: new Date() } }
@@ -44,6 +47,9 @@ router.post('/webhooks/paymongo', async (req, res) => {
       // 2. Try Savings Deposits
       const savingsTxn = await savingsTransactions.findOne({ paymongoLinkId: checkoutSessionId });
       if (savingsTxn) {
+        if (savingsTxn.status === 'confirmed') {
+          return res.status(200).send('Already processed');
+        }
         // Update Transaction
         await savingsTransactions.updateOne(
           { _id: savingsTxn._id },
@@ -75,6 +81,9 @@ router.post('/webhooks/paymongo', async (req, res) => {
       // 3. Try Loan Payments
       const loanPayment = await loanPayments.findOne({ paymongoLinkId: checkoutSessionId });
       if (loanPayment) {
+        if (loanPayment.status === 'confirmed') {
+          return res.status(200).send('Already processed');
+        }
         // 1. Mark payment as confirmed
         await loanPayments.updateOne(
           { _id: loanPayment._id },

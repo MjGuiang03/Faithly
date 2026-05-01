@@ -473,7 +473,6 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
                   </label>
                 ))}
               </div>
-              {touched.gender && !errors.gender && <span className="user-signup-success-icon">✓ Valid</span>}
               {touched.gender && errors.gender && (
                 <span className="user-signup-error-text">{errors.gender}</span>
               )}
@@ -671,12 +670,10 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
             <input
               type="checkbox"
               checked={isAllAgreed}
-              onChange={() => { }}
-              onClick={(e) => {
-                e.preventDefault();
-                if (!isAllAgreed) {
-                  toast.info('You must read and agree to the Terms and Privacy Policy before proceeding.');
-                }
+              onChange={(e) => {
+                const checked = e.target.checked;
+                setAgreeTerms(checked);
+                setAgreePrivacy(checked);
               }}
               className="user-signup-checkbox"
               style={{ cursor: 'pointer', pointerEvents: 'auto' }}
@@ -719,7 +716,6 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
                   <li><strong>Governing Principles</strong><br />FaithLy operates under the principles of faith, integrity, transparency, accountability, and responsible stewardship in alignment with church values.</li>
                 </ol>
               </div>
-              <button onClick={() => { setAgreeTerms(true); setShowTerms(false); }} className="user-policy-modal-button">Agree</button>
             </div>
           </div>
         )}
@@ -745,7 +741,6 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
                   <li><strong>Contact Information</strong><br />For questions or concerns regarding these Terms and Conditions or the Privacy Policy, users may contact the church administration through official communication channels.</li>
                 </ol>
               </div>
-              <button onClick={() => { setAgreePrivacy(true); setShowPrivacy(false); }} className="user-policy-modal-button">Agree</button>
             </div>
           </div>
         )}

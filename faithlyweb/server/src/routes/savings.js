@@ -15,7 +15,7 @@ router.get('/savings/overview', authenticateUser, async (req, res) => {
 
     // 1. Fetch Goals
     const goals = await savingsGoals.find({ email }).sort({ createdAt: -1 }).toArray();
-    const totalSavings = goals.reduce((sum, g) => sum + (g.savedAmount || 0), 0);
+    const totalSavings = goals.reduce((sum, g) => sum + Number(g.savedAmount || 0), 0);
 
     // 2. This month's deposits
     const now = new Date();
@@ -66,7 +66,7 @@ router.get('/savings/stats', authenticateUser, async (req, res) => {
 
     // All goals
     const goals = await savingsGoals.find({ email }).toArray();
-    const totalSavings = goals.reduce((sum, g) => sum + (g.savedAmount || 0), 0);
+    const totalSavings = goals.reduce((sum, g) => sum + Number(g.savedAmount || 0), 0);
 
     // This month's deposits
     const now = new Date();
@@ -118,7 +118,7 @@ router.get('/savings/goals', authenticateUser, async (req, res) => {
 router.post('/savings/goals', authenticateUser, async (req, res) => {
   try {
     const email = req.user.email;
-    const { name, targetAmount, monthlyContribution, targetDate, color, iconType } = req.body;
+    const { name, targetAmount, color, iconType } = req.body;
 
     if (!name || !targetAmount) {
       return res.status(400).json({ success: false, message: 'Name and target amount are required' });
@@ -133,8 +133,6 @@ router.post('/savings/goals', authenticateUser, async (req, res) => {
       name,
       targetAmount: Number(targetAmount),
       savedAmount: 0,
-      monthlyContribution: Number(monthlyContribution) || 0,
-      targetDate: targetDate ? new Date(targetDate) : null,
       color: color || 'blue',
       iconType: iconType || 'default',
       status: 'active',

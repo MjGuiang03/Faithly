@@ -9,19 +9,6 @@ export default function UserHeader({ toggleSidebar, collapsed }) {
   const navigate = useNavigate();
   const { profile, user, signOut } = useAuth();
   const token = localStorage.getItem('token');
-  
-  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
-  const profileDropdownRef = useRef(null);
-
-  const handleSignOut = async () => {
-    const result = await signOut();
-    if (result.success) {
-      navigate('/');
-    }
-  };
-
-
-  /* Notifications state */
   const [notifItems, setNotifItems] = useState([]);
   const [readIds, setReadIds] = useState(new Set());
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
@@ -148,13 +135,10 @@ export default function UserHeader({ toggleSidebar, collapsed }) {
       if (showNotifDropdown && dropdownRef.current && !dropdownRef.current.contains(e.target) && !e.target.closest('.user-header-notify-btn')) {
         setShowNotifDropdown(false);
       }
-      if (showProfileDropdown && profileDropdownRef.current && !profileDropdownRef.current.contains(e.target) && !e.target.closest('.user-header-profile-btn')) {
-        setShowProfileDropdown(false);
-      }
     };
     document.addEventListener('mousedown', handleOutside);
     return () => document.removeEventListener('mousedown', handleOutside);
-  }, [showNotifDropdown, showProfileDropdown]);
+  }, [showNotifDropdown]);
 
   const formatTimeAgo = (date) => {
     const diff = Date.now() - new Date(date).getTime();
@@ -253,39 +237,7 @@ export default function UserHeader({ toggleSidebar, collapsed }) {
             </div>
           )}
 
-          <div className="user-header-profile-container">
-            <button 
-              className="user-header-profile-btn" 
-              onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-              onMouseEnter={() => setShowProfileDropdown(true)}
-              aria-label="User profile menu"
-            >
-              {profile?.photoUrl ? (
-                <img src={profile.photoUrl} alt="Profile" />
-              ) : (
-                <span className="user-header-profile-initials">
-                  {profile?.fullName?.charAt(0)?.toUpperCase() || 'M'}
-                </span>
-              )}
-            </button>
-            
-            {showProfileDropdown && (
-              <div 
-                className="user-header-profile-dropdown" 
-                ref={profileDropdownRef}
-                onMouseLeave={() => setShowProfileDropdown(false)}
-              >
-                <div className="user-header-profile-header">
-                  <p className="user-header-profile-name">{profile?.fullName || 'Member'}</p>
-                  <p className="user-header-profile-email">{user?.email || 'member@puac.org'}</p>
-                </div>
-                <button className="user-header-logout-btn" onClick={handleSignOut}>
-                  <LogOut size={16} />
-                  <span>Sign Out</span>
-                </button>
-              </div>
-            )}
-          </div>
+
 
         </div>
     </header>

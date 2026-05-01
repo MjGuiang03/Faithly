@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import {
   LayoutGrid, Bell, Users, Heart,
   Settings, LogOut,
-  Megaphone, MapPin, Calendar, UserCog
+  Megaphone, MapPin, Calendar, UserCog, FileText
 } from 'lucide-react';
 import puacLogo from '../../assets/puaclogo.png';
 import '../styles/AdminSidebar.css';
@@ -143,6 +143,13 @@ export default function AdminSidebar() {
         >
           <Calendar size={18} />
           <span>Attendance</span>
+        </button>
+        <button
+          onClick={() => navigate('/admin/financial-report')}
+          className={`admin-sidebar-nav-button ${isActive('/admin/financial-report') ? 'active' : ''}`}
+        >
+          <FileText size={18} />
+          <span>Financial Report</span>
         </button>
 
         {/* ── Communication ── */}

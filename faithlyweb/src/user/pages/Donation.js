@@ -150,7 +150,7 @@ export default function Donation() {
 
   const handleDonate = async () => {
     setFormError('');
-    const num = Number(donationAmount);
+    const num = Number(String(donationAmount).replace(/,/g, ''));
     if (!num || num <= 0) { setFormError('Please enter a valid donation amount.'); return; }
     if (!donationCategory) { setFormError('Please select a donation category.'); return; }
     if (!paymentMethod) { setFormError('Please select a payment method.'); return; }
@@ -253,11 +253,22 @@ export default function Donation() {
                 <div className="user-amount-input-wrapper">
                   <span className="user-currency-symbol">₱</span>
                   <input
-                    type="number"
+                    type="text"
                     className="user-amount-input"
                     placeholder="Enter amount"
                     value={donationAmount}
-                    onChange={(e) => { setDonationAmount(e.target.value); setFormError(''); }}
+                    onChange={(e) => {
+                      let raw = e.target.value.replace(/[^0-9.]/g, '');
+                      let val = parseFloat(raw) || 0;
+                      if (val > 500000) raw = '500000';
+                      
+                      const parts = raw.split('.');
+                      if (parts[0]) {
+                        parts[0] = parseInt(parts[0], 10).toLocaleString('en-US');
+                      }
+                      setDonationAmount(parts.join('.'));
+                      setFormError('');
+                    }}
                     disabled={submitting}
                   />
                 </div>
@@ -265,8 +276,8 @@ export default function Donation() {
                   {QUICK_AMOUNTS.map((q) => (
                     <button
                       key={q}
-                      className={`user-quick-amount-btn${Number(donationAmount) === q ? ' user-quick-amount-active' : ''}`}
-                      onClick={() => { setDonationAmount(String(q)); setFormError(''); }}
+                      className={`user-quick-amount-btn${Number(String(donationAmount).replace(/,/g, '')) === q ? ' user-quick-amount-active' : ''}`}
+                      onClick={() => { setDonationAmount(q.toLocaleString('en-US')); setFormError(''); }}
                       disabled={submitting}
                     >
                       ₱{q}

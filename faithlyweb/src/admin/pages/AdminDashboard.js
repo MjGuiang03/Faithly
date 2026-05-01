@@ -11,7 +11,7 @@ import {
 import '../styles/AdminDashboard.css';
 
 import API from '../../utils/api';
-import { Banknote, Heart, Printer, Users, MapPin, Expand, X } from 'lucide-react';
+import { Banknote, Heart, Printer, Users, MapPin, Expand, X, Sparkles, RefreshCw } from 'lucide-react';
 
 
 
@@ -51,6 +51,12 @@ export default function AdminDashboard() {
   const [attMonth, setAttMonth] = useState('all');
   const [attBranch, setAttBranch] = useState('all');
   const [expandedChart, setExpandedChart] = useState(null);
+
+  /* ── AI Insights State ── */
+  const [aiInsights, setAiInsights] = useState([]);
+  const [aiInsightsLoading, setAiInsightsLoading] = useState(false);
+  const [aiInsightsExpanded, setAiInsightsExpanded] = useState(true);
+  const [aiInsightsTime, setAiInsightsTime] = useState(null);
 
 
   const fetchAll = useCallback(async () => {
@@ -194,7 +200,27 @@ export default function AdminDashboard() {
     const token = localStorage.getItem('adminToken');
     if (!token) { navigate('/'); return; }
     fetchAll();
+    fetchAiInsights();
   }, [navigate, fetchAll]);
+
+  /* ── Fetch AI Insights ── */
+  const fetchAiInsights = async (refresh = false) => {
+    setAiInsightsLoading(true);
+    try {
+      const token = localStorage.getItem('adminToken');
+      const url = `${API}/api/admin/ai-insights${refresh ? '?refresh=true' : ''}`;
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      if (data.success) {
+        setAiInsights(data.insights || []);
+        setAiInsightsTime(data.generatedAt);
+      }
+    } catch (err) {
+      console.error('[AI Insights] Fetch error:', err);
+    } finally {
+      setAiInsightsLoading(false);
+    }
+  };
 
 
   // --- Derived Growth Data ---
@@ -381,6 +407,66 @@ export default function AdminDashboard() {
         </div>
       </div>
 
+      {/* ── AI Insights Card ── */}
+      <div className={`adm-ai-insights-card ${aiInsightsExpanded ? '' : 'collapsed'}`}>
+        <div className="adm-ai-header" onClick={() => setAiInsightsExpanded(!aiInsightsExpanded)}>
+          <div className="adm-ai-title-group">
+            <Sparkles size={18} className="adm-ai-sparkle" />
+            <h3 className="adm-ai-title">AI Insights</h3>
+            <span className="adm-ai-badge">Powered by Gemini</span>
+          </div>
+          <div className="adm-ai-actions">
+            {aiInsightsTime && (
+              <span className="adm-ai-time">
+                {new Date(aiInsightsTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+              </span>
+            )}
+            <button
+              className="adm-ai-refresh-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                fetchAiInsights(true);
+              }}
+              disabled={aiInsightsLoading}
+              title="Refresh insights"
+            >
+              <RefreshCw size={14} className={aiInsightsLoading ? 'spinning' : ''} />
+            </button>
+          </div>
+        </div>
+        {aiInsightsExpanded && (
+          <div className="adm-ai-body">
+            {aiInsightsLoading ? (
+              <div className="adm-ai-skeleton">
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className="adm-ai-skeleton-item">
+                    <div className="adm-ai-skeleton-icon" />
+                    <div className="adm-ai-skeleton-lines">
+                      <div className="adm-ai-skeleton-line short" />
+                      <div className="adm-ai-skeleton-line long" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : aiInsights.length > 0 ? (
+              <div className="adm-ai-insights-list">
+                {aiInsights.map((insight, idx) => (
+                  <div key={idx} className="adm-ai-insight-item">
+                    <span className="adm-ai-insight-icon">{insight.icon || '📊'}</span>
+                    <div className="adm-ai-insight-content">
+                      <p className="adm-ai-insight-title">{insight.title}</p>
+                      <p className="adm-ai-insight-detail">{insight.detail}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="adm-ai-empty">Click refresh to generate AI insights from your data.</p>
+            )}
+          </div>
+        )}
+      </div>
+
       {/* ── Row 2: Analytics Row ── */}
       <div className="adm-analytics-row">
         {/* Donation Categories Pie */}
@@ -423,7 +509,7 @@ export default function AdminDashboard() {
               <BarChart data={membersByBranch.length > 0 ? membersByBranch : [{ branch: 'No data', count: 0 }]} margin={{ top: 10, right: 8, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
                 <XAxis dataKey="branch" stroke="#9CA3AF" fontSize={11} angle={-15} textAnchor="end" height={35} tickMargin={5} />
-                <YAxis stroke="#9CA3AF" fontSize={11} />
+                <YAxis stroke="#9CA3AF" fontSize={11} allowDecimals={false} />
                 <Tooltip cursor={{ fill: '#F9FAFB' }} />
                 <Bar dataKey="count" fill="#0D1F45" radius={[4, 4, 0, 0]} name="Members" barSize={32} />
               </BarChart>
@@ -443,7 +529,7 @@ export default function AdminDashboard() {
             <LineChart data={growthData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
               <XAxis dataKey="label" stroke="#9CA3AF" fontSize={12} />
-              <YAxis stroke="#9CA3AF" fontSize={12} />
+              <YAxis stroke="#9CA3AF" fontSize={12} allowDecimals={false} />
               <Tooltip />
               <Legend iconType="circle" wrapperStyle={{ paddingTop: '12px', fontSize: '12px' }} />
               {(growthView === 'both' || growthView === 'total') && <Line type="monotone" dataKey="totalMembers" stroke="#155DFC" strokeWidth={2} dot={{ r: 3 }} name="Total Members" />}
@@ -461,7 +547,7 @@ export default function AdminDashboard() {
             <BarChart data={attendVsDonData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
               <XAxis dataKey="label" stroke="#9CA3AF" fontSize={12} />
-              <YAxis stroke="#9CA3AF" fontSize={12} />
+              <YAxis stroke="#9CA3AF" fontSize={12} allowDecimals={false} />
               <Tooltip />
               <Legend iconType="square" wrapperStyle={{ paddingTop: '12px', fontSize: '12px' }} />
               <Bar dataKey="attendance" fill="#155DFC" radius={[6, 6, 0, 0]} name="Attendance" />
@@ -573,7 +659,7 @@ export default function AdminDashboard() {
 
               {expandedChart === 'branches' && (() => {
                 const totalMembers = rawMembers.length;
-                const officers = rawMembers.filter(m => (m.verificationStatus || '').toLowerCase() === 'verified').length;
+                const officers = rawMembers.filter(m => m.position && m.position.toLowerCase() !== 'member').length;
                 const regularMembers = totalMembers - officers;
                 const officerPct = totalMembers > 0 ? Math.round((officers / totalMembers) * 100) : 0;
                 const gaugeData = [
@@ -590,7 +676,7 @@ export default function AdminDashboard() {
                           <BarChart data={membersByBranch.length > 0 ? membersByBranch : [{ branch: 'No data', count: 0 }]} margin={{ top: 10, right: 10, left: -10, bottom: 40 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
                             <XAxis dataKey="branch" stroke="#9CA3AF" fontSize={11} angle={-20} textAnchor="end" height={55} />
-                            <YAxis stroke="#9CA3AF" fontSize={12} />
+                            <YAxis stroke="#9CA3AF" fontSize={12} allowDecimals={false} />
                             <Tooltip cursor={{ fill: '#F9FAFB' }} />
                             <Bar dataKey="count" fill="#0D1F45" radius={[4, 4, 0, 0]} name="Members" barSize={28} />
                           </BarChart>
@@ -649,7 +735,7 @@ export default function AdminDashboard() {
                           <LineChart data={growthData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
                             <XAxis dataKey="label" stroke="#9CA3AF" fontSize={12} />
-                            <YAxis stroke="#9CA3AF" fontSize={12} tickFormatter={val => val >= 1000 ? `${(val/1000).toFixed(1)}k` : val} />
+                            <YAxis stroke="#9CA3AF" fontSize={12} allowDecimals={false} tickFormatter={val => val >= 1000 ? `${(val/1000).toFixed(1)}k` : val} />
                             <Tooltip />
                             <Legend iconType="circle" />
                             {(growthView === 'both' || growthView === 'total') && <Line type="monotone" dataKey="totalMembers" stroke="#155DFC" strokeWidth={2.5} dot={{ r: 3 }} name="Total Members" />}
@@ -706,7 +792,7 @@ export default function AdminDashboard() {
                           <BarChart data={attendVsDonData} margin={{ top: 10, right: 10, left: -10, bottom: 10 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
                             <XAxis dataKey="label" stroke="#9CA3AF" fontSize={12} />
-                            <YAxis stroke="#9CA3AF" fontSize={12} />
+                            <YAxis stroke="#9CA3AF" fontSize={12} allowDecimals={false} />
                             <Tooltip />
                             <Bar dataKey="attendance" fill="#155DFC" radius={[4, 4, 0, 0]} name="Attendance" barSize={28} />
                           </BarChart>
@@ -721,7 +807,7 @@ export default function AdminDashboard() {
                             <BarChart data={attendanceByBranch} margin={{ top: 10, right: 10, left: -10, bottom: 30 }}>
                               <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
                               <XAxis dataKey="branch" stroke="#9CA3AF" fontSize={11} angle={-20} textAnchor="end" height={55} />
-                              <YAxis stroke="#9CA3AF" fontSize={12} />
+                              <YAxis stroke="#9CA3AF" fontSize={12} allowDecimals={false} />
                               <Tooltip />
                               <Bar dataKey="avg" fill="#0D1F45" radius={[4, 4, 0, 0]} name="Avg Attendance" barSize={28} />
                             </BarChart>
@@ -736,7 +822,7 @@ export default function AdminDashboard() {
                             <LineChart data={attendVsDonData} margin={{ top: 10, right: 10, left: -10, bottom: 10 }}>
                               <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
                               <XAxis dataKey="label" stroke="#9CA3AF" fontSize={12} />
-                              <YAxis stroke="#9CA3AF" fontSize={12} />
+                              <YAxis stroke="#9CA3AF" fontSize={12} allowDecimals={false} />
                               <Tooltip />
                               <Line type="monotone" dataKey="attendance" stroke="#155DFC" strokeWidth={2.5} dot={{ r: 3 }} name="Attendance" />
                             </LineChart>
