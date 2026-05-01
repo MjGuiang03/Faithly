@@ -2,7 +2,7 @@ import { useState } from 'react';
 import LoanAdminSidebar from './loanAdminSidebar';
 
 import '../styles/loanAdminSettings.css';
-import { Banknote, Circle } from 'lucide-react';
+import { Circle } from 'lucide-react';
 
 
 export default function LoanAdminSettings() {
