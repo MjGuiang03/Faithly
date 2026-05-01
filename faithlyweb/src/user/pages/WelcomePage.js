@@ -158,7 +158,7 @@ export default function WelcomePage() {
               <line x1="12" y1="18" x2="24" y2="18" strokeWidth="0.75" />
             </svg>
             <h3 className="feature-name">Donations & Payments</h3>
-            <p className="feature-desc">Seamless giving via GCash, Bank, or Cash. Submit proof and track every donation effortlessly.</p>
+            <p className="feature-desc">Seamless giving via E-Wallet, Bank, or Cash. Submit proof and track every donation effortlessly.</p>
           </div>
 
           <div className="feature-card">
@@ -237,7 +237,7 @@ export default function WelcomePage() {
               <line x1="4" y1="15" x2="10" y2="15" strokeWidth="0.75" />
               <line x1="26" y1="15" x2="32" y2="15" strokeWidth="0.75" />
             </svg>
-            <h3 className="feature-name">GCash · Bank · Cash</h3>
+            <h3 className="feature-name">E-Wallet · Bank · Cash</h3>
             <p className="feature-desc">Flexible payment channels built for every member — whether digital or in-person.</p>
           </div>
         </div>

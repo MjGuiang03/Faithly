@@ -51,7 +51,7 @@ export default function SecLoanReceiptModal({ loan, onClose }) {
               <span className="sec-receipt-d-value">{loan.member || loan.memberName}</span>
             </div>
             <div className="sec-receipt-row">
-              <span className="sec-receipt-d-label">GCash Number</span>
+              <span className="sec-receipt-d-label">E-Wallet Number</span>
               <span className="sec-receipt-d-value">{loan.gcashNumber || 'N/A'}</span>
             </div>
             <div className="sec-receipt-row">
@@ -68,7 +68,7 @@ export default function SecLoanReceiptModal({ loan, onClose }) {
             <div className="sec-receipt-row">
               <span className="sec-receipt-d-label">Payment Method</span>
               <span className="sec-receipt-d-value">
-                {loan.paymentMethod === 'gcash' ? 'GCash' : 'Bank Transfer'}
+                {loan.paymentMethod === 'e-wallet' ? 'E-Wallet' : 'Bank Transfer'}
               </span>
             </div>
             

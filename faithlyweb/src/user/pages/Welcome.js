@@ -42,7 +42,7 @@ const features = [
     icon: <Heart size={20} />,
     title: 'Donations & Payments',
     desc: 'Seamless giving with multiple payment channels. Submit proof and track every donation effortlessly.',
-    badges: ['GCash', 'Bank', 'Cash'],
+    badges: ['E-Wallet', 'Bank', 'Cash'],
   },
   {
     icon: <ClipboardCheck size={20} />,
@@ -406,7 +406,7 @@ export default function Welcome() {
                 </div>
                 <div className="fl-perk">
                   <div className="fl-perk-icon"><Heart size={16} /></div>
-                  GCash &amp; bank transfer donations
+                  E-Wallet &amp; bank transfer donations
                 </div>
                 <div className="fl-perk">
                   <div className="fl-perk-icon"><Bell size={16} /></div>

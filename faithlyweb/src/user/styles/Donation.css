@@ -41,6 +41,28 @@
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
+.user-donation-manual-info-grid {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.user-donation-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.user-donation-select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
 .user-donation-stat-header {
   display: flex;
   align-items: center;
@@ -1576,7 +1598,7 @@
 }
 
 /* ── Additional explicit classes to remove inline styles ── */
-.user-donation-gcash-icon {
+.user-donation-e-wallet-icon {
   width: 60px;
   height: 30px;
   object-fit: contain;
@@ -1613,7 +1635,7 @@
   display: block;
 }
 
-.user-payment-gcash-header-icon {
+.user-payment-e-wallet-header-icon {
   width: 50px;
   height: 25px;
   object-fit: contain;
@@ -1763,3 +1785,7 @@
 .dark .user-donation-empty-category-name {
   color: var(--foreground) !important;
 }
+
+.user-donation-manual-info-grid { display: grid; gap: 16px; margin-bottom: 16px; }
+.user-donation-input-group { display: flex; flex-direction: column; gap: 4px; }
+.user-donation-select { width: 100%; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s; }

@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Banknote, CalendarDays, ChevronDown, Download, Heart, Receipt, Share2, X, UploadCloud, FileCheck2 } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import '../styles/Donation.css';
-import gcashLogo from '../../assets/gcashlogo.png';
+import ewalletLogo from '../../assets/gcashlogo.png';
 import bank from '../../assets/bank.png';
 import iconGeneral from '../../assets/icon_general.png';
 import iconChildren from '../../assets/icon_children.png';
@@ -33,11 +33,11 @@ const CATEGORIES = [
 
 
 /* ── Payment method icons ── */
-const GCashIcon = () => (
+const EWalletIcon = () => (
   <img
-    src={gcashLogo}
-    alt="GCash"
-    className="user-donation-gcash-icon"
+    src={ewalletLogo}
+    alt="E-Wallet"
+    className="user-donation-e-wallet-icon"
   />
 );
 
@@ -54,6 +54,9 @@ export default function Donation() {
   const [donationAmount, setDonationAmount] = useState('');
   const [donationCategory, setDonationCategory] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
+  const [subMethod, setSubMethod] = useState('');
+  const [accountName, setAccountName] = useState('');
+  const [accountNumber, setAccountNumber] = useState('');
   const [isRecurring] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
@@ -147,15 +150,18 @@ export default function Donation() {
 
   // const historyTotalPages = Math.max(1, Math.ceil(totalCount / HISTORY_PER_PAGE));
   // const paginatedHistory = donationHistory;
-
   const handleDonate = async () => {
     setFormError('');
     const num = Number(String(donationAmount).replace(/,/g, ''));
     if (!num || num <= 0) { setFormError('Please enter a valid donation amount.'); return; }
     if (!donationCategory) { setFormError('Please select a donation category.'); return; }
     if (!paymentMethod) { setFormError('Please select a payment method.'); return; }
-    if (approvalMethod === 'manual' && !proofBase64) {
-      setFormError('Please upload your proof of payment.'); return;
+    
+    if (approvalMethod === 'manual') {
+      if (!proofBase64) { setFormError('Please upload your proof of payment.'); return; }
+      if (!subMethod) { setFormError(`Please select a ${paymentMethod} option.`); return; }
+      if (!accountName.trim()) { setFormError('Please enter the account name.'); return; }
+      if (!accountNumber.trim()) { setFormError('Please enter the account number.'); return; }
     }
 
     setSubmitting(true);
@@ -164,7 +170,7 @@ export default function Donation() {
       const res = await fetch(`${API}/api/donations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ amount: num, category: donationCategory, paymentMethod, isRecurring, proofOfPayment: proofBase64 }),
+        body: JSON.stringify({ amount: num, category: donationCategory, paymentMethod, subMethod, accountName, accountNumber, isRecurring, proofOfPayment: proofBase64 }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Failed to record donation');
@@ -174,6 +180,9 @@ export default function Donation() {
         setDonationAmount('');
         setDonationCategory('');
         setPaymentMethod('');
+        setSubMethod('');
+        setAccountName('');
+        setAccountNumber('');
         setProofFile(null);
         setProofBase64('');
         fetchHistory();
@@ -310,12 +319,12 @@ export default function Donation() {
                 <label className="user-donation-form-label">Payment Method</label>
                 <div className="user-payment-methods">
                   <button
-                    className={`user-payment-method-btn${paymentMethod === 'GCash' ? ' active' : ''}`}
-                    onClick={() => setPaymentMethod(paymentMethod === 'GCash' ? '' : 'GCash')}
+                    className={`user-payment-method-btn${paymentMethod === 'E-Wallet' ? ' active' : ''}`}
+                    onClick={() => setPaymentMethod(paymentMethod === 'E-Wallet' ? '' : 'E-Wallet')}
                     disabled={submitting}
                   >
-                    <GCashIcon />
-                    <span>GCash</span>
+                    <EWalletIcon />
+                    <span>E-Wallet</span>
                   </button>
                   <button
                     className={`user-payment-method-btn${paymentMethod === 'Bank' ? ' active' : ''}`}
@@ -333,8 +342,58 @@ export default function Donation() {
                         <p style={{ fontSize: '14px', color: '#6B7280', marginBottom: '8px' }}>
                           Please transfer your donation to our <strong>{paymentMethod}</strong> account and upload the receipt below.
                         </p>
+
+                        <div className="user-donation-manual-info-grid">
+                          <div className="user-donation-input-group">
+                            <label className="user-donation-form-label">{paymentMethod} Option</label>
+                            {paymentMethod === 'E-Wallet' ? (
+                              <select className="user-donation-select" value={subMethod} onChange={(e) => setSubMethod(e.target.value)}>
+                                <option value="">Select E-Wallet</option>
+                                <option value="GCash">GCash</option>
+                                <option value="Maya">Maya</option>
+                              </select>
+                            ) : (
+                              <select className="user-donation-select" value={subMethod} onChange={(e) => setSubMethod(e.target.value)}>
+                                <option value="">Select Bank</option>
+                                <optgroup label="Card Payments">
+                                  <option value="Master Card">Master Card</option>
+                                  <option value="Visa">Visa</option>
+                                </optgroup>
+                                <optgroup label="Online Bank">
+                                  <option value="BPI">BPI</option>
+                                  <option value="BDO">BDO</option>
+                                  <option value="PNB">PNB</option>
+                                  <option value="Metrobank">Metrobank</option>
+                                  <option value="Unionbank">Unionbank</option>
+                                  <option value="Instapay">Instapay</option>
+                                  <option value="RCBC">RCBC</option>
+                                </optgroup>
+                              </select>
+                            )}
+                          </div>
+                          <div className="user-donation-input-group">
+                            <label className="user-donation-form-label">Sender Account Name</label>
+                            <input 
+                              type="text" 
+                              className="user-donation-input" 
+                              placeholder="Juan Dela Cruz"
+                              value={accountName}
+                              onChange={(e) => setAccountName(e.target.value)}
+                            />
+                          </div>
+                          <div className="user-donation-input-group">
+                            <label className="user-donation-form-label">Sender Account Number</label>
+                            <input 
+                              type="text" 
+                              className="user-donation-input" 
+                              placeholder="09123456789 or 1234567890"
+                              value={accountNumber}
+                              onChange={(e) => setAccountNumber(e.target.value)}
+                            />
+                          </div>
+                        </div>
                         
-                        <label className="user-file-upload-zone">
+                        <label className="user-file-upload-zone" style={{ marginTop: '16px' }}>
                           <input type="file" accept="image/*" onChange={handleFileChange} className="user-file-upload-input" />
                           <div className="user-file-upload-content">
                             <UploadCloud className="user-file-upload-icon" size={28} />
@@ -541,7 +600,7 @@ export default function Donation() {
                     }}
                   >
                     <option value="">All Methods</option>
-                    <option value="GCash">GCash</option>
+                    <option value="E-Wallet">E-Wallet</option>
                     <option value="Bank">Bank Transfer</option>
                   </select>
                   <ChevronDown className="user-select-icon" size={16} />

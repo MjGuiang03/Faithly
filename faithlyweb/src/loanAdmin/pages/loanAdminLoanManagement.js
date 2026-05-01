@@ -705,7 +705,7 @@ export default function LoanAdminLoanManagement() {
                                         <div className="dm-disbursement-row">
                                             {[
                                                 { id: 'cash', label: 'Cash' },
-                                                { id: 'gcash', label: 'GCash' },
+                                                { id: 'e-wallet', label: 'E-Wallet' },
                                                 { id: 'bank', label: 'Bank' },
                                             ].map(opt => {
                                                 const active = selectedLoan.disbursementMethod === opt.id;

@@ -63,6 +63,12 @@ export default function Savings() {
     const [txnPage, setTxnPage] = useState(1);
     const [txnTotal, setTxnTotal] = useState(0);
     const TXN_LIMIT = 4;
+    
+    // Goals Pagination
+    const [goalPage, setGoalPage] = useState(1);
+    const [loadingMoreGoals, setLoadingMoreGoals] = useState(false);
+    const GOAL_LIMIT = 5;
+
     const [showInstruction, setShowInstruction] = useState(false);
     const [hasClosedInstruction, setHasClosedInstruction] = useState(false);
 
@@ -92,6 +98,7 @@ export default function Savings() {
                 const data = await res.json();
                 if (data.success) {
                     setGoals(data.goals || []);
+                    setGoalPage(1); // Reset goal page on full refresh
                     setTransactions(data.transactions || []);
                     setTxnTotal(data.txnTotal || 0);
                     setStats(data.stats || {});
@@ -124,6 +131,30 @@ export default function Savings() {
     useEffect(() => {
         fetchAll();
     }, [fetchAll]);
+
+    const fetchMoreGoals = async () => {
+        setLoadingMoreGoals(true);
+        try {
+            const token = localStorage.getItem('token');
+            const nextPage = goalPage + 1;
+            const res = await fetch(`${API}/api/savings/goals?page=${nextPage}&limit=${GOAL_LIMIT}`, {
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (data.success) {
+                setGoals(prev => [...prev, ...data.goals]);
+                setGoalPage(nextPage);
+                // Also update stats if they were provided (e.g. totalCount)
+                if (data.totalCount !== undefined) {
+                    setStats(prev => ({ ...prev, totalGoalCount: data.totalCount }));
+                }
+            }
+        } catch (err) {
+            console.error('Failed to fetch more goals', err);
+        } finally {
+            setLoadingMoreGoals(false);
+        }
+    };
 
 
     const openDeposit = () => setModal('deposit');
@@ -224,6 +255,11 @@ export default function Savings() {
         );
     };
 
+    const handleViewLess = () => {
+        setGoals(prev => prev.slice(0, GOAL_LIMIT));
+        setGoalPage(1);
+    };
+
     /* ── goals list ── */
     const renderGoals = () => {
         if (!hasGoals) return (
@@ -278,6 +314,28 @@ export default function Savings() {
                         </div>
                     );
                 })}
+
+                {(stats.totalGoalCount > goals.length || goalPage > 1) && (
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', padding: '16px 0' }}>
+                        {goalPage > 1 && (
+                            <button 
+                                className="sv-section-link" 
+                                onClick={handleViewLess}
+                            >
+                                View less
+                            </button>
+                        )}
+                        {stats.totalGoalCount > goals.length && (
+                            <button 
+                                className="sv-section-link" 
+                                onClick={fetchMoreGoals} 
+                                disabled={loadingMoreGoals}
+                            >
+                                {loadingMoreGoals ? 'Loading...' : 'View more goals'}
+                            </button>
+                        )}
+                    </div>
+                )}
             </div>
         );
     };
@@ -401,14 +459,14 @@ export default function Savings() {
                                             <label className="sv-stat-label">Active goals</label>
                                             <Target size={20} color="#0D1F45" />
                                         </div>
-                                        <div className={`sv-stat-value ${goals.length <= 0 ? 'sv-stat-value--muted' : ''}`}>
-                                            {goals.length > 0 
-                                                ? goals.filter(g => g.status !== 'completed' && (!g.targetAmount || (g.savedAmount || 0) < g.targetAmount)).length 
+                                        <div className={`sv-stat-value ${(stats.totalGoalCount || 0) <= 0 ? 'sv-stat-value--muted' : ''}`}>
+                                            {(stats.totalGoalCount || 0) > 0 
+                                                ? (stats.activeGoals || 0)
                                                 : '—'}
                                         </div>
                                         <div className="sv-stat-sub">
-                                            {goals.length > 0
-                                                ? `${goals.filter(g => g.status !== 'completed' && (!g.targetAmount || (g.savedAmount || 0) < g.targetAmount)).length} in progress · ${goals.filter(g => g.status === 'completed' || (g.targetAmount && (g.savedAmount || 0) >= g.targetAmount)).length} done`
+                                            {(stats.totalGoalCount || 0) > 0
+                                                ? `${stats.activeGoals || 0} in progress · ${stats.completedGoals || 0} done`
                                                 : 'No goals set'}
                                         </div>
                                     </div>

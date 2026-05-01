@@ -13,7 +13,7 @@ const KB = [
   { patterns: ['officer', 'verify', 'verification', 'verified', 'get verified'], responses: ["🛡️ **Officer Verification** unlocks access to the **Loans** and **Savings** modules.\n\n**How to get verified:**\n1. From the Home page, look for the **\"Are you an officer?\"** card\n2. Click **\"Yes, verify me\"**\n3. Enter your **Church ID Number** and select your **Church Position**\n4. Submit — administrators will review it within **3–5 business days**"], quickReplies: ['What positions qualify?', 'Loans', 'Savings'] },
   { patterns: ['loan', 'loans', 'borrow', 'apply loan', 'utang', 'hulugan'], responses: ["💳 **Loans** are available exclusively for **verified church officers**.\n\nGo to **Loans** > **Apply for a Loan** > choose type, amount, and term > submit for admin review."], quickReplies: ['Loan requirements', 'Interest rates', 'Officer Verification'] },
   { patterns: ['savings', 'save', 'ipon'], responses: ["🏦 **Savings** is for **verified church officers**. Set personalized goals, track progress, and deposit funds."], quickReplies: ['How to deposit?', 'Officer Verification'] },
-  { patterns: ['donat', 'donation', 'donate', 'giving', 'tithe', 'offering', 'handog'], responses: ["❤️ Go to **Donations** > choose a category > enter amount > upload proof. Methods: GCash, Bank, Cash."], quickReplies: ['Donation categories', 'GCash details'] },
+  { patterns: ['donat', 'donation', 'donate', 'giving', 'tithe', 'offering', 'handog'], responses: ["❤️ Go to **Donations** > choose a category > enter amount > upload proof. Methods: E-Wallet, Bank, Cash."], quickReplies: ['Donation categories', 'E-Wallet details'] },
   { patterns: ['attendance', 'attend', 'check in'], responses: ["📅 Attendance is recorded by administrators. View your history in the **Attendance** page."], quickReplies: ['Branches', 'Home'] },
   { patterns: ['branch', 'location', 'address', 'simbahan'], responses: ["🏛️ Visit the **Branches** page to find locations, contact info, and service schedules."], quickReplies: ['My branch', 'Attendance'] },
   { patterns: ['settings', 'profile', 'password', 'account'], responses: ["⚙️ Go to **Settings** to update profile, change password, or manage notifications."], quickReplies: ['Change password', 'Home'] },
@@ -50,6 +50,7 @@ export default function Chatbot({ isOpen, onClose }) {
   const [messages, setMessages] = useState([INITIAL_MESSAGE]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  // eslint-disable-next-line no-unused-vars
   const [isAI, setIsAI] = useState(true); // Track if last response was AI
   const bottomRef = useRef(null);
   const inputRef = useRef(null);

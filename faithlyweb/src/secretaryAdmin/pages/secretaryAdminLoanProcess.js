@@ -263,7 +263,7 @@ export default function SecretaryLoanProcess() {
                                                     <div className="sec-loan-process-status-processed">
                                                         <span className="sec-loan-process-status-badge processed">Processed</span>
                                                         <p className="sec-loan-process-processed-info">
-                                                            {loan.paymentMethod === 'gcash' ? 'GCash' : loan.paymentMethod === 'bank' ? 'Bank Transfer' : loan.paymentMethod} • {new Date(loan.disbursementDate).toLocaleDateString('en-US')}
+                                                            {loan.paymentMethod === 'e-wallet' ? 'E-Wallet' : loan.paymentMethod === 'bank' ? 'Bank Transfer' : loan.paymentMethod} • {new Date(loan.disbursementDate).toLocaleDateString('en-US')}
                                                         </p>
                                                     </div>
                                                 )}

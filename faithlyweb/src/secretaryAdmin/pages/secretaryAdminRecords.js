@@ -42,7 +42,7 @@ export default function SecretaryLoanRecords() {
                     purpose: l.purpose,
                     processedDate: new Date(l.disbursementDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
                     processedTime: new Date(l.disbursementDate).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-                    paymentMethod: l.paymentMethod === 'gcash' ? 'GCash' : l.paymentMethod === 'bank' ? 'Bank Transfer' : l.paymentMethod,
+                    paymentMethod: l.paymentMethod === 'e-wallet' ? 'E-Wallet' : l.paymentMethod === 'bank' ? 'Bank Transfer' : l.paymentMethod,
                     reference: l.reference || ''
                 }));
 
@@ -67,7 +67,7 @@ export default function SecretaryLoanRecords() {
     const totalProcessed = totalCount;
     // These need to be fetched from backend for accuracy if we want filtered counts
     // For now keep them as totalCount or similar
-    const gcashCount = records.filter(r => r.paymentMethod === 'GCash').length; 
+    const gcashCount = records.filter(r => r.paymentMethod === 'E-Wallet').length; 
     const bankTransferCount = records.filter(r => r.paymentMethod === 'Bank Transfer').length;
 
     const filteredRecords = records;
@@ -90,7 +90,7 @@ export default function SecretaryLoanRecords() {
                         <p className="sec-admin-records-stat-value blue">{totalProcessed}</p>
                     </div>
                     <div className="sec-admin-records-stat-card">
-                        <p className="sec-admin-records-stat-label">GCash Transfers</p>
+                        <p className="sec-admin-records-stat-label">E-Wallet Transfers</p>
                         <p className="sec-admin-records-stat-value blue">{gcashCount}</p>
                     </div>
                     <div className="sec-admin-records-stat-card">
@@ -119,10 +119,10 @@ export default function SecretaryLoanRecords() {
                             All
                         </button>
                         <button
-                            className={`sec-admin-records-filter-btn ${activeFilter === 'gcash' ? 'active' : ''}`}
-                            onClick={() => setActiveFilter('gcash')}
+                            className={`sec-admin-records-filter-btn ${activeFilter === 'e-wallet' ? 'active' : ''}`}
+                            onClick={() => setActiveFilter('e-wallet')}
                         >
-                            GCash
+                            E-Wallet
                         </button>
                         <button
                             className={`sec-admin-records-filter-btn ${activeFilter === 'bank' ? 'active' : ''}`}
@@ -176,10 +176,10 @@ export default function SecretaryLoanRecords() {
                                                 </div>
                                             </td>
                                             <td>
-                                                {record.paymentMethod === 'GCash' && (
+                                                {record.paymentMethod === 'E-Wallet' && (
                                                     <div className="sec-admin-records-payment gcash">
                                                         <Banknote size={16} color="#155DFC" />
-                                                        <span>GCash</span>
+                                                        <span>E-Wallet</span>
                                                         {record.reference && <span className="sec-admin-records-reference">{record.reference}</span>}
                                                     </div>
                                                 )}

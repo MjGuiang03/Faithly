@@ -25,7 +25,7 @@ export default function SecretaryAdminDashboard() {
 
   const [reportStats, setReportStats] = useState({ totalReceived: 0, totalReleased: 0, totalProcessed: 0, processingRate: 0 });
   const [paymentMethodData, setPaymentMethodData] = useState([
-    { name: 'GCash', value: 0, percentage: 0 },
+    { name: 'E-Wallet', value: 0, percentage: 0 },
     { name: 'Bank Transfer', value: 0, percentage: 0 },
     { name: 'Cash', value: 0, percentage: 0 }
   ]);
@@ -114,12 +114,12 @@ export default function SecretaryAdminDashboard() {
     const processingRate = approvedLoans.length > 0 ? Math.round((disbursedL.length / approvedLoans.length) * 100) : 0;
     setReportStats({ totalReceived: 0, totalReleased: totalReleasedAmt, totalProcessed: totalReleasedAmt, processingRate });
 
-    const gcashAmt = disbursedL.filter(l => l.paymentMethod === 'gcash').reduce((sum, l) => sum + Number(l.amount), 0);
+    const gcashAmt = disbursedL.filter(l => l.paymentMethod === 'e-wallet').reduce((sum, l) => sum + Number(l.amount), 0);
     const bankAmt = disbursedL.filter(l => l.paymentMethod === 'bank').reduce((sum, l) => sum + Number(l.amount), 0);
     const cashAmt = disbursedL.filter(l => l.paymentMethod === 'cash').reduce((sum, l) => sum + Number(l.amount), 0);
     const totalAmt = gcashAmt + bankAmt + cashAmt;
     setPaymentMethodData([
-      { name: 'GCash', value: gcashAmt, percentage: totalAmt > 0 ? Math.round((gcashAmt / totalAmt) * 100) : 0 },
+      { name: 'E-Wallet', value: gcashAmt, percentage: totalAmt > 0 ? Math.round((gcashAmt / totalAmt) * 100) : 0 },
       { name: 'Bank Transfer', value: bankAmt, percentage: totalAmt > 0 ? Math.round((bankAmt / totalAmt) * 100) : 0 },
       { name: 'Cash', value: cashAmt, percentage: totalAmt > 0 ? Math.round((cashAmt / totalAmt) * 100) : 0 }
     ]);

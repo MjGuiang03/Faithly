@@ -13,9 +13,27 @@ router.get('/savings/overview', authenticateUser, async (req, res) => {
     const email = req.user.email;
     const { txnLimit = 5 } = req.query;
 
-    // 1. Fetch Goals
-    const goals = await savingsGoals.find({ email }).sort({ createdAt: -1 }).toArray();
-    const totalSavings = goals.reduce((sum, g) => sum + Number(g.savedAmount || 0), 0);
+    const goalPage = parseInt(req.query.goalPage) || 1;
+    const goalLimit = parseInt(req.query.goalLimit) || 5;
+    const skipGoals = (goalPage - 1) * goalLimit;
+
+    // Aggregation for stats instead of finding all goals
+    const goalStats = await savingsGoals.aggregate([
+      { $match: { email } },
+      { $group: { 
+          _id: null, 
+          totalSavings: { $sum: "$savedAmount" },
+          activeGoals: { $sum: { $cond: [{ $ne: ["$status", "completed"] }, 1, 0] } },
+          completedGoals: { $sum: { $cond: [{ $eq: ["$status", "completed"] }, 1, 0] } },
+          totalCount: { $sum: 1 }
+      }}
+    ]).toArray();
+
+    const statsData = goalStats[0] || { totalSavings: 0, activeGoals: 0, completedGoals: 0, totalCount: 0 };
+    const totalSavings = statsData.totalSavings || 0;
+
+    // Fetch Paginated Goals
+    const goals = await savingsGoals.find({ email }).sort({ createdAt: -1 }).skip(skipGoals).limit(goalLimit).toArray();
 
     // 2. This month's deposits
     const now = new Date();
@@ -45,9 +63,10 @@ router.get('/savings/overview', authenticateUser, async (req, res) => {
       stats: {
         totalSavings,
         thisMonth,
-        activeGoals: goals.filter(g => g.status !== 'completed').length,
-        completedGoals: goals.filter(g => g.status === 'completed').length,
-        maxLoanable
+        activeGoals: statsData.activeGoals,
+        completedGoals: statsData.completedGoals,
+        maxLoanable,
+        totalGoalCount: statsData.totalCount
       },
       goals,
       transactions,
@@ -64,9 +83,20 @@ router.get('/savings/stats', authenticateUser, async (req, res) => {
   try {
     const email = req.user.email;
 
-    // All goals
-    const goals = await savingsGoals.find({ email }).toArray();
-    const totalSavings = goals.reduce((sum, g) => sum + Number(g.savedAmount || 0), 0);
+    // All goals aggregate
+    const goalStats = await savingsGoals.aggregate([
+      { $match: { email } },
+      { $group: { 
+          _id: null, 
+          totalSavings: { $sum: "$savedAmount" },
+          activeGoals: { $sum: { $cond: [{ $ne: ["$status", "completed"] }, 1, 0] } },
+          completedGoals: { $sum: { $cond: [{ $eq: ["$status", "completed"] }, 1, 0] } }
+      } }
+    ]).toArray();
+    const statsData = goalStats[0] || { totalSavings: 0, activeGoals: 0, completedGoals: 0 };
+    const totalSavings = statsData.totalSavings || 0;
+    const activeGoals = statsData.activeGoals || 0;
+    const completedGoals = statsData.completedGoals || 0;
 
     // This month's deposits
     const now = new Date();
@@ -76,9 +106,6 @@ router.get('/savings/stats', authenticateUser, async (req, res) => {
       { $group: { _id: null, total: { $sum: '$amount' } } },
     ]).toArray();
     const thisMonth = monthDeposits[0]?.total || 0;
-
-    const activeGoals = goals.filter(g => g.status !== 'completed').length;
-    const completedGoals = goals.filter(g => g.status === 'completed').length;
 
     // Pending savings calculation
     const pendingDeposits = await savingsTransactions.aggregate([
@@ -106,8 +133,20 @@ router.get('/savings/stats', authenticateUser, async (req, res) => {
 router.get('/savings/goals', authenticateUser, async (req, res) => {
   try {
     const email = req.user.email;
-    const goals = await savingsGoals.find({ email }).sort({ createdAt: -1 }).toArray();
-    res.json({ success: true, goals });
+    
+    if (req.query.all === 'true') {
+        const goals = await savingsGoals.find({ email }).sort({ createdAt: -1 }).toArray();
+        return res.json({ success: true, goals, totalCount: goals.length });
+    }
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    const skip = (page - 1) * limit;
+
+    const goals = await savingsGoals.find({ email }).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray();
+    const totalCount = await savingsGoals.countDocuments({ email });
+    
+    res.json({ success: true, goals, totalCount });
   } catch (err) {
     console.error('Savings goals error:', err);
     res.status(500).json({ success: false, message: 'Failed to fetch savings goals' });
@@ -223,7 +262,7 @@ router.post('/savings/deposit', authenticateUser, async (req, res) => {
     const isManual = config?.paymentApprovalMethod === 'manual';
 
     if (isManual) {
-      const { proofOfPayment } = req.body;
+      const { proofOfPayment, subMethod, accountName, accountNumber } = req.body;
       if (!proofOfPayment) {
         return res.status(400).json({ success: false, message: 'Proof of payment is required for manual approval' });
       }
@@ -239,6 +278,9 @@ router.post('/savings/deposit', authenticateUser, async (req, res) => {
         description: description || 'Deposit',
         source: source || 'Manual',
         paymentMethod: paymentMethod || 'Manual',
+        subMethod: subMethod || '',
+        accountName: accountName || '',
+        accountNumber: accountNumber || '',
         proofOfPayment, // Store base64 string
         status: 'pending',
         date: new Date(),
@@ -333,7 +375,7 @@ router.post('/savings/withdraw', authenticateUser, async (req, res) => {
       type: 'withdrawal',
       amount: withdrawAmount,
       description: reason || 'Withdrawal',
-      sendMethod: sendMethod || 'gcash',
+      sendMethod: sendMethod || 'e-wallet',
       accountNumber: accountNumber || '',
       accountName: accountName || user?.fullName || '',
       source: 'Manual',

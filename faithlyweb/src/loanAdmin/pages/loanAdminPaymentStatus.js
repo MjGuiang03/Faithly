@@ -597,8 +597,21 @@ export default function LoanAdminPaymentStatus() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '16px' }}>
                 <div><p style={{ margin: 0, fontSize: '12px', color: '#6B7280' }}>Member</p><p style={{ margin: 0, fontWeight: 600 }}>{pendingDetail.memberName || pendingDetail.email}</p></div>
                 <div><p style={{ margin: 0, fontSize: '12px', color: '#6B7280' }}>Amount</p><p style={{ margin: 0, fontWeight: 700, color: '#EA580C' }}>{fmt(pendingDetail.amount)}</p></div>
-                <div><p style={{ margin: 0, fontSize: '12px', color: '#6B7280' }}>Method</p><p style={{ margin: 0, fontWeight: 600, textTransform: 'capitalize' }}>{pendingDetail.paymentMethod || 'cash'}</p></div>
+                <div>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#6B7280' }}>Method</p>
+                  <p style={{ margin: 0, fontWeight: 600, textTransform: 'capitalize' }}>
+                    {pendingDetail.paymentMethod || 'cash'}
+                    {pendingDetail.subMethod ? ` (${pendingDetail.subMethod})` : ''}
+                  </p>
+                </div>
                 <div><p style={{ margin: 0, fontSize: '12px', color: '#6B7280' }}>Reference #</p><p style={{ margin: 0, fontWeight: 600 }}>{pendingDetail.referenceNumber || '—'}</p></div>
+                
+                {pendingDetail.accountName && (
+                  <div><p style={{ margin: 0, fontSize: '12px', color: '#6B7280' }}>Sender Account Name</p><p style={{ margin: 0, fontWeight: 600 }}>{pendingDetail.accountName}</p></div>
+                )}
+                {pendingDetail.accountNumber && (
+                  <div><p style={{ margin: 0, fontSize: '12px', color: '#6B7280' }}>Sender Account No.</p><p style={{ margin: 0, fontWeight: 600 }}>{pendingDetail.accountNumber}</p></div>
+                )}
               </div>
 
               {pendingDetail.proofData && (
@@ -717,7 +730,7 @@ export default function LoanAdminPaymentStatus() {
                   <label className="walkin-label">Payment Method</label>
                   <select className="walkin-select" value={walkinMethod} onChange={(e) => setWalkinMethod(e.target.value)}>
                     <option value="cash">Walk-in Cash</option>
-                    <option value="gcash">GCash</option>
+                    <option value="e-wallet">E-Wallet</option>
                     <option value="bank">Bank Transfer</option>
                   </select>
                 </div>

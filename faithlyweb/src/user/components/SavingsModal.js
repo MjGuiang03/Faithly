@@ -43,7 +43,10 @@ function DepositModal({ goals, onClose }) {
     const [selectedGoal, setSelectedGoal] = useState(goals[0]?._id || '');
     const [amount, setAmount] = useState('');
     const [note, setNote] = useState('');
-    const [paymentMethod, setPaymentMethod] = useState('cash');
+    const [paymentMethod, setPaymentMethod] = useState('E-Wallet');
+    const [subMethod, setSubMethod] = useState('');
+    const [accountName, setAccountName] = useState('');
+    const [accountNumber, setAccountNumber] = useState('');
     const [proofFile, setProofFile] = useState(null);
     const [proofBase64, setProofBase64] = useState('');
     const [approvalMethod, setApprovalMethod] = useState('gateway');
@@ -53,10 +56,10 @@ function DepositModal({ goals, onClose }) {
     useEffect(() => {
         const fetchSettings = async () => {
             try {
-                const res = await fetch(`${API}/api/settings/public`);
+                const res = await fetch(`${API}/api/admin/settings`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
                 const data = await res.json();
-                if (res.ok && data.success) {
-                    setApprovalMethod(data.paymentApprovalMethod || 'gateway');
+                if (data.success && data.settings?.paymentApprovalMethod) {
+                    setApprovalMethod(data.settings.paymentApprovalMethod);
                 }
             } catch { /* silent */ }
         };
@@ -92,9 +95,16 @@ function DepositModal({ goals, onClose }) {
         if (!numAmt || numAmt <= 0) { setError('Please enter a valid amount.'); return; }
         if (!selectedGoal) { setError('Please select a goal.'); return; }
         if (!paymentMethod) { setError('Please select a payment method.'); return; }
-        if (approvalMethod === 'manual' && !proofBase64) {
-            setError('Please upload your proof of payment.'); return;
+        
+        if (approvalMethod === 'manual') {
+            if (!proofBase64) { setError('Please upload your proof of payment.'); return; }
+            if (paymentMethod !== 'Cash') {
+                if (!subMethod) { setError(`Please select a ${paymentMethod} option.`); return; }
+                if (!accountName.trim()) { setError('Please enter the account name.'); return; }
+                if (!accountNumber.trim()) { setError('Please enter the account number.'); return; }
+            }
         }
+        
         setError('');
         setLoading(true);
         try {
@@ -102,7 +112,7 @@ function DepositModal({ goals, onClose }) {
             const res = await fetch(`${API}/api/savings/deposit`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ goalId: selectedGoal, amount: numAmt, note, paymentMethod, proofOfPayment: proofBase64 }),
+                body: JSON.stringify({ goalId: selectedGoal, amount: numAmt, note, paymentMethod, subMethod, accountName, accountNumber, proofOfPayment: proofBase64 }),
             });
             const data = await res.json();
             if (!res.ok || !data.success) throw new Error(data.message || 'Deposit failed.');
@@ -187,14 +197,14 @@ function DepositModal({ goals, onClose }) {
                         <label className="svm-label">Payment Method</label>
                         <div className="svm-payment-options">
                             {[
-                                { id: 'GCash', label: 'GCash' },
+                                { id: 'E-Wallet', label: 'E-Wallet' },
                                 { id: 'Bank', label: 'Bank Transfer' },
                             ].map(opt => (
                                 <button
                                     key={opt.id}
                                     type="button"
                                     className={`svm-payment-btn ${paymentMethod === opt.id ? 'active' : ''}`}
-                                    onClick={() => setPaymentMethod(opt.id)}
+                                    onClick={() => { setPaymentMethod(opt.id); setSubMethod(''); }}
                                 >
                                     <div className={`svm-radio ${paymentMethod === opt.id ? 'active' : ''}`} />
                                     {opt.label}
@@ -205,7 +215,58 @@ function DepositModal({ goals, onClose }) {
                             {approvalMethod === 'manual' ? (
                                 <div style={{ marginTop: '16px' }}>
                                     <p style={{ marginBottom: '8px' }}>Please transfer your deposit to our <strong>{paymentMethod}</strong> account and upload the receipt below.</p>
-                                    <label className="user-file-upload-zone">
+                                    
+                                    <div className="user-donation-manual-info-grid">
+                                      <div className="user-donation-input-group">
+                                        <label className="user-donation-form-label">{paymentMethod} Option</label>
+                                        {paymentMethod === 'E-Wallet' ? (
+                                          <select className="user-donation-select" value={subMethod} onChange={(e) => setSubMethod(e.target.value)}>
+                                            <option value="">Select E-Wallet</option>
+                                            <option value="GCash">GCash</option>
+                                            <option value="Maya">Maya</option>
+                                          </select>
+                                        ) : (
+                                          <select className="user-donation-select" value={subMethod} onChange={(e) => setSubMethod(e.target.value)}>
+                                            <option value="">Select Bank</option>
+                                            <optgroup label="Card Payments">
+                                              <option value="Master Card">Master Card</option>
+                                              <option value="Visa">Visa</option>
+                                            </optgroup>
+                                            <optgroup label="Online Bank">
+                                              <option value="BPI">BPI</option>
+                                              <option value="BDO">BDO</option>
+                                              <option value="PNB">PNB</option>
+                                              <option value="Metrobank">Metrobank</option>
+                                              <option value="Unionbank">Unionbank</option>
+                                              <option value="Instapay">Instapay</option>
+                                              <option value="RCBC">RCBC</option>
+                                            </optgroup>
+                                          </select>
+                                        )}
+                                      </div>
+                                      <div className="user-donation-input-group">
+                                        <label className="user-donation-form-label">Sender Account Name</label>
+                                        <input 
+                                          type="text" 
+                                          className="user-donation-input" 
+                                          placeholder="Juan Dela Cruz"
+                                          value={accountName}
+                                          onChange={(e) => setAccountName(e.target.value)}
+                                        />
+                                      </div>
+                                      <div className="user-donation-input-group">
+                                        <label className="user-donation-form-label">Sender Account Number</label>
+                                        <input 
+                                          type="text" 
+                                          className="user-donation-input" 
+                                          placeholder="09123456789 or 1234567890"
+                                          value={accountNumber}
+                                          onChange={(e) => setAccountNumber(e.target.value)}
+                                        />
+                                      </div>
+                                    </div>
+
+                                    <label className="user-file-upload-zone" style={{ marginTop: '16px' }}>
                                       <input type="file" accept="image/*" onChange={handleFileChange} className="user-file-upload-input" />
                                       <div className="user-file-upload-content">
                                         <UploadCloud className="user-file-upload-icon" size={28} />
@@ -425,6 +486,9 @@ function QuickDepositModal({ goal, goals, onClose }) {
     const [amount, setAmount] = useState('');
     const [note, setNote] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('cash');
+    const [subMethod, setSubMethod] = useState('');
+    const [accountName, setAccountName] = useState('');
+    const [accountNumber, setAccountNumber] = useState('');
     const [proofFile, setProofFile] = useState(null);
     const [proofBase64, setProofBase64] = useState('');
     const [approvalMethod, setApprovalMethod] = useState('gateway');
@@ -572,14 +636,14 @@ function QuickDepositModal({ goal, goals, onClose }) {
                                 <label className="svm-label">Payment Method</label>
                                 <div className="svm-payment-options">
                                     {[
-                                        { id: 'GCash', label: 'GCash' },
+                                        { id: 'E-Wallet', label: 'E-Wallet' },
                                         { id: 'Bank', label: 'Bank' },
                                     ].map(opt => (
                                         <button
                                             key={opt.id}
                                             type="button"
                                             className={`svm-payment-btn ${paymentMethod === opt.id ? 'active' : ''}`}
-                                            onClick={() => setPaymentMethod(opt.id)}
+                                            onClick={() => { setPaymentMethod(opt.id); setSubMethod(''); }}
                                             style={{ padding: '8px', fontSize: '11px' }}
                                         >
                                             <div className={`svm-radio ${paymentMethod === opt.id ? 'active' : ''}`} style={{ width: '12px', height: '12px' }} />
@@ -591,7 +655,58 @@ function QuickDepositModal({ goal, goals, onClose }) {
                                     {approvalMethod === 'manual' ? (
                                         <div style={{ marginTop: '12px' }}>
                                             <p style={{ marginBottom: '8px' }}>Please transfer to our <strong>{paymentMethod}</strong> account and upload receipt.</p>
-                                            <label className="user-file-upload-zone" style={{ padding: '12px' }}>
+                                            
+                                            <div className="user-donation-manual-info-grid">
+                                              <div className="user-donation-input-group">
+                                                <label className="user-donation-form-label">{paymentMethod} Option</label>
+                                                {paymentMethod === 'E-Wallet' ? (
+                                                  <select className="user-donation-select" value={subMethod} onChange={(e) => setSubMethod(e.target.value)}>
+                                                    <option value="">Select E-Wallet</option>
+                                                    <option value="GCash">GCash</option>
+                                                    <option value="Maya">Maya</option>
+                                                  </select>
+                                                ) : (
+                                                  <select className="user-donation-select" value={subMethod} onChange={(e) => setSubMethod(e.target.value)}>
+                                                    <option value="">Select Bank</option>
+                                                    <optgroup label="Card Payments">
+                                                      <option value="Master Card">Master Card</option>
+                                                      <option value="Visa">Visa</option>
+                                                    </optgroup>
+                                                    <optgroup label="Online Bank">
+                                                      <option value="BPI">BPI</option>
+                                                      <option value="BDO">BDO</option>
+                                                      <option value="PNB">PNB</option>
+                                                      <option value="Metrobank">Metrobank</option>
+                                                      <option value="Unionbank">Unionbank</option>
+                                                      <option value="Instapay">Instapay</option>
+                                                      <option value="RCBC">RCBC</option>
+                                                    </optgroup>
+                                                  </select>
+                                                )}
+                                              </div>
+                                              <div className="user-donation-input-group">
+                                                <label className="user-donation-form-label">Sender Account Name</label>
+                                                <input 
+                                                  type="text" 
+                                                  className="user-donation-input" 
+                                                  placeholder="Juan Dela Cruz"
+                                                  value={accountName}
+                                                  onChange={(e) => setAccountName(e.target.value)}
+                                                />
+                                              </div>
+                                              <div className="user-donation-input-group">
+                                                <label className="user-donation-form-label">Sender Account Number</label>
+                                                <input 
+                                                  type="text" 
+                                                  className="user-donation-input" 
+                                                  placeholder="09123456789 or 1234567890"
+                                                  value={accountNumber}
+                                                  onChange={(e) => setAccountNumber(e.target.value)}
+                                                />
+                                              </div>
+                                            </div>
+
+                                            <label className="user-file-upload-zone" style={{ padding: '12px', marginTop: '16px' }}>
                                               <input type="file" accept="image/*" onChange={handleFileChange} className="user-file-upload-input" />
                                               <div className="user-file-upload-content">
                                                 <UploadCloud className="user-file-upload-icon" size={24} />
@@ -901,7 +1016,7 @@ function TransferModal({ goal, goals, onClose }) {
 
     const fromGoal = goals.find(g => g._id === fromGoalId);
     const available = fromGoal?.savedAmount || 0;
-    const numAmt = parseFloat(amount) || 0;
+    const numAmt = parseFloat(amount.replace(/,/g, '')) || 0;
     const quickAmounts = [100, 500, 1000, 2000].filter(v => v <= available);
 
     const handleSubmit = async () => {
@@ -992,7 +1107,16 @@ function TransferModal({ goal, goals, onClose }) {
                                         type="text"
                                         placeholder="0.00"
                                         value={amount}
-                                        onChange={e => setAmount(e.target.value.replace(/[^0-9.]/g, ''))}
+                                        onChange={e => {
+                                            let raw = e.target.value.replace(/[^0-9.]/g, '');
+                                            let val = parseFloat(raw) || 0;
+                                            if (val > available) raw = String(available);
+                                            const parts = raw.split('.');
+                                            if (parts[0]) {
+                                                parts[0] = parseInt(parts[0], 10).toLocaleString('en-US');
+                                            }
+                                            setAmount(parts.join('.'));
+                                        }}
                                     />
                                 </div>
                                 {available > 0 && (
@@ -1192,7 +1316,7 @@ function TransactionInfoModal({ transaction, onClose }) {
     const isIn = transaction.type === 'deposit';
     const isOut = transaction.type === 'withdrawal';
     const isTransfer = transaction.source === 'Transfer';
-    const isGcash = transaction.paymentMethod === 'gcash';
+    const isGcash = transaction.paymentMethod === 'e-wallet';
     const isBank = transaction.paymentMethod === 'bank';
 
     let Icon = ArrowDownRight;
@@ -1308,7 +1432,7 @@ function WithdrawModal({ goals, onClose }) {
     const [amount, setAmount] = useState('');
     const [reasonOption, setReasonOption] = useState('');
     const [customReason, setCustomReason] = useState('');
-    const [sendMethod, setSendMethod] = useState('gcash');
+    const [sendMethod, setSendMethod] = useState('e-wallet');
     const [accountNumber, setAccountNumber] = useState(profile?.phone || '');
     const [accountName, setAccountName] = useState(profile?.fullName || '');
     const [loading, setLoading] = useState(false);
@@ -1487,7 +1611,7 @@ function WithdrawModal({ goals, onClose }) {
                                 <label className="svm-label">Send to</label>
                                 <div className="svm-payment-options">
                                     {[
-                                        { id: 'gcash', label: 'GCash' },
+                                        { id: 'e-wallet', label: 'E-Wallet' },
                                         { id: 'bank', label: 'Bank Transfer' },
                                     ].map(opt => (
                                         <button
@@ -1504,11 +1628,11 @@ function WithdrawModal({ goals, onClose }) {
                             </div>
 
                             <div className="svm-field">
-                                <label className="svm-label">{sendMethod === 'gcash' ? 'GCash Number' : 'Bank Account Number'}</label>
+                                <label className="svm-label">{sendMethod === 'e-wallet' ? 'E-Wallet Number' : 'Bank Account Number'}</label>
                                 <input
                                     className="svm-input"
                                     type="text"
-                                    placeholder={sendMethod === 'gcash' ? '09XX XXX XXXX' : 'Account number'}
+                                    placeholder={sendMethod === 'e-wallet' ? '09XX XXX XXXX' : 'Account number'}
                                     value={accountNumber}
                                     onChange={e => setAccountNumber(e.target.value)}
                                 />
@@ -1581,7 +1705,10 @@ function WithdrawModal({ goals, onClose }) {
 /* ─────────────────────────────────────────────────────────────
    ROOT EXPORT  — renders whichever modal is active
 ───────────────────────────────────────────────────────────── */
-export default function SavingsModals({ modal, modalData, goals, onClose, onEdit, onTransfer, onQuickDeposit }) {
+export default function SavingsModals({ modal, modalData, goals: propGoals, onClose, onEdit, onTransfer, onQuickDeposit }) {
+    const [allGoals, setAllGoals] = useState(propGoals || []);
+    const [loadingGoals, setLoadingGoals] = useState(false);
+
     /* lock body scroll when a modal is open */
     useEffect(() => {
         if (modal) document.body.style.overflow = 'hidden';
@@ -1589,16 +1716,42 @@ export default function SavingsModals({ modal, modalData, goals, onClose, onEdit
         return () => { document.body.style.overflow = ''; };
     }, [modal]);
 
+    // Fetch all goals to bypass pagination limits when a modal opens
+    useEffect(() => {
+        if (modal && (modal === 'deposit' || modal === 'withdraw' || modal === 'transfer' || modal === 'quickDeposit')) {
+            const fetchAllGoals = async () => {
+                setLoadingGoals(true);
+                try {
+                    const token = localStorage.getItem('token');
+                    const res = await fetch(`${API}/api/savings/goals?all=true`, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        setAllGoals(data.goals);
+                    }
+                } catch (err) {
+                    console.error('Failed to fetch all goals for modal', err);
+                } finally {
+                    setLoadingGoals(false);
+                }
+            };
+            fetchAllGoals();
+        } else {
+            setAllGoals(propGoals || []);
+        }
+    }, [modal, propGoals]);
+
     if (!modal) return null;
 
     if (modal === 'deposit')
-        return <DepositModal goals={goals} onClose={onClose} />;
+        return loadingGoals ? null : <DepositModal goals={allGoals} onClose={onClose} />;
 
     if (modal === 'newGoal')
         return <NewGoalModal onClose={onClose} />;
 
     if (modal === 'quickDeposit')
-        return <QuickDepositModal goal={modalData} goals={goals} onClose={onClose} />;
+        return loadingGoals ? null : <QuickDepositModal goal={modalData} goals={allGoals} onClose={onClose} />;
 
     if (modal === 'editGoal')
         return <EditGoalModal goal={modalData} onClose={onClose} />;
@@ -1607,10 +1760,10 @@ export default function SavingsModals({ modal, modalData, goals, onClose, onEdit
         return <GoalInfoModal goal={modalData} onClose={onClose} onEdit={onEdit} onTransfer={onTransfer} onQuickDeposit={onQuickDeposit} />;
 
     if (modal === 'transfer')
-        return <TransferModal goal={modalData} goals={goals} onClose={onClose} />;
+        return loadingGoals ? null : <TransferModal goal={modalData} goals={allGoals} onClose={onClose} />;
 
     if (modal === 'withdraw')
-        return <WithdrawModal goals={goals} onClose={onClose} />;
+        return loadingGoals ? null : <WithdrawModal goals={allGoals} onClose={onClose} />;
 
     if (modal === 'transactionInfo')
         return <TransactionInfoModal transaction={modalData} onClose={onClose} />;

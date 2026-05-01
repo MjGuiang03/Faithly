@@ -386,8 +386,23 @@ export default function AdminDonationsNew() {
                 </div>
                 <div className="admin-don-modal-detail-row">
                   <span className="admin-don-modal-detail-label">Payment Method</span>
-                  <span className="admin-don-modal-detail-value">{detailModal.method || '—'}</span>
+                  <span className="admin-don-modal-detail-value">
+                    {detailModal.method || '—'} 
+                    {detailModal.subMethod ? ` (${detailModal.subMethod})` : ''}
+                  </span>
                 </div>
+                {detailModal.accountName && (
+                  <div className="admin-don-modal-detail-row">
+                    <span className="admin-don-modal-detail-label">Sender Account Name</span>
+                    <span className="admin-don-modal-detail-value">{detailModal.accountName}</span>
+                  </div>
+                )}
+                {detailModal.accountNumber && (
+                  <div className="admin-don-modal-detail-row">
+                    <span className="admin-don-modal-detail-label">Sender Account No.</span>
+                    <span className="admin-don-modal-detail-value">{detailModal.accountNumber}</span>
+                  </div>
+                )}
                 <div className="admin-don-modal-detail-row">
                   <span className="admin-don-modal-detail-label">Date Submitted</span>
                   <span className="admin-don-modal-detail-value">{fmtDate(detailModal.createdAt || detailModal.date)}</span>

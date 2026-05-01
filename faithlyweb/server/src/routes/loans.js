@@ -442,8 +442,8 @@ router.put('/admin/loans/:id/process', authenticateAdmin, async (req, res) => {
 
     let transferResult = null;
 
-    // For GCash/Bank: send via PayMongo
-    if (paymentMethod === 'gcash' || paymentMethod === 'bank') {
+    // For E-Wallet/Bank: send via PayMongo
+    if (paymentMethod === 'e-wallet' || paymentMethod === 'bank') {
       // Parse account info from the disbursement account string
       const accountInfo = loan.disbursementAccount || '';
       // Try to extract account name and number from "Name - Number" format
@@ -614,7 +614,7 @@ router.get('/loans/:id/schedule', authenticateUser, async (req, res) => {
 router.post('/loans/:id/pay', authenticateUser, async (req, res) => {
     try {
         const { id } = req.params;
-        const { paymentMethod, proofData, proofFileName, successUrl, cancelUrl } = req.body;
+        const { paymentMethod, subMethod, accountName, accountNumber, proofData, proofFileName, successUrl, cancelUrl } = req.body;
         const email = req.user.email;
 
         let query = { loanId: id, email };
@@ -634,7 +634,7 @@ router.post('/loans/:id/pay', authenticateUser, async (req, res) => {
         const isManual = config?.paymentApprovalMethod === 'manual';
 
         if (paymentMethod === 'cash' || isManual) {
-            if (isManual && !proofData) {
+            if (isManual && paymentMethod !== 'cash' && !proofData) {
                 return res.status(400).json({ success: false, message: 'Proof of payment is required for manual approval' });
             }
 
@@ -645,6 +645,9 @@ router.post('/loans/:id/pay', authenticateUser, async (req, res) => {
                 memberName: loan.memberName,
                 amount: amountToPay,
                 paymentMethod: isManual ? paymentMethod : 'cash',
+                subMethod: isManual && paymentMethod !== 'cash' ? subMethod : null,
+                accountName: isManual && paymentMethod !== 'cash' ? accountName : null,
+                accountNumber: isManual && paymentMethod !== 'cash' ? accountNumber : null,
                 proofData: proofData || null,
                 proofFileName: proofFileName || null,
                 status: 'pending',

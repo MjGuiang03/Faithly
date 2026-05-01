@@ -54,6 +54,9 @@ const CloseIcon = () => (
    ════════════════════════════════════════════════════════════ */
 function PayNowModal({ loan, onClose, onSuccess }) {
     const [method, setMethod] = useState('cash');
+    const [subMethod, setSubMethod] = useState('');
+    const [accountName, setAccountName] = useState('');
+    const [accountNumber, setAccountNumber] = useState('');
     const [uploading, setUploading] = useState(false);
     const [receipt, setReceipt] = useState(null);
     const [error, setError] = useState('');
@@ -105,17 +108,17 @@ function PayNowModal({ loan, onClose, onSuccess }) {
             needsReceipt: approvalMethod === 'manual',
         },
         {
-            id: 'gcash',
-            name: 'GCash',
-            desc: 'Send via GCash wallet instantly',
+            id: 'e-wallet',
+            name: 'E-Wallet',
+            desc: 'Send via E-Wallet wallet instantly',
             icon: (
                 <CheckCircle size={20} color="#6d28d9" />
             ),
             iconBg: 'ld-method-icon--gcash',
             instructions: approvalMethod === 'manual'
-                ? [`Please transfer to our GCash account and upload your receipt below.`]
+                ? [`Please transfer to our E-Wallet account and upload your receipt below.`]
                 : [
-                    `You will be redirected to PayMongo to securely complete your GCash payment.`,
+                    `You will be redirected to PayMongo to securely complete your E-Wallet payment.`,
                     `Please complete the payment on the next page.`
                 ],
             needsReceipt: approvalMethod === 'manual',
@@ -125,9 +128,11 @@ function PayNowModal({ loan, onClose, onSuccess }) {
     const selected = METHODS.find(m => m.id === method);
 
     const handleConfirm = async () => {
-        if (selected?.needsReceipt && !receipt) {
-            setError('Please upload your proof of payment before confirming.');
-            return;
+        if (selected?.needsReceipt) {
+            if (!subMethod) return setError(`Please select a ${method === 'e-wallet' ? 'E-Wallet' : 'Bank'} option.`);
+            if (!accountName.trim()) return setError('Please provide your Account Name.');
+            if (!accountNumber.trim()) return setError('Please provide your Account Number.');
+            if (!receipt) return setError('Please upload your proof of payment before confirming.');
         }
         setError('');
         setUploading(true);
@@ -140,6 +145,9 @@ function PayNowModal({ loan, onClose, onSuccess }) {
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({
                     paymentMethod: method,
+                    subMethod: selected?.needsReceipt ? subMethod : undefined,
+                    accountName: selected?.needsReceipt ? accountName : undefined,
+                    accountNumber: selected?.needsReceipt ? accountNumber : undefined,
                     proofData,
                     proofFileName: receipt?.name || null,
                 }),
@@ -234,7 +242,60 @@ function PayNowModal({ loan, onClose, onSuccess }) {
                             ))}
                         </div>
 
-                        {/* Receipt upload (bank / gcash) */}
+                        {/* Manual Approval Info Fields */}
+                        {selected?.needsReceipt && (
+                            <div className="user-donation-manual-info-grid" style={{ marginTop: '16px', marginBottom: '16px' }}>
+                                <div className="user-donation-input-group">
+                                    <label className="user-donation-form-label">{method === 'e-wallet' ? 'E-Wallet' : 'Bank'} Option</label>
+                                    {method === 'e-wallet' ? (
+                                        <select className="user-donation-select" value={subMethod} onChange={(e) => setSubMethod(e.target.value)}>
+                                            <option value="">Select E-Wallet</option>
+                                            <option value="GCash">GCash</option>
+                                            <option value="Maya">Maya</option>
+                                        </select>
+                                    ) : (
+                                        <select className="user-donation-select" value={subMethod} onChange={(e) => setSubMethod(e.target.value)}>
+                                            <option value="">Select Bank</option>
+                                            <optgroup label="Card Payments">
+                                                <option value="Master Card">Master Card</option>
+                                                <option value="Visa">Visa</option>
+                                            </optgroup>
+                                            <optgroup label="Online Bank">
+                                                <option value="BPI">BPI</option>
+                                                <option value="BDO">BDO</option>
+                                                <option value="PNB">PNB</option>
+                                                <option value="Metrobank">Metrobank</option>
+                                                <option value="Unionbank">Unionbank</option>
+                                                <option value="Instapay">Instapay</option>
+                                                <option value="RCBC">RCBC</option>
+                                            </optgroup>
+                                        </select>
+                                    )}
+                                </div>
+                                <div className="user-donation-input-group">
+                                    <label className="user-donation-form-label">Sender Account Name</label>
+                                    <input 
+                                        type="text" 
+                                        className="user-donation-input" 
+                                        placeholder="Juan Dela Cruz"
+                                        value={accountName}
+                                        onChange={(e) => setAccountName(e.target.value)}
+                                    />
+                                </div>
+                                <div className="user-donation-input-group">
+                                    <label className="user-donation-form-label">Sender Account Number</label>
+                                    <input 
+                                        type="text" 
+                                        className="user-donation-input" 
+                                        placeholder="09123456789 or 1234567890"
+                                        value={accountNumber}
+                                        onChange={(e) => setAccountNumber(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Receipt upload (bank / e-wallet) */}
                         {selected?.needsReceipt && (
                             <div className="ld-pay-upload">
                                 <div className="ld-pay-section-label" style={{ marginBottom: '8px' }}>Upload proof of payment</div>

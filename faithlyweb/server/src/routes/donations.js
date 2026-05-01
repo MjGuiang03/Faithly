@@ -29,7 +29,7 @@ router.post('/donations', authenticateUser, async (req, res) => {
     const isManual = config?.paymentApprovalMethod === 'manual';
 
     if (isManual) {
-      const { proofOfPayment } = req.body;
+      const { proofOfPayment, subMethod, accountName, accountNumber } = req.body;
       if (!proofOfPayment) {
         return res.status(400).json({ success: false, message: 'Proof of payment is required for manual approval' });
       }
@@ -41,6 +41,9 @@ router.post('/donations', authenticateUser, async (req, res) => {
         amount: Number(amount),
         category,
         method: paymentMethod || 'Manual',
+        subMethod: subMethod || '',
+        accountName: accountName || '',
+        accountNumber: accountNumber || '',
         type: isRecurring ? 'Recurring' : 'One-time',
         status: 'pending',
         proofOfPayment, // Store base64 string

@@ -1,28 +1,60 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
   BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
+import html2pdf from 'html2pdf.js';
 import '../styles/AdminFinancialReport.css';
 import API from '../../utils/api';
-import { FileText, Printer, RefreshCw, Sparkles, Calendar, ChevronDown } from 'lucide-react';
+import { FileText, Printer, RefreshCw, Sparkles, Calendar, ChevronDown, Download } from 'lucide-react';
 
 const fmt = (n) => `₱${(Number(n) || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const PIE_COLORS = ['#2563eb', '#8b5cf6', '#06b6d4', '#f59e0b', '#ef4444', '#10b981', '#ec4899'];
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
+const SESSION_KEY = 'faithly_financial_report';
+
 export default function AdminFinancialReport() {
   const navigate = useNavigate();
   const now = new Date();
+  const reportRef = useRef(null);
 
   const [reportMonth, setReportMonth] = useState('');
   const [reportYear, setReportYear] = useState(now.getFullYear());
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [exporting, setExporting] = useState(false);
+
+  // Load cached report from sessionStorage on mount
+  useEffect(() => {
+    try {
+      const cached = sessionStorage.getItem(SESSION_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        setReport(parsed.report);
+        setReportMonth(parsed.month ?? '');
+        setReportYear(parsed.year ?? now.getFullYear());
+      }
+    } catch { /* ignore parse errors */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Save report to sessionStorage whenever it changes
+  useEffect(() => {
+    if (report) {
+      try {
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+          report,
+          month: reportMonth,
+          year: reportYear,
+        }));
+      } catch { /* quota exceeded — ignore */ }
+    }
+  }, [report, reportMonth, reportYear]);
 
   const generateReport = useCallback(async () => {
     setLoading(true);
@@ -59,6 +91,33 @@ export default function AdminFinancialReport() {
     window.print();
   };
 
+  const handleExportPDF = async () => {
+    if (!reportRef.current) return;
+    setExporting(true);
+    try {
+      const element = reportRef.current;
+      const periodName = report?.period?.replace(/\s+/g, '_') || 'Report';
+      const filename = `FaithLy_Financial_Report_${periodName}.pdf`;
+
+      const opt = {
+        margin:       [10, 10, 10, 10],
+        filename,
+        image:        { type: 'jpeg', quality: 0.95 },
+        html2canvas:  { scale: 2, useCORS: true, logging: false },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] },
+      };
+
+      await html2pdf().set(opt).from(element).save();
+      toast.success('PDF exported successfully');
+    } catch (err) {
+      console.error('[PDF Export Error]:', err);
+      toast.error('Failed to export PDF');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const yearOptions = [];
   for (let y = now.getFullYear(); y >= now.getFullYear() - 5; y--) {
     yearOptions.push(y);
@@ -80,10 +139,20 @@ export default function AdminFinancialReport() {
         </div>
         <div className="fin-report-header-actions no-print">
           {report && (
-            <button className="fin-report-btn secondary" onClick={handlePrint}>
-              <Printer size={16} />
-              Print / PDF
-            </button>
+            <>
+              <button
+                className="fin-report-btn secondary"
+                onClick={handleExportPDF}
+                disabled={exporting}
+              >
+                {exporting ? <RefreshCw size={16} className="spinning" /> : <Download size={16} />}
+                {exporting ? 'Exporting...' : 'Export PDF'}
+              </button>
+              <button className="fin-report-btn secondary" onClick={handlePrint}>
+                <Printer size={16} />
+                Print
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -150,9 +219,9 @@ export default function AdminFinancialReport() {
 
       {/* ── Report Content ── */}
       {report && !loading && (
-        <div className="fin-report-content">
+        <div className="fin-report-content" ref={reportRef}>
 
-          {/* Report Header (print) */}
+          {/* Report Header (print/PDF) */}
           <div className="fin-report-print-header print-only">
             <h1>FaithLy Financial Report</h1>
             <p>Period: {report.period}</p>

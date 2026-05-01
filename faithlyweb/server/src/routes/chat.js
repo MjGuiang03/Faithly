@@ -29,17 +29,17 @@ You are **FaithBot**, the official AI assistant for **FaithLy** — the digital 
 - Loan types: Personal (2× savings, 2%/mo), Emergency (1.5× savings, 1.5%/mo), Short-Term (1× savings, 1%/mo)
 - Application flow: Pending → Approved → Active → Completed
 - Late payment penalty: 3% flat interest if payment is >3 days past due
-- Payments via GCash, Bank Transfer, or Cash with proof upload
+- Payments via E-Wallet, Bank Transfer, or Cash with proof upload
 
 ### Savings (Officers Only)
 - Set personalized savings goals
 - Track progress with visual progress bar
-- Deposit via GCash, Bank, or Cash
+- Deposit via E-Wallet, Bank, or Cash
 - Withdrawals require admin approval
 
 ### Donations (All Members)
 - Categories: General Fund, Children's Department, Men's Department, Women's Department, Youth Department, Mission Fund
-- Payment methods: GCash, Bank Transfer, Cash
+- Payment methods: E-Wallet, Bank Transfer, Cash
 - Upload proof of payment
 - Payment gateway (PayMongo) available for digital payments
 
@@ -73,7 +73,7 @@ const KB = [
   { patterns: ['officer', 'verify', 'verification', 'verified'], responses: ["🛡️ **Officer Verification** unlocks Loans & Savings. Go to Home > 'Are you an officer?' card > submit your Church ID and Position. Takes 3-5 business days."], quickReplies: ['What positions qualify?', 'Loans', 'Savings'] },
   { patterns: ['loan', 'loans', 'borrow', 'apply loan', 'utang', 'hulugan'], responses: ["💳 **Loans** are for verified officers. Go to Loans > Apply for a Loan. Choose type, set amount & term, then submit for admin review."], quickReplies: ['Loan requirements', 'Interest rates', 'Repayment'] },
   { patterns: ['savings', 'save', 'ipon'], responses: ["🏦 **Savings** is for verified officers. Set goals, track progress, and deposit funds through the Savings page."], quickReplies: ['How to deposit?', 'Officer Verification'] },
-  { patterns: ['donat', 'donation', 'donate', 'giving', 'tithe', 'offering', 'handog', 'ikapu'], responses: ["❤️ Go to Donations > choose a category > enter amount > upload proof of payment. Methods: GCash, Bank, Cash."], quickReplies: ['Donation categories', 'GCash details'] },
+  { patterns: ['donat', 'donation', 'donate', 'giving', 'tithe', 'offering', 'handog', 'ikapu'], responses: ["❤️ Go to Donations > choose a category > enter amount > upload proof of payment. Methods: E-Wallet, Bank, Cash."], quickReplies: ['Donation categories', 'E-Wallet details'] },
   { patterns: ['attendance', 'attend', 'check in'], responses: ["📅 Your attendance is recorded by administrators. View it in the Attendance page or your Home dashboard."], quickReplies: ['Branches', 'Home'] },
   { patterns: ['branch', 'location', 'address', 'simbahan', 'church'], responses: ["🏛️ Visit the Branches page to find locations, contact info, and service schedules."], quickReplies: ['My branch', 'Attendance'] },
   { patterns: ['settings', 'profile', 'password', 'account'], responses: ["⚙️ Go to Settings to update your profile, change password, or manage notifications."], quickReplies: ['Change password', 'Home'] },

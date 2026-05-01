@@ -343,11 +343,11 @@ router.get('/saved-accounts', authenticateUser, async (req, res) => {
       .toArray();
 
     for (const w of withdrawals) {
-      const key = `${w.sendMethod || 'gcash'}-${w.accountNumber}`;
+      const key = `${w.sendMethod || 'e-wallet'}-${w.accountNumber}`;
       if (!seen.has(key)) {
         seen.add(key);
         accounts.push({
-          method: w.sendMethod || 'gcash',
+          method: w.sendMethod || 'e-wallet',
           accountNumber: w.accountNumber,
           accountName: w.accountName || '',
           source: 'Savings Withdrawal',
@@ -356,13 +356,13 @@ router.get('/saved-accounts', authenticateUser, async (req, res) => {
       }
     }
 
-    // 3. From user profile (phone as GCash)
+    // 3. From user profile (phone as E-Wallet)
     if (user?.phone) {
-      const key = `gcash-${user.phone}`;
+      const key = `e-wallet-${user.phone}`;
       if (!seen.has(key)) {
         seen.add(key);
         accounts.push({
-          method: 'gcash',
+          method: 'e-wallet',
           accountNumber: user.phone,
           accountName: user.fullName || '',
           source: 'Profile',

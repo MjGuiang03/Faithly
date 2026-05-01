@@ -108,7 +108,7 @@ export default function LoanApplicationModal({
 
   /* ── calculation breakdown ── */
   const calc = useMemo(() => {
-    const principal = Number(amount) || 0;
+    const principal = Number(amount.replace(/,/g, '')) || 0;
     const months = Number(termMonths) || 0;
     if (!selectedType || principal <= 0 || months <= 0) return null;
     const totalInterest = principal * selectedType.rate * months;
@@ -151,8 +151,8 @@ export default function LoanApplicationModal({
     if (!savingsOk) { toast.error('You need at least ₱1,000 in savings.'); return; }
     if (hasOverdueLoans) { toast.error('You have overdue loans. Please settle them first.'); return; }
     if (!disbursementMethod) { toast.error('Please select a disbursement method.'); return; }
-    if ((disbursementMethod === 'gcash' || disbursementMethod === 'bank') && !disbursementAccount) {
-      toast.error(`Please provide your ${disbursementMethod === 'gcash' ? 'GCash number' : 'bank account details'}.`);
+    if ((disbursementMethod === 'e-wallet' || disbursementMethod === 'bank') && !disbursementAccount) {
+      toast.error(`Please provide your ${disbursementMethod === 'e-wallet' ? 'E-Wallet number' : 'bank account details'}.`);
       return;
     }
     if (!agreedToTerms) { toast.error('You must accept the Loan Terms and Conditions to continue'); return; }
@@ -194,7 +194,7 @@ export default function LoanApplicationModal({
       toast.success('Loan application submitted successfully!');
 
       // Save or update account for future use
-      if ((disbursementMethod === 'gcash' || disbursementMethod === 'bank') && disbursementAccount) {
+      if ((disbursementMethod === 'e-wallet' || disbursementMethod === 'bank') && disbursementAccount) {
         try {
           await fetch(`${API}/api/saved-accounts`, {
             method: 'POST',
@@ -318,20 +318,25 @@ export default function LoanApplicationModal({
                 <div className="user-loan-application-input-wrapper ula-filled-input">
                   <span className="user-loan-application-input-icon">₱</span>
                   <input
-                    type="number"
+                    type="text"
                     className="user-loan-application-input"
                     placeholder="Enter amount"
                     value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    min="500"
-                    max={maxLoanable}
+                    onChange={(e) => {
+                      let raw = e.target.value.replace(/[^0-9.]/g, '');
+                      const parts = raw.split('.');
+                      if (parts[0]) {
+                          parts[0] = parseInt(parts[0], 10).toLocaleString('en-US');
+                      }
+                      setAmount(parts.join('.'));
+                    }}
                     required
                   />
                 </div>
-                {amount && Number(amount) > maxLoanable && (
+                {amount && Number(amount.replace(/,/g, '')) > maxLoanable && (
                   <span className="ula-field-error">Exceeds your max loanable amount</span>
                 )}
-                {amount && Number(amount) > 0 && Number(amount) < 500 && (
+                {amount && Number(amount.replace(/,/g, '')) > 0 && Number(amount.replace(/,/g, '')) < 500 && (
                   <span className="ula-field-error">Minimum loan is ₱500</span>
                 )}
               </div>
@@ -496,7 +501,7 @@ export default function LoanApplicationModal({
             <div className="ula-disbursement-options">
               {[
                 { id: 'cash', label: 'Cash (Pick up at office)' },
-                { id: 'gcash', label: 'GCash' },
+                { id: 'e-wallet', label: 'E-Wallet' },
                 { id: 'bank', label: 'Bank Transfer' }
               ].map(opt => (
                 <button
@@ -511,7 +516,7 @@ export default function LoanApplicationModal({
               ))}
             </div>
             
-            {(disbursementMethod === 'gcash' || disbursementMethod === 'bank') && (
+            {(disbursementMethod === 'e-wallet' || disbursementMethod === 'bank') && (
               <div className="ula-disbursement-account">
                 {filteredAccounts.length > 0 && (
                   <>
@@ -579,12 +584,12 @@ export default function LoanApplicationModal({
                 {(filteredAccounts.length === 0 || selectedAccountIdx === -1) && (
                   <>
                     <label className="user-loan-application-label" style={{ marginTop: filteredAccounts.length > 0 ? '12px' : 0 }}>
-                      {disbursementMethod === 'gcash' ? 'GCash Name & Number' : 'Bank Name, Account Name & Number'}
+                      {disbursementMethod === 'e-wallet' ? 'E-Wallet Name & Number' : 'Bank Name, Account Name & Number'}
                     </label>
                     <input
                       type="text"
                       className="user-loan-application-input"
-                      placeholder={disbursementMethod === 'gcash' ? 'e.g. Juan Dela Cruz - 09123456789' : 'e.g. BDO - Juan Dela Cruz - 1234567890'}
+                      placeholder={disbursementMethod === 'e-wallet' ? 'e.g. Juan Dela Cruz - 09123456789' : 'e.g. BDO - Juan Dela Cruz - 1234567890'}
                       value={disbursementAccount}
                       onChange={(e) => setDisbursementAccount(e.target.value)}
                       required
@@ -604,7 +609,7 @@ export default function LoanApplicationModal({
                 <ul>
                   <li>Payments are monthly based on the selected term.</li>
                   <li>Due dates are fixed upon approval.</li>
-                  <li>Accepted payment methods: Cash, Bank transfer, GCash.</li>
+                  <li>Accepted payment methods: Cash, Bank transfer, E-Wallet.</li>
                 </ul>
               </div>
 

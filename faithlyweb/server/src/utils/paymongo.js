@@ -19,7 +19,7 @@ export const generatePaymentLink = async (amount, description, referenceId = '',
   try {
     // Force specific payment methods based on UI selection
     let methodTypes = ['card', 'gcash', 'paymaya', 'dob']; // default shows all
-    if (paymentMethod === 'GCash') {
+    if (paymentMethod === 'E-Wallet') {
       methodTypes = ['gcash', 'paymaya']; // e-wallets
     } else if (paymentMethod === 'Bank') {
       methodTypes = ['dob', 'card']; // online banking and cards
@@ -68,7 +68,7 @@ const PAYMONGO_MERCHANT_NAME = process.env.PAYMONGO_MERCHANT_NAME || 'FaithLy';
 
 // BIC codes for common Philippine e-wallets and banks
 const BIC_CODES = {
-  gcash: 'GXCHPHM2XXX',
+  'e-wallet': 'GXCHPHM2XXX',
   paymaya: 'MAYAPHM2XXX',
   bpi: 'BOPIPHMMXXX',
   bdo: 'ABORPHMM',
@@ -79,7 +79,7 @@ const BIC_CODES = {
 };
 
 /**
- * Send money from PayMongo wallet to a user's GCash or bank account.
+ * Send money from PayMongo wallet to a user's E-Wallet or bank account.
  * Uses the PayMongo Workflow API.
  */
 export const sendPaymongoTransfer = async ({ amount, accountNumber, accountName, method, referenceId, bankCode }) => {
@@ -100,7 +100,7 @@ export const sendPaymongoTransfer = async ({ amount, accountNumber, accountName,
     }
 
     const amountCentavos = Math.round(amount * 100);
-    const bic = method === 'gcash' ? BIC_CODES.gcash : (BIC_CODES[bankCode] || BIC_CODES.bpi);
+    const bic = method === 'e-wallet' ? BIC_CODES['e-wallet'] : (BIC_CODES[bankCode] || BIC_CODES.bpi);
 
     const workflowDef = `version: 1
 name: "loan-disbursement-${referenceId}"

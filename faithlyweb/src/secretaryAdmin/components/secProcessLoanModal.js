@@ -4,7 +4,7 @@ import { Banknote, Check, Smartphone, Building2, X, AlertTriangle } from 'lucide
 
 
 export default function SecProcessLoanModal({ loan, onClose, onProcess }) {
-    const [paymentMethod, setPaymentMethod] = useState(loan.disbursementMethod || 'gcash');
+    const [paymentMethod, setPaymentMethod] = useState(loan.disbursementMethod || 'e-wallet');
     const [reason, setReason] = useState('');
     const [processing, setProcessing] = useState(false);
 
@@ -24,7 +24,7 @@ export default function SecProcessLoanModal({ loan, onClose, onProcess }) {
         }
     };
 
-    const isDigital = paymentMethod === 'gcash' || paymentMethod === 'bank';
+    const isDigital = paymentMethod === 'e-wallet' || paymentMethod === 'bank';
 
     return (
         <div className="sec-process-modal-overlay" onClick={onClose}>
@@ -80,11 +80,11 @@ export default function SecProcessLoanModal({ loan, onClose, onProcess }) {
                         </button>
 
                         <button
-                            className={`sec-process-payment-option ${paymentMethod === 'gcash' ? 'active' : ''}`}
-                            onClick={() => setPaymentMethod('gcash')}
+                            className={`sec-process-payment-option ${paymentMethod === 'e-wallet' ? 'active' : ''}`}
+                            onClick={() => setPaymentMethod('e-wallet')}
                         >
                             <Smartphone size={22} />
-                            <span>GCash</span>
+                            <span>E-Wallet</span>
                         </button>
 
                         <button

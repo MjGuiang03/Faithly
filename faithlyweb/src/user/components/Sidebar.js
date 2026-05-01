@@ -11,6 +11,7 @@ export default function Sidebar({ collapsed, setCollapsed, toggleCollapsed }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { profile, user, signOut } = useAuth();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   
   const handleSignOut = async () => {
     const result = await signOut();
@@ -147,7 +148,7 @@ export default function Sidebar({ collapsed, setCollapsed, toggleCollapsed }) {
           </div>
           <button 
             className={`user-sidebar-profile-signout ${collapsed ? 'collapsed' : ''}`}
-            onClick={handleSignOut}
+            onClick={() => setShowLogoutModal(true)}
             title={collapsed ? 'Sign out' : undefined}
           >
             <LogOut size={18} />
@@ -156,6 +157,30 @@ export default function Sidebar({ collapsed, setCollapsed, toggleCollapsed }) {
         </div>
 
       </div>
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutModal && (
+        <div className="user-logout-modal-overlay">
+          <div className="logout-modal-content">
+            <h2 className="user-logout-modal-title">Confirm Logout</h2>
+            <p className="user-logout-modal-message">Are you sure you want to log out of your account?</p>
+            <div className="user-logout-modal-actions">
+              <button 
+                className="user-logout-modal-cancel" 
+                onClick={() => setShowLogoutModal(false)}
+              >
+                Cancel
+              </button>
+              <button 
+                className="user-logout-modal-confirm" 
+                onClick={handleSignOut}
+              >
+                Sign out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

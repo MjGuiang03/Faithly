@@ -196,15 +196,8 @@ export default function AdminDashboard() {
     }
   }, []);
 
-  useEffect(() => {
-    const token = localStorage.getItem('adminToken');
-    if (!token) { navigate('/'); return; }
-    fetchAll();
-    fetchAiInsights();
-  }, [navigate, fetchAll]);
-
   /* ── Fetch AI Insights ── */
-  const fetchAiInsights = async (refresh = false) => {
+  const fetchAiInsights = useCallback(async (refresh = false) => {
     setAiInsightsLoading(true);
     try {
       const token = localStorage.getItem('adminToken');
@@ -220,7 +213,14 @@ export default function AdminDashboard() {
     } finally {
       setAiInsightsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem('adminToken');
+    if (!token) { navigate('/'); return; }
+    fetchAll();
+    fetchAiInsights();
+  }, [navigate, fetchAll, fetchAiInsights]);
 
 
   // --- Derived Growth Data ---
