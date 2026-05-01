@@ -929,7 +929,7 @@ function EditGoalModal({ goal, onClose }) {
                                 type="date"
                                 value={targetDate}
                                 min={(() => {
-                                    if (!startDate) return today;
+                                    if (!startDate) return new Date().toISOString().split('T')[0];
                                     const d = new Date(startDate);
                                     d.setMonth(d.getMonth() + 1);
                                     return d.toISOString().split('T')[0];
