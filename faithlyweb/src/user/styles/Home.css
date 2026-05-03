@@ -246,6 +246,10 @@
   flex-direction: column;
 }
 
+.uh-card--quick-actions {
+  align-self: start;
+}
+
 .uh-card:hover {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 6px 16px rgba(0, 0, 0, 0.05);
 }

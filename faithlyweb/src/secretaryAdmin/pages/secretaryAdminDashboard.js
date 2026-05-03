@@ -32,8 +32,12 @@ export default function SecretaryAdminDashboard() {
   const [moneyFlowData, setMoneyFlowData] = useState([]);
 
   // Modal states
+  const [showAwaitingModal, setShowAwaitingModal] = useState(false);
+  const [showTodayModal, setShowTodayModal] = useState(false);
   const [showMonthModal, setShowMonthModal] = useState(false);
   const [showDisbursedModal, setShowDisbursedModal] = useState(false);
+  const [awaitingLoans, setAwaitingLoans] = useState([]);
+  const [todayLoans, setTodayLoans] = useState([]);
   const [monthLoans, setMonthLoans] = useState([]);
   const [disbursedLoans, setDisbursedLoans] = useState([]);
 
@@ -67,7 +71,7 @@ export default function SecretaryAdminDashboard() {
   // Derived stats — always uses current month/year
   useEffect(() => {
     if (!rawLoans.length) return;
-    const activeLoans = rawLoans.filter(l => l.status === 'active');
+    const activeLoans = rawLoans.filter(l => ['active', 'approved', 'completed'].includes((l.status || '').toLowerCase()) || l.disbursed);
     const now = new Date();
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
@@ -76,13 +80,20 @@ export default function SecretaryAdminDashboard() {
     let processedToday = 0;
     let processedMonth = 0;
     let totalDisbursedAmount = 0;
+    const thisAwaitingLoans = [];
+    const thisTodayLoans = [];
     const thisMonthLoans = [];
     const allDisbursedLoans = [];
 
     activeLoans.forEach(l => {
-      if (l.disbursed && l.disbursementDate) {
+      if (!l.disbursed) {
+        thisAwaitingLoans.push(l);
+      } else if (l.disbursementDate) {
         const disbDate = new Date(l.disbursementDate);
-        if (disbDate.toLocaleDateString('en-US') === todayStr) processedToday++;
+        if (disbDate.toLocaleDateString('en-US') === todayStr) {
+          processedToday++;
+          thisTodayLoans.push(l);
+        }
 
         if (disbDate.getFullYear() === currentYear && disbDate.getMonth() === currentMonth) {
           processedMonth++;
@@ -95,11 +106,13 @@ export default function SecretaryAdminDashboard() {
     });
 
     setStats({
-      awaiting: activeLoans.filter(l => !l.disbursed).length,
+      awaiting: thisAwaitingLoans.length,
       today: processedToday,
       month: processedMonth,
       disbursed: totalDisbursedAmount
     });
+    setAwaitingLoans(thisAwaitingLoans);
+    setTodayLoans(thisTodayLoans);
     setMonthLoans(thisMonthLoans);
     setDisbursedLoans(allDisbursedLoans);
   }, [rawLoans]);
@@ -108,15 +121,21 @@ export default function SecretaryAdminDashboard() {
   useEffect(() => {
     if (!rawLoans.length) return;
     const disbursedL = rawLoans.filter(l => l.disbursed);
-    const approvedLoans = rawLoans.filter(l => l.status === 'active' || l.disbursed);
+    const approvedLoans = rawLoans.filter(l => ['active', 'approved', 'completed'].includes((l.status || '').toLowerCase()) || l.disbursed);
 
-    const totalReleasedAmt = disbursedL.reduce((sum, l) => sum + Number(l.amount), 0);
+    const totalReceivedAmt = rawLoans.reduce((sum, l) => sum + Number(l.amount || 0), 0);
+    const totalProcessedAmt = approvedLoans.reduce((sum, l) => sum + Number(l.amount || 0), 0);
+    const totalReleasedAmt = disbursedL.reduce((sum, l) => sum + Number(l.amount || 0), 0);
     const processingRate = approvedLoans.length > 0 ? Math.round((disbursedL.length / approvedLoans.length) * 100) : 0;
-    setReportStats({ totalReceived: 0, totalReleased: totalReleasedAmt, totalProcessed: totalReleasedAmt, processingRate });
+    setReportStats({ totalReceived: totalReceivedAmt, totalReleased: totalReleasedAmt, totalProcessed: totalProcessedAmt, processingRate });
 
-    const gcashAmt = disbursedL.filter(l => l.paymentMethod === 'e-wallet').reduce((sum, l) => sum + Number(l.amount), 0);
-    const bankAmt = disbursedL.filter(l => l.paymentMethod === 'bank').reduce((sum, l) => sum + Number(l.amount), 0);
-    const cashAmt = disbursedL.filter(l => l.paymentMethod === 'cash').reduce((sum, l) => sum + Number(l.amount), 0);
+    // Filter payment method pie chart based on selected chart year too, or keep all time? Let's use chartYear for pie chart as well
+    const yearlyDisbursed = disbursedL.filter(l => l.disbursementDate && new Date(l.disbursementDate).getFullYear() === chartYear);
+    const pieDataSrc = yearlyDisbursed.length > 0 ? yearlyDisbursed : disbursedL; // Fallback to all if empty for the year
+
+    const gcashAmt = pieDataSrc.filter(l => l.paymentMethod && (l.paymentMethod.toLowerCase() === 'e-wallet' || l.paymentMethod.toLowerCase() === 'gcash')).reduce((sum, l) => sum + Number(l.amount || 0), 0);
+    const bankAmt = pieDataSrc.filter(l => l.paymentMethod && l.paymentMethod.toLowerCase().includes('bank')).reduce((sum, l) => sum + Number(l.amount || 0), 0);
+    const cashAmt = pieDataSrc.filter(l => !l.paymentMethod || l.paymentMethod.toLowerCase() === 'cash').reduce((sum, l) => sum + Number(l.amount || 0), 0);
     const totalAmt = gcashAmt + bankAmt + cashAmt;
     setPaymentMethodData([
       { name: 'E-Wallet', value: gcashAmt, percentage: totalAmt > 0 ? Math.round((gcashAmt / totalAmt) * 100) : 0 },
@@ -190,7 +209,7 @@ export default function SecretaryAdminDashboard() {
           <>
             {/* Row 1 — 4 Stat Cards */}
             <div className="adm-stats-grid sec-adm-stats-grid-4">
-              <div className="adm-stat-card">
+              <div className="adm-stat-card sec-adm-clickable-card" onClick={() => setShowAwaitingModal(true)}>
                 <div className="adm-stat-top">
                   <span className="adm-stat-label">Awaiting Processing</span>
                   <div className="adm-stat-icon adm-icon-yellow">
@@ -200,7 +219,7 @@ export default function SecretaryAdminDashboard() {
                 <span className="adm-stat-value">{dash(stats.awaiting)}</span>
               </div>
 
-              <div className="adm-stat-card">
+              <div className="adm-stat-card sec-adm-clickable-card" onClick={() => setShowTodayModal(true)}>
                 <div className="adm-stat-top">
                   <span className="adm-stat-label">Processed Today</span>
                   <div className="adm-stat-icon adm-icon-blue">
@@ -297,16 +316,16 @@ export default function SecretaryAdminDashboard() {
               </div>
               <div className="adm-stats-grid" style={{ gap: '10px', width: '100%', gridTemplateColumns: 'repeat(4, 1fr)' }}>
                 <div className="adm-summary-card">
-                  <span className="adm-summary-label">Total Received</span>
+                  <span className="adm-summary-label">Total Amount Requested</span>
                   <span className="adm-summary-value green">₱{reportStats.totalReceived.toLocaleString()}</span>
+                </div>
+                <div className="adm-summary-card">
+                  <span className="adm-summary-label">Total Approved</span>
+                  <span className="adm-summary-value blue">₱{reportStats.totalProcessed.toLocaleString()}</span>
                 </div>
                 <div className="adm-summary-card">
                   <span className="adm-summary-label">Total Released</span>
                   <span className="adm-summary-value" style={{ color: '#EF4444' }}>₱{reportStats.totalReleased.toLocaleString()}</span>
-                </div>
-                <div className="adm-summary-card">
-                  <span className="adm-summary-label">Processed</span>
-                  <span className="adm-summary-value blue">₱{reportStats.totalProcessed.toLocaleString()}</span>
                 </div>
                 <div className="adm-summary-card">
                   <span className="adm-summary-label">Processing Rate</span>
@@ -317,6 +336,96 @@ export default function SecretaryAdminDashboard() {
           </>
         )}
       </div>
+
+      {/* ── Awaiting Processing Modal ── */}
+      {showAwaitingModal && (
+        <div className="sec-adm-modal-overlay" onClick={() => setShowAwaitingModal(false)}>
+          <div className="sec-adm-modal" onClick={e => e.stopPropagation()}>
+            <div className="sec-adm-modal-header">
+              <div>
+                <h2 className="sec-adm-modal-title">Awaiting Processing</h2>
+                <p className="sec-adm-modal-subtitle">{awaitingLoans.length} loan(s) pending disbursement</p>
+              </div>
+              <button className="sec-adm-modal-close" onClick={() => setShowAwaitingModal(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="sec-adm-modal-body">
+              {awaitingLoans.length === 0 ? (
+                <div className="sec-adm-modal-empty">No loans currently awaiting processing.</div>
+              ) : (
+                <div className="sec-adm-modal-table-wrapper">
+                  <table className="sec-adm-modal-table">
+                    <thead>
+                      <tr>
+                        <th>Loan ID</th>
+                        <th>Member</th>
+                        <th>Amount</th>
+                        <th>Approved Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {awaitingLoans.map(l => (
+                        <tr key={l._id}>
+                          <td className="sec-adm-modal-loan-id">{l.loanId}</td>
+                          <td>{l.memberName || 'N/A'}</td>
+                          <td className="sec-adm-modal-amount">{fmt(l.amount)}</td>
+                          <td>{fmtDate(l.updatedAt)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Processed Today Modal ── */}
+      {showTodayModal && (
+        <div className="sec-adm-modal-overlay" onClick={() => setShowTodayModal(false)}>
+          <div className="sec-adm-modal" onClick={e => e.stopPropagation()}>
+            <div className="sec-adm-modal-header">
+              <div>
+                <h2 className="sec-adm-modal-title">Processed Today</h2>
+                <p className="sec-adm-modal-subtitle">{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} — {todayLoans.length} loan(s)</p>
+              </div>
+              <button className="sec-adm-modal-close" onClick={() => setShowTodayModal(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="sec-adm-modal-body">
+              {todayLoans.length === 0 ? (
+                <div className="sec-adm-modal-empty">No loans processed today.</div>
+              ) : (
+                <div className="sec-adm-modal-table-wrapper">
+                  <table className="sec-adm-modal-table">
+                    <thead>
+                      <tr>
+                        <th>Loan ID</th>
+                        <th>Member</th>
+                        <th>Amount</th>
+                        <th>Method</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {todayLoans.map(l => (
+                        <tr key={l._id}>
+                          <td className="sec-adm-modal-loan-id">{l.loanId}</td>
+                          <td>{l.memberName || 'N/A'}</td>
+                          <td className="sec-adm-modal-amount">{fmt(l.amount)}</td>
+                          <td><span className={`sec-adm-method-badge sec-adm-method-${(l.paymentMethod || 'cash').toLowerCase()}`}>{l.paymentMethod || 'Cash'}</span></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── This Month Modal ── */}
       {showMonthModal && (

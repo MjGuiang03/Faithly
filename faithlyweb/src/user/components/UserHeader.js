@@ -45,12 +45,48 @@ export default function UserHeader({ toggleSidebar, collapsed }) {
           if (l.status === 'awaiting_member_approval') {
             items.push({ id: `loan-terms-${l._id}`, type: 'loan', title: 'Terms Modified', message: `Review proposed terms for loan ${l.loanId}.`, timestamp: l.updatedAt || l.createdAt });
           }
-          if (l.status === 'approved') items.push({ id: `loan-app-${l._id}`, type: 'loan', title: 'Loan Approved', message: `Your loan ${l.loanId} has been approved.`, timestamp: l.updatedAt || l.createdAt });
+          if (l.status === 'approved') {
+            items.push({ id: `loan-app-${l._id}`, type: 'loan', title: 'Loan Approved', message: `Your loan ${l.loanId} has been approved.`, timestamp: l.updatedAt || l.createdAt });
+          }
+          if (l.status === 'active' && l.disbursed) {
+            const term = l.termMonths || 12;
+            const paidMonths = l.paidMonths || 0;
+            if (paidMonths < term && l.disbursementDate) {
+              const startDate = new Date(l.disbursementDate);
+              const nextDue = new Date(startDate);
+              nextDue.setMonth(startDate.getMonth() + paidMonths + 1);
+              const cutoffDate = new Date(nextDue);
+              cutoffDate.setDate(nextDue.getDate() + 3);
+              cutoffDate.setHours(23, 59, 59, 999);
+              
+              if (Date.now() > cutoffDate.getTime()) {
+                items.push({ 
+                  id: `loan-late-${l._id}-${paidMonths}`, 
+                  type: 'loan', 
+                  title: 'Payment Overdue', 
+                  message: `Your payment for loan ${l.loanId} is late. Please settle to avoid further penalties.`, 
+                  timestamp: cutoffDate.toISOString() 
+                });
+              }
+            }
+            items.push({ id: `loan-disbursed-${l._id}`, type: 'loan', title: 'Loan Disbursed', message: `Your loan ${l.loanId} has been successfully disbursed.`, timestamp: l.disbursementDate || l.updatedAt });
+          }
+          if (l.status === 'rejected') {
+            items.push({ id: `loan-rejected-${l._id}`, type: 'loan', title: 'Loan Rejected', message: `Your loan application ${l.loanId} was rejected.`, timestamp: l.rejectedDate || l.updatedAt });
+          }
         });
       }
       if (payments) {
         payments.forEach(p => {
-          items.push({ id: `payment-pending-${p._id}`, type: 'payment_pending', title: 'Payment Submitted', message: `Month #${p.monthNumber} payment for ${p.loanId} is pending.`, timestamp: p.submittedAt || p.createdAt });
+          if (p.status === 'pending') {
+            items.push({ id: `payment-pending-${p._id}`, type: 'payment_pending', title: 'Payment Submitted', message: `Month #${p.monthNumber} payment for ${p.loanId} is pending.`, timestamp: p.submittedAt || p.createdAt });
+          }
+          if (p.status === 'confirmed') {
+            items.push({ id: `payment-confirmed-${p._id}`, type: 'payment_confirmed', title: 'Payment Confirmed', message: `Payment of ₱${p.amount.toLocaleString()} for ${p.loanId} confirmed.`, timestamp: p.confirmedAt || p.updatedAt });
+          }
+          if (p.status === 'rejected') {
+            items.push({ id: `payment-rejected-${p._id}`, type: 'payment_rejected', title: 'Payment Rejected', message: `Your payment for ${p.loanId} was rejected.`, timestamp: p.rejectedAt || p.updatedAt });
+          }
         });
       }
       if (donationsDataFeed) {

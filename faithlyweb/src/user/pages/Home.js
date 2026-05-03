@@ -238,6 +238,29 @@ export default function Home() {
   }, [upcomingEvents.length, currentEventIndex]);
 
   const isOfficer = isOfficerPosition(profile?.position);
+  
+  // Robust frontend check for late loans (in case backend misses it)
+  const processedLoans = activeLoansList.map(l => {
+    let isLate = l.isLate === true;
+    if (!isLate && l.status === 'active' && l.disbursementDate) {
+      const term = l.termMonths || 12;
+      const paidMonths = l.paidMonths || 0;
+      if (paidMonths < term) {
+        const startDate = new Date(l.disbursementDate);
+        const nextDue = new Date(startDate);
+        nextDue.setMonth(startDate.getMonth() + paidMonths + 1);
+        const cutoffDate = new Date(nextDue);
+        cutoffDate.setDate(nextDue.getDate() + 3);
+        cutoffDate.setHours(23, 59, 59, 999);
+        if (Date.now() > cutoffDate.getTime()) {
+          isLate = true;
+        }
+      }
+    }
+    return { ...l, isLate };
+  });
+
+  const lateLoansCount = processedLoans.filter(l => l.isLate).length;
 
   const renderActivityIcon = (activity) => {
     if (activity.type === 'loan') return <Banknote size={16} />;
@@ -380,25 +403,30 @@ export default function Home() {
                   : <span className="uh-stat-value user-fade-in">{loanStats.activeCount}</span>
                 }
                 {!loading && (
-                  <span className={`uh-stat-sub ${rejectedLoansCount > 0 ? 'uh-stat-sub--negative' : ''}`}>
-                    {rejectedLoansCount > 0 ? `${rejectedLoansCount} rejected` : 'No rejected'}
+                  <span className={`uh-stat-sub ${lateLoansCount > 0 ? 'uh-stat-sub--negative' : rejectedLoansCount > 0 ? 'uh-stat-sub--negative' : ''}`}>
+                    {lateLoansCount > 0 ? `${lateLoansCount} late payment${lateLoansCount > 1 ? 's' : ''}` : rejectedLoansCount > 0 ? `${rejectedLoansCount} rejected` : 'No rejected'}
                   </span>
                 )}
               </div>
             </div>
             {!loading && activeLoansList.length > 0 && (
-              <div className="uh-tooltip">
-                <p className="uh-tooltip__title">Active Loans</p>
-                {activeLoansList.slice(0, 1).map(loan => (
-                  <div key={loan._id} className="uh-tooltip__row">
-                    <span className="uh-tooltip__label">{loan.loanId}</span>
-                    <span className="uh-tooltip__value">{formatCurrency(loan.amount)}</span>
+              <div className="uh-tooltip" style={lateLoansCount > 0 ? { border: '1px solid #EF4444' } : {}}>
+                <p className="uh-tooltip__title" style={lateLoansCount > 0 ? { color: '#DC2626', fontWeight: '700' } : {}}>
+                  {lateLoansCount > 0 ? 'OVERDUE LOANS' : 'Active Loans'}
+                </p>
+                {processedLoans.slice(0, 3).map(loan => (
+                  <div key={loan._id} className="uh-tooltip__row" style={loan.isLate ? { backgroundColor: '#FEF2F2', padding: '6px 8px', borderRadius: '4px', margin: '-4px -8px 4px -8px' } : {}}>
+                    <span className="uh-tooltip__label" style={loan.isLate ? { color: '#991B1B', fontWeight: '600' } : {}}>
+                      {loan.loanId}
+                      {loan.isLate && <span style={{ backgroundColor: '#EF4444', color: 'white', padding: '2px 6px', borderRadius: '4px', marginLeft: '6px', fontSize: '10px', fontWeight: 'bold' }}>LATE</span>}
+                    </span>
+                    <span className="uh-tooltip__value" style={loan.isLate ? { color: '#991B1B', fontWeight: '600' } : {}}>{formatCurrency(loan.amount)}</span>
                   </div>
                 ))}
-                {activeLoansList.length > 1 && (
-                  <p className="uh-tooltip__more">+{activeLoansList.length - 1} more</p>
+                {processedLoans.length > 3 && (
+                  <p className="uh-tooltip__more">+{processedLoans.length - 3} more</p>
                 )}
-                <p className="uh-tooltip__cta">Click to view details</p>
+                <p className="uh-tooltip__cta" style={lateLoansCount > 0 ? { color: '#DC2626' } : {}}>Click to view details</p>
               </div>
             )}
           </div>
@@ -446,7 +474,7 @@ export default function Home() {
       <div className="uh-grid-main">
 
         {/* Quick Actions */}
-        <div className="uh-card">
+        <div className="uh-card uh-card--quick-actions">
           <h2 className="uh-card__heading">Quick Actions</h2>
           <div className="uh-actions">
             {quickActions.map((action, i) => (

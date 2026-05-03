@@ -40,9 +40,9 @@ export default function SecretaryLoanRecords() {
                     member: l.memberName,
                     amount: `₱${Number(l.amount).toLocaleString()}`,
                     purpose: l.purpose,
-                    processedDate: new Date(l.disbursementDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-                    processedTime: new Date(l.disbursementDate).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-                    paymentMethod: l.paymentMethod === 'e-wallet' ? 'E-Wallet' : l.paymentMethod === 'bank' ? 'Bank Transfer' : l.paymentMethod,
+                    processedDate: l.disbursementDate ? new Date(l.disbursementDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'N/A',
+                    processedTime: l.disbursementDate ? new Date(l.disbursementDate).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'N/A',
+                    paymentMethod: l.paymentMethod ? (l.paymentMethod.toLowerCase() === 'e-wallet' ? 'E-Wallet' : l.paymentMethod.toLowerCase() === 'bank' ? 'Bank Transfer' : 'Cash') : 'Cash',
                     reference: l.reference || ''
                 }));
 
@@ -67,6 +67,7 @@ export default function SecretaryLoanRecords() {
     const totalProcessed = totalCount;
     // These need to be fetched from backend for accuracy if we want filtered counts
     // For now keep them as totalCount or similar
+    const cashCount = records.filter(r => r.paymentMethod === 'Cash').length;
     const gcashCount = records.filter(r => r.paymentMethod === 'E-Wallet').length; 
     const bankTransferCount = records.filter(r => r.paymentMethod === 'Bank Transfer').length;
 
@@ -84,10 +85,14 @@ export default function SecretaryLoanRecords() {
                 </div>
 
                 {/* Status Cards */}
-                <div className="sec-admin-records-stats">
+                <div className="sec-admin-records-stats" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
                     <div className="sec-admin-records-stat-card">
                         <p className="sec-admin-records-stat-label">Total Processed</p>
                         <p className="sec-admin-records-stat-value blue">{totalProcessed}</p>
+                    </div>
+                    <div className="sec-admin-records-stat-card">
+                        <p className="sec-admin-records-stat-label">Cash Payments</p>
+                        <p className="sec-admin-records-stat-value" style={{ color: '#F59E0B' }}>{cashCount}</p>
                     </div>
                     <div className="sec-admin-records-stat-card">
                         <p className="sec-admin-records-stat-label">E-Wallet Transfers</p>
@@ -117,6 +122,12 @@ export default function SecretaryLoanRecords() {
                             onClick={() => setActiveFilter('all')}
                         >
                             All
+                        </button>
+                        <button
+                            className={`sec-admin-records-filter-btn ${activeFilter === 'cash' ? 'active' : ''}`}
+                            onClick={() => setActiveFilter('cash')}
+                        >
+                            Cash
                         </button>
                         <button
                             className={`sec-admin-records-filter-btn ${activeFilter === 'e-wallet' ? 'active' : ''}`}
@@ -176,6 +187,12 @@ export default function SecretaryLoanRecords() {
                                                 </div>
                                             </td>
                                             <td>
+                                                {record.paymentMethod === 'Cash' && (
+                                                    <div className="sec-admin-records-payment cash" style={{ color: '#F59E0B' }}>
+                                                        <Banknote size={16} color="#F59E0B" />
+                                                        <span>Cash</span>
+                                                    </div>
+                                                )}
                                                 {record.paymentMethod === 'E-Wallet' && (
                                                     <div className="sec-admin-records-payment gcash">
                                                         <Banknote size={16} color="#155DFC" />

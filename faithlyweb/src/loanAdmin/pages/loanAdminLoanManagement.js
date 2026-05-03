@@ -31,26 +31,32 @@ const fmtDate = (d) => {
 
 /* ── Resolve status helpers ── */
 function resolveStatusClass(status) {
-    if (status === 'pending') return 'pending';
-    if (status === 'awaiting_member_approval') return 'awaiting';
-    if (status === 'active' || status === 'completed') return 'approved';
-    if (status === 'rejected') return 'rejected';
+    if (!status) return 'pending';
+    const s = status.toLowerCase();
+    if (s === 'pending') return 'pending';
+    if (s === 'awaiting_member_approval') return 'awaiting';
+    if (s === 'active' || s === 'completed' || s === 'approved') return 'approved';
+    if (s === 'rejected') return 'rejected';
     return 'pending';
 }
 
 function resolveStatusLabel(status) {
-    if (status === 'pending') return 'Pending';
-    if (status === 'awaiting_member_approval') return 'Awaiting Member';
-    if (status === 'active' || status === 'completed') return 'Approved';
-    if (status === 'rejected') return 'Rejected';
+    if (!status) return 'Pending';
+    const s = status.toLowerCase();
+    if (s === 'pending') return 'Pending';
+    if (s === 'awaiting_member_approval') return 'Awaiting Member';
+    if (s === 'active' || s === 'completed' || s === 'approved') return 'Approved';
+    if (s === 'rejected') return 'Rejected';
     return status.charAt(0).toUpperCase() + status.slice(1);
 }
 
 function resolveStatusDesc(status) {
-    if (status === 'pending') return 'Awaiting admin review';
-    if (status === 'awaiting_member_approval') return 'Modified terms sent to member';
-    if (status === 'active' || status === 'completed') return 'Loan has been approved';
-    if (status === 'rejected') return 'Loan application rejected';
+    if (!status) return 'Awaiting admin review';
+    const s = status.toLowerCase();
+    if (s === 'pending') return 'Awaiting admin review';
+    if (s === 'awaiting_member_approval') return 'Modified terms sent to member';
+    if (s === 'active' || s === 'completed' || s === 'approved') return 'Loan has been approved';
+    if (s === 'rejected') return 'Loan application rejected';
     return '';
 }
 
@@ -240,6 +246,30 @@ export default function LoanAdminLoanManagement() {
         }
     };
 
+    const fetchDSSAnalysis = async (loanArg, forceRefresh = false) => {
+        setDssLoading(true);
+        try {
+            const token = localStorage.getItem('adminToken');
+            const res = await fetch(`${API}/api/admin/loans/${loanArg._id}/dss-analysis${forceRefresh ? '?refresh=true' : ''}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const data = await res.json();
+            if (res.ok) setDssAnalysis(data.analysis);
+        } catch (err) {
+            console.error('DSS Analysis Error:', err);
+        } finally {
+            setDssLoading(false);
+            if (!forceRefresh) {
+                setOcrResults(null); // Reset OCR for new loan
+                
+                // Automatically trigger OCR scan for pending loans
+                if (loanArg.status === 'pending') {
+                    handleVerifyDocuments(loanArg);
+                }
+            }
+        }
+    };
+
     /* ── View Details ── */
     const handleViewDetails = async (loan) => {
         setSelectedLoan(loan);
@@ -257,25 +287,7 @@ export default function LoanAdminLoanManagement() {
         } catch { /* silent */ }
 
         /* ── Fetch DSS Analysis ── */
-        setDssLoading(true);
-        try {
-            const token = localStorage.getItem('adminToken');
-            const res = await fetch(`${API}/api/admin/loans/${loan._id}/dss-analysis`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            const data = await res.json();
-            if (res.ok) setDssAnalysis(data.analysis);
-        } catch (err) {
-            console.error('DSS Analysis Error:', err);
-        } finally {
-            setDssLoading(false);
-            setOcrResults(null); // Reset OCR for new loan
-            
-            // Automatically trigger OCR scan for pending loans
-            if (loan.status === 'pending') {
-                handleVerifyDocuments(loan);
-            }
-        }
+        fetchDSSAnalysis(loan);
     };
 
     /* ── Document Verification (OCR) ── */
@@ -447,23 +459,14 @@ export default function LoanAdminLoanManagement() {
                                         <td>{loan.purpose}</td>
                                         <td>{fmtDate(loan.appliedDate)}</td>
                                         <td>
-                                            {loan.status === 'pending' && (
-                                                <span className="loan-admin-mgmt-status-badge pending">Pending</span>
-                                            )}
-                                            {loan.status === 'awaiting_member_approval' && (
-                                                <span className="loan-admin-mgmt-status-badge pending">Awaiting Member</span>
-                                            )}
-                                            {(loan.status === 'active' || loan.status === 'completed') && (
-                                                <span className="loan-admin-mgmt-status-badge approved">Approved</span>
-                                            )}
-                                            {loan.status === 'rejected' && (
+                                            <span className={`loan-admin-mgmt-status-badge ${resolveStatusClass(loan.status)}`}>
+                                                {resolveStatusLabel(loan.status)}
+                                            </span>
+                                            {loan.status && loan.status.toLowerCase() === 'rejected' && loan.rejectionReason && (
                                                 <div className="loan-admin-mgmt-status-rejected">
-                                                    <span className="loan-admin-mgmt-status-badge rejected">Rejected</span>
-                                                    {loan.rejectionReason && (
-                                                        <p className="loan-admin-mgmt-rejection-reason">
-                                                            Reason: {loan.rejectionReason}
-                                                        </p>
-                                                    )}
+                                                    <p className="loan-admin-mgmt-rejection-reason">
+                                                        Reason: {loan.rejectionReason}
+                                                    </p>
                                                 </div>
                                             )}
                                         </td>
@@ -768,7 +771,7 @@ export default function LoanAdminLoanManagement() {
                                 {/* ── RIGHT COLUMN ── */}
                                 <div className="dm-column-right">
                                     {/* ── DSS Panel (MOVED HERE) ── */}
-                                    <DSSPanel analysis={dssAnalysis} loading={dssLoading} />
+                                    <DSSPanel analysis={dssAnalysis} loading={dssLoading} onRefresh={() => fetchDSSAnalysis(selectedLoan, true)} />
 
                                     {/* OCR Results Analysis */}
                                     {ocrResults && (

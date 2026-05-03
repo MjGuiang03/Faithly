@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { users, admins, otps, announcements, savingsTransactions, savingsGoals, loans, loanPayments } from '../config/db.js';
+import { users, admins, otps, announcements, savingsTransactions, savingsGoals, loans, loanPayments, attendance } from '../config/db.js';
 import { validate } from '../middleware/validate.js';
 import { loginLimiter } from '../middleware/rateLimiter.js';
 import { authenticateAdmin } from '../middleware/auth.js';
@@ -896,27 +896,28 @@ router.get('/loans/:id/dss-analysis', authenticateAdmin, async (req, res) => {
     const loan = await loans.findOne({ _id: new ObjectId(id) });
     if (!loan) return res.status(404).json({ success: false, message: 'Loan not found' });
 
+    if (req.query.refresh !== 'true' && loan.dssAnalysis) {
+      return res.json({ success: true, analysis: loan.dssAnalysis, cached: true });
+    }
+
     const user = await users.findOne({ email: loan.email });
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
     // 1. Eligibility Check
-    const officerPositions = [
-      'Deacon', 'Local Evangelist', 'District Evangelist', 'National Evangelist',
-      'Assistant Priest', 'Priest', 'Elder', 'District Elder',
-      'Bishop', 'District Bishop', 'National Bishop', 'Apostle',
-    ];
-    const isOfficer = officerPositions.some(p => p.toLowerCase() === (user.position || '').trim().toLowerCase());
-    const isVerified = user.verificationStatus === 'verified' || user.isVerified === true;
+    // - Active Member (Attendance)
+    const presentAttendanceCount = await attendance.countDocuments({ email: loan.email, status: { $in: ['Present', 'Late'] } });
+    const absentCount = await attendance.countDocuments({ email: loan.email, status: 'Absent' });
+    const isActiveMember = presentAttendanceCount > 0;
 
     // - Savings >= ₱1,000
     const userGoals = await savingsGoals.find({ email: loan.email }).toArray();
     const totalSavings = userGoals.reduce((sum, g) => sum + (g.savedAmount || 0), 0);
     const savingsOk = totalSavings >= 1000;
 
-    // - No overdue or unpaid loans (excluding current)
+    // - No Active Loans (One at a time)
     const otherLoans = await loans.find({ email: loan.email, _id: { $ne: new ObjectId(id) } }).toArray();
-    const hasOverdue = otherLoans.some(l => l.isLate === true);
-    const unpaidLoans = otherLoans.filter(l => l.status === 'active' || l.remainingBalance > 0);
+    const unpaidLoans = otherLoans.filter(l => l.status === 'active' || l.status === 'approved' || l.remainingBalance > 0);
+    const noActiveLoan = unpaidLoans.length === 0;
 
     // - Information is valid (Selfie + ID) -- Using the files metadata or path
     const infoValid = !!(loan.selfieData || loan.selfieFileName) && !!(loan.idData || loan.idFileName);
@@ -928,7 +929,6 @@ router.get('/loans/:id/dss-analysis', authenticateAdmin, async (req, res) => {
       'short-term': { multiplier: 1, min: 5000 }
     };
     const config = LOAN_CONFIG[loan.loanType] || LOAN_CONFIG['personal'];
-    const currentBalance = unpaidLoans.reduce((sum, l) => sum + (l.remainingBalance || 0), 0);
 
     // Formula: Savings * Multiplier
     const maxLoanable = Math.max(0, totalSavings * config.multiplier);
@@ -937,7 +937,7 @@ router.get('/loans/:id/dss-analysis', authenticateAdmin, async (req, res) => {
     // 3. Risk Level
     const payments = await loanPayments.find({ email: loan.email, status: 'confirmed' }).toArray();
     const historyLate = payments.some(p => p.isLate);
-    const currentlyLate = loan.isLate || hasOverdue;
+    const currentlyLate = loan.isLate || otherLoans.some(l => l.isLate === true);
 
     let riskTier = 'Low Risk';
     let riskColor = 'green';
@@ -947,24 +947,24 @@ router.get('/loans/:id/dss-analysis', authenticateAdmin, async (req, res) => {
       riskTier = 'High Risk';
       riskColor = 'red';
       riskLevel = 3;
-    } else if (historyLate) {
+    } else if (historyLate || absentCount > presentAttendanceCount) {
       riskTier = 'Moderate Risk';
       riskColor = 'yellow';
       riskLevel = 2;
     }
 
     // 4. Recommendation
-    const eligible = isOfficer && isVerified && savingsOk && !hasOverdue && infoValid && requestedOk;
+    const eligible = isActiveMember && noActiveLoan && savingsOk && infoValid && requestedOk;
     let recommendationText = "";
 
     if (eligible) {
       recommendationText = "Based on the member's savings and repayment history, this application appears eligible for approval.";
-    } else if (!isOfficer || !isVerified) {
-      recommendationText = "This application may be declined: Applicant is not a verified officer.";
+    } else if (!isActiveMember) {
+      recommendationText = "This application may be declined: Applicant has no active attendance records.";
     } else if (!savingsOk) {
       recommendationText = "This application may be declined: Insufficient savings (below ₱1,000).";
-    } else if (hasOverdue) {
-      recommendationText = "The system recommends closer review — this member has an active delinquency record.";
+    } else if (!noActiveLoan) {
+      recommendationText = "The system recommends declining this application — the member already has an active loan.";
     } else if (!requestedOk) {
       if (loan.amount < config.min) {
         recommendationText = `Minimum loan amount is ₱${config.min.toLocaleString()}.`;
@@ -980,11 +980,12 @@ router.get('/loans/:id/dss-analysis', authenticateAdmin, async (req, res) => {
     try {
       const aiPrompt = `You are a loan risk assessment advisor for a church credit program.
 Given this analysis, write a 2-3 sentence narrative summary explaining the risk level and your recommendation in plain, professional language.
+Note: The strict church policy is one loan at a time. Do not recommend approval if there is an existing active loan.
 
 Applicant: ${loan.memberName}
 Amount Requested: ₱${loan.amount?.toLocaleString()}
 Loan Type: ${loan.loanType || 'personal'}
-Officer Status: ${isOfficer && isVerified ? 'Verified' : 'Not Verified'}
+Attendance Profile: ${presentAttendanceCount} Present/Late, ${absentCount} Absent
 Savings: ₱${totalSavings.toLocaleString()}
 Max Loanable: ₱${maxLoanable.toLocaleString()}
 Existing Active Loans: ${unpaidLoans.length}
@@ -1004,33 +1005,37 @@ Rule-based Recommendation: ${recommendationText}`;
       console.error('[DSS AI Summary] Error:', aiErr.message);
     }
 
+    const finalAnalysis = {
+      eligibility: {
+        isActiveMember,
+        savingsOk,
+        noActiveLoan,
+        infoValid
+      },
+      capacity: {
+        totalSavings,
+        multiplier: config.multiplier,
+        maxLoanable,
+        requestedOk,
+        requestedAmount: loan.amount
+      },
+      risk: {
+        tier: riskTier,
+        color: riskColor,
+        level: riskLevel,
+        hasHistoryLate: historyLate
+      },
+      recommendation: recommendationText,
+      isEligible: eligible,
+      aiSummary
+    };
+
+    // Cache the result in the DB
+    await loans.updateOne({ _id: new ObjectId(id) }, { $set: { dssAnalysis: finalAnalysis } });
+
     res.json({
       success: true,
-      analysis: {
-        eligibility: {
-          isOfficer: isOfficer && isVerified,
-          savingsOk,
-          noOverdue: !hasOverdue,
-          infoValid
-        },
-        capacity: {
-          totalSavings,
-          multiplier: config.multiplier,
-          currentBalance,
-          maxLoanable,
-          requestedOk,
-          requestedAmount: loan.amount
-        },
-        risk: {
-          tier: riskTier,
-          color: riskColor,
-          level: riskLevel,
-          hasHistoryLate: historyLate
-        },
-        recommendation: recommendationText,
-        isEligible: eligible,
-        aiSummary
-      }
+      analysis: finalAnalysis
     });
 
   } catch (err) {

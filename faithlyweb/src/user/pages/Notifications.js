@@ -904,7 +904,7 @@ export default function Notifications() {
                   <div className="user-notif-detail-grid">
                     <div><label>Loan ID</label><span>{detailModal.loanData?.loanId || '—'}</span></div>
                     <div><label>Amount</label><span className="text-bold">₱{Number(detailModal.loanData?.amount || 0).toLocaleString()}</span></div>
-                    <div><label>Interested</label><span>{fmt(detailModal.loanData?.totalInterest)}</span></div>
+                    <div><label>Interest</label><span>{fmt(detailModal.loanData?.totalInterest)}</span></div>
                     <div><label>Status</label><span className="text-capitalize">{detailModal.loanData?.status || 'Pending'}</span></div>
                   </div>
 
