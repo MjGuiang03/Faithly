@@ -29,6 +29,8 @@ export default function AdminFinancialReport() {
   const [error, setError] = useState(null);
   const [exporting, setExporting] = useState(false);
 
+  const adminRole = localStorage.getItem('adminRole'); // 'admin', 'loanAdmin', 'secretaryAdmin'
+
   // Load cached report from sessionStorage on mount
   useEffect(() => {
     try {
@@ -133,8 +135,8 @@ export default function AdminFinancialReport() {
             <FileText size={20} />
           </div>
           <div>
-            <h1 className="fin-report-title">Financial Report</h1>
-            <p className="fin-report-subtitle">AI-generated financial analysis with detailed breakdowns</p>
+            <h1 className="fin-report-title">Automated Report</h1>
+            <p className="fin-report-subtitle">AI-generated operational analysis with detailed breakdowns</p>
           </div>
         </div>
         <div className="fin-report-header-actions no-print">
@@ -244,8 +246,8 @@ export default function AdminFinancialReport() {
             </div>
           </div>
 
-          {/* Donations Section */}
-          {report.donations && (
+          {/* Donations Section - Only for Super Admin */}
+          {report.donations && adminRole === 'admin' && (
             <div className="fin-report-section">
               <div className="fin-report-section-header">
                 <h2 className="fin-report-section-title">💝 Donations Overview</h2>
@@ -341,8 +343,8 @@ export default function AdminFinancialReport() {
             </div>
           )}
 
-          {/* Loans Section */}
-          {report.loans && (
+          {/* Loans Section - Only for Loan Admin */}
+          {report.loans && adminRole === 'loanAdmin' && (
             <div className="fin-report-section">
               <div className="fin-report-section-header">
                 <h2 className="fin-report-section-title">💳 Loans Portfolio</h2>
@@ -389,8 +391,8 @@ export default function AdminFinancialReport() {
             </div>
           )}
 
-          {/* Savings Section */}
-          {report.savings && (
+          {/* Savings Section - Only for Loan Admin */}
+          {report.savings && adminRole === 'loanAdmin' && (
             <div className="fin-report-section">
               <div className="fin-report-section-header">
                 <h2 className="fin-report-section-title">🏦 Savings Overview</h2>
@@ -437,22 +439,92 @@ export default function AdminFinancialReport() {
             </div>
           )}
 
-          {/* Member Growth */}
-          {report.memberGrowth && (
+          {/* Member Growth & Attendance - Only for Super Admin */}
+          {(report.memberGrowth || report.attendance) && adminRole === 'admin' && (
             <div className="fin-report-section">
               <div className="fin-report-section-header">
-                <h2 className="fin-report-section-title">👥 Member Growth</h2>
+                <h2 className="fin-report-section-title">👥 Membership & Engagement</h2>
               </div>
-              <div className="fin-report-stat-grid small">
-                <div className="fin-report-stat">
-                  <span className="fin-report-stat-label">New Members ({report.period})</span>
-                  <span className="fin-report-stat-value blue">{report.memberGrowth.newMembers}</span>
+              <div className="fin-report-stat-grid">
+                {report.memberGrowth && (
+                  <>
+                    <div className="fin-report-stat">
+                      <span className="fin-report-stat-label">New Members</span>
+                      <span className="fin-report-stat-value blue">{report.memberGrowth.newMembers}</span>
+                    </div>
+                    <div className="fin-report-stat">
+                      <span className="fin-report-stat-label">Total Members</span>
+                      <span className="fin-report-stat-value">{report.memberGrowth.totalMembers}</span>
+                    </div>
+                  </>
+                )}
+                {report.attendance && (
+                  <div className="fin-report-stat">
+                    <span className="fin-report-stat-label">Attendance Records</span>
+                    <span className="fin-report-stat-value green">{report.attendance.totalRecords}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Attendance Chart */}
+              {report.attendance?.byBranch?.length > 0 && (
+                <div className="fin-report-chart-card">
+                  <h3 className="fin-report-chart-title">Attendance by Community</h3>
+                  <ResponsiveContainer width="100%" height={180}>
+                    <BarChart data={report.attendance.byBranch}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                      <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                      <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
+                      <Tooltip />
+                      <Bar dataKey="value" fill="#10b981" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
                 </div>
+              )}
+            </div>
+          )}
+
+          {/* Secretary Section - Only for Super Admin and Secretary Admin */}
+          {report.secretary && (adminRole === 'admin' || adminRole === 'secretaryAdmin') && (
+            <div className="fin-report-section">
+              <div className="fin-report-section-header">
+                <h2 className="fin-report-section-title">📋 Disbursement Report</h2>
+              </div>
+              
+              <div className="fin-report-stat-grid">
                 <div className="fin-report-stat">
-                  <span className="fin-report-stat-label">Total Members</span>
-                  <span className="fin-report-stat-value">{report.memberGrowth.totalMembers}</span>
+                  <span className="fin-report-stat-label">Total Amount Disbursed</span>
+                  <span className="fin-report-stat-value purple">{fmt(report.secretary.disbursements.totalAmount)}</span>
+                  <span className="fin-report-stat-sub">{report.secretary.disbursements.count} releases processed</span>
                 </div>
               </div>
+
+              {/* Disbursement List */}
+              {report.secretary.disbursements.loans?.length > 0 && (
+                <div className="fin-report-table-wrap">
+                  <h3 className="fin-report-chart-title">Detailed Disbursement Log</h3>
+                  <table className="fin-report-table">
+                    <thead>
+                      <tr>
+                        <th>Loan ID</th>
+                        <th>Member</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {report.secretary.disbursements.loans.map((l, i) => (
+                        <tr key={i}>
+                          <td className="id">{l.id}</td>
+                          <td>{l.member}</td>
+                          <td className="amount">{fmt(l.amount)}</td>
+                          <td>{new Date(l.date).toLocaleDateString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
 
@@ -470,8 +542,8 @@ export default function AdminFinancialReport() {
           <div className="fin-report-empty-icon">
             <FileText size={40} />
           </div>
-          <h2>Generate a Financial Report</h2>
-          <p>Select a time period and click "Generate Report" to create an AI-powered financial analysis.</p>
+          <h2>Generate an Automated Report</h2>
+          <p>Select a time period and click "Generate Report" to create an AI-powered operational analysis.</p>
         </div>
       )}
     </div>

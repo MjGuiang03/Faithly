@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import {
     LayoutGrid, Bell, FileText, FolderOpen,
-    Settings, LogOut
+    Settings, LogOut, BarChart
 } from 'lucide-react';
 import puacLogo from '../../assets/puaclogo.png';
 
@@ -68,13 +68,6 @@ export default function SecretaryAdminSidebar() {
         };
     }, []);
 
-    const menuItems = [
-        { id: 'dashboard', label: 'Dashboard', icon: <LayoutGrid size={20} />, path: '/secretary-admin/dashboard' },
-        { id: 'notifications', label: 'Notifications', icon: <Bell size={20} />, path: '/secretary-admin/notifications' },
-        { id: 'loan-processing', label: 'Loan Processing', icon: <FileText size={20} />, path: '/secretary-admin/loan-process' },
-        { id: 'records', label: 'Records', icon: <FolderOpen size={20} />, path: '/secretary-admin/records' },
-        { id: 'settings', label: 'Settings', icon: <Settings size={20} />, path: '/secretary-admin/settings' },
-    ];
 
     const handleSignOut = () => {
         localStorage.removeItem('secretaryEmail');
@@ -97,21 +90,62 @@ export default function SecretaryAdminSidebar() {
 
             {/* Navigation */}
             <nav className="sec-admin-sidebar-nav">
-                {menuItems.map(item => (
-                    <button
-                        key={item.id}
-                        className={`sec-admin-sidebar-menu-item ${currentPath === item.path ? 'active' : ''}`}
-                        onClick={() => navigate(item.path)}
-                    >
-                        <span className="sec-admin-sidebar-menu-icon">{item.icon}</span>
-                        <span className="sec-admin-sidebar-menu-label">{item.label}</span>
-                        {item.id === 'notifications' && unreadCount > 0 && (
-                            <span className="sidebar-notif-badge" style={{ marginLeft: 'auto', background: '#ef4444', color: 'white', padding: '2px 6px', borderRadius: '10px', fontSize: '12px' }}>
-                                {unreadCount > 99 ? '99+' : unreadCount}
-                            </span>
-                        )}
-                    </button>
-                ))}
+                <span className="sec-admin-sidebar-group-label">Core</span>
+                <button
+                    className={`sec-admin-sidebar-menu-item ${currentPath === '/secretary-admin/dashboard' ? 'active' : ''}`}
+                    onClick={() => navigate('/secretary-admin/dashboard')}
+                >
+                    <span className="sec-admin-sidebar-menu-icon"><LayoutGrid size={18} /></span>
+                    <span className="sec-admin-sidebar-menu-label">Dashboard</span>
+                </button>
+
+                <button
+                    className={`sec-admin-sidebar-menu-item ${currentPath === '/secretary-admin/notifications' ? 'active' : ''}`}
+                    onClick={() => navigate('/secretary-admin/notifications')}
+                >
+                    <span className="sec-admin-sidebar-menu-icon"><Bell size={18} /></span>
+                    <span className="sec-admin-sidebar-menu-label">Notifications</span>
+                    {unreadCount > 0 && (
+                        <span className="sidebar-notif-badge" style={{ marginLeft: 'auto', background: '#ef4444', color: 'white', padding: '2px 6px', borderRadius: '10px', fontSize: '12px' }}>
+                            {unreadCount > 99 ? '99+' : unreadCount}
+                        </span>
+                    )}
+                </button>
+
+                <span className="sec-admin-sidebar-group-label">Management</span>
+                <button
+                    className={`sec-admin-sidebar-menu-item ${currentPath === '/secretary-admin/loan-process' ? 'active' : ''}`}
+                    onClick={() => navigate('/secretary-admin/loan-process')}
+                >
+                    <span className="sec-admin-sidebar-menu-icon"><FileText size={18} /></span>
+                    <span className="sec-admin-sidebar-menu-label">Loan Processing</span>
+                </button>
+
+                <button
+                    className={`sec-admin-sidebar-menu-item ${currentPath === '/secretary-admin/records' ? 'active' : ''}`}
+                    onClick={() => navigate('/secretary-admin/records')}
+                >
+                    <span className="sec-admin-sidebar-menu-icon"><FolderOpen size={18} /></span>
+                    <span className="sec-admin-sidebar-menu-label">Records</span>
+                </button>
+
+                <span className="sec-admin-sidebar-group-label">Analysis</span>
+                <button
+                    className={`sec-admin-sidebar-menu-item ${currentPath === '/admin/financial-report' ? 'active' : ''}`}
+                    onClick={() => navigate('/admin/financial-report')}
+                >
+                    <span className="sec-admin-sidebar-menu-icon"><BarChart size={18} /></span>
+                    <span className="sec-admin-sidebar-menu-label">Automated Reports</span>
+                </button>
+
+                <span className="sec-admin-sidebar-group-label">Admin</span>
+                <button
+                    className={`sec-admin-sidebar-menu-item ${currentPath === '/secretary-admin/settings' ? 'active' : ''}`}
+                    onClick={() => navigate('/secretary-admin/settings')}
+                >
+                    <span className="sec-admin-sidebar-menu-icon"><Settings size={18} /></span>
+                    <span className="sec-admin-sidebar-menu-label">Settings</span>
+                </button>
             </nav>
 
             {/* Theme Toggle Section */}

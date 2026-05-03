@@ -2,7 +2,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 import { toast } from 'sonner';
 import {
-  LayoutGrid, Bell, FileText, CreditCard, AlertTriangle, Settings, LogOut, PiggyBank
+  LayoutGrid, Bell, FileText, CreditCard, AlertTriangle, Settings, LogOut, PiggyBank, BarChart
 } from 'lucide-react';
 import puacLogo from '../../assets/puaclogo.png';
 import '../styles/loanAdminSidebar.css';
@@ -92,6 +92,7 @@ export default function LoanAdminSidebar() {
       </div>
 
       <div className="loan-admin-sidebar-nav">
+        <span className="loan-admin-sidebar-group-label">Core</span>
         <button
           onClick={() => navigate('/loan-admin/dashboard')}
           className={`loan-admin-sidebar-nav-button ${isActive('/loan-admin/dashboard') ? 'active' : ''}`}
@@ -111,6 +112,7 @@ export default function LoanAdminSidebar() {
           )}
         </button>
 
+        <span className="loan-admin-sidebar-group-label">Management</span>
         <button
           onClick={() => navigate('/loan-admin/loan-management')}
           className={`loan-admin-sidebar-nav-button ${isActive('/loan-admin/loan-management') ? 'active' : ''}`}
@@ -135,6 +137,7 @@ export default function LoanAdminSidebar() {
           <span>Savings</span>
         </button>
 
+        <span className="loan-admin-sidebar-group-label">Analysis</span>
         <button
           onClick={() => navigate('/loan-admin/delinquency')}
           className={`loan-admin-sidebar-nav-button ${isActive('/loan-admin/delinquency') ? 'active' : ''}`}
@@ -143,6 +146,15 @@ export default function LoanAdminSidebar() {
           <span>Delinquency Reports</span>
         </button>
 
+        <button
+          onClick={() => navigate('/admin/financial-report')}
+          className={`loan-admin-sidebar-nav-button ${isActive('/admin/financial-report') ? 'active' : ''}`}
+        >
+          <BarChart size={20} />
+          <span>Automated Reports</span>
+        </button>
+
+        <span className="loan-admin-sidebar-group-label">Admin</span>
         <button
           onClick={() => navigate('/loan-admin/settings')}
           className={`loan-admin-sidebar-nav-button ${isActive('/loan-admin/settings') ? 'active' : ''}`}

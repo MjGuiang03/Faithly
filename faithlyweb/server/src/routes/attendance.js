@@ -150,6 +150,34 @@ router.get('/admin/attendance/sessions/active', authenticateAdmin, async (req, r
     }
 });
 
+// Get historical sessions (ended)
+router.get('/admin/attendance/sessions/history', authenticateAdmin, async (req, res) => {
+    try {
+       const page = parseInt(req.query.page) || 1;
+       const limit = parseInt(req.query.limit) || 10;
+       const skip = (page - 1) * limit;
+
+       const query = { status: 'ended' };
+       const totalCount = await attendanceSessions.countDocuments(query);
+       const sessions = await attendanceSessions.find(query)
+           .sort({ startedAt: -1 }) // Newest first
+           .skip(skip)
+           .limit(limit)
+           .toArray();
+
+       res.status(200).json({ 
+           success: true, 
+           sessions, 
+           totalCount, 
+           totalPages: Math.ceil(totalCount / limit), 
+           currentPage: page 
+       });
+    } catch (err) {
+       console.error(err);
+       res.status(500).json({ success: false, message: 'Failed to fetch session history' });
+    }
+});
+
 
 /* ================== RECORD / LOG TAP ================== */
 router.post('/admin/attendance/log-tap', authenticateAdmin, async (req, res) => {

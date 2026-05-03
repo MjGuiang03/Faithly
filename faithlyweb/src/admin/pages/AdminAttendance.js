@@ -7,8 +7,9 @@ import API from '../../utils/api';
 import { 
   CalendarDays, MapPin, Search, UserCheck, Clock, ShieldAlert,
   Play, Square, Plus, CheckCircle2, AlertCircle, XCircle, Download,
-  ArrowLeft, ChevronLeft, ChevronRight
+  ArrowLeft, ChevronLeft, ChevronRight, CreditCard
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 function ManualAttendanceModal({ session, onClose, onSave }) {
   const [memberId, setMemberId] = useState('');
@@ -171,12 +172,23 @@ function SessionLogsModal({ session, onClose }) {
 }
 
 export default function AdminAttendance() {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({ totalToday: 0, servicesThisWeek: 0, avgAttendance: 0, lateToday: 0 });
   const [logs, setLogs] = useState([]);
   
   // Active Sessions
   const [activeSessions, setActiveSessions] = useState([]);
   const selectedSession = activeSessions.length > 0 ? activeSessions[0] : null;
+
+  // Tabs
+  const [activeTab, setActiveTab] = useState('active'); // 'active' or 'history'
+
+  // History Sessions
+  const [historySessions, setHistorySessions] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyPage, setHistoryPage] = useState(1);
+  const [historyTotalPages, setHistoryTotalPages] = useState(1);
+  const [historyTotalCount, setHistoryTotalCount] = useState(0);
 
   const [loading, setLoading] = useState(true);
   const [showStartModal, setShowStartModal] = useState(false);
@@ -217,6 +229,29 @@ export default function AdminAttendance() {
       }
     } catch(err) { console.error('Failed to get active sessions', err); }
   }, []);
+
+  const fetchHistorySessions = useCallback(async (pg = 1) => {
+    setHistoryLoading(true);
+    try {
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch(`${API}/api/admin/attendance/sessions/history?page=${pg}&limit=${PER_PAGE}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setHistorySessions(data.sessions);
+        setHistoryTotalPages(data.totalPages || 1);
+        setHistoryTotalCount(data.totalCount || 0);
+      }
+    } catch (err) { console.error('Failed to get history sessions', err); }
+    finally { setHistoryLoading(false); }
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 'history') {
+      fetchHistorySessions(historyPage);
+    }
+  }, [activeTab, historyPage, fetchHistorySessions]);
 
   // 2. Fetch Logs & Stats
   const fetchAttendance = useCallback(async () => {
@@ -342,7 +377,12 @@ export default function AdminAttendance() {
            <h1 className="admin-att-title">Attendance Tracking</h1>
            <p className="admin-att-subtitle">Manage service sessions and monitor active RFID logging.</p>
         </div>
-        <div className="admin-att-header-actions"></div>
+        <div className="admin-att-header-actions">
+           <button className="admin-att-btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }} onClick={() => navigate('/admin/rfid-preview')}>
+             <CreditCard size={18} />
+             Open RFID Scanner
+           </button>
+        </div>
       </div>
 
       {/* Stats Row */}
@@ -449,10 +489,26 @@ export default function AdminAttendance() {
             )}
           </>
         ) : (
-          /* ── Default: Active sessions list ── */
+          /* ── Default: Sessions list with Tabs ── */
           <>
             <div className="admin-att-section-header">
-              <h2>Active RFID Sessions</h2>
+              <div className="admin-att-tabs">
+                <button 
+                  className={`admin-att-tab ${activeTab === 'active' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('active')}
+                >
+                  Active Sessions
+                </button>
+                <button 
+                  className={`admin-att-tab ${activeTab === 'history' ? 'active' : ''}`}
+                  onClick={() => {
+                    setActiveTab('history');
+                    setHistoryPage(1);
+                  }}
+                >
+                  Service History
+                </button>
+              </div>
             </div>
             <div className="admin-att-table-wrapper">
               <table className="admin-att-table">
@@ -462,35 +518,65 @@ export default function AdminAttendance() {
                     <th>Service Type</th>
                     <th>Date</th>
                     <th>Start Time</th>
-                    <th>Status</th>
+                    <th>Status / Details</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {activeSessions.length === 0 ? (
-                    <tr>
-                      <td colSpan="5" style={{ textAlign: 'center', padding: '32px 16px', color: '#6B7280' }}>No active RFID sessions right now.</td>
-                    </tr>
-                  ) : (
-                    paginatedSessions.map((session) => (
-                      <tr key={session.sessionId} className="admin-att-row-clickable" onClick={() => handleSessionClick(session)}>
-                         <td>{session.branch}</td>
-                         <td>{session.serviceType}</td>
-                         <td>{new Date(session.date).toLocaleDateString()}</td>
-                         <td>{session.time}</td>
-                         <td>
-                            <span className="status-badge present">
-                              <span className="pulse-indicator"></span>
-                              Active
-                            </span>
-                         </td>
+                  {activeTab === 'active' ? (
+                    activeSessions.length === 0 ? (
+                      <tr>
+                        <td colSpan="5" style={{ textAlign: 'center', padding: '32px 16px', color: '#6B7280' }}>No active RFID sessions right now.</td>
                       </tr>
-                    ))
+                    ) : (
+                      paginatedSessions.map((session) => (
+                        <tr key={session.sessionId} className="admin-att-row-clickable" onClick={() => handleSessionClick(session)}>
+                           <td>{session.branch}</td>
+                           <td>{session.serviceType}</td>
+                           <td>{new Date(session.date).toLocaleDateString()}</td>
+                           <td>{session.time}</td>
+                           <td>
+                              <span className="status-badge present">
+                                <span className="pulse-indicator"></span>
+                                Active
+                              </span>
+                           </td>
+                        </tr>
+                      ))
+                    )
+                  ) : (
+                    historyLoading ? (
+                      <tr>
+                        <td colSpan="5" style={{ textAlign: 'center', padding: '32px 16px', color: '#6B7280' }}>Loading history...</td>
+                      </tr>
+                    ) : historySessions.length === 0 ? (
+                      <tr>
+                        <td colSpan="5" style={{ textAlign: 'center', padding: '32px 16px', color: '#6B7280' }}>No historical sessions found.</td>
+                      </tr>
+                    ) : (
+                      historySessions.map((session) => (
+                        <tr key={session.sessionId} className="admin-att-row-clickable" onClick={() => handleSessionClick(session)}>
+                           <td>{session.branch}</td>
+                           <td>{session.serviceType}</td>
+                           <td>{new Date(session.date).toLocaleDateString()}</td>
+                           <td>{session.time}</td>
+                           <td>
+                              <span className="status-badge absent" style={{ backgroundColor: '#F3F4F6', color: '#4B5563' }}>
+                                Ended
+                              </span>
+                              <span style={{ fontSize: '12px', color: '#6B7280', marginLeft: '8px' }}>
+                                {session.stats?.total || 0} attendees
+                              </span>
+                           </td>
+                        </tr>
+                      ))
+                    )
                   )}
                 </tbody>
               </table>
             </div>
-            {/* Sessions pagination */}
-            {activeSessions.length > PER_PAGE && (
+            
+            {/* Pagination depending on activeTab */}
+            {activeTab === 'active' && activeSessions.length > PER_PAGE && (
               <div className="admin-att-pagination">
                 <span>Showing {((sessionsPage - 1) * PER_PAGE) + 1}–{Math.min(sessionsPage * PER_PAGE, activeSessions.length)} of {activeSessions.length}</span>
                 <div className="admin-att-pagination-btns">
@@ -499,7 +585,18 @@ export default function AdminAttendance() {
                 </div>
               </div>
             )}
+            
+            {activeTab === 'history' && historyTotalCount > PER_PAGE && (
+              <div className="admin-att-pagination">
+                <span>Showing {((historyPage - 1) * PER_PAGE) + 1}–{Math.min(historyPage * PER_PAGE, historyTotalCount)} of {historyTotalCount}</span>
+                <div className="admin-att-pagination-btns">
+                  <button disabled={historyPage <= 1} onClick={() => setHistoryPage(historyPage - 1)}><ChevronLeft size={16} /> Previous</button>
+                  <button disabled={historyPage >= historyTotalPages} onClick={() => setHistoryPage(historyPage + 1)}>Next <ChevronRight size={16} /></button>
+                </div>
+              </div>
+            )}
           </>
+
         )}
       </div>
 

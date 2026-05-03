@@ -771,7 +771,12 @@ export default function LoanAdminLoanManagement() {
                                 {/* ── RIGHT COLUMN ── */}
                                 <div className="dm-column-right">
                                     {/* ── DSS Panel (MOVED HERE) ── */}
-                                    <DSSPanel analysis={dssAnalysis} loading={dssLoading} onRefresh={() => fetchDSSAnalysis(selectedLoan, true)} />
+                                    <DSSPanel 
+                                        analysis={dssAnalysis} 
+                                        loading={dssLoading} 
+                                        onRefresh={() => fetchDSSAnalysis(selectedLoan, true)} 
+                                        memberName={selectedLoan.memberName}
+                                    />
 
                                     {/* OCR Results Analysis */}
                                     {ocrResults && (

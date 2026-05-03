@@ -7,13 +7,12 @@
 
 .loan-admin-mgmt-page {
     display: flex;
-    min-height: 100vh;
+    flex: 1;
     background-color: #f3f4f6;
     font-family: 'Inter', sans-serif;
 }
 
 .loan-admin-mgmt-content {
-    margin-left: 256px;
     padding: 40px 48px;
     flex: 1;
 }

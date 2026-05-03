@@ -223,11 +223,22 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
         return dt >= startDate && dt <= endDate;
       });
       report.memberGrowth = { newMembers: periodMembers.length, totalMembers: allMembers.length };
+
+      // Attendance (Moved from Secretary)
+      const periodAttendance = await attendance.find({ date: dateFilter }).toArray();
+      const attByBranch = {};
+      periodAttendance.forEach(a => {
+        const b = a.branch || 'Unknown';
+        attByBranch[b] = (attByBranch[b] || 0) + 1;
+      });
+      report.attendance = {
+        totalRecords: periodAttendance.length,
+        byBranch: Object.entries(attByBranch).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value),
+      };
     }
 
-    // === Loans & Savings (Loan Admin) ===
-    if (role === 'loanAdmin' || role === 'admin') {
-      // Loans
+    // === Loans & Savings (Loan Admin ONLY) ===
+    if (role === 'loanAdmin') {
       const periodLoans = await loans.find({ appliedDate: dateFilter, status: { $ne: 'cancelled' } }).toArray();
       const periodPayments = await loanPayments.find({ status: 'confirmed', confirmedAt: dateFilter }).toArray();
 
@@ -244,7 +255,6 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
       });
 
       periodPayments.forEach(p => {
-        // Rough interest estimate: each payment contains interest portion
         const loan = periodLoans.find(l => l.loanId === p.loanId);
         if (loan && loan.totalInterest && loan.termMonths) {
           totalInterestEarned += loan.totalInterest / loan.termMonths;
@@ -280,17 +290,63 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
       };
     }
 
-    // === AI Executive Summary ===
-    const reportDataText = JSON.stringify(report, null, 2);
-    const summaryPrompt = `You are a financial report writer for a church organization (Philippine United Apostolic Church).
-Given the following financial data for the period "${periodLabel}", write a professional executive summary in 3-4 paragraphs.
-Include: key highlights, notable trends, areas of concern, and recommendations.
-Use Philippine Peso (₱) for currency. Be specific with numbers from the data.
-Write in a formal but accessible tone suitable for church leadership.`;
+    // === Disbursements Report (Secretary Admin ONLY) ===
+    if (role === 'secretaryAdmin') {
+      const disbursedLoans = await loans.find({ 
+        disbursed: true, 
+        disbursementDate: dateFilter 
+      }).toArray();
+      const totalDisbursed = disbursedLoans.reduce((s, l) => s + (l.amount || 0), 0);
+      
+      report.secretary = {
+        disbursements: {
+          totalAmount: totalDisbursed,
+          count: disbursedLoans.length,
+          loans: disbursedLoans.map(l => ({
+            id: l.loanId,
+            member: l.memberName,
+            amount: l.amount,
+            date: l.disbursementDate
+          }))
+        }
+      };
+    }
 
-    const aiSummary = await callGemini(summaryPrompt, reportDataText, { maxTokens: 600, temperature: 0.5 });
+    // === AI Executive Summary with Caching ===
+    const reportCache = db.collection('reportCache');
+    const cacheKey = `report_${role}_${reportMonth !== null ? reportMonth : 'full'}_${reportYear}`;
+    
+    const cached = await reportCache.findOne({ cacheKey });
+    const isOld = cached && (new Date() - new Date(cached.updatedAt) > 24 * 60 * 60 * 1000); 
 
-    report.executiveSummary = aiSummary || 'Executive summary generation is temporarily unavailable. Please review the detailed data sections below.';
+    if (cached && !isOld && !req.query.refresh) {
+      report.executiveSummary = cached.summary;
+    } else {
+      try {
+        const reportDataText = JSON.stringify(report, null, 2);
+        const summaryPrompt = `You are a financial report writer for a church organization (Philippine United Apostolic Church).
+        Given the following financial data for the period "${periodLabel}", write a professional executive summary in 3-4 paragraphs.
+        Include: key highlights, notable trends, areas of concern, and recommendations.
+        Use Philippine Peso (₱) for currency. Be specific with numbers from the data.
+        Write in a formal but accessible tone suitable for church leadership.`;
+
+        const aiSummary = await callGemini(summaryPrompt, reportDataText, { maxTokens: 800, temperature: 0.4 });
+        
+        if (aiSummary) {
+          report.executiveSummary = aiSummary;
+          await reportCache.updateOne(
+            { cacheKey },
+            { $set: { cacheKey, summary: aiSummary, updatedAt: new Date() } },
+            { upsert: true }
+          );
+        } else {
+          throw new Error('Empty AI response');
+        }
+      } catch (aiErr) {
+        console.error('[AI Summary Cache Error]:', aiErr);
+        report.executiveSummary = cached?.summary || 'Executive summary generation is temporarily unavailable. Please review the detailed data sections below.';
+      }
+    }
 
     res.json({ success: true, report });
   } catch (err) {

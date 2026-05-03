@@ -1,8 +1,10 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 import '../styles/Attendance.css';
 import API from '../../utils/api';
-import { CalendarDays, CheckCircle, MapPin, Activity } from 'lucide-react';
+import { CalendarDays, CheckCircle, MapPin, Activity, CreditCard } from 'lucide-react';
 
 const PAGE_SIZE = 5;
 
@@ -37,6 +39,8 @@ const CountUp = ({ end, duration = 1000, suffix = '' }) => {
 };
 
 export default function Attendance() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [attendanceData, setAttendanceData] = useState([]);
   const [upcomingData,   setUpcomingData]   = useState([]);
   const [stats,          setStats]          = useState({ total: 0, thisMonth: 0 });
@@ -172,6 +176,19 @@ export default function Attendance() {
                 <p className="user-check-in-method-description">Scan QR code to check in to service</p>
               </div>
             </div>
+
+            {/* RFID Scanner Button for authorized roles */}
+            {['admin', 'secretaryAdmin', 'secretary', 'loanAdmin', 'loan'].includes(user?.role) && (
+              <div className="user-check-in-method user-check-in-rfid-method" onClick={() => navigate('/admin/rfid-preview')}>
+                <div className="user-qr-scanner-box" style={{ background: '#F5F3FF' }}>
+                  <CreditCard className="user-qr-icon" size={20} color="#7C3AED" />
+                </div>
+                <div className="user-check-in-method-info">
+                  <h3 className="user-check-in-method-title">RFID Scanner</h3>
+                  <p className="user-check-in-method-description">Open dedicated RFID check-in kiosk</p>
+                </div>
+              </div>
+            )}
 
             <div className="user-check-in-tip">
               <span className="user-tip-label">Tip:</span>

@@ -8,10 +8,6 @@
   width: 256px;
   min-width: 256px;
   height: 100vh;
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 50;
   background: #0D1F45;
   color: white;
   display: flex;
@@ -20,6 +16,8 @@
   overflow-x: hidden;
   scrollbar-width: none;        /* Firefox */
   -ms-overflow-style: none;     /* IE/Edge */
+  position: sticky;
+  top: 0;
 }
 
 /* ── Logo / brand area ── */
@@ -77,6 +75,16 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+.loan-admin-sidebar-group-label {
+  padding: 20px 24px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-family: 'Arial', sans-serif;
 }
 
 .loan-admin-sidebar-nav-button {

@@ -10,18 +10,29 @@
 .admin-shell {
   display: flex;
   width: 100%;
-  height: 100dvh;          /* dvh collapses mobile browser chrome */
-  overflow: hidden;        /* ← critical: prevents the shell from growing */
-  background: #CBD5E1;
+  height: 100dvh;
+  overflow: hidden;
+  background: #f1f5f9; /* Lighter, cleaner background */
+}
+
+/* Ensure sidebars never collapse and always take space, now sticky for consistent behavior */
+.admin-sidebar, .loan-admin-sidebar, .sec-admin-sidebar {
+  flex-shrink: 0 !important;
+  position: sticky !important;
+  top: 0 !important;
+  height: 100vh !important;
+  z-index: 100;
 }
 
 /* ── Main content: grows to fill remaining width, scrolls vertically ── */
 .admin-main {
   flex: 1;
-  min-width: 0;            /* prevents flex blowout on wide content */
+  min-width: 0;
   height: 100%;
-  overflow-y: auto;        /* ← the ONE scrollable region */
+  overflow-y: auto;
   overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .admin-main-inner {

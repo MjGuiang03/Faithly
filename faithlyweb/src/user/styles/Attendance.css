@@ -955,3 +955,32 @@
   padding: 32px 0;
   margin: 0;
 }
+
+/* RFID Scanner Button Enhancements */
+.user-check-in-rfid-method {
+  margin-top: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #ffffff;
+}
+
+.user-check-in-rfid-method:hover {
+  transform: translateY(-2px);
+  border-color: #7C3AED;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.1);
+  background: #fdfcff;
+}
+
+.dark .user-check-in-rfid-method {
+  background: var(--input-background);
+  border-color: var(--border);
+}
+
+.dark .user-check-in-rfid-method:hover {
+  border-color: #7C3AED;
+  background: rgba(124, 58, 237, 0.05);
+  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.15);
+}

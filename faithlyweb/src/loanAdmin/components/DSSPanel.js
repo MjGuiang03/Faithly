@@ -1,11 +1,35 @@
-import React from 'react';
-import { CheckCircle, XCircle, Info, AlertCircle, RefreshCw } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { CheckCircle, XCircle, Info, AlertCircle, RefreshCw, Download } from 'lucide-react';
+import html2pdf from 'html2pdf.js';
 import '../styles/DSSPanel.css';
 
 const fmt = (n) =>
   n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : '₱0.00';
 
-const DSSPanel = ({ analysis, loading, onRefresh }) => {
+const DSSPanel = ({ analysis, loading, onRefresh, memberName }) => {
+  const panelRef = useRef(null);
+  const [exporting, setExporting] = useState(false);
+
+  const handleDownloadPDF = async () => {
+    if (!panelRef.current) return;
+    setExporting(true);
+    try {
+      const element = panelRef.current;
+      const opt = {
+        margin: [10, 10, 10, 10],
+        filename: `Loan_Risk_Assessment_${memberName || 'Member'}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+      await html2pdf().set(opt).from(element).save();
+    } catch (err) {
+      console.error('PDF Export Error:', err);
+    } finally {
+      setExporting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="dss-panel loading">
@@ -20,11 +44,22 @@ const DSSPanel = ({ analysis, loading, onRefresh }) => {
   const { eligibility, capacity, risk, recommendation, isEligible } = analysis;
 
   return (
-    <div className="dss-panel">
+    <div className="dss-panel" ref={panelRef}>
       <div className="dss-header">
         <h3 className="dss-title">Decision Support Analysis</h3>
-        <div className={`dss-risk-badge ${risk.color}`}>
-          {risk.tier}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {!exporting && (
+            <button 
+              onClick={handleDownloadPDF} 
+              className="dss-download-btn"
+              title="Download analysis as PDF"
+            >
+              <Download size={14} />
+            </button>
+          )}
+          <div className={`dss-risk-badge ${risk.color}`}>
+            {risk.tier}
+          </div>
         </div>
       </div>
 

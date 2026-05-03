@@ -1,18 +1,16 @@
 .loan-admin-dashboard-page {
     display: flex;
-    min-height: 100vh;
-    background-color: #CBD5E1;
+    flex: 1;
+    background-color: #f1f5f9;
 }
 
 .loan-admin-dashboard-content {
-    margin-left: 256px;
-    padding: 24px 28px;
+    padding: 32px;
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    background: #CBD5E1;
-    min-height: 100vh;
+    gap: 20px;
+    background: transparent;
 }
 
 /* Keep loan-specific payment card styles */

@@ -247,7 +247,6 @@
 }
 
 .uh-card--quick-actions {
-  align-self: start;
 }
 
 .uh-card:hover {
@@ -373,6 +372,13 @@
   margin-bottom: 20px;
 }
 
+.uh-grid-main > .uh-card {
+  height: 380px; /* Locked height precisely matching carousel natural height */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .uh-grid-bottom {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -381,26 +387,38 @@
   align-items: stretch;
 }
 
+.uh-grid-bottom > .uh-card {
+  height: 380px; /* Locked height for bottom row */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 
 /* ── Quick Actions — light per-action color tint ── */
 
 .uh-actions {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  grid-template-rows: repeat(2, 1fr); /* Ensure two rows that fill space */
+  gap: 12px;
   width: 100%;
+  flex: 1; /* Grow to fill the card height */
+  margin-bottom: 4px; /* Slight bottom clearance */
 }
 
 .uh-action {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 14px;
-  padding: 12px 12px;
-  border-radius: 8px;
+  justify-content: center; /* Center content vertically when button grows */
+  gap: 12px;
+  padding: 16px;
+  border-radius: 12px;
   border: none;
   cursor: pointer;
   width: 100%;
+  height: 100%; /* Fill the grid cell */
   text-align: left;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   font-family: 'Inter', sans-serif;
@@ -782,7 +800,7 @@
   flex-direction: column;
   gap: 8px;
   overflow-y: auto;
-  max-height: 280px;
+  flex: 1; /* Allow to fill available height */
   padding-right: 4px;
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
@@ -1885,8 +1903,9 @@ div.uh-modal-meta span {
   }
 
   .uh-map-wrap {
+    flex: 1;
     min-height: 140px;
-    max-height: 180px;
+    margin: 8px 0;
   }
 
   /* Modals */

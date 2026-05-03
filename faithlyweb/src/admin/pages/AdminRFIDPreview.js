@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'sonner';
 import API from '../../utils/api';
-import { Play, Square, XCircle } from 'lucide-react';
+import { Play, Square, XCircle, ArrowLeft } from 'lucide-react';
 import '../styles/AdminRFIDPreview.css';
 
 function StartServiceModal({ onClose, onSave }) {
@@ -163,7 +163,6 @@ function EndSessionModal({ onClose, onConfirm }) {
 }
 
 export default function AdminRFIDPreview() {
-  const { signOut } = useAuth();
   const navigate = useNavigate();
 
   const [activeSessions, setActiveSessions] = useState([]);
@@ -183,6 +182,10 @@ export default function AdminRFIDPreview() {
       const data = await res.json();
       if (data.success) {
         setActiveSessions(data.sessions);
+        // Auto-open start modal if no sessions are active
+        if (data.sessions.length === 0) {
+          setShowStartModal(true);
+        }
       }
     } catch (err) { console.error('Failed to get active sessions', err); }
   }, []);
@@ -264,9 +267,8 @@ export default function AdminRFIDPreview() {
     }
   };
 
-  const handleLogout = () => {
-    signOut();
-    navigate('/');
+  const handleBack = () => {
+    navigate('/admin/attendance');
   };
 
   return (
@@ -276,7 +278,10 @@ export default function AdminRFIDPreview() {
 
       <div className="admin-rfid-header">
         <h2>Faithly RFID System</h2>
-        <button className="admin-rfid-logout" onClick={handleLogout}>Logout</button>
+        <button className="admin-rfid-logout" style={{ display: 'flex', alignItems: 'center' }} onClick={handleBack}>
+          <ArrowLeft size={16} style={{ marginRight: '6px' }} />
+          Back
+        </button>
       </div>
 
       <div className="admin-rfid-content">
