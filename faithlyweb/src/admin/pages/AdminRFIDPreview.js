@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
 import { toast } from 'sonner';
 import API from '../../utils/api';
 import { Play, Square, XCircle, ArrowLeft } from 'lucide-react';
