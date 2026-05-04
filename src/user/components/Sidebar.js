@@ -79,15 +79,6 @@ export default function Sidebar({ collapsed, setCollapsed, toggleCollapsed }) {
       )}
 
       <div className={`user-sidebar ${collapsed ? 'user-sidebar-collapsed' : ''}`}>
-        {isMobile && !collapsed && (
-          <button 
-            className="user-sidebar-close-mobile" 
-            onClick={() => setCollapsed(true)}
-            aria-label="Close sidebar"
-          >
-            <X size={24} color="white" />
-          </button>
-        )}
 
         {/* Logo + Toggle button inside */}
         <div className="user-sidebar-logo">

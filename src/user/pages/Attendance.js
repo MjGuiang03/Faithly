@@ -201,7 +201,7 @@ export default function Attendance() {
           {/* Check In */}
           <div className="user-check-in-card">
             <h2 className="user-attendance-section-title">Check In</h2>
-            <p className="user-check-in-subtitle">Select a check-in method:</p>
+            <p className="user-check-in-subtitle">Choose how you'd like to check in:</p>
 
             <div className="user-check-in-method" onClick={() => setIsScannerOpen(true)} style={{ cursor: 'pointer' }}>
               <div className="user-qr-scanner-box">
@@ -418,12 +418,20 @@ export default function Attendance() {
             </div>
             <div style={{ background: '#000', position: 'relative' }}>
               <Scanner
-                onScan={(detectedCodes) => {
-                  if (!isScanning && Array.isArray(detectedCodes) && detectedCodes.length > 0) {
-                    const scannedValue = detectedCodes[0].rawValue;
-                    if (scannedValue) {
-                      handleScan(scannedValue);
-                    }
+                onScan={(result) => {
+                  if (isScanning) return;
+                  let scannedValue = '';
+                  
+                  if (Array.isArray(result) && result.length > 0) {
+                    scannedValue = result[0].rawValue || result[0].text || '';
+                  } else if (result && typeof result === 'object') {
+                    scannedValue = result.rawValue || result.text || '';
+                  } else if (typeof result === 'string') {
+                    scannedValue = result;
+                  }
+
+                  if (scannedValue) {
+                    handleScan(scannedValue);
                   }
                 }}
                 onError={(error) => console.log(error?.message)}
