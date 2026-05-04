@@ -220,7 +220,7 @@ export default function AdminRFIDPreview() {
             const data = await res.json();
             if (data.success) {
               toast.success(data.message);
-              setLastTappedUser({ ...data.user, status: data.user?.status || 'Present', alreadyLogged: data.alreadyLogged });
+              setLastTappedUser({ ...data.user, recordId: data.record?.recordId, status: data.user?.status || 'Present', alreadyLogged: data.alreadyLogged });
             } else {
               toast.error(data.message);
             }
@@ -237,6 +237,40 @@ export default function AdminRFIDPreview() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedSession]);
+
+  // Poll for remote QR scans
+  useEffect(() => {
+    let interval;
+    if (selectedSession) {
+      interval = setInterval(async () => {
+        try {
+          const token = localStorage.getItem('adminToken');
+          const res = await fetch(`${API}/api/admin/attendance?session=${selectedSession.sessionId}&limit=1`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          const data = await res.json();
+          if (data.success && data.attendance && data.attendance.length > 0) {
+            const latest = data.attendance[0];
+            setLastTappedUser(prev => {
+              if (!prev || prev.recordId !== latest.recordId) {
+                return {
+                  recordId: latest.recordId,
+                  name: latest.member,
+                  branch: latest.userBranch || latest.branch,
+                  status: latest.status,
+                  alreadyLogged: false
+                };
+              }
+              return prev;
+            });
+          }
+        } catch (e) {
+          // silent error
+        }
+      }, 2000);
+    }
+    return () => clearInterval(interval);
   }, [selectedSession]);
 
   const confirmEndSession = (sessionId) => {
