@@ -418,18 +418,9 @@ export default function Attendance() {
             </div>
             <div style={{ background: '#000', position: 'relative' }}>
               <Scanner
-                onResult={(text, result) => {
-                  if (!isScanning) {
-                    // v2 of @yudiel/react-qr-scanner: text may be the raw string,
-                    // or result may be an array of IDetectedBarcode objects
-                    let scannedValue = '';
-                    if (typeof text === 'string' && text.length > 0) {
-                      scannedValue = text;
-                    } else if (Array.isArray(result) && result.length > 0) {
-                      scannedValue = result[0].rawValue || result[0].text || '';
-                    } else if (Array.isArray(text) && text.length > 0) {
-                      scannedValue = text[0].rawValue || text[0].text || '';
-                    }
+                onScan={(detectedCodes) => {
+                  if (!isScanning && Array.isArray(detectedCodes) && detectedCodes.length > 0) {
+                    const scannedValue = detectedCodes[0].rawValue;
                     if (scannedValue) {
                       handleScan(scannedValue);
                     }
