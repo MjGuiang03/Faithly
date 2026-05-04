@@ -132,6 +132,7 @@ export default function Attendance() {
 
   const handleScan = async (sessionId) => {
     setIsScanning(true);
+    console.log('[QR Scan] Sending sessionId:', sessionId);
     try {
       const res = await fetch(`${API}/api/attendance/scan-qr`, {
         method: 'POST',
@@ -142,6 +143,7 @@ export default function Attendance() {
         body: JSON.stringify({ sessionId })
       });
       const data = await res.json();
+      console.log('[QR Scan] Response:', res.status, data);
       if (data.success) {
         toast.success(data.message);
         setIsScannerOpen(false);
@@ -152,6 +154,7 @@ export default function Attendance() {
         setTimeout(() => setIsScanning(false), 2500); // Delay before next scan
       }
     } catch (err) {
+      console.error('[QR Scan] Error:', err);
       toast.error('Failed to process QR code');
       setTimeout(() => setIsScanning(false), 2500);
     }
@@ -415,9 +418,21 @@ export default function Attendance() {
             </div>
             <div style={{ background: '#000', position: 'relative' }}>
               <Scanner
-                onResult={(text) => {
-                  if (text && !isScanning) {
-                    handleScan(text);
+                onResult={(text, result) => {
+                  if (!isScanning) {
+                    // v2 of @yudiel/react-qr-scanner: text may be the raw string,
+                    // or result may be an array of IDetectedBarcode objects
+                    let scannedValue = '';
+                    if (typeof text === 'string' && text.length > 0) {
+                      scannedValue = text;
+                    } else if (Array.isArray(result) && result.length > 0) {
+                      scannedValue = result[0].rawValue || result[0].text || '';
+                    } else if (Array.isArray(text) && text.length > 0) {
+                      scannedValue = text[0].rawValue || text[0].text || '';
+                    }
+                    if (scannedValue) {
+                      handleScan(scannedValue);
+                    }
                   }
                 }}
                 onError={(error) => console.log(error?.message)}
