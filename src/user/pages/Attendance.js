@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 
 import '../styles/Attendance.css';
 import API from '../../utils/api';
-import { CalendarDays, CheckCircle, MapPin, Activity, CreditCard, Camera, XCircle } from 'lucide-react';
+import { CalendarDays, CheckCircle, Activity, CreditCard, Camera, XCircle } from 'lucide-react';
 import { Scanner } from '@yudiel/react-qr-scanner';
 import { toast } from 'sonner';
 
