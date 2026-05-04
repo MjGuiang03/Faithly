@@ -6,16 +6,17 @@
 .user-signup-modal-card,
 .user-policy-modal-overlay,
 .user-policy-modal-content {
-  --su-navy: #1e3a8a;
-  --su-navy-dark: #152a66;
+  --su-navy: #0D1F45;
+  --su-navy-dark: #1A2E45;
   --su-navy-mid: #2d4fa8;
-  --su-navy-light: #dce8ff;
-  --su-navy-pale: #f0f4ff;
-  --su-gold: #f5c800;
-  --su-gold-light: #fff8cc;
+  --su-navy-light: rgba(13, 31, 69, 0.1);
+  --su-navy-pale: rgba(13, 31, 69, 0.05);
+  --su-gold: #C9A84C;
+  --su-gold-light: rgba(201, 168, 76, 0.2);
   --su-green: #16a34a;
   --su-red: #dc2626;
   --su-surface: #f1f5f9;
+  --su-bg: #ffffff;
   --su-border: #e2e8f0;
   --su-muted: #64748b;
   --su-ink: #1e293b;
@@ -26,8 +27,8 @@
   position: fixed;
   inset: 0;
   background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -39,7 +40,7 @@
 
 /* ── Card ── */
 .user-signup-modal-card {
-  background: #ffffff;
+  background: var(--su-bg);
   border-radius: 16px;
   padding: 40px 40px 36px;
   width: 100%;
@@ -56,15 +57,7 @@
 
 /* gold→navy accent bar on top */
 .user-signup-modal-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(to right, var(--su-navy), var(--su-gold));
-  border-radius: 16px 16px 0 0;
-  pointer-events: none;
+  display: none;
 }
 
 .user-signup-modal-card::-webkit-scrollbar {
@@ -120,7 +113,7 @@
 
 .user-signup-title {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 1.85rem;
+  font-size: 1.75rem;
   font-weight: 600;
   color: var(--su-navy);
   margin: 0 0 4px;
@@ -225,7 +218,7 @@
 
 .user-signup-form-input:focus {
   border-color: var(--su-navy);
-  background: #ffffff;
+  background: var(--su-surface);
   box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
 }
 
@@ -321,13 +314,13 @@ input[type="date"].user-signup-form-input {
 
 .user-signup-form-select:focus {
   border-color: var(--su-navy);
-  background: #ffffff;
+  background: var(--su-surface);
   box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
 }
 
 .user-signup-form-select option {
   color: var(--su-ink);
-  background: #fff;
+  background: var(--su-bg);
 }
 
 /* ── Gender radio ── */
@@ -701,7 +694,7 @@ input[type="date"].user-signup-form-input {
 .user-policy-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.7);
+  background: rgba(15, 23, 42, 0.6);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -711,7 +704,7 @@ input[type="date"].user-signup-form-input {
 }
 
 .user-policy-modal-content {
-  background: #ffffff;
+  background: var(--su-bg);
   border-radius: 14px;
   padding: 28px;
   max-width: 480px;
@@ -724,14 +717,7 @@ input[type="date"].user-signup-form-input {
 
 /* accent bar on policy modal */
 .user-policy-modal-content::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(to right, var(--su-navy), var(--su-gold));
-  border-radius: 14px 14px 0 0;
+  display: none;
 }
 
 .user-policy-modal-header {

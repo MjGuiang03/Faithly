@@ -5,8 +5,8 @@
 .user-login-overlay {
   position: fixed;
   inset: 0;
-  background-color: rgba(15, 23, 58, 0.6);
-  backdrop-filter: blur(10px);
+  background-color: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -42,29 +42,13 @@
 /* top gradient accent bar — the FaithLy signature */
 .user-login-container::before,
 .user-login-card-embedded::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(to right, #1e3a8a, #f5c800);
-  border-radius: 16px 16px 0 0;
+  display: none;
 }
 
 /* subtle grid texture inside card */
 .user-login-container::after,
 .user-login-card-embedded::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(#e2e8f0 1px, transparent 1px),
-    linear-gradient(90deg, #e2e8f0 1px, transparent 1px);
-  background-size: 32px 32px;
-  opacity: 0.18;
-  pointer-events: none;
-  border-radius: 16px;
+  display: none;
 }
 
 /* ── Close button ── */
@@ -86,8 +70,8 @@
 }
 
 .user-login-close-btn:hover {
-  background: #f1f5f9;
-  color: #1e3a8a;
+  background: rgba(201, 168, 76, 0.1);
+  color: #C9A84C;
 }
 
 .user-login-close-icon {
@@ -123,7 +107,7 @@
   font-family: 'Cormorant Garamond', serif;
   font-size: 1.2rem;
   font-weight: 600;
-  color: #1e3a8a;
+  color: #0D1F45;
   letter-spacing: 0.02em;
 }
 
@@ -138,8 +122,8 @@
 .user-login-title {
   font-family: 'Cormorant Garamond', serif;
   font-size: 1.75rem;
-  font-weight: 400;
-  color: #1e3a8a;
+  font-weight: 600;
+  color: #0D1F45;
   margin-bottom: 4px;
   line-height: 1.1;
   letter-spacing: 0.01em;
@@ -148,7 +132,7 @@
 .user-login-subtitle {
   color: #64748b;
   margin: 0;
-  font-size: 0.84rem;
+  font-size: 0.88rem;
   font-family: 'DM Sans', sans-serif;
   font-weight: 400;
 }
@@ -206,7 +190,7 @@
   font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #1e293b;
+  color: #0D1F45;
   margin-bottom: 7px;
   font-family: 'DM Sans', sans-serif;
 }
@@ -250,7 +234,7 @@
 
 .user-login-input:focus,
 .user-login-select:focus {
-  border-color: #1e3a8a;
+  border-color: #C9A84C;
   background-color: #ffffff;
   box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
 }
@@ -291,7 +275,7 @@
 }
 
 .user-login-password-toggle:hover {
-  color: #1e3a8a;
+  color: #C9A84C;
 }
 
 .user-login-password-toggle:disabled {
@@ -332,14 +316,14 @@
 
 .user-login-forgot-password {
   font-size: 0.76rem;
-  color: #2d4fa8;
+  color: #0D1F45;
   background: transparent;
   border: none;
   cursor: pointer;
   transition: color 0.2s;
   padding: 0;
   font-family: 'DM Sans', sans-serif;
-  font-weight: 400;
+  font-weight: 500;
   letter-spacing: 0.01em;
   text-decoration: none;
 }
@@ -353,7 +337,7 @@
 .user-login-submit-btn {
   width: 100%;
   padding: 13px;
-  background-color: #1e3a8a;
+  background-color: #0D1F45;
   color: #ffffff;
   font-weight: 500;
   border: none;
@@ -367,7 +351,7 @@
 }
 
 .user-login-submit-btn:hover:not(:disabled) {
-  background-color: #152a66;
+  background-color: #1A2E45;
 }
 
 .user-login-submit-btn:active:not(:disabled) {
@@ -410,10 +394,10 @@
 }
 
 .user-login-switch-btn {
-  color: #1e3a8a;
+  color: #0D1F45;
   background: transparent;
   border: none;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   transition: color 0.2s;
   padding: 0;
@@ -423,7 +407,7 @@
 }
 
 .user-login-switch-btn:hover {
-  color: #152a66;
+  color: #1A2E45;
   text-decoration: underline;
 }
 

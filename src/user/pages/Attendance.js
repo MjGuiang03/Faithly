@@ -44,7 +44,6 @@ export default function Attendance() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [attendanceData, setAttendanceData] = useState([]);
-  const [upcomingData,   setUpcomingData]   = useState([]);
   const [stats,          setStats]          = useState({ total: 0, thisMonth: 0 });
   const [loading,        setLoading]        = useState(true);
   const [page]           = useState(1);
@@ -60,20 +59,12 @@ export default function Attendance() {
     try {
       const headers = { Authorization: `Bearer ${token}` };
       const cacheBuster = `_t=${Date.now()}`;
-      const [attRes, upRes] = await Promise.all([
-        fetch(`${API}/api/attendance/my-attendance?page=${page}&limit=${PAGE_SIZE}&${cacheBuster}`, { headers }),
-        fetch(`${API}/api/upcoming?${cacheBuster}`, { headers }) // Fixed: fetch from the new upcoming route
-      ]);
-      
+      const attRes = await fetch(`${API}/api/attendance/my-attendance?page=${page}&limit=${PAGE_SIZE}&${cacheBuster}`, { headers });
       const attData = await attRes.json();
-      const upData  = await upRes.json();
 
       if (attData.success) {
         setAttendanceData(attData.attendance || []);
         setStats(attData.stats || { total: 0, thisMonth: 0 });
-      }
-      if (upData.success) {
-        setUpcomingData(upData.announcements || []);
       }
     } catch (err) {
       console.error('Failed to fetch attendance:', err);
@@ -205,7 +196,7 @@ export default function Attendance() {
 
             <div className="user-check-in-method" onClick={() => setIsScannerOpen(true)} style={{ cursor: 'pointer' }}>
               <div className="user-qr-scanner-box">
-                <Camera className="user-qr-icon" size={20} color="#155DFC" />
+                <Camera className="user-qr-icon" size={32} color="#155DFC" />
               </div>
               <div className="user-check-in-method-info">
                 <h3 className="user-check-in-method-title">Scan Church QR</h3>
@@ -217,7 +208,7 @@ export default function Attendance() {
             {['admin', 'secretaryAdmin', 'secretary', 'loanAdmin', 'loan'].includes(user?.role) && (
               <div className="user-check-in-method user-check-in-rfid-method" onClick={() => navigate('/admin/rfid-preview')}>
                 <div className="user-qr-scanner-box" style={{ background: '#F5F3FF' }}>
-                  <CreditCard className="user-qr-icon" size={20} color="#7C3AED" />
+                  <CreditCard className="user-qr-icon" size={32} color="#7C3AED" />
                 </div>
                 <div className="user-check-in-method-info">
                   <h3 className="user-check-in-method-title">RFID Scanner</h3>
@@ -232,116 +223,63 @@ export default function Attendance() {
             </div>
           </div>
 
-          {/* Upcoming Services */}
-          <div className="user-upcoming-services-card">
-            <h2 className="user-attendance-section-title">Upcoming Services</h2>
-            <div className="user-upcoming-services-list">
+          {/* Attendance History (Moved from bottom) */}
+          <div className="user-attendance-history-card">
+            <div className="user-history-header-row">
+              <h2 className="user-attendance-section-title">Recent Attendance</h2>
+              <button className="user-view-history-btn" onClick={handleOpenHistory}>View History</button>
+            </div>
+
+            <div className="user-attendance-table-wrapper user-preview-table">
               {loading ? (
-                <div className="user-upcoming-active-list">
-                  {[1, 2, 3].map(i => (
-                    <div key={i} className="user-upcoming-service-item" style={{ marginBottom: '16px' }}>
-                      <div className="user-skeleton user-skeleton-circle" style={{ width: '12px', height: '12px', marginTop: '6px' }}></div>
-                      <div style={{ flex: 1, marginLeft: '12px' }}>
-                        <div className="user-skeleton" style={{ height: '16px', width: '40%', marginBottom: '8px' }}></div>
-                        <div className="user-skeleton" style={{ height: '12px', width: '80%', marginBottom: '8px' }}></div>
-                        <div style={{ display: 'flex', gap: '12px' }}>
-                          <div className="user-skeleton" style={{ height: '10px', width: '60px' }}></div>
-                          <div className="user-skeleton" style={{ height: '10px', width: '80px' }}></div>
-                        </div>
-                      </div>
+                <div style={{ padding: '16px' }}>
+                  {[1, 2, 3, 4, 5].map(i => (
+                    <div key={i} style={{ display: 'flex', gap: '20px', marginBottom: '16px' }}>
+                      <div className="user-skeleton" style={{ height: '14px', flex: 1 }}></div>
+                      <div className="user-skeleton" style={{ height: '14px', flex: 1 }}></div>
+                      <div className="user-skeleton" style={{ height: '14px', flex: 1 }}></div>
                     </div>
                   ))}
                 </div>
-              ) : upcomingData.length === 0 ? (
-                <div className="user-upcoming-empty">
-                  <CalendarDays size={36} color="#d1d5db" />
-                  <p className="user-upcoming-empty-text">No upcoming services announced yet.</p>
-                  <p className="user-upcoming-empty-sub">Check back when your admin posts new schedules.</p>
+              ) : attendanceData.length === 0 ? (
+                <div className="user-history-empty-state">
+                  <div className="user-history-empty-icon">
+                    <Activity size={40} color="#cbd5e1" />
+                  </div>
+                  <h3 className="user-history-empty-title">No records yet</h3>
+                  <p className="user-history-empty-text">
+                    Your attendance history will appear here once you check in to a service.
+                  </p>
                 </div>
               ) : (
-                <div className="user-upcoming-active-list user-fade-in">
-                  {upcomingData.map((item, idx) => (
-                    <div key={idx} className="user-upcoming-service-item">
-                      <div className="user-upcoming-service-dot" />
-                      <div className="user-upcoming-service-info">
-                        <div className="user-upcoming-service-header">
-                          <h4 className="user-upcoming-service-title">{item.title}</h4>
-                          <span className={`user-upcoming-type-badge ${item.type === 'service' ? 'user-type-svc' : 'user-type-notif'}`}>
-                            {item.type === 'service' ? 'Service' : 'Update'}
-                          </span>
-                        </div>
-                        <p className="user-upcoming-service-message">{item.message}</p>
-                        <div className="user-upcoming-service-meta">
-                           <span className="upcoming-meta-item">
-                             <MapPin size={12} />
-                             {item.branch}
-                           </span>
-                           <span className="upcoming-meta-item">
-                             <CalendarDays size={12} />
-                             {new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                           </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                <div className="user-fade-in">
+                  <table className="user-attendance-table">
+                    <thead>
+                      <tr>
+                        <th>Service</th>
+                        <th>Date</th>
+                        <th>Method</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {attendanceData.slice(0, 5).map((record, index) => (
+                        <tr key={index}>
+                          <td style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{record.service}</td>
+                          <td>{record.date}</td>
+                          <td>
+                            <span className={`user-method-badge user-method-${record.method?.toLowerCase()}`}>
+                              {record.method}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </div>
           </div>
-
         </div>
-
-        {/* Attendance History (Preview) */}
-        <div className="user-attendance-history-section">
-          <div className="user-history-header-row">
-            <h2 className="user-attendance-section-title">Attendance History</h2>
-            <button className="user-view-history-btn" onClick={handleOpenHistory}>View History</button>
-          </div>
-
-          <div className="user-attendance-table-wrapper user-preview-table">
-            {loading ? (
-              <div style={{ padding: '16px' }}>
-                {[1, 2, 3, 4, 5].map(i => (
-                  <div key={i} style={{ display: 'flex', gap: '20px', marginBottom: '16px' }}>
-                    <div className="user-skeleton" style={{ height: '14px', flex: 1 }}></div>
-                    <div className="user-skeleton" style={{ height: '14px', flex: 1 }}></div>
-                    <div className="user-skeleton" style={{ height: '14px', flex: 1 }}></div>
-                  </div>
-                ))}
-              </div>
-            ) : attendanceData.length === 0 ? (
-              <p className="user-attendance-empty-text" style={{ padding: '16px' }}>No attendance records yet.</p>
-            ) : (
-              <div className="user-fade-in">
-                <table className="user-attendance-table">
-                  <thead>
-                    <tr>
-                      <th>Service</th>
-                      <th>Date</th>
-                      <th>Branch</th>
-                      <th>Method</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {attendanceData.slice(0, 5).map((record, index) => (
-                      <tr key={index}>
-                        <td>{record.service}</td>
-                        <td>{record.date}</td>
-                        <td>{record.branch}</td>
-                        <td>
-                          <span className={`user-method-badge user-method-${record.method?.toLowerCase()}`}>
-                            {record.method}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </div>
-
       </div>
 
       {/* ── Attendance History Modal ── */}

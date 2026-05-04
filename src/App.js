@@ -7,8 +7,7 @@ import AdminProtectedRoute from './admin/pages/AdminProtectedRoute';
 import UserLayout from './user/components/UserLayout';
 
 // Regular User Pages
-import Welcome from './user/pages/Welcome';
-// import WelcomePage from './user/pages/WelcomePage';
+import WelcomePage from './user/pages/WelcomePage';
 import ResetPassword from './user/components/ResetPassword';
 import UpdatePassword from './user/components/UpdatePassword';
 import VerifyEmail from './user/components/VerifyEmail';
@@ -70,8 +69,9 @@ export default function App() {
 
           <Routes>
             {/* ========== PUBLIC ROUTES ========== */}
-            <Route path="/" element={<Welcome />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/" element={<WelcomePage
+            />} />
+            <Route path="/reset-password" element={<WelcomePage />} />
             <Route path="/update-password" element={<UpdatePassword />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
 
