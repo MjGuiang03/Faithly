@@ -246,7 +246,8 @@ export default function AdminRFIDPreview() {
       interval = setInterval(async () => {
         try {
           const token = localStorage.getItem('adminToken');
-          const res = await fetch(`${API}/api/admin/attendance?session=${selectedSession.sessionId}&limit=1`, {
+          const cacheBuster = `_t=${Date.now()}`;
+          const res = await fetch(`${API}/api/admin/attendance?session=${selectedSession.sessionId}&limit=1&${cacheBuster}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           const data = await res.json();

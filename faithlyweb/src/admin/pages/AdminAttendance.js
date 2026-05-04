@@ -322,6 +322,30 @@ export default function AdminAttendance() {
     fetchSessionLogs(session, 1);
   };
 
+  // Poll for new logs while viewing a session
+  useEffect(() => {
+    let interval;
+    if (viewingSession && logsPage === 1) {
+      interval = setInterval(() => {
+        // Fetch quietly without triggering the loading spinner overlay
+        const token = localStorage.getItem('adminToken');
+        const cacheBuster = `_t=${Date.now()}`;
+        fetch(`${API}/api/admin/attendance?session=${viewingSession.sessionId}&page=1&limit=${PER_PAGE}&${cacheBuster}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            setSessionLogs(data.attendance || []);
+            setLogsTotalCount(data.totalCount || data.attendance?.length || 0);
+          }
+        })
+        .catch(() => {});
+      }, 3000);
+    }
+    return () => clearInterval(interval);
+  }, [viewingSession, logsPage]);
+
   const handleLogsPageChange = (newPage) => {
     setLogsPage(newPage);
     fetchSessionLogs(viewingSession, newPage);
