@@ -1,9 +1,6 @@
 import { attendance } from './src/config/db.js';
 
-attendance.find({})
-  .sort({ createdAt: -1 })
-  .limit(5)
-  .toArray()
-  .then(console.log)
-  .catch(console.error)
-  .finally(() => process.exit(0));
+const records = await attendance.find({ sessionId: 'SESS-2026-0005' }).toArray();
+console.log('Records for SESS-2026-0005:', JSON.stringify(records, null, 2));
+console.log('Total:', records.length);
+process.exit(0);
