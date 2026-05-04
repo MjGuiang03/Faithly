@@ -1,8 +1,10 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import dotenv from 'dotenv';
-dotenv.config();
+dotenv.config({ override: true });
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const apiKey = process.env.GEMINI_API_KEY;
+console.log('Using Gemini API Key ending in:', apiKey ? apiKey.slice(-6) : 'undefined');
+const genAI = new GoogleGenerativeAI(apiKey);
 
 /**
  * Call Gemini 2.0 Flash with a system prompt and user prompt.
@@ -17,14 +19,17 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 export const callGemini = async (systemPrompt, userPrompt, options = {}) => {
   try {
     const model = genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-2.5-flash',
       systemInstruction: systemPrompt,
     });
 
     const generationConfig = {
-      maxOutputTokens: options.maxTokens || 1024,
       temperature: options.temperature ?? 0.7,
     };
+    
+    if (options.responseMimeType) {
+      generationConfig.responseMimeType = options.responseMimeType;
+    }
 
     const result = await model.generateContent({
       contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
@@ -49,7 +54,7 @@ export const callGemini = async (systemPrompt, userPrompt, options = {}) => {
 export const callGeminiChat = async (systemPrompt, history, userMessage) => {
   try {
     const model = genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-2.5-flash',
       systemInstruction: systemPrompt,
     });
 
@@ -59,7 +64,6 @@ export const callGeminiChat = async (systemPrompt, history, userMessage) => {
         parts: [{ text: msg.text }],
       })),
       generationConfig: {
-        maxOutputTokens: 512,
         temperature: 0.75,
       },
     });

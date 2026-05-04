@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authenticateUser } from '../middleware/auth.js';
-import { users, loans, donations, savingsGoals, attendance } from '../config/db.js';
+import { users, donations, attendance, loans, savingsGoals } from '../config/db.js';
 import { callGeminiChat } from '../utils/gemini.js';
 
 const router = Router();
@@ -18,33 +18,22 @@ You are **FaithBot**, the official AI assistant for **FaithLy** — the digital 
 
 ## FaithLy Platform Features
 
-### Officer Verification
-- Church officers can get verified by: Home > "Are you an officer?" card > Submit Church ID Number + Position
-- Eligible positions: Deacon, Local Evangelist, District Evangelist, National Evangelist, Assistant Priest, Priest, Elder, District Elder, Bishop, District Bishop, National Bishop, Apostle
-- Verification takes 3-5 business days
-- Verified officers unlock Loans and Savings features
-
-### Loans (Officers Only)
-- Apply via Loans page > "Apply for a Loan"
-- Loan types: Personal (2× savings, 2%/mo), Emergency (1.5× savings, 1.5%/mo), Short-Term (1× savings, 1%/mo)
-- Application flow: Pending → Approved → Active → Completed
-- Late payment penalty: 3% flat interest if payment is >3 days past due
-- Payments via E-Wallet, Bank Transfer, or Cash with proof upload
-
-### Savings (Officers Only)
-- Set personalized savings goals
-- Track progress with visual progress bar
-- Deposit via E-Wallet, Bank, or Cash
-- Withdrawals require admin approval
-
 ### Donations (All Members)
 - Categories: General Fund, Children's Department, Men's Department, Women's Department, Youth Department, Mission Fund
-- Payment methods: E-Wallet, Bank Transfer, Cash
-- Upload proof of payment
-- Payment gateway (PayMongo) available for digital payments
+- Payment methods: Payment Gateway (PayMongo), Manual (Cash, Bank Transfer)
+- Upload proof of payment for manual transactions
+
+### Savings
+- Members can set up personal savings goals
+- Deposit to savings using Gateway or Manual
+
+### Loans
+- Members can apply for loans subject to approval
+- View loan status, balance, and next due date
+- Pay loans via Gateway or Manual
 
 ### Attendance
-- Recorded by church administrators
+- Methods: Admin manual entry, RFID tap
 - View history in Attendance page
 - Summary shown on Home dashboard
 
@@ -57,7 +46,7 @@ You are **FaithBot**, the official AI assistant for **FaithLy** — the digital 
 - Branch assignment can be updated
 
 ### Notifications
-- Real-time updates for: loan status, donation confirmations, payment reminders, attendance records, verification results
+- Real-time updates for: donation confirmations, attendance records, loan updates
 - Email and push notification support
 
 ## Response Format Rules
@@ -69,15 +58,14 @@ You are **FaithBot**, the official AI assistant for **FaithLy** — the digital 
 
 /* ── Fallback keyword matching (same as original Chatbot.js) ── */
 const KB = [
-  { patterns: ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'kumusta', 'magandang umaga', 'magandang hapon'], responses: ["Hello! 👋 I'm FaithBot, your FaithLy assistant. How can I help you today?"], quickReplies: ['Loans', 'Donations', 'Officer Verification', 'Attendance'] },
-  { patterns: ['officer', 'verify', 'verification', 'verified'], responses: ["🛡️ **Officer Verification** unlocks Loans & Savings. Go to Home > 'Are you an officer?' card > submit your Church ID and Position. Takes 3-5 business days."], quickReplies: ['What positions qualify?', 'Loans', 'Savings'] },
-  { patterns: ['loan', 'loans', 'borrow', 'apply loan', 'utang', 'hulugan'], responses: ["💳 **Loans** are for verified officers. Go to Loans > Apply for a Loan. Choose type, set amount & term, then submit for admin review."], quickReplies: ['Loan requirements', 'Interest rates', 'Repayment'] },
-  { patterns: ['savings', 'save', 'ipon'], responses: ["🏦 **Savings** is for verified officers. Set goals, track progress, and deposit funds through the Savings page."], quickReplies: ['How to deposit?', 'Officer Verification'] },
-  { patterns: ['donat', 'donation', 'donate', 'giving', 'tithe', 'offering', 'handog', 'ikapu'], responses: ["❤️ Go to Donations > choose a category > enter amount > upload proof of payment. Methods: E-Wallet, Bank, Cash."], quickReplies: ['Donation categories', 'E-Wallet details'] },
-  { patterns: ['attendance', 'attend', 'check in'], responses: ["📅 Your attendance is recorded by administrators. View it in the Attendance page or your Home dashboard."], quickReplies: ['Branches', 'Home'] },
+  { patterns: ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'kumusta', 'magandang umaga', 'magandang hapon'], responses: ["Hello! 👋 I'm FaithBot, your FaithLy assistant. How can I help you today?"], quickReplies: ['Donations', 'Savings', 'Loans'] },
+  { patterns: ['save', 'saving', 'savings', 'ipon'], responses: ["💰 You can set up personal savings goals and deposit securely via Payment Gateway or Manual."], quickReplies: ['Donations', 'Loans'] },
+  { patterns: ['loan', 'borrow', 'utang'], responses: ["💳 Members can apply for loans. You can check your loan status, balance, and pay via Gateway or Manual."], quickReplies: ['Savings', 'Donations'] },
+  { patterns: ['donat', 'donation', 'donate', 'giving', 'tithe', 'offering', 'handog', 'ikapu'], responses: ["❤️ Go to Donations > choose a category > enter amount. Methods: Payment Gateway or Manual."], quickReplies: ['Donation categories', 'Savings'] },
+  { patterns: ['attendance', 'attend', 'check in'], responses: ["📅 Your attendance is recorded via Admin manual entry or RFID tap. View it in the Attendance page or your Home dashboard."], quickReplies: ['Branches', 'Home'] },
   { patterns: ['branch', 'location', 'address', 'simbahan', 'church'], responses: ["🏛️ Visit the Branches page to find locations, contact info, and service schedules."], quickReplies: ['My branch', 'Attendance'] },
   { patterns: ['settings', 'profile', 'password', 'account'], responses: ["⚙️ Go to Settings to update your profile, change password, or manage notifications."], quickReplies: ['Change password', 'Home'] },
-  { patterns: ['notification', 'alert', 'updates'], responses: ["🔔 Notifications keep you updated on loans, donations, attendance, and more. Check the Notifications page."], quickReplies: ['Loans', 'Donations'] },
+  { patterns: ['notification', 'alert', 'updates'], responses: ["🔔 Notifications keep you updated on donations, attendance, loans, and more. Check the Notifications page."], quickReplies: ['Donations', 'Attendance'] },
 ];
 
 function getKeywordResponse(input) {
@@ -93,7 +81,7 @@ function getKeywordResponse(input) {
 /* ── Parse quick replies from AI response ── */
 function parseAIResponse(text) {
   let reply = text;
-  let quickReplies = ['Loans', 'Donations', 'Attendance', 'Branches'];
+  let quickReplies = ['Donations', 'Savings', 'Loans', 'Attendance'];
 
   // Extract QUICK_REPLIES JSON from the end
   const qrMatch = text.match(/QUICK_REPLIES:\s*\[([^\]]+)\]/i);
@@ -121,26 +109,23 @@ router.post('/chat', authenticateUser, async (req, res) => {
     let userContext = '';
     try {
       const user = await users.findOne({ email });
-      const userLoans = await loans.find({ email }).toArray();
       const userDonations = await donations.find({ email, status: 'confirmed' }).toArray();
-      const userSavings = await savingsGoals.find({ email }).toArray();
       const userAttendance = await attendance.find({ email }).toArray();
+      const userLoans = await loans.find({ email }).toArray();
+      const userSavings = await savingsGoals.find({ email }).toArray();
 
-      const activeLoans = userLoans.filter(l => l.status === 'active');
       const totalDonated = userDonations.reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
-      const totalSaved = userSavings.reduce((sum, g) => sum + (g.savedAmount || 0), 0);
-      const isOfficer = user?.verificationStatus === 'verified';
+      const activeLoans = userLoans.filter(l => l.status === 'approved' || l.status === 'disbursed').length;
+      const totalSaved = userSavings.reduce((sum, g) => sum + (Number(g.savedAmount) || 0), 0);
 
       userContext = `
 ## Current User Context (${user?.fullName || 'Member'})
 - Branch: ${user?.branch || 'Unknown'}
 - Position: ${user?.position || 'Member'}
-- Officer Status: ${isOfficer ? 'Verified ✅' : 'Not verified'}
-- Active Loans: ${activeLoans.length} ${activeLoans.length > 0 ? `(Balance: ₱${activeLoans.reduce((s, l) => s + (l.remainingBalance || 0), 0).toLocaleString()})` : ''}
 - Total Donations: ₱${totalDonated.toLocaleString()}
-- Total Savings: ₱${totalSaved.toLocaleString()}
+- Total Saved: ₱${totalSaved.toLocaleString()}
+- Active Loans: ${activeLoans}
 - Attendance Records: ${userAttendance.length} services
-${activeLoans.length > 0 ? `- Next Loan Payment: ${activeLoans[0].nextDueDate ? new Date(activeLoans[0].nextDueDate).toLocaleDateString() : 'Check Loans page'}` : ''}
 
 Use this data to give personalized answers when relevant. Do NOT expose sensitive data unprompted.
 `;
@@ -172,7 +157,7 @@ Use this data to give personalized answers when relevant. Do NOT expose sensitiv
     return res.json({
       success: true,
       reply: "I'm not sure I understand that. Could you try rephrasing?\n\nHere are some things I can help with:",
-      quickReplies: ['Loans', 'Donations', 'Attendance', 'Officer Verification', 'Branches'],
+      quickReplies: ['Donations', 'Savings', 'Loans', 'Attendance'],
       source: 'fallback',
     });
   } catch (err) {

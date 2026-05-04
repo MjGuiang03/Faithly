@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import API from '../../utils/api';
 import { Play, Square, XCircle, ArrowLeft } from 'lucide-react';
+import QRCode from 'react-qr-code';
 import '../styles/AdminRFIDPreview.css';
 
 function StartServiceModal({ onClose, onSave }) {
@@ -285,31 +286,38 @@ export default function AdminRFIDPreview() {
 
       <div className="admin-rfid-content">
         {selectedSession && (
-          <div className="admin-rfid-tapped-user">
-            {lastTappedUser ? (
-              <>
-                <img
-                  src={lastTappedUser.profilePicture ? `${API}${lastTappedUser.profilePicture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(lastTappedUser.name)}&background=0D1F45&color=fff`}
-                  alt="User"
-                  className="admin-rfid-user-avatar"
-                  onError={(e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(lastTappedUser.name)}&background=0D1F45&color=fff` }}
-                />
-                <div className="admin-rfid-user-details">
-                  <h3 className="admin-rfid-user-name">{lastTappedUser.name}</h3>
-                  <span className="admin-rfid-user-branch">{lastTappedUser.branch}</span>
-                  <span className={`admin-rfid-user-status ${lastTappedUser.alreadyLogged ? 'status-already' : (lastTappedUser.status === 'Present' ? 'status-present' : 'status-late')}`}>
-                    {lastTappedUser.alreadyLogged ? 'Already Checked In' : `Checked in as ${lastTappedUser.status}`}
-                  </span>
+          <div style={{ display: 'flex', gap: '24px', alignItems: 'stretch', marginBottom: '24px' }}>
+            <div className="admin-rfid-tapped-user" style={{ flex: 1, margin: 0 }}>
+              {lastTappedUser ? (
+                <>
+                  <img
+                    src={lastTappedUser.profilePicture ? `${API}${lastTappedUser.profilePicture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(lastTappedUser.name)}&background=0D1F45&color=fff`}
+                    alt="User"
+                    className="admin-rfid-user-avatar"
+                    onError={(e) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(lastTappedUser.name)}&background=0D1F45&color=fff` }}
+                  />
+                  <div className="admin-rfid-user-details">
+                    <h3 className="admin-rfid-user-name">{lastTappedUser.name}</h3>
+                    <span className="admin-rfid-user-branch">{lastTappedUser.branch}</span>
+                    <span className={`admin-rfid-user-status ${lastTappedUser.alreadyLogged ? 'status-already' : (lastTappedUser.status === 'Present' ? 'status-present' : 'status-late')}`}>
+                      {lastTappedUser.alreadyLogged ? 'Already Checked In' : `Checked in as ${lastTappedUser.status}`}
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <div className="admin-rfid-empty-state">
+                  <div className="admin-rfid-empty-avatar">
+                    <span className="admin-rfid-empty-icon">?</span>
+                  </div>
+                  <span className="admin-rfid-empty-text">Waiting for next tap...</span>
                 </div>
-              </>
-            ) : (
-              <div className="admin-rfid-empty-state">
-                <div className="admin-rfid-empty-avatar">
-                  <span className="admin-rfid-empty-icon">?</span>
-                </div>
-                <span className="admin-rfid-empty-text">Waiting for next tap...</span>
-              </div>
-            )}
+              )}
+            </div>
+            <div style={{ padding: '24px', background: 'white', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: '200px' }}>
+              <QRCode value={selectedSession.sessionId} size={140} />
+              <p style={{ textAlign: 'center', marginTop: '16px', fontSize: '14px', color: '#4B5563', fontWeight: '600' }}>Scan to Check In</p>
+              <span style={{ fontFamily: 'monospace', fontSize: '12px', color: '#9CA3AF', marginTop: '4px' }}>{selectedSession.sessionId}</span>
+            </div>
           </div>
         )}
 

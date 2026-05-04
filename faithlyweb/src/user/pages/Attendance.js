@@ -4,7 +4,10 @@ import { useAuth } from '../../context/AuthContext';
 
 import '../styles/Attendance.css';
 import API from '../../utils/api';
-import { CalendarDays, CheckCircle, MapPin, Activity, CreditCard } from 'lucide-react';
+import { CalendarDays, CheckCircle, MapPin, Activity, CreditCard, Camera, XCircle } from 'lucide-react';
+import QRCode from 'react-qr-code';
+import { Scanner } from '@yudiel/react-qr-scanner';
+import { toast } from 'sonner';
 
 const PAGE_SIZE = 5;
 
@@ -47,6 +50,9 @@ export default function Attendance() {
   const [loading,        setLoading]        = useState(true);
   const [page]           = useState(1);
 
+
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
 
   const token = localStorage.getItem('token');
 
@@ -124,6 +130,33 @@ export default function Attendance() {
     setIsHistoryModalOpen(true);
   };
 
+  const handleScan = async (sessionId) => {
+    setIsScanning(true);
+    try {
+      const res = await fetch(`${API}/api/attendance/scan-qr`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ sessionId })
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(data.message);
+        setIsScannerOpen(false);
+        setIsScanning(false);
+        fetchAttendance();
+      } else {
+        toast.error(data.message);
+        setTimeout(() => setIsScanning(false), 2500); // Delay before next scan
+      }
+    } catch (err) {
+      toast.error('Failed to process QR code');
+      setTimeout(() => setIsScanning(false), 2500);
+    }
+  };
+
   return (
     <>
       <div className="user-attendance-container">
@@ -167,13 +200,13 @@ export default function Attendance() {
             <h2 className="user-attendance-section-title">Check In</h2>
             <p className="user-check-in-subtitle">Select a check-in method:</p>
 
-            <div className="user-check-in-method">
+            <div className="user-check-in-method" onClick={() => setIsScannerOpen(true)} style={{ cursor: 'pointer' }}>
               <div className="user-qr-scanner-box">
-                <CheckCircle className="user-qr-icon" size={20} color="#155DFC" />
+                <Camera className="user-qr-icon" size={20} color="#155DFC" />
               </div>
               <div className="user-check-in-method-info">
-                <h3 className="user-check-in-method-title">QR Code Scanner</h3>
-                <p className="user-check-in-method-description">Scan QR code to check in to service</p>
+                <h3 className="user-check-in-method-title">Scan Church QR</h3>
+                <p className="user-check-in-method-description">Open camera to scan a service QR</p>
               </div>
             </div>
 
@@ -369,6 +402,35 @@ export default function Attendance() {
                 >Next ›</button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+      {/* ── QR Scanner Modal ── */}
+      {isScannerOpen && (
+        <div className="user-attendance-modal-overlay" onClick={() => !isScanning && setIsScannerOpen(false)}>
+          <div className="user-attendance-modal-content" style={{ maxWidth: '400px', padding: 0, overflow: 'hidden' }} onClick={e => e.stopPropagation()}>
+            <div className="user-modal-header" style={{ padding: '16px 20px', borderBottom: '1px solid #E5E7EB', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 className="user-modal-title" style={{ fontSize: '18px' }}>Scan Service QR</h2>
+              <button className="user-modal-close-btn" onClick={() => setIsScannerOpen(false)} style={{ border: 'none', background: 'none', cursor: 'pointer' }}><XCircle size={24} color="#6B7280" /></button>
+            </div>
+            <div style={{ background: '#000', position: 'relative' }}>
+              <Scanner
+                onResult={(text) => {
+                  if (text && !isScanning) {
+                    handleScan(text);
+                  }
+                }}
+                onError={(error) => console.log(error?.message)}
+              />
+              {isScanning && (
+                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.5)', color: 'white', fontWeight: 'bold' }}>
+                  Processing...
+                </div>
+              )}
+            </div>
+            <div style={{ padding: '16px', textAlign: 'center', fontSize: '13px', color: '#6B7280' }}>
+              Point your camera at the session QR code displayed by the admin.
+            </div>
           </div>
         </div>
       )}

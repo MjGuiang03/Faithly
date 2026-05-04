@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authenticateAdmin } from '../middleware/auth.js';
-import { users, loans, donations, savingsGoals, savingsTransactions, attendance, loanPayments, settings } from '../config/db.js';
+import { users, loans, donations, savingsGoals, savingsTransactions, attendance, loanPayments, settings, reportCache } from '../config/db.js';
 import { callGemini } from '../utils/gemini.js';
 
 const router = Router();
@@ -23,12 +23,10 @@ router.get('/ai-insights', authenticateAdmin, async (req, res) => {
     const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
 
-    const [allMembers, allLoans, allDonations, allAttendance, allSavingsGoals] = await Promise.all([
+    const [allMembers, allDonations, allAttendance] = await Promise.all([
       users.find({ isDeleted: { $ne: true } }).toArray(),
-      loans.find({ status: { $ne: 'cancelled' } }).toArray(),
       donations.find({ status: 'confirmed' }).toArray(),
       attendance.find({}).toArray(),
-      savingsGoals.find({}).toArray(),
     ]);
 
     // Members
@@ -62,23 +60,12 @@ router.get('/ai-insights', authenticateAdmin, async (req, res) => {
       catTotals[cat] = (catTotals[cat] || 0) + (Number(d.amount) || 0);
     });
 
-    // Loans
-    const activeLoans = allLoans.filter(l => l.status === 'active');
-    const pendingLoans = allLoans.filter(l => l.status === 'pending');
-    const completedLoans = allLoans.filter(l => l.status === 'completed');
-    const totalDisbursed = allLoans.filter(l => l.disbursed).reduce((s, l) => s + (l.amount || 0), 0);
-    const totalOutstanding = activeLoans.reduce((s, l) => s + (l.remainingBalance || 0), 0);
-
     // Attendance this month vs last
     const attThisMonth = allAttendance.filter(a => new Date(a.date || a.createdAt) >= thisMonthStart);
     const attLastMonth = allAttendance.filter(a => {
       const dt = new Date(a.date || a.createdAt);
       return dt >= lastMonthStart && dt <= lastMonthEnd;
     });
-
-    // Savings
-    const totalSaved = allSavingsGoals.reduce((s, g) => s + (g.savedAmount || 0), 0);
-    const totalTargets = allSavingsGoals.reduce((s, g) => s + (g.targetAmount || 0), 0);
 
     const metricsText = `
 Church Management Data Summary (as of ${now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}):
@@ -95,30 +82,18 @@ DONATIONS:
 - Month-over-month change: ${totalDonLastMonth > 0 ? ((totalDonThisMonth - totalDonLastMonth) / totalDonLastMonth * 100).toFixed(1) : 'N/A'}%
 - By category: ${Object.entries(catTotals).map(([c, v]) => `${c}: ₱${v.toLocaleString()}`).join(', ')}
 
-LOANS:
-- Active loans: ${activeLoans.length}
-- Pending applications: ${pendingLoans.length}
-- Completed: ${completedLoans.length}
-- Total disbursed: ₱${totalDisbursed.toLocaleString()}
-- Outstanding balance: ₱${totalOutstanding.toLocaleString()}
-
 ATTENDANCE:
 - Records this month: ${attThisMonth.length}
 - Records last month: ${attLastMonth.length}
-
-SAVINGS:
-- Total saved across all goals: ₱${totalSaved.toLocaleString()}
-- Total target amount: ₱${totalTargets.toLocaleString()}
-- Overall progress: ${totalTargets > 0 ? ((totalSaved / totalTargets) * 100).toFixed(1) : 0}%
 `;
 
     const systemPrompt = `You are a church management analytics advisor for the Philippine United Apostolic Church (PUAC).
 Given the following operational data, provide exactly 5 insights as a JSON array of objects.
-Each object must have: "icon" (single emoji), "title" (short 5-8 word title), "detail" (1-2 sentence actionable insight with specific numbers).
+Each object must have: "icon" (a single icon/emoji), "title" (short 5-8 word title), "detail" (1-2 sentence actionable insight with specific numbers).
 Focus on: trends, anomalies, actionable recommendations, and comparisons.
 Respond ONLY with the JSON array, no markdown fences, no other text.`;
 
-    const aiText = await callGemini(systemPrompt, metricsText, { maxTokens: 800, temperature: 0.6 });
+    const aiText = await callGemini(systemPrompt, metricsText, { maxTokens: 800, temperature: 0.6, responseMimeType: 'application/json' });
 
     let insights = [];
     if (aiText) {
@@ -313,7 +288,6 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
     }
 
     // === AI Executive Summary with Caching ===
-    const reportCache = db.collection('reportCache');
     const cacheKey = `report_${role}_${reportMonth !== null ? reportMonth : 'full'}_${reportYear}`;
     
     const cached = await reportCache.findOne({ cacheKey });

@@ -355,6 +355,69 @@ router.post('/admin/attendance/check-card', authenticateAdmin, async (req, res) 
      }
 });
 
+/* ================== USER - SCAN QR TO CHECK IN ================== */
+router.post('/attendance/scan-qr', authenticateUser, async (req, res) => {
+  try {
+     const { sessionId } = req.body;
+     
+     if (!sessionId) {
+         return res.status(400).json({ success: false, message: 'Session ID is required.' });
+     }
+
+     // Find the active session
+     const session = await attendanceSessions.findOne({ sessionId: sessionId, status: 'active' });
+     if (!session) {
+         return res.status(404).json({ success: false, message: 'Active session not found or has ended.' });
+     }
+
+     const user = await users.findOne({ email: req.user.email });
+     if (!user) {
+         return res.status(404).json({ success: false, message: 'User not found.' });
+     }
+
+     // Check if they already checked in to THIS session
+     const existing = await attendance.findOne({ sessionId: session.sessionId, email: user.email });
+     if (existing) {
+         return res.status(200).json({ success: true, alreadyLogged: true, message: 'You have already checked in for this session.' });
+     }
+
+     const now = new Date();
+     
+     // Determine Present vs Late
+     const startPlusGrace = new Date(session.startDateTime.getTime() + (session.gracePeriodMinutes * 60000));
+     const isLate = now > startPlusGrace;
+     const status = isLate ? 'Late' : 'Present';
+
+     const count = await attendance.countDocuments();
+     const recordId = `A-${now.getFullYear()}-${String(count + 1).padStart(5, '0')}`;
+
+     const newRecord = {
+         recordId, 
+         sessionId: session.sessionId,
+         email: user.email, 
+         member: user.fullName || user.name, 
+         service: session.serviceType, 
+         branch: session.branch,
+         userBranch: user.branch,
+         method: 'QR Scan',
+         rfidCardId: user.rfidCardId || null,
+         status,
+         date: now.toLocaleDateString('en-US'),
+         time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+         createdAt: now
+     };
+
+     await attendance.insertOne(newRecord);
+
+     // Update stats dynamically if needed, but the admin end-session script calculates totals at the end.
+     res.status(201).json({ success: true, message: `Checked in as ${status} successfully!` });
+
+  } catch(err) {
+     console.error(err);
+     res.status(500).json({ success: false, message: 'Failed to record check-in.' });
+  }
+});
+
 /* ================== USER - GET MY ATTENDANCE ================== */
 router.get('/attendance/my-attendance', authenticateUser, async (req, res) => {
   try {
