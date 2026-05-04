@@ -59,9 +59,10 @@ export default function Attendance() {
     setLoading(true);
     try {
       const headers = { Authorization: `Bearer ${token}` };
+      const cacheBuster = `_t=${Date.now()}`;
       const [attRes, upRes] = await Promise.all([
-        fetch(`${API}/api/attendance/my-attendance?page=${page}&limit=${PAGE_SIZE}`, { headers }),
-        fetch(`${API}/api/upcoming`, { headers }) // Fixed: fetch from the new upcoming route
+        fetch(`${API}/api/attendance/my-attendance?page=${page}&limit=${PAGE_SIZE}&${cacheBuster}`, { headers }),
+        fetch(`${API}/api/upcoming?${cacheBuster}`, { headers }) // Fixed: fetch from the new upcoming route
       ]);
       
       const attData = await attRes.json();

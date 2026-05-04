@@ -370,9 +370,14 @@ router.post('/attendance/scan-qr', authenticateUser, async (req, res) => {
          return res.status(404).json({ success: false, message: 'Active session not found or has ended.' });
      }
 
-     const user = await users.findOne({ email: req.user.email });
+     let user = await users.findOne({ email: req.user.email });
      if (!user) {
-         return res.status(404).json({ success: false, message: 'User not found.' });
+         // Also check admins collection in case an admin is testing the feature
+         const { admins } = await import('../config/db.js');
+         user = await admins.findOne({ email: req.user.email });
+         if (!user) {
+             return res.status(404).json({ success: false, message: 'User not found.' });
+         }
      }
 
      // Check if they already checked in to THIS session
