@@ -42,11 +42,12 @@ router.get('/notifications', authenticateAdmin, async (req, res) => {
     // Donations → notification (Only for Super Admin)
     if (req.admin.role === 'admin') {
       recentDonations.forEach(d => {
+        const donorName = (d.member && d.member !== 'Member') ? d.member : d.email;
         notifications.push({
           id:        `donation-${d._id}`,
           type:      'donation',
           title:     'Donation received',
-          message:   `${d.member} donated ₱${Number(d.amount).toLocaleString()} to ${d.category}.`,
+          message:   `${donorName} donated ₱${Number(d.amount).toLocaleString()} to ${d.category}.`,
           timestamp: d.createdAt || d.date,
           isRead:    false,
           meta: {
