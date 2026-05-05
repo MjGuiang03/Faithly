@@ -44,7 +44,7 @@ export default function AdminDonationsNew() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('active'); // Changed default to 'active'
+  const [statusFilter, setStatusFilter] = useState('all'); 
   const [showRejectedModal, setShowRejectedModal] = useState(false);
   const [rejectedLoading, setRejectedLoading] = useState(false);
   const [rejectedList, setRejectedList] = useState([]);
@@ -236,9 +236,9 @@ export default function AdminDonationsNew() {
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           >
-            <option value="active">All Forms</option>
+            <option value="all">All Forms</option>
+            <option value="active">Confirmed Only</option>
             <option value="pending">Pending</option>
-            <option value="confirmed">Confirmed</option>
             <option value="rejected">Failed</option>
           </select>
         </div>
