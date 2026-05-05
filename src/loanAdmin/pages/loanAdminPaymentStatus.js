@@ -313,10 +313,6 @@ export default function LoanAdminPaymentStatus() {
     return s.type === 'withdrawal' ? sum - amt : sum + amt;
   }, 0);
 
-  const totalDepositsFiltered = confirmedSavings
-    .filter(s => s.type === 'deposit')
-    .reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
-
   const totalWithdrawalsFiltered = confirmedSavings
     .filter(s => s.type === 'withdrawal')
     .reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
