@@ -505,6 +505,54 @@ export default function LoanAdminPaymentStatus() {
           </div>
         )}
 
+        {activeTab === 'loans' && !isSavingsRoute && (
+          <div className="loan-admin-mgmt-table-container">
+            <table className="loan-admin-mgmt-table">
+              <thead>
+                <tr>
+                  <th>Loan ID</th>
+                  <th>Member</th>
+                  <th>Amount</th>
+                  <th>Paid</th>
+                  <th>Balance</th>
+                  <th>Due Date</th>
+                  <th>Days Late</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr><td colSpan={8} style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>Loading...</td></tr>
+                ) : filtered.length === 0 ? (
+                  <tr><td colSpan={8} style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>No active loans found</td></tr>
+                ) : (
+                  filtered.map(loan => (
+                    <tr key={loan._id} onClick={() => setSelectedLoan(loan)} style={{ cursor: 'pointer' }} className="loan-admin-mgmt-table-row-hover">
+                      <td className="loan-admin-mgmt-table-id">{loan.loanId}</td>
+                      <td>
+                        <div className="loan-admin-mgmt-table-member">
+                          <p className="loan-admin-mgmt-table-member-name">{loan.memberName}</p>
+                          <p className="loan-admin-mgmt-table-member-email">{loan.email}</p>
+                        </div>
+                      </td>
+                      <td className="loan-admin-mgmt-table-amount">{fmt(loan.amount)}</td>
+                      <td style={{ fontSize: '13px' }}>{loan.paidMonths || 0}/{loan.termMonths || 0}</td>
+                      <td className="loan-admin-mgmt-table-amount">{fmt(loan.remainingBalance)}</td>
+                      <td>{fmtDate(loan.effectiveDueDate)}</td>
+                      <td style={{ fontWeight: 600, color: loan.daysLate > 0 ? '#DC2626' : '#16A34A' }}>
+                        {loan.daysLate > 0 ? `${loan.daysLate} days` : '—'}
+                      </td>
+                      <td>
+                        <span className={`ps-status-badge ${loan.paymentStatus.cls}`}>{loan.paymentStatus.label}</span>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+
         {/* Pending Approvals Tab */}
         {activeTab === 'pending' && (
           <div className="loan-admin-mgmt-table-container">
