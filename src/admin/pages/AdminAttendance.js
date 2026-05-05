@@ -534,6 +534,7 @@ export default function AdminAttendance() {
                 </button>
               </div>
             </div>
+
             <div className="admin-att-table-wrapper">
               <table className="admin-att-table">
                 <thead>

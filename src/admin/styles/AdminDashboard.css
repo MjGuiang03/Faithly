@@ -27,7 +27,7 @@
 }
 
 .adm-stat-card {
-  background: white;
+  background: #0D1F45;
   border-radius: 10px;
   padding: 20px 24px;
   border: none;
@@ -36,6 +36,7 @@
   flex-direction: column;
   gap: 12px;
   transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+  color: white;
 }
 
 .adm-stat-card:hover {
@@ -51,7 +52,7 @@
 .adm-stat-label {
   font-size: 12px;
   font-weight: 500;
-  color: #6B7280;
+  color: rgba(255, 255, 255, 0.7);
   font-family: 'Inter', sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -65,32 +66,31 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.1); /* Lighter background for icons on dark cards */
 }
 
-.adm-icon-blue   { background: #0D1F45 !important; }
-.adm-icon-green  { background: #0D1F45 !important; }
-.adm-icon-orange { background: #0D1F45 !important; }
-.adm-icon-yellow { background: #0D1F45 !important; }
-.adm-icon-purple { background: #0D1F45 !important; }
-.adm-icon-navy   { background: #1E293B; }
-.adm-icon-pink   { background: #E60076; }
+/* Re-styling icons to be visible on dark cards */
+.adm-icon-blue, .adm-icon-green, .adm-icon-orange, .adm-icon-yellow, .adm-icon-purple {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: white !important;
+}
 
 .adm-stat-value {
   font-size: 28px;
   font-weight: 700;
-  color: #0F172A;
+  color: white;
   font-family: 'Inter', sans-serif;
   line-height: 1.1;
 }
 
 .adm-stat-sub {
   font-size: 11px;
-  color: #9CA3AF;
+  color: rgba(255, 255, 255, 0.5);
   font-family: 'Inter', sans-serif;
 }
 
 .adm-stat-sub-highlight {
-  color: #00A63E;
+  color: #4ADE80; /* Brighter green for dark background */
   font-weight: 600;
 }
 
@@ -456,8 +456,8 @@
 .adm-ai-insights-card {
   background: white;
   border-radius: 10px;
-  border: 1px solid #e9d5ff;
-  box-shadow: var(--card-shadow), 0 0 0 1px rgba(139, 92, 246, 0.08);
+  border: 1px solid #0D1F45;
+  box-shadow: var(--card-shadow), 0 0 0 1px rgba(13, 31, 69, 0.08);
   overflow: hidden;
   transition: all 0.3s ease;
 }
@@ -473,8 +473,8 @@
   padding: 16px 20px;
   cursor: pointer;
   user-select: none;
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.04) 0%, rgba(59, 130, 246, 0.03) 100%);
-  border-bottom: 1px solid rgba(139, 92, 246, 0.08);
+  background: linear-gradient(135deg, rgba(13, 31, 69, 0.04) 0%, rgba(13, 31, 69, 0.02) 100%);
+  border-bottom: 1px solid rgba(13, 31, 69, 0.08);
 }
 
 .adm-ai-title-group {
@@ -484,7 +484,7 @@
 }
 
 .adm-ai-sparkle {
-  color: #8b5cf6;
+  color: #0D1F45;
 }
 
 .adm-ai-title {
@@ -498,8 +498,8 @@
 .adm-ai-badge {
   font-size: 9px;
   font-weight: 600;
-  color: #7c3aed;
-  background: rgba(139, 92, 246, 0.1);
+  color: #0D1F45;
+  background: rgba(13, 31, 69, 0.1);
   padding: 2px 8px;
   border-radius: 4px;
   letter-spacing: 0.03em;
@@ -577,7 +577,7 @@
 }
 
 .adm-ai-insight-icon {
-  font-size: 20px;
+  color: #0D1F45;
   flex-shrink: 0;
   width: 28px;
   height: 28px;

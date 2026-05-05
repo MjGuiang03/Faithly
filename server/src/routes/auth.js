@@ -5,13 +5,23 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { users, admins, otps, pendingRegistrations } from '../config/db.js';
+import { users, admins, otps, pendingRegistrations, branches } from '../config/db.js';
 import { validate } from '../middleware/validate.js';
 import { loginLimiter, registerLimiter, otpLimiter, resendOtpLimiter } from '../middleware/rateLimiter.js';
 import { authenticateUser } from '../middleware/auth.js';
 import { generateOTP, sendOTP } from '../utils/email.js';
 
 const router = Router();
+
+/* ================== PUBLIC BRANCHES LIST ================== */
+router.get('/public/branches', async (req, res) => {
+  try {
+    const list = await branches.find({ status: { $ne: 'Inactive' } }).sort({ name: 1 }).toArray();
+    res.json({ success: true, branches: list });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to fetch branch list' });
+  }
+});
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
   console.error('FATAL ERROR: JWT_SECRET is not defined in environment variables.');

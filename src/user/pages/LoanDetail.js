@@ -659,7 +659,7 @@ export default function LoanDetail() {
                     </div>
 
                     {/* ── Upcoming payments + Payment History (side by side) ── */}
-                    <div style={{ display: 'grid', gridTemplateColumns: schedule.filter(r => r.status !== 'paid').length > 0 && paymentHistory.length > 0 ? '1fr 1fr' : '1fr', gap: '16px' }}>
+                    <div className={schedule.filter(r => r.status !== 'paid').length > 0 && paymentHistory.length > 0 ? 'ld-two-col-grid' : 'ld-one-col-grid'}>
                         {/* Upcoming payments */}
                         {schedule.filter(r => r.status !== 'paid').length > 0 && (
                             <div className="ld-section" style={{ margin: 0 }}>

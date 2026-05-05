@@ -11,7 +11,24 @@ import {
 import '../styles/AdminDashboard.css';
 
 import API from '../../utils/api';
-import { Banknote, Heart, Printer, Users, MapPin, Expand, X, Sparkles, RefreshCw } from 'lucide-react';
+import { 
+  Banknote, Heart, Printer, Users, MapPin, Expand, X, Sparkles, RefreshCw, 
+  TrendingUp, TrendingDown, AlertCircle, CheckCircle, DollarSign, Calendar, Activity 
+} from 'lucide-react';
+
+const InsightIcon = ({ name }) => {
+  const icons = {
+    TrendingUp: <TrendingUp size={18} />,
+    TrendingDown: <TrendingDown size={18} />,
+    AlertCircle: <AlertCircle size={18} />,
+    CheckCircle: <CheckCircle size={18} />,
+    DollarSign: <DollarSign size={18} />,
+    Calendar: <Calendar size={18} />,
+    Activity: <Activity size={18} />,
+    Users: <Users size={18} />,
+  };
+  return icons[name] || <Sparkles size={18} />;
+};
 
 
 
@@ -68,7 +85,7 @@ export default function AdminDashboard() {
         fetch(`${API}/api/admin/members?limit=1000`,      { headers }),
         fetch(`${API}/api/admin/loans`,                  { headers }),
         fetch(`${API}/api/admin/donations`,              { headers }),
-        fetch(`${API}/api/admin/attendance`,             { headers }),
+        fetch(`${API}/api/admin/attendance?limit=10000`,  { headers }),
       ]);
 
       const [membersData, loansData, donationsData, attendData] = await Promise.all([
@@ -78,31 +95,22 @@ export default function AdminDashboard() {
         attendRes.json(),
       ]);
 
+      if (attendData && attendData.success && attendData.attendance) {
+        setRawAttendance(attendData.attendance);
+      }
+
       const now = new Date();
       const currentMonth = now.getMonth();
       const currentYear = now.getFullYear();
 
-      // --- 1. Recalculate Member Stats (Active/Verified Only) ---
-      if (membersData.success && membersData.members) {
-        setRawMembers(membersData.members);
-        const activeMembers = membersData.members.filter(m => {
-          const s = (m.status || '').toLowerCase();
-          return s === 'active' || s === 'verified';
-        });
-
-        let newThisMonthCount = 0;
-        activeMembers.forEach(m => {
-          const d = new Date(m.createdAt);
-          if (d.getFullYear() === currentYear && d.getMonth() === currentMonth) {
-            newThisMonthCount++;
-          }
-        });
-
+      // --- 1. Use Member Stats from server ---
+      if (membersData.success && membersData.stats) {
+        setRawMembers(membersData.members || []);
         setMemberStats({
-          total: activeMembers.length,
-          active: activeMembers.length, // approximation or based on status
-          inactive: membersData.members.length - activeMembers.length,
-          newThisMonth: newThisMonthCount
+          total: membersData.stats.total || 0,
+          active: membersData.stats.active || 0,
+          inactive: membersData.stats.inactive || 0,
+          newThisMonth: membersData.stats.newThisMonth || 0
         });
       }
 
@@ -110,24 +118,11 @@ export default function AdminDashboard() {
         setLoanStats({ active: loansData.stats.active || 0, pending: loansData.stats.pending || 0, totalDisbursed: loansData.stats.totalDisbursed || 0 });
       }
 
-      // --- 2. Recalculate Donation Stats (Confirmed Only) ---
-      if (donationsData.success && donationsData.donations) {
-        const confirmedDonations = donationsData.donations.filter(d => (d.status || '').toLowerCase() === 'confirmed');
-        
-        let thisMonthAmount = 0;
-        let totalAmount = 0;
-        confirmedDonations.forEach(d => {
-          const amt = Number(d.amount) || 0;
-          totalAmount += amt;
-          const date = new Date(d.createdAt || d.date);
-          if (date.getFullYear() === currentYear && date.getMonth() === currentMonth) {
-            thisMonthAmount += amt;
-          }
-        });
-
+      // --- 2. Use Donation Stats from server ---
+      if (donationsData.success && donationsData.stats) {
         setDonationStats({
-          thisMonth: thisMonthAmount,
-          total: totalAmount
+          thisMonth: donationsData.stats.thisMonth || 0,
+          total: donationsData.stats.total || 0
         });
       }
 
@@ -318,9 +313,12 @@ export default function AdminDashboard() {
       att = monthNames.map((m, i) => ({ label: m, attendance: 0, sortKey: i }));
       
       filteredAtt.forEach(a => {
-        const d = new Date(a.date || a.createdAt);
-        if (d.getFullYear() === attYear) {
-          att[d.getMonth()].attendance += (Number(a.adultsCount) || 0) + (Number(a.kidsCount) || 0);
+        const s = (a.status || '').toLowerCase();
+        if (s === 'present' || s === 'late') {
+          const d = new Date(a.date || a.createdAt);
+          if (d.getFullYear() === attYear) {
+            att[d.getMonth()].attendance += 1;
+          }
         }
       });
     } else {
@@ -328,10 +326,13 @@ export default function AdminDashboard() {
       att = Array.from({length: daysInMonth}, (_, i) => ({ label: `${i+1}`, attendance: 0, sortKey: i+1 }));
       
       filteredAtt.forEach(a => {
-        const d = new Date(a.date || a.createdAt);
-        if (d.getFullYear() === attYear && d.getMonth() === parseInt(attMonth)) {
-          const dayMatch = att.find(x => x.sortKey === d.getDate());
-          if (dayMatch) dayMatch.attendance += (Number(a.adultsCount) || 0) + (Number(a.kidsCount) || 0);
+        const s = (a.status || '').toLowerCase();
+        if (s === 'present' || s === 'late') {
+          const d = new Date(a.date || a.createdAt);
+          if (d.getFullYear() === attYear && d.getMonth() === parseInt(attMonth)) {
+            const dayMatch = att.find(x => x.sortKey === d.getDate());
+            if (dayMatch) dayMatch.attendance += 1;
+          }
         }
       });
     }
@@ -339,8 +340,9 @@ export default function AdminDashboard() {
 
     if (attBranch === 'all') {
       const branchAtt = {};
-      const branchDays = {};
+      const branchSessions = {};
       rawAttendance.forEach(a => {
+        const s = (a.status || '').toLowerCase();
         const d = new Date(a.date || a.createdAt);
         let inPeriod = false;
         if (attMonth === 'all') {
@@ -349,18 +351,24 @@ export default function AdminDashboard() {
           if (d.getFullYear() === attYear && d.getMonth() === parseInt(attMonth)) inPeriod = true;
         }
         if (inPeriod) {
-          const b = a.branch || a.community;
+          const b = a.branch || a.community || a.userBranch;
           if (b && b !== 'Unknown') {
-            const totalAtt = (Number(a.adultsCount) || 0) + (Number(a.kidsCount) || 0);
-            branchAtt[b] = (branchAtt[b] || 0) + totalAtt;
-            branchDays[b] = (branchDays[b] || 0) + 1;
+            if (!branchSessions[b]) branchSessions[b] = new Set();
+            branchSessions[b].add(a.sessionId || a.date);
+            
+            if (s === 'present' || s === 'late') {
+              branchAtt[b] = (branchAtt[b] || 0) + 1;
+            }
           }
         }
       });
-      const avgByBranch = Object.entries(branchAtt).map(([branch, total]) => ({
-        branch,
-        avg: Math.round(total / branchDays[branch])
-      })).sort((a,b) => b.avg - a.avg).slice(0, 5);
+      const avgByBranch = Object.entries(branchAtt).map(([branch, total]) => {
+        const sessionCount = branchSessions[branch] ? branchSessions[branch].size : 1;
+        return {
+          branch,
+          avg: Math.round(total / (sessionCount || 1))
+        };
+      }).sort((a,b) => b.avg - a.avg).slice(0, 5);
       setAttendanceByBranch(avgByBranch);
     } else {
       setAttendanceByBranch([]);
@@ -452,7 +460,9 @@ export default function AdminDashboard() {
               <div className="adm-ai-insights-list">
                 {aiInsights.map((insight, idx) => (
                   <div key={idx} className="adm-ai-insight-item">
-                    <span className="adm-ai-insight-icon">{insight.icon || '📊'}</span>
+                    <span className="adm-ai-insight-icon">
+                      <InsightIcon name={insight.icon} />
+                    </span>
                     <div className="adm-ai-insight-content">
                       <p className="adm-ai-insight-title">{insight.title}</p>
                       <p className="adm-ai-insight-detail">{insight.detail}</p>

@@ -65,13 +65,28 @@
 }
 
 .admin-members-stat-card {
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 10 px;
+  background: #0D1F45;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
   padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.admin-members-stat-card:hover {
+  transform: translateY(-4px);
+  background: #152B5C;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+}
+
+.admin-members-stat-card.active {
+  background: #1e3a8a;
+  border-color: #3b82f6;
+  box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
 }
 
 .admin-members-stat-label {
@@ -79,7 +94,7 @@
   font-size: 13px;
   font-weight: 500;
   line-height: 20px;
-  color: #4a5565;
+  color: rgba(255, 255, 255, 0.7);
   margin: 0;
 }
 
@@ -88,36 +103,35 @@
   font-size: 28px;
   font-weight: 700;
   line-height: 28px;
+  color: white;
   margin: 0;
 }
 
-.admin-members-stat-value-blue {
-  color: #0D1F45;
-}
-
 .admin-members-stat-value-green {
-  color: #00a63e;
+  color: #4ADE80;
 }
 
 .admin-members-stat-value-orange {
-  color: #f54900;
+  color: #FB923C;
 }
 
 /* ═══ SECTION (Officers & Members) ═══ */
 .admin-members-section {
   background: white;
   border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  padding: 24px;
-  margin-bottom: 0px;
+  border-radius: 12px;
+  padding: 0;
+  margin-bottom: 32px;
+  overflow: hidden;
 }
 
 .admin-members-section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0px;
-  height: 41.6px;
+  padding: 16px 24px;
+  background: #F9FAFB;
+  border-bottom: 1px solid #E5E7EB;
 }
 
 .admin-members-section-title-wrapper {
@@ -128,7 +142,7 @@
 
 .admin-members-section-title {
   font-family: 'Inter', 'Arial', sans-serif;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   line-height: 28px;
   color: #101828;
@@ -141,7 +155,6 @@
   align-items: center;
   justify-content: flex-end;
   gap: 12px;
-  margin-bottom: 20px;
 }
 
 .admin-members-search-wrapper {
@@ -156,40 +169,50 @@
   left: 14px;
   color: #9CA3AF;
   pointer-events: none;
+  z-index: 10;
 }
 
 .admin-members-search-input {
   width: 100%;
-  height: 40px;
+  height: 38px;
   padding: 8px 16px 8px 42px;
-  border: 1px solid #E5E7EB;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 13px;
   color: #111827;
   background: #F9FAFB;
   transition: all 0.2s ease;
 }
 
+.admin-members-search-input::placeholder {
+  color: #9CA3AF;
+}
+
 .admin-members-search-input:focus {
   background: #FFFFFF;
-  border-color: #0D1F45;
-  box-shadow: 0 0 0 4px rgba(13, 31, 69, 0.05);
+  border-color: #155DFC;
+  box-shadow: 0 0 0 4px rgba(21, 93, 252, 0.1);
   outline: none;
 }
 
 .admin-members-filter-select {
-  height: 40px;
+  height: 38px;
   padding: 0 16px;
-  border: 1px solid #E5E7EB;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
   background: #F9FAFB;
   color: #374151;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
   outline: none;
   min-width: 140px;
+}
+
+.admin-members-filter-select option {
+  background: white;
+  color: #374151;
 }
 
 .admin-members-filter-select:hover {
@@ -207,8 +230,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 24px;
-  padding: 12px 0;
+  margin-top: 8px;
+  padding: 8px 0 16px;
 }
 
 .admin-members-pagination {
@@ -275,12 +298,8 @@
 
 /* ═══ TABLE (ADMIN SIDE) ═══ */
 .admin-table-container {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
+  width: 100%;
   overflow: visible;
-  /* Changed from hidden to fix menu clipping */
-  margin-top: 8px;
 }
 
 .admin-table {
@@ -299,7 +318,7 @@
 }
 
 .admin-table th {
-  padding: 12px 20px;
+  padding: 12px 24px;
   text-align: left;
   font-weight: 600;
   font-size: 11px;
@@ -311,7 +330,7 @@
 }
 
 .admin-table td {
-  padding: 16px 20px;
+  padding: 16px 24px;
   font-size: 13px;
   color: #111827;
   border-bottom: 1px solid #f3f4f6;
@@ -331,7 +350,7 @@
   border-bottom-right-radius: 10px;
 }
 
-.admin-table-row-hover:hover {
+.admin-table tr:hover td {
   background: #f9fafb;
 }
 

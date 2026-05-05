@@ -89,7 +89,7 @@ ATTENDANCE:
 
     const systemPrompt = `You are a church management analytics advisor for the Philippine United Apostolic Church (PUAC).
 Given the following operational data, provide exactly 5 insights as a JSON array of objects.
-Each object must have: "icon" (a single icon/emoji), "title" (short 5-8 word title), "detail" (1-2 sentence actionable insight with specific numbers).
+Each object must have: "icon" (a Lucide icon name like "TrendingUp", "TrendingDown", "Users", "DollarSign", "AlertCircle", "CheckCircle", "Calendar", "Activity"), "title" (short 5-8 word title), "detail" (1-2 sentence actionable insight with specific numbers).
 Focus on: trends, anomalies, actionable recommendations, and comparisons.
 Respond ONLY with the JSON array, no markdown fences, no other text.`;
 
@@ -288,7 +288,7 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
     }
 
     // === AI Executive Summary with Caching ===
-    const cacheKey = `report_${role}_${reportMonth !== null ? reportMonth : 'full'}_${reportYear}`;
+    const cacheKey = `report_v2_${role}_${reportMonth !== null ? reportMonth : 'full'}_${reportYear}`;
     
     const cached = await reportCache.findOne({ cacheKey });
     const isOld = cached && (new Date() - new Date(cached.updatedAt) > 24 * 60 * 60 * 1000); 
@@ -298,11 +298,13 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
     } else {
       try {
         const reportDataText = JSON.stringify(report, null, 2);
-        const summaryPrompt = `You are a financial report writer for a church organization (Philippine United Apostolic Church).
-        Given the following financial data for the period "${periodLabel}", write a professional executive summary in 3-4 paragraphs.
-        Include: key highlights, notable trends, areas of concern, and recommendations.
-        Use Philippine Peso (₱) for currency. Be specific with numbers from the data.
-        Write in a formal but accessible tone suitable for church leadership.`;
+        const summaryPrompt = `You are a senior financial analyst for the Philippine United Apostolic Church (PUAC).
+        Summarize the following financial data for "${periodLabel}" into a highly concise executive summary.
+        Format:
+        1. Start with a bold one-sentence overall performance statement.
+        2. Provide exactly 3 bullet points highlighting the most critical metrics or trends.
+        3. End with one short actionable recommendation.
+        Keep the entire response under 100 words. Use ₱ for currency.`;
 
         const aiSummary = await callGemini(summaryPrompt, reportDataText, { maxTokens: 800, temperature: 0.4 });
         

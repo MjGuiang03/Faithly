@@ -884,25 +884,25 @@ export default function AdminMembers() {
 
       {/* Stats Grid */}
       <div className="admin-members-stats-grid">
-        <div className={`admin-members-stat-card adm-clickable-card ${roleFilter === 'all' ? 'active' : ''}`} onClick={() => setRoleFilter('all')} style={roleFilter === 'all' ? { outline: '2px solid #155DFC', outlineOffset: '-2px' } : {}}>
+        <div className={`admin-members-stat-card adm-clickable-card ${roleFilter === 'all' ? 'active' : ''}`} onClick={() => setRoleFilter('all')}>
           <p className="admin-members-stat-label">Total Members</p>
-          <p className="admin-members-stat-value admin-members-stat-value-blue">{stats.total ?? 0}</p>
+          <p className="admin-members-stat-value">{stats.total ?? 0}</p>
         </div>
-        <div className={`admin-members-stat-card adm-clickable-card ${roleFilter === 'officer' ? 'active' : ''}`} onClick={() => setRoleFilter('officer')} style={roleFilter === 'officer' ? { outline: '2px solid #155DFC', outlineOffset: '-2px' } : {}}>
+        <div className={`admin-members-stat-card adm-clickable-card ${roleFilter === 'officer' ? 'active' : ''}`} onClick={() => setRoleFilter('officer')}>
           <p className="admin-members-stat-label">Officers</p>
-          <p className="admin-members-stat-value admin-members-stat-value-blue">{stats.officers ?? 0}</p>
+          <p className="admin-members-stat-value">{stats.officers ?? 0}</p>
         </div>
-        <div className={`admin-members-stat-card adm-clickable-card ${roleFilter === 'active' ? 'active' : ''}`} onClick={() => setRoleFilter('active')} style={roleFilter === 'active' ? { outline: '2px solid #00A63E', outlineOffset: '-2px' } : {}}>
+        <div className={`admin-members-stat-card adm-clickable-card ${roleFilter === 'active' ? 'active' : ''}`} onClick={() => setRoleFilter('active')}>
           <p className="admin-members-stat-label">Active Members</p>
           <p className="admin-members-stat-value admin-members-stat-value-green">{stats.active ?? 0}</p>
         </div>
-        <div className={`admin-members-stat-card adm-clickable-card ${roleFilter === 'inactive' ? 'active' : ''}`} onClick={() => setRoleFilter('inactive')} style={roleFilter === 'inactive' ? { outline: '2px solid #F59E0B', outlineOffset: '-2px' } : {}}>
+        <div className={`admin-members-stat-card adm-clickable-card ${roleFilter === 'inactive' ? 'active' : ''}`} onClick={() => setRoleFilter('inactive')}>
           <p className="admin-members-stat-label">Inactive Members</p>
           <p className="admin-members-stat-value admin-members-stat-value-orange">{stats.inactive ?? 0}</p>
         </div>
-        <div className={`admin-members-stat-card adm-clickable-card ${roleFilter === 'new' ? 'active' : ''}`} onClick={() => setRoleFilter('new')} style={roleFilter === 'new' ? { outline: '2px solid #155DFC', outlineOffset: '-2px' } : {}}>
+        <div className={`admin-members-stat-card adm-clickable-card ${roleFilter === 'new' ? 'active' : ''}`} onClick={() => setRoleFilter('new')}>
           <p className="admin-members-stat-label">New This Month</p>
-          <p className="admin-members-stat-value admin-members-stat-value-blue">{stats.newThisMonth ?? 0}</p>
+          <p className="admin-members-stat-value">{stats.newThisMonth ?? 0}</p>
         </div>
       </div>
 

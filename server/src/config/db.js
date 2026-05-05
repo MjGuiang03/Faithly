@@ -48,6 +48,7 @@ export const attendanceSessions  = db.collection('attendance_sessions');
 export const prayers             = db.collection('prayers');
 export const settings            = db.collection('settings');
 export const reportCache         = db.collection('reportCache');
+export const branches            = db.collection('branches');
 
 
 /* ================== DATABASE INDEXES ================== */

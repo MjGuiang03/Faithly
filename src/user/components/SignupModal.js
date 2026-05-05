@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import API from '../../utils/api';
 import { ArrowLeft, CalendarDays, ChevronDown, Eye, EyeOff, Phone } from 'lucide-react';
 import { toast } from 'sonner';
@@ -154,57 +154,49 @@ const validators = {
 };
 
 /* ─── Communities ───────────────────────────────────────────── */
-const CommunitySelect = ({ value, onChange }) => (
-  <select name="community" value={value} onChange={onChange} className="user-signup-form-select">
-    <option value="">Select your Community</option>
-    <optgroup label="Kalinga">
-      <option>Tabuk</option><option>Zapote</option><option>Bliss</option>
-      <option>Libanon</option><option>Batong Buhay</option><option>Balatoc</option><option>Lat-nog</option>
-    </optgroup>
-    <optgroup label="Isabela"><option>Santiago City</option></optgroup>
-    <optgroup label="Abra">
-      <option>Lamao</option><option>Lingey</option><option>Cabaruyan</option><option>Ducligan</option>
-      <option>Gangal</option><option>Bila-Bila</option><option>Naguillian</option><option>Ud-udiao</option>
-      <option>Villa Conchita</option><option>Ay-yeng Manabo</option><option>Dao-angan</option>
-      <option>Kilong-olao</option><option>Bao-yan</option><option>Amti</option><option>Danac</option>
-      <option>Bengued</option><option>Sappaac</option><option>Saccaang</option>
-    </optgroup>
-    <optgroup label="Benguet"><option>Baguio</option></optgroup>
-    <optgroup label="Rizal"><option>Montalban</option></optgroup>
-    <optgroup label="NCR">
-      <option>Valenzuela City</option><option>Tandang Sora, Quezon City</option>
-      <option>COA, Quezon City</option><option>Payatas, Quezon City</option><option>Malaria, Caloocan</option>
-    </optgroup>
-    <optgroup label="Bulacan">
-      <option>Meycauayan City</option><option>Camalig</option><option>San Jose Del Monte</option>
-    </optgroup>
-    <optgroup label="Tarlac">
-      <option>Pacpaco, San Manuel</option><option>Victoria</option>
-    </optgroup>
-    <optgroup label="Nueva Ecija"><option>Bambanaba, Cuyapo</option></optgroup>
-    <optgroup label="Pangasinan">
-      <option>Dagupan</option><option>Mangatarem</option><option>Laoak Langka</option>
-      <option>Orbiztondo</option><option>Malasiqui, Bolaoit</option><option>Taloyan</option>
-      <option>Binmaley</option><option>San Carlos</option><option>Manaoag</option>
-      <option>Pozorrubio</option><option>Alcala</option>
-    </optgroup>
-    <optgroup label="Agusan Del Norte">
-      <option>Butuan City</option><option>RTR</option><option>Jabonga, Bangonay</option>
-      <option>Kasiklan</option><option>San Mateo</option><option>Fatima Kim.13</option>
-      <option>Bayugan</option><option>Ibuan</option><option>Balubo</option>
-    </optgroup>
-    <optgroup label="Cebu">
-      <option>Mandaue</option><option>Liloan</option><option>Calero</option><option>Compostela</option>
-    </optgroup>
-    <optgroup label="Surigao Del Norte">
-      <option>Alegria</option><option>Bonifacio</option><option>Matin-ao</option><option>Ipil</option>
-    </optgroup>
-    <optgroup label="Surigao Del Sur"><option>Kinabigtasan, Tago</option></optgroup>
-  </select>
-);
+const CommunitySelect = ({ value, onChange, branches }) => {
+  const grouped = branches.reduce((acc, b) => {
+    let province = b.province;
+    if (!province && b.address) {
+      const parts = b.address.split(', ');
+      if (parts.length > 0) province = parts[0];
+    }
+    province = province || 'Other Provinces';
+    if (!acc[province]) acc[province] = [];
+    acc[province].push(b.name);
+    return acc;
+  }, {});
+
+  const provinces = Object.keys(grouped).sort();
+
+  return (
+    <select name="community" value={value} onChange={onChange} className="user-signup-form-select">
+      <option value="">Select your Community</option>
+      {provinces.map(prov => (
+        <optgroup key={prov} label={prov}>
+          {grouped[prov].map(branchName => (
+            <option key={branchName} value={branchName}>{branchName}</option>
+          ))}
+        </optgroup>
+      ))}
+    </select>
+  );
+};
 
 /* ─── Component ─────────────────────────────────────────────── */
 export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
+  const [dynamicBranches, setDynamicBranches] = useState([]);
+  useEffect(() => {
+    if (!isOpen) return;
+    const loadBranches = async () => {
+      try {
+        const res = await fetch(`${API}/api/public/branches`);
+        const data = await res.json();
+        if (data.success) setDynamicBranches(data.branches || []);
+      } catch (e) { console.error('Failed to load branches', e); }
+    };
+    loadBranches();
+  }, [isOpen]);
   const [formData, setFormData] = useState({
     firstName: '', lastName: '', email: '', phone: '',
     gender: '', birthday: '', community: '',
@@ -509,7 +501,7 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
             <div className="user-signup-form-group">
               <label className="user-signup-form-label">Community:</label>
               <div className="user-signup-select-wrapper">
-                <CommunitySelect value={formData.community} onChange={handleChange} />
+                <CommunitySelect value={formData.community} onChange={handleChange} branches={dynamicBranches} />
                 <ChevronDown className="user-signup-select-dropdown" size={20} />
               </div>
               {touched.community && errors.community && (

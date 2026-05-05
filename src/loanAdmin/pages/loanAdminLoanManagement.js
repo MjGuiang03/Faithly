@@ -383,19 +383,25 @@ export default function LoanAdminLoanManagement() {
                 {/* Status Cards */}
                 <div className="loan-admin-mgmt-stats" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
                     <div className="loan-admin-mgmt-stat-card">
-                        <p className="loan-admin-mgmt-stat-label">Pending Review</p>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', minHeight: '24px' }}>
+                            <p className="loan-admin-mgmt-stat-label" style={{ margin: 0 }}>Pending Review</p>
+                        </div>
                         <p className="loan-admin-mgmt-stat-value pending">{counts.pending}</p>
                     </div>
                     <div className="loan-admin-mgmt-stat-card">
-                        <p className="loan-admin-mgmt-stat-label">Approved</p>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', minHeight: '24px' }}>
+                            <p className="loan-admin-mgmt-stat-label" style={{ margin: 0 }}>Approved</p>
+                        </div>
                         <p className="loan-admin-mgmt-stat-value approved">{counts.active}</p>
                     </div>
                     <div className="loan-admin-mgmt-stat-card">
-                        <p className="loan-admin-mgmt-stat-label">Rejected</p>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', minHeight: '24px' }}>
+                            <p className="loan-admin-mgmt-stat-label" style={{ margin: 0 }}>Rejected</p>
+                        </div>
                         <p className="loan-admin-mgmt-stat-value rejected">{counts.rejected}</p>
                     </div>
                     <div className="loan-admin-mgmt-stat-card">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', minHeight: '24px' }}>
                             <p className="loan-admin-mgmt-stat-label" style={{ margin: 0 }}>Total Income from Interest</p>
                             <select value={interestFilter} onChange={e => setInterestFilter(e.target.value)} style={{ fontSize: '11px', padding: '2px 4px', borderRadius: '6px', border: '1px solid #D1D5DB' }}>
                                 <option value="all">All</option>
@@ -404,7 +410,7 @@ export default function LoanAdminLoanManagement() {
                                 <option value="1x">1x Savings</option>
                             </select>
                         </div>
-                        <p className="loan-admin-mgmt-stat-value" style={{ color: '#155DFC' }}>{fmt(totalInterestFiltered)}</p>
+                        <p className="loan-admin-mgmt-stat-value" style={{ color: '#ffffff' }}>{fmt(totalInterestFiltered)}</p>
                     </div>
                 </div>
 

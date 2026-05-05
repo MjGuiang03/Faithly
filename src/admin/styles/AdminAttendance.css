@@ -92,19 +92,22 @@
 }
 
 .admin-att-stat-block {
-  background: white;
+  background: #0D1F45;
   border-radius: 10px;
   padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   gap: 12px;
-  transition: transform 0.2s, box-shadow 0.2s;
-  border: 1px solid transparent;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
 }
 
 .admin-att-stat-block:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px);
+  background: #152B5C;
+  box-shadow: 0 12px 20px -8px rgba(0, 0, 0, 0.3);
 }
 
 .admin-att-stat-top {
@@ -115,14 +118,14 @@
 
 .admin-att-stat-label {
   font-size: 12px;
-  font-weight: 500;
-  color: #6B7280;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .admin-att-stat-icon {
-  background: #0D1F45 !important;
+  background: rgba(255, 255, 255, 0.1) !important;
   border-radius: 50px !important;
   display: flex;
   align-items: center;
@@ -131,40 +134,24 @@
   height: 32px;
 }
 
-.icon-blue {
-  background: #EFF6FF;
-  color: #2563EB;
-}
-
-.icon-green {
-  background: #ECFDF5;
-  color: #059669;
-}
-
-.icon-indigo {
-  background: #EEF2FF;
-  color: #4F46E5;
-}
-
-.icon-orange {
-  background: #FFF7ED;
-  color: #EA580C;
+.icon-blue, .icon-green, .icon-indigo, .icon-orange {
+  background: rgba(255, 255, 255, 0.1) !important;
 }
 
 .admin-att-stat-value {
   font-size: 28px;
   font-weight: 700;
-  color: #111827;
+  color: white;
   line-height: 1;
 }
 
 .admin-att-stat-sub {
   font-size: 12px;
-  color: #9CA3AF;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .text-orange {
-  color: #EA580C;
+  color: #FB923C;
 }
 
 .pulse-indicator {
@@ -260,16 +247,17 @@
 
 .admin-att-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   table-layout: fixed;
 }
 
 .admin-att-table th {
   background: #F9FAFB;
-  padding: 10px 24px;
+  padding: 12px 24px;
   text-align: left;
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 11px;
+  font-weight: 600;
   color: #6B7280;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -277,12 +265,23 @@
   white-space: nowrap;
 }
 
+.admin-att-table th:first-child { border-top-left-radius: 10px; }
+.admin-att-table th:last-child { border-top-right-radius: 10px; }
+
 .admin-att-table td {
-  padding: 10px 24px;
-  border-bottom: 1px solid #E5E7EB;
+  padding: 14px 24px;
+  border-bottom: 1px solid #F3F4F6;
   font-size: 13px;
   vertical-align: middle;
+  color: #374151;
 }
+
+.admin-att-table tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-att-table tr:last-child td:first-child { border-bottom-left-radius: 10px; }
+.admin-att-table tr:last-child td:last-child { border-bottom-right-radius: 10px; }
 
 .admin-att-table tr:hover td {
   background: #F9FAFB;
@@ -555,3 +554,4 @@
     transform: rotate(360deg);
   }
 }
+

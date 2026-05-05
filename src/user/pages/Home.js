@@ -877,10 +877,11 @@ export default function Home() {
                       <div className="uh-event__info">
                         <div className="uh-event__top">
                           <span className="uh-event__title">{evt.title}</span>
-                          <span className="uh-event__tag" style={{ color: catStyle.color, background: catStyle.bg }}>{evt.category}</span>
+                          <div className="uh-event__meta-right">
+                            <span className="uh-event__tag" style={{ color: catStyle.color, background: catStyle.bg }}>{evt.category}</span>
+                            <span className="uh-event__branch"><MapPin size={11} />{evt.branch}</span>
+                          </div>
                         </div>
-                        <p className="uh-event__body">{evt.body}</p>
-                        <span className="uh-event__branch"><MapPin size={11} />{evt.branch}</span>
                       </div>
                     </div>
                   );

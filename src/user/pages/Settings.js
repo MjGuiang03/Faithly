@@ -10,23 +10,7 @@ import { CalendarDays, Edit, Mail, User, XCircle, ChevronDown, ChevronUp, Check,
 import { isOfficerPosition } from '../../utils/officerPositions';
 import { subscribeToPushNotifications, unsubscribeFromPushNotifications } from '../../utils/desktopNotify';
 
-/* ─── Community options ──────────────────────────────────────────────── */
-const COMMUNITIES = {
-  Kalinga: ['Tabuk', 'Zapote', 'Bliss', 'Libanon', 'Batong Buhay', 'Balatoc', 'Lat-nog'],
-  Isabela: ['Santiago City'],
-  Abra: ['Lamao', 'Lingey', 'Cabaruyan', 'Ducligan', 'Gangal', 'Bila-Bila', 'Naguillian', 'Ud-udiao', 'Villa Conchita', 'Ay-yeng Manabo', 'Dao-angan', 'Kilong-olao', 'Bao-yan', 'Amti', 'Danac', 'Bengued', 'Sappaac', 'Saccaang'],
-  Benguet: ['Baguio'],
-  Rizal: ['Montalban'],
-  NCR: ['Valenzuela City', 'Tandang Sora, Quezon City', 'COA, Quezon City', 'Payatas, Quezon City', 'Malaria, Caloocan'],
-  Bulacan: ['Meycauayan City', 'Camalig', 'San Jose Del Monte'],
-  Tarlac: ['Pacpaco, San Manuel', 'Victoria'],
-  'Nueva Ecija': ['Bambanaba, Cuyapo'],
-  Pangasinan: ['Dagupan', 'Mangatarem', 'Laoak Langka', 'Orbiztondo', 'Malasiqui, Bolaoit', 'Taloyan', 'Binmaley', 'San Carlos', 'Manaoag', 'Pozorrubio', 'Alcala'],
-  'Agusan Del Norte': ['Butuan City', 'RTR', 'Jabonga, Bangonay', 'Kasiklan', 'San Mateo', 'Fatima Kim.13', 'Bayugan', 'Ibuan', 'Balubo'],
-  Cebu: ['Mandaue', 'Liloan', 'Calero', 'Compostela'],
-  'Surigao Del Norte': ['Alegria', 'Bonifacio', 'Matin-ao', 'Ipil'],
-  'Surigao Del Sur': ['Kinabigtasan, Tago'],
-};
+/* ─── Community options removed in favor of dynamic fetching ─── */
 
 /* ─── Password strength helper ──────────────────────────────────────── */
 function getPasswordStrength(password) {
@@ -86,6 +70,32 @@ const ALL_NOTIF_KEYS = NOTIF_GROUPS.flatMap(g => g.items.map(i => i.key));
 export default function Settings() {
   const { user, profile, updateProfile, requestEmailChange, verifyEmailChange } = useAuth();
   const { theme, toggleTheme } = useTheme();
+
+  const [dynamicBranches, setDynamicBranches] = useState([]);
+  useEffect(() => {
+    const loadBranches = async () => {
+      try {
+        const res = await fetch(`${API}/api/public/branches`);
+        const data = await res.json();
+        if (data.success) setDynamicBranches(data.branches || []);
+      } catch (e) { console.error('Failed to load branches', e); }
+    };
+    loadBranches();
+  }, []);
+
+  const groupedBranches = dynamicBranches.reduce((acc, b) => {
+    let province = b.province;
+    if (!province && b.address) {
+      const parts = b.address.split(', ');
+      if (parts.length > 0) province = parts[0];
+    }
+    province = province || 'Other Provinces';
+    if (!acc[province]) acc[province] = [];
+    acc[province].push(b.name);
+    return acc;
+  }, {});
+
+  const provinceOrder = Object.keys(groupedBranches).sort();
 
   /* ── Toast ───────────────────────────────────────────────────────────── */
   const [toast, setToast] = useState(null);
@@ -514,9 +524,9 @@ export default function Settings() {
                     <label className="user-pi-form-label">Community</label>
                     <select className="user-pi-form-input user-pi-form-select" value={editForm.community} onChange={e => handleEditChange('community', e.target.value)} disabled={!isEditing}>
                       <option value="">— Select Community —</option>
-                      {Object.entries(COMMUNITIES).map(([region, places]) => (
-                        <optgroup key={region} label={region}>
-                          {places.map(p => <option key={p}>{p}</option>)}
+                      {provinceOrder.map(prov => (
+                        <optgroup key={prov} label={prov}>
+                          {groupedBranches[prov].map(p => <option key={p}>{p}</option>)}
                         </optgroup>
                       ))}
                     </select>

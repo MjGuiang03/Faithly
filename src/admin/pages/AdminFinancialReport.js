@@ -240,9 +240,18 @@ export default function AdminFinancialReport() {
               <span className="fin-report-period-label">{report.period}</span>
             </div>
             <div className="fin-report-executive-body">
-              {report.executiveSummary?.split('\n').filter(Boolean).map((para, i) => (
-                <p key={i} className="fin-report-executive-para">{para}</p>
-              ))}
+              {report.executiveSummary?.split('\n').filter(Boolean).map((line, i) => {
+                const isBullet = line.trim().startsWith('-') || line.trim().startsWith('•') || /^\d+\./.test(line.trim());
+                return (
+                  <p 
+                    key={i} 
+                    className={`fin-report-executive-para ${isBullet ? 'bullet' : ''}`}
+                    style={isBullet ? { paddingLeft: '1.5rem', textIndent: '-1.2rem' } : {}}
+                  >
+                    {line}
+                  </p>
+                );
+              })}
             </div>
           </div>
 

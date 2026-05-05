@@ -407,7 +407,7 @@
 
 .user-donation-form-select {
   height: 40px;
-  padding: 0 16px;
+  padding: 0 40px 0 16px;
   border-radius: 10px;
   border: 0.8px solid #d1d5dc;
   font-family: 'Inter', sans-serif;
@@ -419,6 +419,9 @@
   cursor: pointer;
   width: 100%;
   box-sizing: border-box;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .user-form-select:focus {

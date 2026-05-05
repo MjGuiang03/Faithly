@@ -253,6 +253,7 @@ export default function AdminDonationsNew() {
                 <th>Purpose</th>
                 <th>Date</th>
                 <th>Status</th>
+                <th>Proof</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -289,6 +290,18 @@ export default function AdminDonationsNew() {
                     </td>
                     <td>
                       <StatusBadge status={donation.status || 'pending'} />
+                    </td>
+                    <td>
+                      {(donation.proofData || donation.proofOfPayment) ? (
+                        <img 
+                          src={donation.proofData || donation.proofOfPayment} 
+                          alt="Proof" 
+                          style={{ width: '32px', height: '32px', objectFit: 'cover', borderRadius: '4px', cursor: 'pointer', border: '1px solid #E5E7EB' }} 
+                          onClick={(e) => { e.stopPropagation(); const win = window.open(); win.document.write(`<img src="${donation.proofData || donation.proofOfPayment}" style="max-width:100%;" />`); }}
+                        />
+                      ) : (
+                        <span style={{ fontSize: '12px', color: '#9CA3AF' }}>No Proof</span>
+                      )}
                     </td>
                     <td>
                       <div className="admin-don-action-group">
@@ -420,10 +433,10 @@ export default function AdminDonationsNew() {
                 </div>
               )}
 
-              {detailModal.proofData && (
+              {(detailModal.proofData || detailModal.proofOfPayment) && (
                 <div style={{ marginTop: '16px' }}>
                   <span className="admin-don-modal-detail-label">Proof of Payment</span>
-                  <img src={detailModal.proofData} alt="Proof" style={{ width: '100%', maxHeight: '200px', objectFit: 'contain', marginTop: '8px', borderRadius: '6px', border: '1px solid #E5E7EB' }} />
+                  <img src={detailModal.proofData || detailModal.proofOfPayment} alt="Proof" style={{ width: '100%', maxHeight: '200px', objectFit: 'contain', marginTop: '8px', borderRadius: '6px', border: '1px solid #E5E7EB' }} />
                 </div>
               )}
 

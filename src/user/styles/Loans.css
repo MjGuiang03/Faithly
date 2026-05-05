@@ -864,4 +864,19 @@ button.ul-action-btn.ul-action-btn--cancel:hover {
     width: 100%;
     justify-content: center;
   }
+
+  .ul-loan-actions {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+
+  .ul-loan-actions .ul-action-btn {
+    flex: 1;
+    margin: 0 !important;
+    padding: 8px 4px;
+    font-size: 11px;
+    text-align: center;
+    white-space: nowrap;
+  }
 }

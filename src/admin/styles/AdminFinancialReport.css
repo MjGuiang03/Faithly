@@ -116,13 +116,13 @@
 }
 
 .fin-report-btn.primary {
-  background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+  background: #0D1F45;
   color: white;
-  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+  box-shadow: 0 2px 8px rgba(13, 31, 69, 0.3);
 }
 
 .fin-report-btn.primary:hover {
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+  box-shadow: 0 4px 12px rgba(13, 31, 69, 0.4);
   transform: translateY(-1px);
 }
 
@@ -246,9 +246,9 @@
 }
 
 .fin-report-section-badge.ai {
-  background: linear-gradient(135deg, #f5f3ff, #ede9fe);
-  color: #7c3aed;
-  border: 1px solid #e9d5ff;
+  background: #0D1F45;
+  color: white;
+  border: 1px solid #0D1F45;
 }
 
 .fin-report-period-label {

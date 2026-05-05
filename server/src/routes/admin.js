@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { users, admins, otps, announcements, savingsTransactions, savingsGoals, loans, loanPayments, attendance } from '../config/db.js';
+import { users, admins, otps, announcements, savingsTransactions, savingsGoals, loans, loanPayments, attendance, branches, attendanceSessions, donations } from '../config/db.js';
 import { validate } from '../middleware/validate.js';
 import { loginLimiter } from '../middleware/rateLimiter.js';
 import { authenticateAdmin } from '../middleware/auth.js';
@@ -255,35 +255,217 @@ router.get('/branches', authenticateAdmin, async (req, res) => {
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 10));
     const skip = (page - 1) * limit;
 
-    // Aggregate member counts per branch
-    const allUsers = await users.find({}).toArray();
+    const now = new Date();
+    const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfPrevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
-    // Build branch map
-    const branchMap = {};
-    allUsers.forEach(u => {
-      const b = (u.branch || '').trim();
-      if (!b) return;
-      if (!branchMap[b]) {
-        branchMap[b] = { name: b, members: 0, address: u.branchAddress || '', pastor: u.branchPastor || '', status: 'Active', services: 0 };
-      }
-      branchMap[b].members++;
-    });
+    const [dbBranchesFull, totalServices, totalUsers, currentMonthUsers, prevMonthTotalUsers] = await Promise.all([
+      branches.find({}).sort({ name: 1 }).toArray(),
+      attendanceSessions.countDocuments({}),
+      users.countDocuments({ isDeleted: { $ne: true } }),
+      users.countDocuments({ 
+        createdAt: { $gte: startOfCurrentMonth },
+        isDeleted: { $ne: true }
+      }),
+      users.countDocuments({
+        createdAt: { $lt: startOfCurrentMonth },
+        isDeleted: { $ne: true }
+      })
+    ]);
 
-    let branchList = Object.values(branchMap);
+    // Calculate Month-over-Month growth rate
+    const growthRate = prevMonthTotalUsers > 0 ? ((currentMonthUsers / prevMonthTotalUsers) * 100).toFixed(1) : (currentMonthUsers > 0 ? 100 : 0);
 
-    // Search filter
-    if (search && search.trim()) {
-      const q = search.trim().toLowerCase();
-      branchList = branchList.filter(b => b.name.toLowerCase().includes(q));
+    // 2. Check if branches collection is empty or has very few entries, if so, auto-seed from hardcoded list
+    const count = await branches.countDocuments();
+    if (count < 10) {
+      if (count > 0) await branches.deleteMany({}); // Clear existing partial seed
+      const initialBranches = [
+        { name: 'Tabuk', region: 'CAR', province: 'Kalinga' },
+        { name: 'Zapote', region: 'CAR', province: 'Kalinga' },
+        { name: 'Bliss', region: 'CAR', province: 'Kalinga' },
+        { name: 'Libanon', region: 'CAR', province: 'Kalinga' },
+        { name: 'Batong Buhay', region: 'CAR', province: 'Kalinga' },
+        { name: 'Balatoc', region: 'CAR', province: 'Kalinga' },
+        { name: 'Lat-nog', region: 'CAR', province: 'Kalinga' },
+        { name: 'Lamao', region: 'CAR', province: 'Abra' },
+        { name: 'Lingey', region: 'CAR', province: 'Abra' },
+        { name: 'Cabaruyan', region: 'CAR', province: 'Abra' },
+        { name: 'Ducligan', region: 'CAR', province: 'Abra' },
+        { name: 'Gangal', region: 'CAR', province: 'Abra' },
+        { name: 'Bila-Bila', region: 'CAR', province: 'Abra' },
+        { name: 'Naguillian', region: 'CAR', province: 'Abra' },
+        { name: 'Ud-udiao', region: 'CAR', province: 'Abra' },
+        { name: 'Villa Conchita', region: 'CAR', province: 'Abra' },
+        { name: 'Ay-yeng Manabo', region: 'CAR', province: 'Abra' },
+        { name: 'Dao-angan', region: 'CAR', province: 'Abra' },
+        { name: 'Kilong-olao', region: 'CAR', province: 'Abra' },
+        { name: 'Bao-yan', region: 'CAR', province: 'Abra' },
+        { name: 'Amti', region: 'CAR', province: 'Abra' },
+        { name: 'Danac', region: 'CAR', province: 'Abra' },
+        { name: 'Bengued', region: 'CAR', province: 'Abra' },
+        { name: 'Sappaac', region: 'CAR', province: 'Abra' },
+        { name: 'Saccaang', region: 'CAR', province: 'Abra' },
+        { name: 'Baguio', region: 'CAR', province: 'Benguet' },
+        { name: 'Santiago City', region: 'Region II', province: 'Isabela' },
+        { name: 'Dagupan', region: 'Region I', province: 'Pangasinan' },
+        { name: 'Mangatarem', region: 'Region I', province: 'Pangasinan' },
+        { name: 'Laoak Langka', region: 'Region I', province: 'Pangasinan' },
+        { name: 'Orbiztondo', region: 'Region I', province: 'Pangasinan' },
+        { name: 'Malasique, Bolaoit', region: 'Region I', province: 'Pangasinan' },
+        { name: 'Taloyan', region: 'Region I', province: 'Pangasinan' },
+        { name: 'Binmaley', region: 'Region I', province: 'Pangasinan' },
+        { name: 'San Carlos', region: 'Region I', province: 'Pangasinan' },
+        { name: 'Manaoag', region: 'Region I', province: 'Pangasinan' },
+        { name: 'Pozorrobio', region: 'Region I', province: 'Pangasinan' },
+        { name: 'Alcala', region: 'Region I', province: 'Pangasinan' },
+        { name: 'Meycauayan City', region: 'Region III', province: 'Bulacan' },
+        { name: 'Camalig', region: 'Region III', province: 'Bulacan' },
+        { name: 'San Jose Del Monte', region: 'Region III', province: 'Bulacan' },
+        { name: 'Pacpaco, San Manuel', region: 'Region III', province: 'Tarlac' },
+        { name: 'Victoria', region: 'Region III', province: 'Tarlac' },
+        { name: 'Bambanaba, Cuyapo', region: 'Region III', province: 'Nueva Ecija' },
+        { name: 'Valenzuela City', region: 'NCR', province: 'NCR' },
+        { name: 'Tandang Sora, Quezon City', region: 'NCR', province: 'NCR' },
+        { name: 'COA, Quezon City', region: 'NCR', province: 'NCR' },
+        { name: 'Payatas, Quezon City', region: 'NCR', province: 'NCR' },
+        { name: 'Malaria, Caloocan', region: 'NCR', province: 'NCR' },
+        { name: 'Montalban', region: 'Region IV-A', province: 'Rizal' },
+        { name: 'Mandaue', region: 'Region VII', province: 'Cebu' },
+        { name: 'Li-loan', region: 'Region VII', province: 'Cebu' },
+        { name: 'Calero', region: 'Region VII', province: 'Cebu' },
+        { name: 'Compostela', region: 'Region VII', province: 'Cebu' },
+        { name: 'Butuan City', region: 'Region XIII', province: 'Agusan Del Norte' },
+        { name: 'RTR', region: 'Region XIII', province: 'Agusan Del Norte' },
+        { name: 'Jabonga, Bangonay', region: 'Region XIII', province: 'Agusan Del Norte' },
+        { name: 'Kasiklan', region: 'Region XIII', province: 'Agusan Del Norte' },
+        { name: 'San Mateo', region: 'Region XIII', province: 'Agusan Del Norte' },
+        { name: 'Fatima Kim.13', region: 'Region XIII', province: 'Agusan Del Norte' },
+        { name: 'Bayugan', region: 'Region XIII', province: 'Agusan Del Norte' },
+        { name: 'Ibuan', region: 'Region XIII', province: 'Agusan Del Norte' },
+        { name: 'Balubo', region: 'Region XIII', province: 'Agusan Del Norte' },
+        { name: 'Alegria', region: 'Region XIII', province: 'Surigao Del Norte' },
+        { name: 'Bonifacio', region: 'Region XIII', province: 'Surigao Del Norte' },
+        { name: 'Matin-ao', region: 'Region XIII', province: 'Surigao Del Norte' },
+        { name: 'Ipil', region: 'Region XIII', province: 'Surigao Del Norte' },
+        { name: 'Kinabigtasan Tago', region: 'Region XIII', province: 'Surigao Del Sur' },
+      ];
+      
+      const seedData = initialBranches.map(b => ({
+        name: b.name,
+        address: `${b.province}, ${b.region}`,
+        pastor: 'Lead Pastor',
+        status: 'Active',
+        createdAt: new Date()
+      }));
+      await branches.insertMany(seedData);
     }
 
-    const totalCount = branchList.length;
-    const paged = branchList.slice(skip, skip + limit);
+    // 2. Get all formal branches from collection
+    const query = {};
+    if (search && search.trim()) {
+      query.name = { $regex: search.trim(), $options: 'i' };
+    }
+    
+    const dbBranches = await branches.find(query).sort({ name: 1 }).toArray();
+    
+    // 2. Aggregate member counts per branch from users
+    const userStats = await users.aggregate([
+      { $group: { _id: "$branch", count: { $sum: 1 } } }
+    ]).toArray();
+    const statsMap = {};
+    userStats.forEach(s => { if (s._id) statsMap[s._id] = s.count; });
 
-    res.status(200).json({ success: true, branches: paged, totalCount });
+    // 3. Merge
+    const merged = dbBranches.map(b => {
+      const members = statsMap[b.name] || 0;
+      return {
+        ...b,
+        members,
+        status: members > 0 ? 'Active' : 'Idle'
+      };
+    });
+
+    const totalCount = merged.length;
+    const paged = merged.slice(skip, skip + limit);
+
+    res.status(200).json({ 
+      success: true, 
+      branches: paged, 
+      totalCount,
+      totalServices,
+      growthRate
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Failed to fetch branches' });
+  }
+});
+
+/* ================== ADD BRANCH ================== */
+router.post('/branches', authenticateAdmin, async (req, res) => {
+  try {
+    const { name, address, pastor } = req.body;
+    if (!name) return res.status(400).json({ success: false, message: 'Branch name is required' });
+
+    const exists = await branches.findOne({ name: { $regex: `^${name}$`, $options: 'i' } });
+    if (exists) return res.status(400).json({ success: false, message: 'Branch already exists' });
+
+    const newBranch = {
+      name,
+      address: address || '',
+      pastor: pastor || '',
+      status: 'Active',
+      createdAt: new Date()
+    };
+
+    await branches.insertOne(newBranch);
+    res.status(201).json({ success: true, message: 'Branch added successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to add branch' });
+  }
+});
+
+/* ================== DELETE BRANCH ================== */
+router.delete('/branches/:id', authenticateAdmin, async (req, res) => {
+  try {
+    const { ObjectId } = await import('mongodb');
+    const { id } = req.params;
+    
+    const result = await branches.deleteOne({ _id: new ObjectId(id) });
+    if (result.deletedCount === 0) return res.status(404).json({ success: false, message: 'Branch not found' });
+
+    res.status(200).json({ success: true, message: 'Branch removed successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to delete branch' });
+  }
+});
+
+/* ================== EDIT BRANCH ================== */
+router.put('/branches/:id', authenticateAdmin, async (req, res) => {
+  try {
+    const { ObjectId } = await import('mongodb');
+    const { id } = req.params;
+    const { name, address, pastor } = req.body;
+
+    if (!name) return res.status(400).json({ success: false, message: 'Branch name is required' });
+
+    const updateData = {
+      name,
+      address: address || '',
+      pastor: pastor || '',
+      updatedAt: new Date()
+    };
+
+    const result = await branches.updateOne({ _id: new ObjectId(id) }, { $set: updateData });
+    if (result.matchedCount === 0) return res.status(404).json({ success: false, message: 'Branch not found' });
+
+    res.status(200).json({ success: true, message: 'Branch updated successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to update branch' });
   }
 });
 
@@ -603,6 +785,12 @@ router.get('/savings/deposits', authenticateAdmin, async (req, res) => {
     const query = { type: { $in: ['deposit', 'withdrawal'] } };
 
     if (status) query.status = status;
+
+    // Filter: Only show manual/proof-based payments for pending approval.
+    // Exclude PayMongo automated payments from the pending list.
+    if (status === 'pending') {
+      query.paymongoLinkId = { $exists: false };
+    }
 
     if (search) {
       query.$or = [
@@ -1051,6 +1239,12 @@ router.get('/loans/payments', authenticateAdmin, async (req, res) => {
     const { status, limit } = req.query;
     let query = {};
     if (status) query.status = status;
+    
+    // Filter: Only show manual/proof-based payments for pending approval.
+    // Exclude PayMongo automated payments from the pending list.
+    if (status === 'pending') {
+      query.paymongoLinkId = { $exists: false };
+    }
     
     const payments = await loanPayments.find(query)
       .sort({ createdAt: -1 })

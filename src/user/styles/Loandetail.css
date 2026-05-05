@@ -262,6 +262,25 @@
     font-family: 'Inter', sans-serif;
 }
 
+/* ── Responsive grids ── */
+.ld-one-col-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+.ld-two-col-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+@media (max-width: 900px) {
+    .ld-two-col-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* ── Loan details grid ───────────────────────────────────── */
 .ld-details-grid {
     display: grid;
@@ -876,6 +895,8 @@
 
 .ld-sched-table-wrap {
     padding: 0 20px 20px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .ld-sched-table-head {
@@ -1200,6 +1221,7 @@
     .ld-sched-table-head,
     .ld-sched-row {
         grid-template-columns: 24px 1fr 68px 68px 76px 70px;
+        min-width: 460px;
     }
 
     .ld-overlay {

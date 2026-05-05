@@ -41,6 +41,7 @@ export default function LoanAdminPaymentStatus() {
   const [allLoans, setAllLoans] = useState([]);
   const [allSavings, setAllSavings] = useState([]);
   const [savingsFilter, setSavingsFilter] = useState('all');
+  const [savingsTypeFilter, setSavingsTypeFilter] = useState('all'); // 'all', 'deposit', 'withdrawal'
 
   // Manual Approval State
   const [approvalMethod, setApprovalMethod] = useState('gateway');
@@ -294,7 +295,7 @@ export default function LoanAdminPaymentStatus() {
 
 
 
-  const totalSavingsFiltered = allSavings.filter(s => {
+  const confirmedSavings = allSavings.filter(s => {
     if (s.status !== 'confirmed') return false;
     const sDate = new Date(s.confirmedAt || s.date);
     const now = new Date();
@@ -305,10 +306,20 @@ export default function LoanAdminPaymentStatus() {
       return sDate.getFullYear() === now.getFullYear();
     }
     return true; // 'all'
-  }).reduce((sum, s) => {
+  });
+
+  const totalSavingsFiltered = confirmedSavings.reduce((sum, s) => {
     const amt = Number(s.amount) || 0;
     return s.type === 'withdrawal' ? sum - amt : sum + amt;
   }, 0);
+
+  const totalDepositsFiltered = confirmedSavings
+    .filter(s => s.type === 'deposit')
+    .reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
+
+  const totalWithdrawalsFiltered = confirmedSavings
+    .filter(s => s.type === 'withdrawal')
+    .reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
 
 
 
@@ -332,36 +343,60 @@ export default function LoanAdminPaymentStatus() {
         {!isSavingsRoute && (
           <div className="loan-admin-mgmt-stats" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
             <div className="loan-admin-mgmt-stat-card">
-              <p className="loan-admin-mgmt-stat-label">On Track</p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', minHeight: '24px' }}>
+                <p className="loan-admin-mgmt-stat-label" style={{ margin: 0 }}>On Track</p>
+              </div>
               <p className="loan-admin-mgmt-stat-value approved">{counts.onTrack}</p>
             </div>
             <div className="loan-admin-mgmt-stat-card">
-              <p className="loan-admin-mgmt-stat-label">Overdue (1-30d)</p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', minHeight: '24px' }}>
+                <p className="loan-admin-mgmt-stat-label" style={{ margin: 0 }}>Overdue (1-30d)</p>
+              </div>
               <p className="loan-admin-mgmt-stat-value pending">{counts.overdue}</p>
             </div>
             <div className="loan-admin-mgmt-stat-card">
-              <p className="loan-admin-mgmt-stat-label">High Risk (31-60d)</p>
-              <p className="loan-admin-mgmt-stat-value" style={{ color: '#EA580C' }}>{counts.highRisk}</p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', minHeight: '24px' }}>
+                <p className="loan-admin-mgmt-stat-label" style={{ margin: 0 }}>High Risk (31-60d)</p>
+              </div>
+              <p className="loan-admin-mgmt-stat-value" style={{ color: '#F97316' }}>{counts.highRisk}</p>
             </div>
             <div className="loan-admin-mgmt-stat-card">
-              <p className="loan-admin-mgmt-stat-label">Default (60+d)</p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', minHeight: '24px' }}>
+                <p className="loan-admin-mgmt-stat-label" style={{ margin: 0 }}>Default (60+d)</p>
+              </div>
               <p className="loan-admin-mgmt-stat-value rejected">{counts.defaulted}</p>
             </div>
           </div>
         )}
 
         {isSavingsRoute && (
-          <div className="loan-admin-mgmt-stats" style={{ gridTemplateColumns: 'repeat(1, 1fr)' }}>
+          <div className="loan-admin-mgmt-stats" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
             <div className="loan-admin-mgmt-stat-card">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', minHeight: '24px' }}>
                 <p className="loan-admin-mgmt-stat-label" style={{ margin: 0 }}>Total Savings</p>
-                <select value={savingsFilter} onChange={e => setSavingsFilter(e.target.value)} style={{ fontSize: '12px', padding: '4px 6px', borderRadius: '6px', border: '1px solid #D1D5DB' }}>
+                <select value={savingsFilter} onChange={e => setSavingsFilter(e.target.value)} style={{ fontSize: '11px', padding: '2px 4px', borderRadius: '4px', border: '1px solid #D1D5DB' }}>
                   <option value="all">All Time</option>
                   <option value="this_month">This Month</option>
                   <option value="this_year">This Year</option>
                 </select>
               </div>
               <p className="loan-admin-mgmt-stat-value approved">{fmt(totalSavingsFiltered)}</p>
+            </div>
+            <div className="loan-admin-mgmt-stat-card">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', minHeight: '24px' }}>
+                <p className="loan-admin-mgmt-stat-label" style={{ margin: 0 }}>Total Withdrawals</p>
+              </div>
+              <p className="loan-admin-mgmt-stat-value" style={{ color: '#DC2626' }}>{fmt(totalWithdrawalsFiltered)}</p>
+            </div>
+            <div 
+              className="loan-admin-mgmt-stat-card" 
+              onClick={() => setActiveTab('pending')}
+              style={{ cursor: 'pointer' }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', minHeight: '24px' }}>
+                <p className="loan-admin-mgmt-stat-label" style={{ margin: 0 }}>Pending Review</p>
+              </div>
+              <p className="loan-admin-mgmt-stat-value" style={{ color: '#EA580C' }}>{pendingSavings.length}</p>
             </div>
           </div>
         )}
@@ -390,51 +425,77 @@ export default function LoanAdminPaymentStatus() {
           </div>
         )}
 
-        <div className="loan-admin-mgmt-search">
-          <Search size={20} color="#9CA3AF" />
-          <input type="text" placeholder="Search by member name or loan ID..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+        <div className="loan-admin-mgmt-search" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', background: 'white', border: '1px solid #E5E7EB', borderRadius: '8px', padding: '0 12px' }}>
+            <Search size={18} color="#9CA3AF" />
+            <input 
+              type="text" 
+              placeholder={isSavingsRoute ? "Search by member name or goal..." : "Search by member name or loan ID..."} 
+              value={searchQuery} 
+              onChange={(e) => setSearchQuery(e.target.value)} 
+              style={{ border: 'none', padding: '10px 8px', outline: 'none', width: '100%', fontFamily: 'Inter', fontSize: '14px' }}
+            />
+          </div>
+          {isSavingsRoute && activeTab === 'savings' && (
+            <select 
+              value={savingsTypeFilter} 
+              onChange={(e) => setSavingsTypeFilter(e.target.value)}
+              style={{ padding: '10px 12px', borderRadius: '8px', border: '1px solid #E5E7EB', fontSize: '14px', fontFamily: 'Inter', background: 'white', color: '#374151', cursor: 'pointer' }}
+            >
+              <option value="all">All Types</option>
+              <option value="deposit">Deposits Only</option>
+              <option value="withdrawal">Withdrawals Only</option>
+            </select>
+          )}
         </div>
 
-        {/* Active Loans Tab */}
-        {activeTab === 'loans' && (
+        {activeTab === 'savings' && isSavingsRoute && (
           <div className="loan-admin-mgmt-table-container">
             <table className="loan-admin-mgmt-table">
               <thead>
                 <tr>
-                  <th>Loan ID</th>
+                  <th>Date</th>
                   <th>Member</th>
+                  <th>Type</th>
+                  <th>Goal</th>
                   <th>Amount</th>
-                  <th>Paid</th>
-                  <th>Balance</th>
-                  <th>Due Date</th>
-                  <th>Days Late</th>
                   <th>Status</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={8} style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>Loading...</td></tr>
-                ) : filtered.length === 0 ? (
-                  <tr><td colSpan={8} style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>No active loans found</td></tr>
+                  <tr><td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>Loading...</td></tr>
+                ) : confirmedSavings.filter(s => {
+                  const matchesSearch = (s.memberName || '').toLowerCase().includes(searchQuery.toLowerCase()) || (s.goalName || s.goalId || '').toLowerCase().includes(searchQuery.toLowerCase());
+                  const matchesType = savingsTypeFilter === 'all' || s.type === savingsTypeFilter;
+                  return matchesSearch && matchesType;
+                }).length === 0 ? (
+                  <tr><td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>No records found</td></tr>
                 ) : (
-                  filtered.map(loan => (
-                    <tr key={loan._id} onClick={() => setSelectedLoan(loan)} style={{ cursor: 'pointer' }} className="loan-admin-mgmt-table-row-hover">
-                      <td className="loan-admin-mgmt-table-id">{loan.loanId}</td>
+                  confirmedSavings.filter(s => {
+                    const matchesSearch = (s.memberName || '').toLowerCase().includes(searchQuery.toLowerCase()) || (s.goalName || s.goalId || '').toLowerCase().includes(searchQuery.toLowerCase());
+                    const matchesType = savingsTypeFilter === 'all' || s.type === savingsTypeFilter;
+                    return matchesSearch && matchesType;
+                  }).map(txn => (
+                    <tr key={txn._id} className="loan-admin-mgmt-table-row-hover">
+                      <td>{fmtDate(txn.confirmedAt || txn.date)}</td>
                       <td>
                         <div className="loan-admin-mgmt-table-member">
-                          <p className="loan-admin-mgmt-table-member-name">{loan.memberName}</p>
-                          <p className="loan-admin-mgmt-table-member-email">{loan.email}</p>
+                          <p className="loan-admin-mgmt-table-member-name">{txn.memberName || txn.email}</p>
+                          <p className="loan-admin-mgmt-table-member-email">{txn.email}</p>
                         </div>
                       </td>
-                      <td className="loan-admin-mgmt-table-amount">{fmt(loan.amount)}</td>
-                      <td style={{ fontSize: '13px' }}>{loan.paidMonths || 0}/{loan.termMonths || 0}</td>
-                      <td className="loan-admin-mgmt-table-amount">{fmt(loan.remainingBalance)}</td>
-                      <td>{fmtDate(loan.effectiveDueDate)}</td>
-                      <td style={{ fontWeight: 600, color: loan.daysLate > 0 ? '#DC2626' : '#16A34A' }}>
-                        {loan.daysLate > 0 ? `${loan.daysLate} days` : '—'}
+                      <td>
+                        <span className={`savings-type-badge savings-type-${txn.type}`}>
+                          {txn.type}
+                        </span>
+                      </td>
+                      <td style={{ fontSize: '13px', color: '#4B5563' }}>{txn.goalName || 'General Savings'}</td>
+                      <td className={`savings-amount-${txn.type}`}>
+                        {txn.type === 'withdrawal' ? '-' : '+'}{fmt(txn.amount)}
                       </td>
                       <td>
-                        <span className={`ps-status-badge ${loan.paymentStatus.cls}`}>{loan.paymentStatus.label}</span>
+                        <span className="ps-status-badge on-track">Confirmed</span>
                       </td>
                     </tr>
                   ))
@@ -455,6 +516,7 @@ export default function LoanAdminPaymentStatus() {
                   <th>Amount</th>
                   <th>Method</th>
                   <th>Reference</th>
+                  <th>Proof</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -476,6 +538,18 @@ export default function LoanAdminPaymentStatus() {
                       <td className="loan-admin-mgmt-table-amount" style={{ color: '#EA580C' }}>{fmt(txn.amount)}</td>
                       <td style={{ textTransform: 'capitalize' }}>{txn.paymentMethod || 'cash'}</td>
                       <td>{txn.referenceNumber || '—'}</td>
+                      <td>
+                        {(txn.proofData || txn.proofOfPayment) ? (
+                          <img 
+                            src={txn.proofData || txn.proofOfPayment} 
+                            alt="Proof" 
+                            style={{ width: '32px', height: '32px', objectFit: 'cover', borderRadius: '4px', cursor: 'pointer', border: '1px solid #E5E7EB' }} 
+                            onClick={(e) => { e.stopPropagation(); const win = window.open(); win.document.write(`<img src="${txn.proofData || txn.proofOfPayment}" style="max-width:100%;" />`); }}
+                          />
+                        ) : (
+                          <span style={{ fontSize: '12px', color: '#9CA3AF' }}>No Proof</span>
+                        )}
+                      </td>
                       <td>
                         <button onClick={() => { setPendingDetail(txn); setShowRejectInput(false); }} style={{ padding: '6px 12px', background: '#DBEAFE', color: '#1E3A8A', border: 'none', borderRadius: '6px', fontWeight: 600, fontSize: '12px', cursor: 'pointer' }}>Review</button>
                       </td>
@@ -614,10 +688,10 @@ export default function LoanAdminPaymentStatus() {
                 )}
               </div>
 
-              {pendingDetail.proofData && (
+              {(pendingDetail.proofData || pendingDetail.proofOfPayment) && (
                 <div style={{ marginTop: '16px', marginBottom: '16px' }}>
                   <p style={{ margin: 0, fontSize: '12px', color: '#6B7280', marginBottom: '8px' }}>Proof of Payment</p>
-                  <img src={pendingDetail.proofData} alt="Proof" style={{ width: '100%', maxHeight: '200px', objectFit: 'contain', borderRadius: '8px', border: '1px solid #E5E7EB' }} />
+                  <img src={pendingDetail.proofData || pendingDetail.proofOfPayment} alt="Proof" style={{ width: '100%', maxHeight: '200px', objectFit: 'contain', borderRadius: '8px', border: '1px solid #E5E7EB' }} />
                 </div>
               )}
 
