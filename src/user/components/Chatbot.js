@@ -9,19 +9,19 @@ import API from '../../utils/api';
    Fallback Knowledge Base (used when AI is unavailable)
 ───────────────────────────────────────────── */
 const KB = [
-  { patterns: ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening', 'kumusta', 'magandang umaga'], responses: ["Hello! 👋 I'm FaithBot, your FaithLy assistant. How can I help you today?"], quickReplies: ['Loans', 'Donations', 'Officer Verification', 'Attendance'] },
+  { patterns: ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening', 'kumusta', 'magandang umaga'], responses: ["Hello! 👋 I'm FaithBot, your FaithLy assistant. How can I help you today?"], quickReplies: ['Loans', 'Donations', 'Attendance'] },
   { patterns: ['officer', 'verify', 'verification', 'verified', 'get verified'], responses: ["🛡️ **Officer Verification** unlocks access to the **Loans** and **Savings** modules.\n\n**How to get verified:**\n1. From the Home page, look for the **\"Are you an officer?\"** card\n2. Click **\"Yes, verify me\"**\n3. Enter your **Church ID Number** and select your **Church Position**\n4. Submit — administrators will review it within **3–5 business days**"], quickReplies: ['What positions qualify?', 'Loans', 'Savings'] },
-  { patterns: ['loan', 'loans', 'borrow', 'apply loan', 'utang', 'hulugan'], responses: ["💳 **Loans** are available exclusively for **verified church officers**.\n\nGo to **Loans** > **Apply for a Loan** > choose type, amount, and term > submit for admin review."], quickReplies: ['Loan requirements', 'Interest rates', 'Officer Verification'] },
-  { patterns: ['savings', 'save', 'ipon'], responses: ["🏦 **Savings** is for **verified church officers**. Set personalized goals, track progress, and deposit funds."], quickReplies: ['How to deposit?', 'Officer Verification'] },
+  { patterns: ['loan', 'loans', 'borrow', 'apply loan', 'utang', 'hulugan'], responses: ["💳 **Loans** are available exclusively for **verified church officers**.\n\nGo to **Loans** > **Apply for a Loan** > choose type, amount, and term > submit for admin review."], quickReplies: ['Loan requirements', 'Interest rates'] },
+  { patterns: ['savings', 'save', 'ipon'], responses: ["🏦 **Savings** is for **verified church officers**. Set personalized goals, track progress, and deposit funds."], quickReplies: ['How to deposit?'] },
   { patterns: ['donat', 'donation', 'donate', 'giving', 'tithe', 'offering', 'handog'], responses: ["❤️ Go to **Donations** > choose a category > enter amount > upload proof. Methods: E-Wallet, Bank, Cash."], quickReplies: ['Donation categories', 'E-Wallet details'] },
   { patterns: ['attendance', 'attend', 'check in'], responses: ["📅 Attendance is recorded by administrators. View your history in the **Attendance** page."], quickReplies: ['Branches', 'Home'] },
   { patterns: ['branch', 'location', 'address', 'simbahan'], responses: ["🏛️ Visit the **Branches** page to find locations, contact info, and service schedules."], quickReplies: ['My branch', 'Attendance'] },
   { patterns: ['settings', 'profile', 'password', 'account'], responses: ["⚙️ Go to **Settings** to update profile, change password, or manage notifications."], quickReplies: ['Change password', 'Home'] },
   { patterns: ['notification', 'alert', 'updates'], responses: ["🔔 Check **Notifications** for loan updates, donation confirmations, and more."], quickReplies: ['Loans', 'Donations'] },
-  { patterns: ['what is faithly', 'about faithly', 'puac', 'ano ang faithly'], responses: ["🙏 **FaithLy** is the official church portal of the **Philippine United Apostolic Church (PUAC)**. It lets members manage loans, savings, donations, attendance, and more — all in one platform."], quickReplies: ['Loans', 'Donations', 'Officer Verification'] },
+  { patterns: ['what is faithly', 'about faithly', 'puac', 'ano ang faithly'], responses: ["🙏 **FaithLy** is the official church portal of the **Philippine United Apostolic Church (PUAC)**. It lets members manage loans, savings, donations, attendance, and more — all in one platform."], quickReplies: ['Loans', 'Donations'] },
 ];
 
-const FALLBACK_REPLIES = ['Loans', 'Donations', 'Attendance', 'Officer Verification', 'Branches'];
+const FALLBACK_REPLIES = ['Loans', 'Donations', 'Attendance', 'Branches'];
 
 function getLocalResponse(input) {
   const normalized = input.toLowerCase().trim();
@@ -38,7 +38,7 @@ const INITIAL_MESSAGE = {
   sender: 'bot',
   text: null,
   greeting: true,
-  quickReplies: ['Loans', 'Donations', 'Attendance', 'Officer Verification', 'Branches'],
+  quickReplies: ['Loans', 'Donations', 'Attendance', 'Branches'],
   timestamp: new Date(),
 };
 
@@ -199,7 +199,7 @@ export default function Chatbot({ isOpen, onClose }) {
                 {msg.greeting ? (
                   <p className="cb-bubble-text">
                     👋 Hi <strong>{firstName}</strong>! I'm <strong>FaithBot</strong>, your AI-powered FaithLy assistant.
-                    I can help you with loans, donations, attendance, officer verification, and more.
+                    I can help you with loans, donations, attendance, and more.
                     I also understand Tagalog! What would you like to know?
                   </p>
                 ) : (
