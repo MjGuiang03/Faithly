@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Banknote, CalendarDays, ChevronDown, Download, Heart, Receipt, Share2, X, UploadCloud, FileCheck2 } from 'lucide-react';
-import { ComposedChart, Bar, Line, Cell, Tooltip, Legend, ResponsiveContainer, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { ComposedChart, Bar, Line, Tooltip, Legend, ResponsiveContainer, XAxis, YAxis, CartesianGrid } from 'recharts';
 import '../styles/Donation.css';
 import ewalletLogo from '../../assets/gcashlogo.png';
 import bank from '../../assets/bank.png';

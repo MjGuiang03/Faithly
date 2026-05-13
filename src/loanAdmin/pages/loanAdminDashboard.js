@@ -6,7 +6,7 @@ import {
   LineChart, Line,
   PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  ReferenceArea, ReferenceLine, LabelList, AreaChart, Area, Label
+  ReferenceLine, LabelList, AreaChart, Area, Label
 } from 'recharts';
 import LoanAdminSidebar from './loanAdminSidebar';
 import '../../admin/styles/AdminDashboard.css';

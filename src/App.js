@@ -60,10 +60,19 @@ export default function App() {
         <AuthProvider>
           <Toaster
             position="top-right"
-            richColors
             closeButton
             expand={false}
-            duration={4000}
+            duration={1000}
+            toastOptions={{
+              style: {
+                background: 'rgba(30, 58, 138, 0.85)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                border: '1px solid rgba(201, 168, 76, 0.5)',
+                color: '#ffffff',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.25)',
+              }
+            }}
           />
 
           <Routes>
