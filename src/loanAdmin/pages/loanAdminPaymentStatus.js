@@ -557,6 +557,7 @@ export default function LoanAdminPaymentStatus() {
                 <tr>
                   <th>Date</th>
                   <th>Member</th>
+                  <th>Type</th>
                   <th>Amount</th>
                   <th>Method</th>
                   <th>Reference</th>
@@ -566,9 +567,9 @@ export default function LoanAdminPaymentStatus() {
               </thead>
               <tbody>
                 {pendingLoading ? (
-                  <tr><td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>Loading...</td></tr>
+                  <tr><td colSpan={8} style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>Loading...</td></tr>
                 ) : (isSavingsRoute ? pendingSavings : pendingLoanPayments).length === 0 ? (
-                  <tr><td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>No pending approvals</td></tr>
+                  <tr><td colSpan={8} style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>No pending approvals</td></tr>
                 ) : (
                   (isSavingsRoute ? pendingSavings : pendingLoanPayments).map(txn => (
                     <tr key={txn._id} className="loan-admin-mgmt-table-row-hover">
@@ -578,6 +579,12 @@ export default function LoanAdminPaymentStatus() {
                           <p className="loan-admin-mgmt-table-member-name">{txn.memberName || txn.email}</p>
                           <p className="loan-admin-mgmt-table-member-email">{isSavingsRoute ? `Goal: ${txn.goalId}` : `Loan: ${txn.loanId}`}</p>
                         </div>
+                      </td>
+                      <td>
+                        <span style={{ display: 'inline-block', padding: '3px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 700, fontFamily: 'Inter', textTransform: 'capitalize', background: txn.paymentType === 'full' ? '#DCFCE7' : txn.paymentType === 'advance' ? '#DBEAFE' : '#F3F4F6', color: txn.paymentType === 'full' ? '#166534' : txn.paymentType === 'advance' ? '#1E3A8A' : '#374151' }}>
+                          {txn.paymentType || 'regular'}
+                          {txn.monthsCovered > 1 && ` (${txn.monthsCovered}mo)`}
+                        </span>
                       </td>
                       <td className="loan-admin-mgmt-table-amount" style={{ color: '#EA580C' }}>{fmt(txn.amount)}</td>
                       <td style={{ textTransform: 'capitalize' }}>{txn.paymentMethod || 'cash'}</td>
@@ -715,6 +722,18 @@ export default function LoanAdminPaymentStatus() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '16px' }}>
                 <div><p style={{ margin: 0, fontSize: '12px', color: '#6B7280' }}>Member</p><p style={{ margin: 0, fontWeight: 600 }}>{pendingDetail.memberName || pendingDetail.email}</p></div>
                 <div><p style={{ margin: 0, fontSize: '12px', color: '#6B7280' }}>Amount</p><p style={{ margin: 0, fontWeight: 700, color: '#EA580C' }}>{fmt(pendingDetail.amount)}</p></div>
+                <div>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#6B7280' }}>Payment Type</p>
+                  <p style={{ margin: 0, fontWeight: 700, textTransform: 'capitalize' }}>
+                    <span style={{ display: 'inline-block', padding: '3px 10px', borderRadius: '6px', fontSize: '12px', background: pendingDetail.paymentType === 'full' ? '#DCFCE7' : pendingDetail.paymentType === 'advance' ? '#DBEAFE' : '#F3F4F6', color: pendingDetail.paymentType === 'full' ? '#166534' : pendingDetail.paymentType === 'advance' ? '#1E3A8A' : '#374151' }}>
+                      {pendingDetail.paymentType || 'regular'}
+                    </span>
+                  </p>
+                </div>
+                <div>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#6B7280' }}>Months Covered</p>
+                  <p style={{ margin: 0, fontWeight: 700, color: '#111827' }}>{pendingDetail.monthsCovered > 0 ? `${pendingDetail.monthsCovered} month${pendingDetail.monthsCovered > 1 ? 's' : ''}` : 'Partial'}</p>
+                </div>
                 <div>
                   <p style={{ margin: 0, fontSize: '12px', color: '#6B7280' }}>Method</p>
                   <p style={{ margin: 0, fontWeight: 600, textTransform: 'capitalize' }}>

@@ -858,6 +858,82 @@
     max-width: 280px;
     line-height: 1.5;
 }
+/* ── Manual Payment Info Fields (inside Pay Modal) ── */
+.ld-modal .user-donation-manual-info-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    background: var(--secondary);
+    border-radius: 10px;
+    padding: 16px;
+    border: 0.8px solid var(--border);
+}
+
+.ld-modal .user-donation-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.ld-modal .user-donation-form-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+}
+
+.ld-modal .user-donation-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+    background: var(--card);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--foreground);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.ld-modal .user-donation-input::placeholder {
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+.ld-modal .user-donation-input:focus {
+    border-color: #1E3A8A;
+    box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.08);
+}
+
+.ld-modal .user-donation-select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+    background: var(--card);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--foreground);
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%236B7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+}
+
+.ld-modal .user-donation-select:focus {
+    border-color: #1E3A8A;
+    box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.08);
+}
 
 /* ═══════════════════════════════════════════════════════════
    SCHEDULE MODAL

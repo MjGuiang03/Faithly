@@ -124,11 +124,19 @@ router.get('/donations/my-donations', authenticateUser, async (req, res) => {
       .reduce((sum, d) => sum + d.amount, 0);
 
     const categoryBreakdown = {};
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const monthlyData = months.map(m => ({ month: m, amount: 0 }));
+
     allUserDonations
       .filter(d => d.status === 'confirmed')
       .forEach(d => {
         const cat = d.category || 'Other';
         categoryBreakdown[cat] = (categoryBreakdown[cat] || 0) + (Number(d.amount) || 0);
+        
+        const date = new Date(d.createdAt || d.date);
+        if (date.getFullYear() === now.getFullYear()) {
+          monthlyData[date.getMonth()].amount += Number(d.amount) || 0;
+        }
       });
 
     res.status(200).json({
@@ -137,7 +145,7 @@ router.get('/donations/my-donations', authenticateUser, async (req, res) => {
       totalCount,
       totalPages: Math.ceil(totalCount / limit),
       currentPage: page,
-      stats: { totalDonated, thisYearTotal, totalCount: confirmedDonations.length, categoryBreakdown }
+      stats: { totalDonated, thisYearTotal, totalCount: confirmedDonations.length, categoryBreakdown, monthlyData }
     });
   } catch (err) {
     console.error(err);

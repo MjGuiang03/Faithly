@@ -52,6 +52,12 @@ const CloseIcon = () => (
 /* ════════════════════════════════════════════════════════════
    PAY NOW MODAL
    ════════════════════════════════════════════════════════════ */
+const PAYMENT_TYPES = [
+    { id: 'regular', name: 'Regular Payment', desc: 'Pay the current monthly installment' },
+    { id: 'advance', name: 'Custom Payment', desc: 'Enter any amount — months covered are computed automatically' },
+    { id: 'full', name: 'Full Payment', desc: 'Settle the entire remaining balance at once' },
+];
+
 function PayNowModal({ loan, onClose, onSuccess }) {
     const [method, setMethod] = useState('cash');
     const [subMethod, setSubMethod] = useState('');
@@ -62,6 +68,33 @@ function PayNowModal({ loan, onClose, onSuccess }) {
     const [error, setError] = useState('');
     const [submitted, setSubmitted] = useState(false);
     const [approvalMethod, setApprovalMethod] = useState('gateway');
+    const [paymentType, setPaymentType] = useState('regular');
+    const [customAmount, setCustomAmount] = useState('');
+    const [selectedMonths, setSelectedMonths] = useState(0);
+
+    const monthlyAmt = loan?.upcomingPaymentAmount || loan?.monthlyPayment || 0;
+    const remaining = loan?.remainingBalance || 0;
+    const remainingMonths = (loan?.termMonths || 0) - (loan?.paidMonths || 0);
+
+    const computedAmount = (() => {
+        if (paymentType === 'regular') return monthlyAmt;
+        if (paymentType === 'full') return remaining;
+        if (paymentType === 'advance') {
+            const val = Number(String(customAmount).replace(/,/g, '')) || 0;
+            return Math.min(val, remaining);
+        }
+        return monthlyAmt;
+    })();
+
+    const monthsCovered = (() => {
+        if (paymentType === 'regular') return 1;
+        if (paymentType === 'full') return remainingMonths;
+        if (paymentType === 'advance') {
+            if (monthlyAmt <= 0) return 0;
+            return Math.min(Math.floor(computedAmount / monthlyAmt), remainingMonths);
+        }
+        return 0;
+    })();
 
     useEffect(() => {
         const fetchSettings = async () => {
@@ -128,6 +161,8 @@ function PayNowModal({ loan, onClose, onSuccess }) {
     const selected = METHODS.find(m => m.id === method);
 
     const handleConfirm = async () => {
+        if (paymentType === 'advance' && computedAmount < 500) return setError('Minimum advance payment is ₱500.');
+        if (computedAmount <= 0) return setError('Payment amount must be greater than zero.');
         if (selected?.needsReceipt) {
             if (!subMethod) return setError(`Please select a ${method === 'e-wallet' ? 'E-Wallet' : 'Bank'} option.`);
             if (!accountName.trim()) return setError('Please provide your Account Name.');
@@ -145,6 +180,9 @@ function PayNowModal({ loan, onClose, onSuccess }) {
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({
                     paymentMethod: method,
+                    paymentType,
+                    amount: computedAmount,
+                    monthsCovered,
                     subMethod: selected?.needsReceipt ? subMethod : undefined,
                     accountName: selected?.needsReceipt ? accountName : undefined,
                     accountNumber: selected?.needsReceipt ? accountNumber : undefined,
@@ -195,17 +233,113 @@ function PayNowModal({ loan, onClose, onSuccess }) {
                     </div>
                 ) : (
                     <div className="ld-modal-body">
-                        {/* Amount */}
-                        <div className="ld-pay-amount-box">
-                            <div>
-                                <div className="ld-pay-amount-label">Amount due</div>
-                                <div className="ld-pay-amount-value">
-                                    {fmt(loan?.upcomingPaymentAmount || loan?.monthlyPayment)}
-                                    {loan?.isLate && <span style={{ fontSize: '12px', color: '#DC2626', background: '#FEE2E2', padding: '2px 6px', borderRadius: '4px', marginLeft: '8px', fontWeight: 600, verticalAlign: 'middle' }}>Late 3% Penalty</span>}
+                        {/* Payment Type Selector */}
+                        <div className="ld-pay-section-label">Select payment type</div>
+                        <div className="ld-method-list">
+                            {PAYMENT_TYPES.map((pt) => (
+                                <div
+                                    key={pt.id}
+                                    className={`ld-method-card ${paymentType === pt.id ? 'ld-method-card--selected' : ''}`}
+                                    onClick={() => { setPaymentType(pt.id); setCustomAmount(''); setSelectedMonths(0); setError(''); }}
+                                >
+                                    <div className="ld-method-info">
+                                        <div className="ld-method-name">{pt.name}</div>
+                                        <div className="ld-method-desc">{pt.desc}</div>
+                                    </div>
+                                    <div className={`ld-radio ${paymentType === pt.id ? 'ld-radio--selected' : ''}`} />
                                 </div>
-                                <div className="ld-pay-amount-sub">Due {fmtDate(loan?.nextPaymentDate)}</div>
+                            ))}
+                        </div>
+
+                        {/* Custom Amount Input (Advance) */}
+                        {paymentType === 'advance' && (
+                            <div style={{ marginTop: '16px' }}>
+                                {/* Month Selector Dropdown */}
+                                <div className="ld-pay-section-label" style={{ marginBottom: '8px' }}>How many months do you want to pay?</div>
+                                <select
+                                    value={selectedMonths}
+                                    onChange={(e) => {
+                                        const m = Number(e.target.value);
+                                        setSelectedMonths(m);
+                                        if (m > 0) {
+                                            const amt = Math.min(monthlyAmt * m, remaining);
+                                            setCustomAmount(Math.round(amt).toLocaleString('en-PH'));
+                                        } else {
+                                            setCustomAmount('');
+                                        }
+                                        setError('');
+                                    }}
+                                    style={{ width: '100%', padding: '12px 14px', fontSize: '15px', fontWeight: 600, fontFamily: 'Inter, sans-serif', border: '1.5px solid #D1D5DB', borderRadius: '10px', outline: 'none', color: '#111827', background: '#fff', boxSizing: 'border-box', cursor: 'pointer', appearance: 'auto' }}
+                                >
+                                    <option value={0}>— Select months or enter custom amount —</option>
+                                    {Array.from({ length: remainingMonths }, (_, i) => i + 1).map(m => (
+                                        <option key={m} value={m}>
+                                            {m} month{m > 1 ? 's' : ''} — {fmt(Math.min(monthlyAmt * m, remaining))}
+                                        </option>
+                                    ))}
+                                </select>
+
+                                {/* Or enter custom amount */}
+                                <div className="ld-pay-section-label" style={{ marginBottom: '8px', marginTop: '14px' }}>Or enter a custom amount (min ₱500)</div>
+                                <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    placeholder="e.g. 5,000"
+                                    value={customAmount}
+                                    onChange={(e) => {
+                                        const raw = e.target.value.replace(/[^0-9]/g, '');
+                                        if (raw === '') { setCustomAmount(''); setSelectedMonths(0); setError(''); return; }
+                                        let num = parseInt(raw, 10);
+                                        if (num > remaining) num = remaining;
+                                        setCustomAmount(num.toLocaleString('en-PH'));
+                                        setSelectedMonths(0);
+                                        if (num > 0 && num < 500) setError('');
+                                    }}
+                                    style={{ width: '100%', padding: '12px 14px', fontSize: '16px', fontWeight: 700, fontFamily: 'Inter, sans-serif', border: `1.5px solid ${computedAmount > 0 && computedAmount < 500 ? '#EF4444' : '#D1D5DB'}`, borderRadius: '10px', outline: 'none', color: '#111827', boxSizing: 'border-box', transition: 'border-color 0.2s ease' }}
+                                />
+                                {computedAmount > 0 && computedAmount < 500 && (
+                                    <div style={{ marginTop: '8px', fontSize: '13px', color: '#EF4444', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        ⚠ Minimum payment is ₱500. Please enter a higher amount.
+                                    </div>
+                                )}
+                                {computedAmount >= 500 && (
+                                    <div style={{ marginTop: '8px', fontSize: '13px', color: '#1E3A8A', fontWeight: 600 }}>
+                                        {monthsCovered > 0 ? (
+                                            <>
+                                                This covers {monthsCovered} month{monthsCovered > 1 ? 's' : ''} ({fmt(monthlyAmt)} × {monthsCovered} = {fmt(monthlyAmt * monthsCovered)})
+                                                {computedAmount > monthlyAmt * monthsCovered && (
+                                                    <span style={{ color: '#6B7280', fontWeight: 400 }}> + {fmt(computedAmount - monthlyAmt * monthsCovered)} partial</span>
+                                                )}
+                                            </>
+                                        ) : (
+                                            <span style={{ color: '#16A34A' }}>You will pay: {fmt(computedAmount)}</span>
+                                        )}
+                                    </div>
+                                )}
                             </div>
-                            {loan?.nextPaymentDate && (
+                        )}
+
+                        {/* Amount Summary */}
+                        <div className="ld-pay-amount-box" style={{ marginTop: '16px' }}>
+                            <div>
+                                <div className="ld-pay-amount-label">
+                                    {paymentType === 'regular' ? 'Amount due' : paymentType === 'full' ? 'Full payoff amount' : 'Payment amount'}
+                                </div>
+                                <div className="ld-pay-amount-value">
+                                    {fmt(computedAmount)}
+                                    {loan?.isLate && paymentType === 'regular' && <span style={{ fontSize: '12px', color: '#DC2626', background: '#FEE2E2', padding: '2px 6px', borderRadius: '4px', marginLeft: '8px', fontWeight: 600, verticalAlign: 'middle' }}>Late 3% Penalty</span>}
+                                </div>
+                                <div className="ld-pay-amount-sub">
+                                    {paymentType === 'regular' && `Due ${fmtDate(loan?.nextPaymentDate)}`}
+                                    {paymentType === 'advance' && monthsCovered > 0 && `Covers ${monthsCovered} month${monthsCovered > 1 ? 's' : ''} ahead`}
+                                    {paymentType === 'advance' && monthsCovered === 0 && computedAmount > 0 && `Custom payment · Remaining balance: ${fmt(remaining)}`}
+                                    {paymentType === 'full' && `Settles entire loan (${remainingMonths} months remaining)`}
+                                </div>
+                            </div>
+                            {paymentType === 'full' && (
+                                <div className="ld-badge ld-badge--approved" style={{ alignSelf: 'flex-start' }}>Full Payoff</div>
+                            )}
+                            {paymentType === 'regular' && loan?.nextPaymentDate && (
                                 <div className="ld-badge ld-badge--pending" style={{ alignSelf: 'flex-start' }}>Due soon</div>
                             )}
                         </div>

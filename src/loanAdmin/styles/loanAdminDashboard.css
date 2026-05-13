@@ -326,3 +326,47 @@
     font-weight: 700;
     color: #155DFC;
 }
+
+/* ── Refactored Inline Styles ── */
+.la-cashflow-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+}
+
+.la-cashflow-badges {
+    display: flex;
+    gap: 8px;
+}
+
+.la-cashflow-badge-in {
+    padding: 4px 10px;
+    background: #D1FAE5;
+    color: #065F46;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.la-cashflow-badge-out {
+    padding: 4px 10px;
+    background: #FEE2E2;
+    color: #991B1B;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.la-expand-cashflow-main {
+    flex: 1;
+    padding-right: 20px;
+    border-right: 1px solid #E5E7EB;
+}
+
+.la-expand-cashflow-side {
+    width: 220px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}

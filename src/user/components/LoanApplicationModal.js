@@ -1,18 +1,8 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
 import '../styles/LoanApplicationModal.css';
 import API from '../../utils/api';
-import { Banknote, CheckCircle, X, Pencil, ChevronDown, ChevronUp } from 'lucide-react';
-
-
-/* ── File → base64 helper ── */
-const fileToBase64 = (file) =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
+import { Banknote, CheckCircle, X, Pencil, ChevronDown, ChevronUp, Camera, RotateCcw, AlertTriangle, Upload } from 'lucide-react';
 
 /* ── Loan-type config ── */
 const LOAN_TYPES = [
@@ -81,16 +71,51 @@ export default function LoanApplicationModal({
   const [loanType, setLoanType] = useState('');
   const [amount, setAmount] = useState('');
   const [termMonths, setTermMonths] = useState('');
-  const [selfieFile, setSelfieFile] = useState(null);
-  const [idFile, setIdFile] = useState(null);
+  const [selfieImage, setSelfieImage] = useState(null);   // base64 data URL
+  const [idImage, setIdImage] = useState(null);             // base64 data URL
   const [disbursementMethod, setDisbursementMethod] = useState('');
   const [disbursementAccount, setDisbursementAccount] = useState('');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [savedAccounts, setSavedAccounts] = useState([]);
-  const [selectedAccountIdx, setSelectedAccountIdx] = useState(-1); // -1 means "new/manual"
-  const [editingAccountIdx, setEditingAccountIdx] = useState(null); // which saved account is being edited inline
+  const [selectedAccountIdx, setSelectedAccountIdx] = useState(-1);
+  const [editingAccountIdx, setEditingAccountIdx] = useState(null);
   const [expandedInfoId, setExpandedInfoId] = useState(null);
+
+  const [coeData, setCoeData] = useState(null);
+  const [coeFileName, setCoeFileName] = useState('');
+  const [itrData, setItrData] = useState(null);
+  const [itrFileName, setItrFileName] = useState('');
+  const [hasActiveLoan, setHasActiveLoan] = useState(null);
+  const [activeLoanScreenshotData, setActiveLoanScreenshotData] = useState(null);
+  const [activeLoanScreenshotFileName, setActiveLoanScreenshotFileName] = useState('');
+
+  const handleFileUpload = (e, setFileData, setFileName) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setFileName(file.name);
+    const reader = new FileReader();
+    reader.onload = (ev) => setFileData(ev.target.result);
+    reader.readAsDataURL(file);
+  };
+
+  const [newEwalletProvider, setNewEwalletProvider] = useState('');
+  const [newEwalletAccountName, setNewEwalletAccountName] = useState('');
+  const [newEwalletNumber, setNewEwalletNumber] = useState('');
+  const [newBankName, setNewBankName] = useState('');
+  const [newBankAccountName, setNewBankAccountName] = useState('');
+  const [newBankAccountNumber, setNewBankAccountNumber] = useState('');
+
+  /* ── Camera state ── */
+  const [cameraOpen, setCameraOpen] = useState(false);       // is camera modal visible
+  const [cameraTarget, setCameraTarget] = useState(null);    // 'selfie' | 'id'
+  const [cameraReady, setCameraReady] = useState(false);
+  const [cameraError, setCameraError] = useState(null);
+  const [cameraHint, setCameraHint] = useState('');
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const streamRef = useRef(null);
+  const hintTimerRef = useRef(null);
 
   /* ── derived ── */
   const selectedType = LOAN_TYPES.find((t) => t.key === loanType) || null;
@@ -133,6 +158,110 @@ export default function LoanApplicationModal({
 
   const filteredAccounts = savedAccounts.filter(a => a.method === disbursementMethod);
 
+  /* ── Camera helpers ── */
+  const stopCamera = useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(t => t.stop());
+      streamRef.current = null;
+    }
+    setCameraReady(false);
+    setCameraHint('');
+    if (hintTimerRef.current) clearInterval(hintTimerRef.current);
+  }, []);
+
+  const openCamera = useCallback(async (target) => {
+    setCameraTarget(target);
+    setCameraOpen(true);
+    setCameraError(null);
+    setCameraReady(false);
+    setCameraHint('');
+
+    try {
+      const facingMode = target === 'selfie' ? 'user' : 'environment';
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: false,
+      });
+      streamRef.current = stream;
+
+      // Wait for DOM to mount the video element
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play().then(() => setCameraReady(true));
+        }
+      }, 100);
+
+      // Rotate validation hints
+      const hints = target === 'selfie'
+        ? [
+            'Hold your ID beside your face',
+            'Make sure your face is fully visible',
+            'Include today\'s date (handwritten on paper)',
+            'Move closer to the camera',
+            'Ensure good lighting on your face',
+          ]
+        : [
+            'Place your ID flat on a surface',
+            'Make sure all text is readable',
+            'Avoid glare and shadows',
+            'Move closer if text is too small',
+            'Ensure good lighting',
+          ];
+      let hintIdx = 0;
+      setCameraHint(hints[0]);
+      hintTimerRef.current = setInterval(() => {
+        hintIdx = (hintIdx + 1) % hints.length;
+        setCameraHint(hints[hintIdx]);
+      }, 4000);
+    } catch (err) {
+      console.error('Camera error:', err);
+      setCameraError('Unable to access camera. Please allow camera permissions and try again.');
+    }
+  }, []);
+
+  const capturePhoto = useCallback(() => {
+    if (!videoRef.current || !canvasRef.current) return;
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+
+    // Mirror for selfie (front camera)
+    if (cameraTarget === 'selfie') {
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+    }
+    ctx.drawImage(video, 0, 0);
+    ctx.setTransform(1, 0, 0, 1, 0, 0); // reset transform
+
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+    if (cameraTarget === 'selfie') {
+      setSelfieImage(dataUrl);
+    } else {
+      setIdImage(dataUrl);
+    }
+
+    stopCamera();
+    setCameraOpen(false);
+    toast.success(cameraTarget === 'selfie' ? 'Selfie captured!' : 'ID photo captured!');
+  }, [cameraTarget, stopCamera]);
+
+  const closeCamera = useCallback(() => {
+    stopCamera();
+    setCameraOpen(false);
+  }, [stopCamera]);
+
+  // Cleanup camera on modal close
+  useEffect(() => {
+    if (!isOpen) {
+      stopCamera();
+      setCameraOpen(false);
+    }
+  }, [isOpen, stopCamera]);
+
   if (!isOpen) return null;
 
   /* ── eligibility ── */
@@ -145,24 +274,42 @@ export default function LoanApplicationModal({
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selectedType) { toast.error('Please select a loan type.'); return; }
+    if (!amount || Number(amount.replace(/,/g, '')) <= 0) { toast.error('Please enter a loan amount.'); return; }
+    if (!termMonths) { toast.error('Please select a repayment term.'); return; }
     if (!calc) { toast.error('Please fill in amount and term.'); return; }
     if (calc.principal < 500) { toast.error('Minimum loan amount is ₱500.'); return; }
     if (calc.principal > maxLoanable) { toast.error(`Amount exceeds your max loanable of ${fmt(maxLoanable)}.`); return; }
     if (!savingsOk) { toast.error('You need at least ₱1,000 in savings.'); return; }
     if (hasOverdueLoans) { toast.error('You have overdue loans. Please settle them first.'); return; }
+    if (!selfieImage) { toast.error('Please capture a selfie with ID & date.'); return; }
+    if (!idImage) { toast.error('Please capture a photo of your government ID.'); return; }
+    if (!coeData) { toast.error('Please upload your Certificate of Employment (COE).'); return; }
+    if (!itrData) { toast.error('Please upload your Income Tax Return (ITR).'); return; }
+    if (hasActiveLoan === null) { toast.error('Please specify if you have an active loan with another entity.'); return; }
+    if (hasActiveLoan === true && !activeLoanScreenshotData) { toast.error('Please upload a screenshot of your active loan.'); return; }
     if (!disbursementMethod) { toast.error('Please select a disbursement method.'); return; }
-    if ((disbursementMethod === 'e-wallet' || disbursementMethod === 'bank') && !disbursementAccount) {
-      toast.error(`Please provide your ${disbursementMethod === 'e-wallet' ? 'E-Wallet number' : 'bank account details'}.`);
-      return;
+
+    let finalDisbursementAccount = disbursementAccount;
+    if (selectedAccountIdx === -1 && (disbursementMethod === 'e-wallet' || disbursementMethod === 'bank')) {
+      if (disbursementMethod === 'e-wallet') {
+        if (!newEwalletProvider || !newEwalletAccountName || !newEwalletNumber) { toast.error('Please fill in all E-Wallet details.'); return; }
+        if (newEwalletNumber.length !== 11) { toast.error('E-Wallet account number must be exactly 11 digits.'); return; }
+        finalDisbursementAccount = `${newEwalletProvider} - ${newEwalletAccountName} - ${newEwalletNumber}`;
+      } else if (disbursementMethod === 'bank') {
+        if (!newBankName || !newBankAccountName || !newBankAccountNumber) { toast.error('Please fill in all Bank details.'); return; }
+        finalDisbursementAccount = `${newBankName} - ${newBankAccountName} - ${newBankAccountNumber}`;
+      }
+    } else {
+      if ((disbursementMethod === 'e-wallet' || disbursementMethod === 'bank') && !finalDisbursementAccount) {
+        toast.error(`Please select or provide your ${disbursementMethod === 'e-wallet' ? 'E-Wallet details' : 'bank account details'}.`);
+        return;
+      }
     }
-    if (!agreedToTerms) { toast.error('You must accept the Loan Terms and Conditions to continue'); return; }
+    if (!agreedToTerms) { toast.error('You must accept the Loan Terms and Conditions to continue.'); return; }
 
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-
-      const selfieData = selfieFile ? await fileToBase64(selfieFile) : null;
-      const idData = idFile ? await fileToBase64(idFile) : null;
 
       const res = await fetch(`${API}/api/loans/apply`, {
         method: 'POST',
@@ -180,11 +327,18 @@ export default function LoanApplicationModal({
           totalRepayment: calc.totalRepayment,
           monthlyPayment: calc.monthly,
           disbursementMethod,
-          disbursementAccount,
-          selfieFileName: selfieFile?.name || null,
-          idFileName: idFile?.name || null,
-          selfieData,
-          idData,
+          disbursementAccount: finalDisbursementAccount,
+          selfieFileName: 'camera-selfie.jpg',
+          idFileName: 'camera-id.jpg',
+          selfieData: selfieImage,
+          idData: idImage,
+          coeData,
+          coeFileName,
+          itrData,
+          itrFileName,
+          hasActiveLoan,
+          activeLoanScreenshotData: hasActiveLoan ? activeLoanScreenshotData : null,
+          activeLoanScreenshotFileName: hasActiveLoan ? activeLoanScreenshotFileName : null
         }),
       });
 
@@ -194,16 +348,16 @@ export default function LoanApplicationModal({
       toast.success('Loan application submitted successfully!');
 
       // Save or update account for future use
-      if ((disbursementMethod === 'e-wallet' || disbursementMethod === 'bank') && disbursementAccount) {
+      if ((disbursementMethod === 'e-wallet' || disbursementMethod === 'bank') && finalDisbursementAccount) {
         try {
           await fetch(`${API}/api/saved-accounts`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
             body: JSON.stringify({
               method: disbursementMethod,
-              accountNumber: disbursementAccount,
+              accountNumber: finalDisbursementAccount,
               accountName: '',
-              label: disbursementAccount,
+              label: finalDisbursementAccount,
             }),
           });
         } catch { /* silent — don't block the success flow */ }
@@ -212,8 +366,8 @@ export default function LoanApplicationModal({
       setLoanType('');
       setAmount('');
       setTermMonths('');
-      setSelfieFile(null);
-      setIdFile(null);
+      setSelfieImage(null);
+      setIdImage(null);
       onClose();
     } catch (err) {
       toast.error(err.message || 'Network error. Please try again.');
@@ -264,12 +418,14 @@ export default function LoanApplicationModal({
                   <div 
                     key={lt.key} 
                     className={`ula-type-card-wrapper ${expandedInfoId === lt.key ? 'expanded' : ''}`}
-                    onMouseEnter={() => setExpandedInfoId(lt.key)}
-                    onMouseLeave={() => setExpandedInfoId(null)}
                   >
                     <div
                       className={`ula-type-card ula-type-card--${lt.color} ${isSelected ? 'ula-type-card--active' : ''}`}
-                      onClick={() => { setLoanType(lt.key); setTermMonths(''); setAmount(ltMax > 0 ? String(ltMax) : ''); }}
+                      onClick={() => { 
+                        setLoanType(lt.key); 
+                        setTermMonths(''); 
+                        setAmount(ltMax > 0 ? Number(ltMax).toLocaleString('en-US') : ''); 
+                      }}
                     >
                       <div className="ula-type-header">
                         <div className={`ula-type-icon ula-type-icon--${lt.color}`}>{lt.icon}</div>
@@ -426,72 +582,167 @@ export default function LoanApplicationModal({
             </div>
           )}
 
-          {/* ── Upload Documents ── */}
+          {/* ── Capture Documents ── */}
           <div className="user-loan-application-upload-section">
-            <h3 className="user-loan-application-guarantor-title">Upload Documents</h3>
+            <h3 className="user-loan-application-guarantor-title">Capture Documents</h3>
+            <p className="ula-capture-desc">Use your device camera to capture live photos for identity verification. Gallery uploads are not allowed.</p>
             <div className="user-loan-application-row">
 
               {/* Selfie with ID & Date */}
               <div className="user-loan-application-group-half">
-                <label className="user-loan-application-label">Selfie with ID &amp; Date</label>
-                <label
-                  htmlFor="loan-selfie-upload"
-                  className={`user-loan-upload-box ${selfieFile ? 'user-loan-upload-box-done' : ''}`}
+                <label className="user-loan-application-label">Selfie with ID &amp; Current Date</label>
+                <div
+                  className={`user-loan-upload-box ${selfieImage ? 'user-loan-upload-box-done' : ''}`}
+                  onClick={() => !selfieImage && openCamera('selfie')}
                 >
-                  {selfieFile ? (
+                  {selfieImage ? (
                     <>
-                      <CheckCircle className="user-loan-upload-icon" size={24} color="#16a34a" />
-                      <p className="user-loan-upload-text user-loan-upload-text-done">File selected</p>
-                      <p className="user-loan-upload-subtext">{selfieFile.name}</p>
+                      <img src={selfieImage} alt="Selfie preview" className="ula-capture-preview" />
+                      <div className="ula-capture-done-row">
+                        <CheckCircle size={16} color="#16a34a" />
+                        <span className="user-loan-upload-text user-loan-upload-text-done">Photo captured</span>
+                      </div>
+                      <button type="button" className="ula-retake-btn" onClick={(e) => { e.stopPropagation(); setSelfieImage(null); openCamera('selfie'); }}>
+                        <RotateCcw size={14} /> Retake
+                      </button>
                     </>
                   ) : (
                     <>
-                      <CheckCircle className="user-loan-upload-icon" size={24} color="#99A1AF" />
-                      <p className="user-loan-upload-text">Click to upload or drag and drop</p>
-                      <p className="user-loan-upload-subtext">PNG, JPG</p>
+                      <Camera className="user-loan-upload-icon" size={28} color="#1E3A8A" />
+                      <p className="user-loan-upload-text">Click to capture</p>
+                      <p className="user-loan-upload-subtext">Live camera only</p>
                     </>
                   )}
-                  <input
-                    type="file"
-                    id="loan-selfie-upload"
-                    accept="image/png, image/jpeg"
-                    onChange={(e) => setSelfieFile(e.target.files[0] || null)}
-                    hidden
-                  />
-                </label>
+                </div>
               </div>
 
               {/* Valid Government ID */}
               <div className="user-loan-application-group-half">
                 <label className="user-loan-application-label">Valid Government ID</label>
-                <label
-                  htmlFor="loan-id-upload"
-                  className={`user-loan-upload-box ${idFile ? 'user-loan-upload-box-done' : ''}`}
+                <div
+                  className={`user-loan-upload-box ${idImage ? 'user-loan-upload-box-done' : ''}`}
+                  onClick={() => !idImage && openCamera('id')}
                 >
-                  {idFile ? (
+                  {idImage ? (
                     <>
-                      <Banknote className="user-loan-upload-icon" size={24} color="#16a34a" />
-                      <p className="user-loan-upload-text user-loan-upload-text-done">File selected</p>
-                      <p className="user-loan-upload-subtext">{idFile.name}</p>
+                      <img src={idImage} alt="ID preview" className="ula-capture-preview" />
+                      <div className="ula-capture-done-row">
+                        <CheckCircle size={16} color="#16a34a" />
+                        <span className="user-loan-upload-text user-loan-upload-text-done">Photo captured</span>
+                      </div>
+                      <button type="button" className="ula-retake-btn" onClick={(e) => { e.stopPropagation(); setIdImage(null); openCamera('id'); }}>
+                        <RotateCcw size={14} /> Retake
+                      </button>
                     </>
                   ) : (
                     <>
-                      <CheckCircle className="user-loan-upload-icon" size={24} color="#99A1AF" />
-                      <p className="user-loan-upload-text">Click to upload or drag and drop</p>
-                      <p className="user-loan-upload-subtext">PNG, JPG</p>
+                      <Camera className="user-loan-upload-icon" size={28} color="#1E3A8A" />
+                      <p className="user-loan-upload-text">Click to capture</p>
+                      <p className="user-loan-upload-subtext">Live camera only</p>
                     </>
                   )}
-                  <input
-                    type="file"
-                    id="loan-id-upload"
-                    accept="image/png, image/jpeg"
-                    onChange={(e) => setIdFile(e.target.files[0] || null)}
-                    hidden
-                  />
-                </label>
+                </div>
               </div>
 
             </div>
+          </div>
+
+          {/* ── Document Uploads ── */}
+          <div className="user-loan-application-upload-section" style={{ marginTop: '24px' }}>
+            <h3 className="user-loan-application-guarantor-title">Upload Additional Documents</h3>
+            <p className="ula-capture-desc">Please upload your COE and ITR in image or PDF format.</p>
+            <div className="user-loan-application-row">
+              <div className="user-loan-application-group-half">
+                <label className="user-loan-application-label">Certificate of Employment (COE)</label>
+                <label className={`user-loan-upload-box ${coeFileName ? 'user-loan-upload-box-done' : ''}`} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                  <input type="file" accept="image/*,application/pdf" onChange={(e) => handleFileUpload(e, setCoeData, setCoeFileName)} style={{ display: 'none' }} />
+                  {coeFileName ? (
+                    <>
+                      <div className="ula-capture-done-row" style={{ marginTop: 0 }}>
+                        <CheckCircle size={20} color="#16a34a" />
+                        <span className="user-loan-upload-text user-loan-upload-text-done" style={{ fontSize: '14px' }}>File selected</span>
+                      </div>
+                      <span style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{coeFileName}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="user-loan-upload-icon" size={28} color="#1E3A8A" />
+                      <p className="user-loan-upload-text">Click to upload</p>
+                      <p className="user-loan-upload-subtext">Image or PDF</p>
+                    </>
+                  )}
+                </label>
+              </div>
+              <div className="user-loan-application-group-half">
+                <label className="user-loan-application-label">Income Tax Return (ITR)</label>
+                <label className={`user-loan-upload-box ${itrFileName ? 'user-loan-upload-box-done' : ''}`} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                  <input type="file" accept="image/*,application/pdf" onChange={(e) => handleFileUpload(e, setItrData, setItrFileName)} style={{ display: 'none' }} />
+                  {itrFileName ? (
+                    <>
+                      <div className="ula-capture-done-row" style={{ marginTop: 0 }}>
+                        <CheckCircle size={20} color="#16a34a" />
+                        <span className="user-loan-upload-text user-loan-upload-text-done" style={{ fontSize: '14px' }}>File selected</span>
+                      </div>
+                      <span style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{itrFileName}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="user-loan-upload-icon" size={28} color="#1E3A8A" />
+                      <p className="user-loan-upload-text">Click to upload</p>
+                      <p className="user-loan-upload-subtext">Image or PDF</p>
+                    </>
+                  )}
+                </label>
+              </div>
+            </div>
+
+            <div style={{ marginTop: '20px' }}>
+              <label className="user-loan-application-label">Do you have an existing/active loan with another entity?</label>
+              <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
+                <button
+                  type="button"
+                  className={`ula-disbursement-btn ${hasActiveLoan === true ? 'ula-disbursement-btn--active' : ''}`}
+                  onClick={() => setHasActiveLoan(true)}
+                  style={{ minWidth: '100px', padding: '10px 16px', flex: 'none' }}
+                >
+                  <div className={`ula-disbursement-radio ${hasActiveLoan === true ? 'active' : ''}`} />
+                  Yes
+                </button>
+                <button
+                  type="button"
+                  className={`ula-disbursement-btn ${hasActiveLoan === false ? 'ula-disbursement-btn--active' : ''}`}
+                  onClick={() => { setHasActiveLoan(false); setActiveLoanScreenshotData(null); setActiveLoanScreenshotFileName(''); }}
+                  style={{ minWidth: '100px', padding: '10px 16px', flex: 'none' }}
+                >
+                  <div className={`ula-disbursement-radio ${hasActiveLoan === false ? 'active' : ''}`} />
+                  No
+                </button>
+              </div>
+            </div>
+
+            {hasActiveLoan && (
+              <div style={{ marginTop: '20px' }}>
+                <label className="user-loan-application-label">Upload Active Loan Screenshot</label>
+                <label className={`user-loan-upload-box ${activeLoanScreenshotFileName ? 'user-loan-upload-box-done' : ''}`} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                  <input type="file" accept="image/*,application/pdf" onChange={(e) => handleFileUpload(e, setActiveLoanScreenshotData, setActiveLoanScreenshotFileName)} style={{ display: 'none' }} />
+                  {activeLoanScreenshotFileName ? (
+                    <>
+                      <div className="ula-capture-done-row" style={{ marginTop: 0 }}>
+                        <CheckCircle size={20} color="#16a34a" />
+                        <span className="user-loan-upload-text user-loan-upload-text-done" style={{ fontSize: '14px' }}>File selected</span>
+                      </div>
+                      <span style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{activeLoanScreenshotFileName}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="user-loan-upload-icon" size={28} color="#1E3A8A" />
+                      <p className="user-loan-upload-text">Click to upload screenshot</p>
+                      <p className="user-loan-upload-subtext">Image or PDF</p>
+                    </>
+                  )}
+                </label>
+              </div>
+            )}
           </div>
 
           {/* ── Disbursement Method ── */}
@@ -582,19 +833,83 @@ export default function LoanApplicationModal({
                   </>
                 )}
                 {(filteredAccounts.length === 0 || selectedAccountIdx === -1) && (
-                  <>
-                    <label className="user-loan-application-label" style={{ marginTop: filteredAccounts.length > 0 ? '12px' : 0 }}>
-                      {disbursementMethod === 'e-wallet' ? 'E-Wallet Name & Number' : 'Bank Name, Account Name & Number'}
-                    </label>
-                    <input
-                      type="text"
-                      className="user-loan-application-input"
-                      placeholder={disbursementMethod === 'e-wallet' ? 'e.g. Juan Dela Cruz - 09123456789' : 'e.g. BDO - Juan Dela Cruz - 1234567890'}
-                      value={disbursementAccount}
-                      onChange={(e) => setDisbursementAccount(e.target.value)}
-                      required
-                    />
-                  </>
+                  <div style={{ marginTop: filteredAccounts.length > 0 ? '12px' : 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {disbursementMethod === 'e-wallet' ? (
+                      <>
+                        <div>
+                          <label className="user-loan-application-label">E-Wallet Provider</label>
+                          <div style={{ display: 'flex', gap: '12px', marginTop: '6px', marginBottom: '8px' }}>
+                            <label style={{ 
+                              display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: 'var(--foreground)', cursor: 'pointer',
+                              padding: '12px 16px', borderRadius: '10px', flex: 1,
+                              border: newEwalletProvider === 'GCash' ? '1px solid #1E3A8A' : '1px solid var(--border)',
+                              background: newEwalletProvider === 'GCash' ? 'rgba(30, 58, 138, 0.03)' : 'var(--card)',
+                              transition: 'all 0.2s'
+                            }}>
+                              <input type="radio" name="ewalletProvider" value="GCash" checked={newEwalletProvider === 'GCash'} onChange={(e) => setNewEwalletProvider(e.target.value)} style={{ display: 'none' }} />
+                              <div className={`ula-disbursement-radio ${newEwalletProvider === 'GCash' ? 'active' : ''}`} />
+                              GCash
+                            </label>
+                            <label style={{ 
+                              display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: 'var(--foreground)', cursor: 'pointer',
+                              padding: '12px 16px', borderRadius: '10px', flex: 1,
+                              border: newEwalletProvider === 'Maya' ? '1px solid #1E3A8A' : '1px solid var(--border)',
+                              background: newEwalletProvider === 'Maya' ? 'rgba(30, 58, 138, 0.03)' : 'var(--card)',
+                              transition: 'all 0.2s'
+                            }}>
+                              <input type="radio" name="ewalletProvider" value="Maya" checked={newEwalletProvider === 'Maya'} onChange={(e) => setNewEwalletProvider(e.target.value)} style={{ display: 'none' }} />
+                              <div className={`ula-disbursement-radio ${newEwalletProvider === 'Maya' ? 'active' : ''}`} />
+                              Maya
+                            </label>
+                          </div>
+                        </div>
+                        <div>
+                          <label className="user-loan-application-label">Account Name</label>
+                          <input type="text" className="user-loan-application-input" style={{ paddingLeft: '16px' }} placeholder="e.g. Juan Dela Cruz" value={newEwalletAccountName} onChange={(e) => setNewEwalletAccountName(e.target.value)} maxLength={50} required />
+                        </div>
+                        <div>
+                          <label className="user-loan-application-label">Account Number</label>
+                          <input 
+                            type="text" 
+                            className="user-loan-application-input" 
+                            style={{ paddingLeft: '16px' }} 
+                            placeholder="e.g. 09123456789" 
+                            value={newEwalletNumber} 
+                            onChange={(e) => setNewEwalletNumber(e.target.value.replace(/[^0-9]/g, ''))} 
+                            maxLength={11}
+                            required 
+                          />
+                        </div>
+                      </>
+                    ) : disbursementMethod === 'bank' ? (
+                      <>
+                        <div>
+                          <label className="user-loan-application-label">Bank Name</label>
+                          <input type="text" className="user-loan-application-input" style={{ paddingLeft: '16px' }} placeholder="e.g. BDO, BPI" value={newBankName} onChange={(e) => setNewBankName(e.target.value)} maxLength={50} required />
+                        </div>
+                        <div>
+                          <label className="user-loan-application-label">Account Name</label>
+                          <input type="text" className="user-loan-application-input" style={{ paddingLeft: '16px' }} placeholder="e.g. Juan Dela Cruz" value={newBankAccountName} onChange={(e) => setNewBankAccountName(e.target.value)} maxLength={50} required />
+                        </div>
+                        <div>
+                          <label className="user-loan-application-label">Account Number</label>
+                          <input 
+                            type="text" 
+                            className="user-loan-application-input" 
+                            style={{ paddingLeft: '16px' }} 
+                            placeholder="e.g. 1234 5678 90" 
+                            value={newBankAccountNumber} 
+                            onChange={(e) => {
+                              const raw = e.target.value.replace(/\D/g, '');
+                              setNewBankAccountNumber(raw.replace(/(.{4})/g, '$1 ').trim());
+                            }} 
+                            maxLength={20} 
+                            required 
+                          />
+                        </div>
+                      </>
+                    ) : null}
+                  </div>
                 )}
               </div>
             )}
@@ -661,7 +976,7 @@ export default function LoanApplicationModal({
             <button
               type="submit"
               className="user-loan-application-submit-btn"
-              disabled={loading || !allEligible || !calc}
+              disabled={loading || !allEligible || !calc || !selfieImage || !idImage || !disbursementMethod || !agreedToTerms}
             >
               {loading ? <span className="btn-spinner" /> : 'Submit Application'}
             </button>
@@ -673,6 +988,110 @@ export default function LoanApplicationModal({
         </form>
 
       </div>
+
+      {/* ── Camera Capture Modal ── */}
+      {cameraOpen && (
+        <div className="ula-camera-overlay" onClick={closeCamera}>
+          <div className="ula-camera-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="ula-camera-header">
+              <h3 className="ula-camera-title">
+                <Camera size={20} />
+                {cameraTarget === 'selfie' ? 'Capture Selfie with ID & Date' : 'Capture Government ID'}
+              </h3>
+              <button type="button" className="ula-camera-close" onClick={closeCamera}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="ula-camera-body">
+              {cameraError ? (
+                <div className="ula-camera-error">
+                  <AlertTriangle size={32} color="#dc2626" />
+                  <p>{cameraError}</p>
+                  <button type="button" className="ula-retake-btn" onClick={() => openCamera(cameraTarget)}>
+                    <RotateCcw size={14} /> Try Again
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className={`ula-camera-video-container ${cameraTarget === 'selfie' ? 'ula-camera-mirror' : ''}`}>
+                    <video
+                      ref={videoRef}
+                      autoPlay
+                      playsInline
+                      muted
+                      className="ula-camera-video"
+                    />
+                    {!cameraReady && (
+                      <div className="ula-camera-loading">
+                        <span className="btn-spinner" />
+                        <p>Starting camera...</p>
+                      </div>
+                    )}
+                    {/* Guide overlay */}
+                    {cameraReady && cameraTarget === 'selfie' && (
+                      <div className="ula-camera-guide-selfie">
+                        <div className="ula-camera-face-outline" />
+                      </div>
+                    )}
+                    {cameraReady && cameraTarget === 'id' && (
+                      <div className="ula-camera-guide-id">
+                        <div className="ula-camera-id-outline" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Hint bar */}
+                  {cameraReady && cameraHint && (
+                    <div className="ula-camera-hint">
+                      <AlertTriangle size={14} />
+                      <span>{cameraHint}</span>
+                    </div>
+                  )}
+
+                  {/* Instructions */}
+                  <div className="ula-camera-instructions">
+                    {cameraTarget === 'selfie' ? (
+                      <ul>
+                        <li>Hold your government ID beside your face</li>
+                        <li>Your face must be clearly visible and close to the camera</li>
+                        <li>Include today's date (handwritten on paper)</li>
+                      </ul>
+                    ) : (
+                      <ul>
+                        <li>Capture a clear photo of the front of your valid government ID</li>
+                        <li>All text and photo on the ID must be readable</li>
+                        <li>Avoid glare, shadows, and blurriness</li>
+                      </ul>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Capture button */}
+            {!cameraError && (
+              <div className="ula-camera-actions">
+                <button
+                  type="button"
+                  className="ula-camera-capture-btn"
+                  onClick={capturePhoto}
+                  disabled={!cameraReady}
+                >
+                  <div className="ula-camera-capture-ring">
+                    <div className="ula-camera-capture-dot" />
+                  </div>
+                </button>
+                <span className="ula-camera-capture-label">Tap to capture</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Hidden canvas for capturing frames */}
+      <canvas ref={canvasRef} style={{ display: 'none' }} />
+
     </div>
   );
 }

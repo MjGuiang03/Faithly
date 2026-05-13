@@ -78,25 +78,16 @@ export default function SecApprovedLoanDetailsModal({ loan, onClose, onProcess }
                     {/* Stats Cards */}
                     <div className="sec-loan-details-stats">
                         <div className="sec-loan-details-stat-card active">
-                            <div className="sec-loan-details-stat-icon green">
-                                <Banknote size={20} color="#00A63E" />
-                            </div>
                             <p className="sec-loan-details-stat-label">Church Active</p>
                             <p className="sec-loan-details-stat-value green">Active</p>
                         </div>
 
                         <div className="sec-loan-details-stat-card">
-                            <div className="sec-loan-details-stat-icon yellow">
-                                <Banknote size={20} color="#A65F00" />
-                            </div>
                             <p className="sec-loan-details-stat-label">Loan History</p>
                             <p className="sec-loan-details-stat-value">{loan.loanHistory}</p>
                         </div>
 
                         <div className="sec-loan-details-stat-card">
-                            <div className="sec-loan-details-stat-icon pink">
-                                <Banknote size={20} color="#DB2777" />
-                            </div>
                             <p className="sec-loan-details-stat-label">Total Donations</p>
                             <p className="sec-loan-details-stat-value">₱{(loan.totalDonations || 0).toLocaleString()}</p>
                         </div>

@@ -214,7 +214,7 @@ export default function Home() {
       }
 
       activities.sort((a, b) => b.date - a.date);
-      setRecentActivity(activities.slice(0, 5));
+      setRecentActivity(activities.slice(0, 3));
 
     } catch (err) {
       console.error('Failed to fetch dashboard data:', err);
@@ -350,6 +350,16 @@ export default function Home() {
 
   return (
     <div className="user-home-content-wrapper">
+
+      {/* Welcome Header */}
+      <div className="uh-welcome-header" style={{ marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <h1 style={{ fontSize: '28px', fontWeight: '700', color: '#0f172a', margin: 0, letterSpacing: '-0.02em', fontFamily: "'Cormorant Garamond', serif" }}>
+          Welcome back{profile?.fullName ? `, ${profile.fullName.split(' ')[0]}` : ''}!
+        </h1>
+        <p style={{ fontSize: '16px', color: '#64748b', margin: 0, fontFamily: "'Inter', sans-serif", lineHeight: '1.5' }}>
+          Here's your personal overview and the latest updates from your community.
+        </p>
+      </div>
 
       {/* Stats */}
       <div className="uh-stats-grid">
@@ -615,7 +625,7 @@ export default function Home() {
           </div>
           {loading ? (
             <div className="uh-activity-scroll">
-              {[1, 2, 3, 4].map(i => (
+              {[1, 2, 3].map(i => (
                 <div key={i} className="uh-activity-card uh-activity-card--skel">
                   <div className="user-skeleton" style={{ width: 30, height: 30, borderRadius: 8 }} />
                   <div style={{ flex: 1 }}>

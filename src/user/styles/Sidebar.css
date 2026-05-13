@@ -98,12 +98,12 @@
 }
 
 .user-sidebar-logo-text h1 {
-  font-family: 'Inter', sans-serif;
-  font-size: 1.4rem;
-  font-weight: 500;
+  font-size: 1.55rem;
+  font-weight: 600;
   margin: 0;
   color: white;
-  letter-spacing: -0.02em;
+  font-family: 'Cormorant Garamond', serif;
+  letter-spacing: 0.02em;
   white-space: nowrap;
 }
 

@@ -1,9 +1,10 @@
 import { useNavigate, useLocation } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
-import { useState, useEffect } from 'react';
-import { Building2, Calendar, FileText, Heart, LayoutGrid, Menu, Settings, Wallet, X, LogOut } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Building2, Calendar, FileText, Heart, LayoutGrid, Menu, Settings, Wallet, X, LogOut, Bell } from 'lucide-react';
 import puacLogo from '../../assets/puaclogo.png';
 import '../styles/Sidebar.css';
+import API from '../../utils/api';
 
 import { isOfficerPosition } from '../../utils/officerPositions';
 
@@ -12,6 +13,8 @@ export default function Sidebar({ collapsed, setCollapsed, toggleCollapsed }) {
   const location = useLocation();
   const { profile, user, signOut } = useAuth();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [unreadNotifCount, setUnreadNotifCount] = useState(0);
+  const token = localStorage.getItem('token');
   
   const handleSignOut = async () => {
     const result = await signOut();
@@ -47,6 +50,81 @@ export default function Sidebar({ collapsed, setCollapsed, toggleCollapsed }) {
     return () => window.removeEventListener('resize', handleResize);
   }, [setCollapsed]);
 
+  const fetchNotifications = useCallback(async () => {
+    if (!token) return;
+    const headers = { Authorization: `Bearer ${token}` };
+
+    try {
+      const res = await fetch(`${API}/api/notifications/feed`, { headers });
+      const contentType = res.headers.get("content-type");
+      if (!res.ok || !contentType || !contentType.includes("application/json")) return;
+
+      const data = await res.json();
+      if (!data.success) return;
+
+      const { readIds: readIdsFromData, payments, loans: loansDataFeed, donations: donationsDataFeed, attendance: attendanceDataFeed, savings: savingsDataFeed } = data;
+      const currentReadIds = new Set(readIdsFromData || []);
+      const items = [];
+
+      if (loansDataFeed) {
+        loansDataFeed.forEach(l => {
+          if (l.status === 'awaiting_member_approval') items.push({ id: `loan-terms-${l._id}` });
+          if (l.status === 'approved') items.push({ id: `loan-app-${l._id}` });
+          if (l.status === 'active' && l.disbursed) {
+            const term = l.termMonths || 12;
+            const paidMonths = l.paidMonths || 0;
+            if (paidMonths < term && l.disbursementDate) {
+              const startDate = new Date(l.disbursementDate);
+              const nextDue = new Date(startDate);
+              nextDue.setMonth(startDate.getMonth() + paidMonths + 1);
+              const cutoffDate = new Date(nextDue);
+              cutoffDate.setDate(nextDue.getDate() + 3);
+              cutoffDate.setHours(23, 59, 59, 999);
+              if (Date.now() > cutoffDate.getTime()) items.push({ id: `loan-late-${l._id}-${paidMonths}` });
+            }
+            items.push({ id: `loan-disbursed-${l._id}` });
+          }
+          if (l.status === 'rejected') items.push({ id: `loan-rejected-${l._id}` });
+        });
+      }
+      if (payments) {
+        payments.forEach(p => {
+          if (p.status === 'pending') items.push({ id: `payment-pending-${p._id}` });
+          if (p.status === 'confirmed') items.push({ id: `payment-confirmed-${p._id}` });
+          if (p.status === 'rejected') items.push({ id: `payment-rejected-${p._id}` });
+        });
+      }
+      if (donationsDataFeed) {
+        donationsDataFeed.filter(d => d.status === 'confirmed').forEach(d => {
+          items.push({ id: `don-${d._id}` });
+        });
+      }
+      if (attendanceDataFeed) {
+        attendanceDataFeed.slice(0, 5).forEach(a => {
+          items.push({ id: `att-${a._id}` });
+        });
+      }
+      if (savingsDataFeed) {
+        savingsDataFeed.filter(s => s.type === 'deposit' && s.status === 'confirmed').forEach(s => items.push({ id: `sav-${s._id}` }));
+        savingsDataFeed.filter(s => s.type === 'withdrawal' && s.status === 'confirmed').forEach(s => items.push({ id: `sav-wd-${s._id}` }));
+      }
+
+      setUnreadNotifCount(items.filter(it => !currentReadIds.has(it.id)).length);
+    } catch (err) {
+      console.error('Failed to fetch sidebar notifications:', err);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 120000); // Poll every 2 mins
+    window.addEventListener("admin-notif-read-update", fetchNotifications);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("admin-notif-read-update", fetchNotifications);
+    };
+  }, [fetchNotifications]);
+
   const handleNavClick = (path) => {
     navigate(path);
     if (window.innerWidth < 768) {
@@ -67,6 +145,7 @@ export default function Sidebar({ collapsed, setCollapsed, toggleCollapsed }) {
     { path: '/donation', icon: <Heart size={20} />, label: 'Donations' },
     { path: '/attendance', icon: <Calendar size={20} />, label: 'Attendance' },
     { path: '/branches', icon: <Building2 size={20} />, label: 'Branches' },
+    { path: '/notifications', icon: <Bell size={20} />, label: 'Notifications' },
     { path: '/settings', icon: <Settings size={20} />, label: 'Settings' },
   ];
 
@@ -88,7 +167,8 @@ export default function Sidebar({ collapsed, setCollapsed, toggleCollapsed }) {
             </div>
             {!collapsed && (
               <div className="user-sidebar-logo-text">
-                <h1>FaithLy</h1>
+                <h1>PUAC</h1>
+                <p>Member Portal</p>
               </div>
             )}
             <button
@@ -112,6 +192,11 @@ export default function Sidebar({ collapsed, setCollapsed, toggleCollapsed }) {
             >
               <span className="user-sidebar-nav-icon">{icon}</span>
               {!collapsed && <span>{label}</span>}
+              {path === '/notifications' && unreadNotifCount > 0 && (
+                <span className="user-sidebar-notif-badge">
+                  {unreadNotifCount > 9 ? '9+' : unreadNotifCount}
+                </span>
+              )}
             </button>
           ))}
         </div>

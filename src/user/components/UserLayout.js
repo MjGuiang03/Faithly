@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
-import UserHeader from './UserHeader';
+
 import Chatbot from './Chatbot';
 import NotificationPrompt from '../../components/NotificationPrompt';
 import { MessageCircle, X } from 'lucide-react';
@@ -40,10 +40,7 @@ export default function UserLayout() {
       />
       
       <div className="user-main-content">
-        <UserHeader 
-          collapsed={sidebarCollapsed}
-          toggleSidebar={toggleSidebar} 
-        />
+
         <div className="user-page-container">
           <Outlet />
         </div>
@@ -56,7 +53,7 @@ export default function UserLayout() {
         className={`user-chat-button ${chatOpen ? 'user-chat-button--open' : ''}`}
         onClick={() => setChatOpen(prev => !prev)}
         aria-label={chatOpen ? 'Close chat' : 'Open chat'}
-        title={chatOpen ? 'Close chat' : 'Chat with FaithBot'}
+        title={chatOpen ? 'Close chat' : 'Chat with PUAC Chatbot'}
       >
         {chatOpen ? (
           <X size={22} color="white" />

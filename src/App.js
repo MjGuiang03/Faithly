@@ -7,7 +7,6 @@ import AdminProtectedRoute from './admin/pages/AdminProtectedRoute';
 import UserLayout from './user/components/UserLayout';
 
 // Regular User Pages
-import WelcomePage from './user/pages/WelcomePage';
 import UpdatePassword from './user/components/UpdatePassword';
 import VerifyEmail from './user/components/VerifyEmail';
 
@@ -52,6 +51,7 @@ import SecretaryAdminNotif from './secretaryAdmin/pages/secretaryAdminNotif';
 import SecretaryAdminLoanProcess from './secretaryAdmin/pages/secretaryAdminLoanProcess';
 import SecretaryAdminRecords from './secretaryAdmin/pages/secretaryAdminRecords';
 import SecretaryAdminSettings from './secretaryAdmin/pages/secretaryAdminSettings';
+import WelcomePage from './user/pages/WelcomePage';
 
 export default function App() {
   return (
@@ -68,8 +68,7 @@ export default function App() {
 
           <Routes>
             {/* ========== PUBLIC ROUTES ========== */}
-            <Route path="/" element={<WelcomePage
-            />} />
+            <Route path="/" element={<WelcomePage />} />
             <Route path="/reset-password" element={<WelcomePage />} />
             <Route path="/update-password" element={<UpdatePassword />} />
             <Route path="/verify-email" element={<VerifyEmail />} />

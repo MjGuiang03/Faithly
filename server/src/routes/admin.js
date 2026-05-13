@@ -1386,9 +1386,25 @@ router.put('/loans/payments/:id/approve', authenticateAdmin, async (req, res) =>
     const loanObjectId = payment.loanObjectId ? new ObjectId(payment.loanObjectId) : payment.loanId; // fallback
     const loan = await loans.findOne({ _id: loanObjectId });
     if (loan) {
-      const newPaidMonths = (loan.paidMonths || 0) + 1;
-      const newBalance = Math.max(0, (loan.remainingBalance || loan.totalRepayment || loan.amount) - Number(payment.amount));
-      const isComplete = newPaidMonths >= (loan.termMonths || 12);
+      const pType = payment.paymentType || 'regular';
+      const pMonths = payment.monthsCovered || 1;
+      let newPaidMonths;
+      let newBalance;
+
+      if (pType === 'full') {
+          newPaidMonths = loan.termMonths || 12;
+          newBalance = 0;
+      } else if (pType === 'open') {
+          newPaidMonths = loan.paidMonths || 0;
+          newBalance = Math.max(0, (loan.remainingBalance || loan.totalRepayment || loan.amount) - Number(payment.amount));
+      } else {
+          const months = pType === 'advance' ? pMonths : 1;
+          newPaidMonths = Math.min((loan.paidMonths || 0) + months, loan.termMonths || 12);
+          newBalance = Math.max(0, (loan.remainingBalance || loan.totalRepayment || loan.amount) - Number(payment.amount));
+      }
+
+      const isComplete = newPaidMonths >= (loan.termMonths || 12) || newBalance <= 0;
+      if (isComplete) { newPaidMonths = loan.termMonths || 12; newBalance = 0; }
 
       const startDate = new Date(loan.disbursementDate || loan.approvedDate || loan.appliedDate || new Date());
       const nextDue = new Date(startDate);
@@ -1401,8 +1417,8 @@ router.put('/loans/payments/:id/approve', authenticateAdmin, async (req, res) =>
             remainingBalance: newBalance,
             paidMonths: newPaidMonths,
             status: isComplete ? 'completed' : 'active',
-            nextPaymentDate: nextDue,
-            nextDueDate: nextDue
+            nextPaymentDate: isComplete ? null : nextDue,
+            nextDueDate: isComplete ? null : nextDue
           }
         }
       );

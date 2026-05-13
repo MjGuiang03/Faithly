@@ -60,6 +60,29 @@ function resolveStatusDesc(status) {
     return '';
 }
 
+const handleDocClick = (dataUrl, setViewingImage) => {
+    if (!dataUrl) return;
+    if (dataUrl.startsWith('data:application/pdf')) {
+        const win = window.open();
+        win.document.write(`<iframe src="${dataUrl}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
+    } else {
+        setViewingImage(dataUrl);
+    }
+};
+
+const renderDocPreview = (dataUrl) => {
+    if (!dataUrl) return <span style={{ fontSize: '10px' }}>No document</span>;
+    if (dataUrl.startsWith('data:application/pdf')) {
+        return (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#1E3A8A' }}>
+                <span style={{ fontSize: '24px' }}>📄</span>
+                <span style={{ fontSize: '10px', marginTop: '4px', fontWeight: 'bold' }}>PDF Document</span>
+            </div>
+        );
+    }
+    return <img src={dataUrl} alt="Document preview" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '4px' }} />;
+};
+
 export default function LoanAdminLoanManagement() {
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
@@ -738,13 +761,9 @@ export default function LoanAdminLoanManagement() {
                                         <div className="dm-sec-label">Uploaded documents</div>
                                         <div className="dm-docs-grid">
                                             {/* Selfie with ID */}
-                                            <div className="dm-doc-card" onClick={() => selectedLoan.selfieData && setViewingImage(selectedLoan.selfieData)}>
+                                            <div className="dm-doc-card" onClick={() => handleDocClick(selectedLoan.selfieData, setViewingImage)}>
                                                 <div className="dm-doc-placeholder">
-                                                    {selectedLoan.selfieData ? (
-                                                        <img src={selectedLoan.selfieData} alt="Selfie" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '4px' }} />
-                                                    ) : (
-                                                        <span style={{ fontSize: '10px' }}>No selfie</span>
-                                                    )}
+                                                    {renderDocPreview(selectedLoan.selfieData)}
                                                 </div>
                                                 <div className="dm-doc-footer">
                                                     <span className="dm-doc-name">Selfie w/ ID</span>
@@ -755,13 +774,9 @@ export default function LoanAdminLoanManagement() {
                                             </div>
 
                                             {/* Government ID */}
-                                            <div className="dm-doc-card" onClick={() => selectedLoan.idData && setViewingImage(selectedLoan.idData)}>
+                                            <div className="dm-doc-card" onClick={() => handleDocClick(selectedLoan.idData, setViewingImage)}>
                                                 <div className="dm-doc-placeholder">
-                                                    {selectedLoan.idData ? (
-                                                        <img src={selectedLoan.idData} alt="ID" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '4px' }} />
-                                                    ) : (
-                                                        <span style={{ fontSize: '10px' }}>No ID</span>
-                                                    )}
+                                                    {renderDocPreview(selectedLoan.idData)}
                                                 </div>
                                                 <div className="dm-doc-footer">
                                                     <span className="dm-doc-name">Valid ID</span>
@@ -770,6 +785,47 @@ export default function LoanAdminLoanManagement() {
                                                     </span>
                                                 </div>
                                             </div>
+
+                                            {/* COE */}
+                                            <div className="dm-doc-card" onClick={() => handleDocClick(selectedLoan.coeData, setViewingImage)}>
+                                                <div className="dm-doc-placeholder">
+                                                    {renderDocPreview(selectedLoan.coeData)}
+                                                </div>
+                                                <div className="dm-doc-footer">
+                                                    <span className="dm-doc-name">COE</span>
+                                                    <span className={`dm-doc-badge ${selectedLoan.coeData ? 'ok' : 'missing'}`}>
+                                                        {selectedLoan.coeData ? 'OK' : 'X'}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            {/* ITR */}
+                                            <div className="dm-doc-card" onClick={() => handleDocClick(selectedLoan.itrData, setViewingImage)}>
+                                                <div className="dm-doc-placeholder">
+                                                    {renderDocPreview(selectedLoan.itrData)}
+                                                </div>
+                                                <div className="dm-doc-footer">
+                                                    <span className="dm-doc-name">ITR</span>
+                                                    <span className={`dm-doc-badge ${selectedLoan.itrData ? 'ok' : 'missing'}`}>
+                                                        {selectedLoan.itrData ? 'OK' : 'X'}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            {/* Active Loan Screenshot */}
+                                            {selectedLoan.hasActiveLoan && (
+                                                <div className="dm-doc-card" onClick={() => handleDocClick(selectedLoan.activeLoanScreenshotData, setViewingImage)}>
+                                                    <div className="dm-doc-placeholder">
+                                                        {renderDocPreview(selectedLoan.activeLoanScreenshotData)}
+                                                    </div>
+                                                    <div className="dm-doc-footer">
+                                                        <span className="dm-doc-name">Active Loan</span>
+                                                        <span className={`dm-doc-badge ${selectedLoan.activeLoanScreenshotData ? 'ok' : 'missing'}`}>
+                                                            {selectedLoan.activeLoanScreenshotData ? 'OK' : 'X'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>

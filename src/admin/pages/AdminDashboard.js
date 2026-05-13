@@ -6,7 +6,8 @@ import {
   PieChart, Pie, Cell,
   BarChart, Bar,
   LineChart, Line,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  ReferenceLine, ReferenceDot, LabelList, Label, ReferenceArea
 } from 'recharts';
 import '../styles/AdminDashboard.css';
 
@@ -376,6 +377,43 @@ export default function AdminDashboard() {
   }, [rawAttendance, attYear, attMonth, attBranch]);
   const dash = (v) => loading ? '—' : v;
 
+  const pieTotal = pieData.reduce((sum, item) => sum + (item.value || 0), 0);
+  const activePieData = pieData.filter(d => d.value > 0);
+  const zeroPieData = pieData.filter(d => d.value === 0);
+
+  const maxMembersInBranch = membersByBranch.length > 0 ? Math.max(...membersByBranch.map(b => b.count)) : 0;
+  const isHorizontalMembers = maxMembersInBranch <= 3;
+
+  let maxNewMembers = 0;
+  let spikeLabel = null;
+  growthData.forEach(g => {
+    if (g.newMembers > maxNewMembers) {
+      maxNewMembers = g.newMembers;
+      spikeLabel = g.label;
+    }
+  });
+
+  let momGrowth = 0;
+  if (growthData.length >= 2) {
+    const last = growthData[growthData.length - 1].totalMembers;
+    const prev = growthData[growthData.length - 2].totalMembers;
+    if (prev > 0) momGrowth = Math.round(((last - prev) / prev) * 100);
+  }
+
+  const enhancedGrowthData = growthData.map((d) => {
+    let isZero = d.totalMembers === 0;
+    return {
+      ...d,
+      actualTotal: isZero ? null : d.totalMembers,
+      noDataTotal: isZero ? 0 : null // Not ideal for connecting but we will use connectNulls
+    };
+  });
+  // Connect the zero line to the first real data point
+  let firstDataIdx = enhancedGrowthData.findIndex(d => d.actualTotal !== null);
+  if (firstDataIdx > 0) enhancedGrowthData[firstDataIdx].noDataTotal = enhancedGrowthData[firstDataIdx].actualTotal;
+
+  const totalAttendanceCount = rawAttendance.filter(a => ['present', 'late'].includes((a.status || '').toLowerCase())).length;
+
   return (
     <div className="admin-dashboard-main">
       {!expandedChart && (<>
@@ -488,40 +526,76 @@ export default function AdminDashboard() {
           <div className="adm-pie-chart-container">
             <ResponsiveContainer width="100%" height={160}>
               <PieChart>
-                <Pie data={pieData} cx="50%" cy="50%" innerRadius={45} outerRadius={72} paddingAngle={2} dataKey="value">
-                  {pieData.map((entry, index) => (
+                <Pie data={activePieData} cx="50%" cy="50%" innerRadius={45} outerRadius={72} paddingAngle={2} dataKey="value">
+                  {activePieData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
+                  <Label 
+                    value={`₱${pieTotal >= 1000 ? (pieTotal/1000).toFixed(1).replace(/\\.0$/, '') + 'k' : pieTotal}`} 
+                    position="center" 
+                    fill="#1e3a5f" 
+                    style={{ fontSize: '14px', fontWeight: 'bold', fontFamily: 'Inter' }} 
+                  />
+                  <Label 
+                    value="Total" 
+                    position="center" 
+                    dy={12} 
+                    fill="#6B7280" 
+                    style={{ fontSize: '10px', fontFamily: 'Inter' }} 
+                  />
                 </Pie>
-                <Tooltip formatter={(value) => `₱${(value || 0).toLocaleString()}`} />
+                <Tooltip formatter={(value, name, props) => [`₱${(value || 0).toLocaleString()} (${Math.round((value/pieTotal)*100)}%)`, props.payload.name]} />
               </PieChart>
             </ResponsiveContainer>
             <div className="adm-pie-legend">
-              {pieData.map((cat, i) => (
+              {activePieData.map((cat, i) => (
                 <div key={i} className="adm-pie-legend-item">
                   <div className="adm-pie-dot" style={{ background: cat.color }} />
                   <span className="adm-pie-label">{cat.name}</span>
-                  <span className="adm-pie-val">₱{cat.value >= 1000 ? (cat.value / 1000).toFixed(0) + 'k' : cat.value}</span>
+                  <span className="adm-pie-val">₱{cat.value.toLocaleString()} — {Math.round((cat.value/pieTotal)*100)}%</span>
                 </div>
               ))}
             </div>
+            {zeroPieData.length > 0 && (
+              <div style={{ fontSize: '10px', color: '#9CA3AF', textAlign: 'center', marginTop: '8px', fontStyle: 'italic' }}>
+                ({zeroPieData.map(c => c.name).join(', ')}: no donations yet)
+              </div>
+            )}
           </div>
         </div>
 
         {/* Members by Branch Bar */}
         <div className="adm-card adm-card-bar" >
           <div className="adm-card-header">
-            <h3 className="adm-card-title">Members by Community</h3>
+            <div>
+              <h3 className="adm-card-title">Members by Community</h3>
+              <span className="adm-card-sub">{memberStats.total} total across {membersByBranch.length} communities</span>
+            </div>
             <button className="adm-chart-expand-btn" onClick={() => setExpandedChart('branches')} title="Expand Chart"><Expand size={16} color="#4B5563" strokeWidth={2.5} /></button>
           </div>
           <div className="adm-bar-chart-container">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={membersByBranch.length > 0 ? membersByBranch : [{ branch: 'No data', count: 0 }]} margin={{ top: 10, right: 8, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
-                <XAxis dataKey="branch" stroke="#9CA3AF" fontSize={11} angle={-15} textAnchor="end" height={35} tickMargin={5} />
-                <YAxis stroke="#9CA3AF" fontSize={11} allowDecimals={false} />
-                <Tooltip cursor={{ fill: '#F9FAFB' }} />
-                <Bar dataKey="count" fill="#0D1F45" radius={[4, 4, 0, 0]} name="Members" barSize={32} />
+              <BarChart 
+                data={membersByBranch.length > 0 ? membersByBranch : [{ branch: 'No data', count: 0 }]} 
+                layout={isHorizontalMembers ? "vertical" : "horizontal"}
+                margin={isHorizontalMembers ? { top: 0, right: 30, left: 10, bottom: 0 } : { top: 20, right: 8, left: -20, bottom: 0 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" horizontal={!isHorizontalMembers} vertical={isHorizontalMembers} />
+                {isHorizontalMembers ? (
+                  <>
+                    <XAxis type="number" stroke="#9CA3AF" fontSize={11} domain={[0, maxMembersInBranch + 1]} allowDecimals={false} hide />
+                    <YAxis dataKey="branch" type="category" stroke="#9CA3AF" fontSize={11} width={80} tickFormatter={(val) => val.length > 10 ? val.substring(0, 10) + '...' : val} />
+                  </>
+                ) : (
+                  <>
+                    <XAxis dataKey="branch" stroke="#9CA3AF" fontSize={11} angle={-15} textAnchor="end" height={35} tickMargin={5} tickFormatter={(val) => val.length > 10 ? val.substring(0, 10) + '...' : val} />
+                    <YAxis stroke="#9CA3AF" fontSize={11} domain={[0, maxMembersInBranch + 1]} allowDecimals={false} />
+                  </>
+                )}
+                <Tooltip cursor={{ fill: '#F9FAFB' }} formatter={(value) => [value, 'Members']} />
+                <Bar dataKey="count" fill="#0D1F45" radius={isHorizontalMembers ? [0, 4, 4, 0] : [4, 4, 0, 0]} barSize={isHorizontalMembers ? 20 : 32} name="Members">
+                  <LabelList dataKey="count" position={isHorizontalMembers ? "right" : "top"} fill="#6B7280" fontSize={10} />
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -532,35 +606,50 @@ export default function AdminDashboard() {
       <div className="adm-charts-row">
         <div className="adm-card adm-chart-full">
           <div className="adm-card-header">
-            <h3 className="adm-card-title">Member Growth Trends</h3>
+            <div>
+              <h3 className="adm-card-title">Member Growth Trends</h3>
+              <span className="adm-card-sub">
+                <span style={{ color: momGrowth >= 0 ? '#10B981' : '#EF4444', fontWeight: 600 }}>
+                  {momGrowth >= 0 ? '↑' : '↓'} {Math.abs(momGrowth)}%
+                </span> vs last month
+              </span>
+            </div>
             <button className="adm-chart-expand-btn" onClick={() => setExpandedChart('growth')} title="Expand Chart"><Expand size={16} color="#4B5563" strokeWidth={2.5} /></button>
           </div>
           <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={growthData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+            <LineChart data={enhancedGrowthData} margin={{ top: 20, right: 8, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
               <XAxis dataKey="label" stroke="#9CA3AF" fontSize={12} />
               <YAxis stroke="#9CA3AF" fontSize={12} allowDecimals={false} />
-              <Tooltip />
+              <Tooltip formatter={(value, name) => [value, name === 'actualTotal' ? 'Total Members' : name === 'noDataTotal' ? 'No Data' : name]} />
               <Legend iconType="circle" wrapperStyle={{ paddingTop: '12px', fontSize: '12px' }} />
-              {(growthView === 'both' || growthView === 'total') && <Line type="monotone" dataKey="totalMembers" stroke="#155DFC" strokeWidth={2} dot={{ r: 3 }} name="Total Members" />}
-              {(growthView === 'both' || growthView === 'new') && <Line type="monotone" dataKey="newMembers"   stroke="#0D1F45" strokeWidth={2} dot={{ r: 3 }} name="New Members" />}
+              <Line type="monotone" dataKey="noDataTotal" stroke="#D1D5DB" strokeDasharray="5 5" strokeWidth={2} dot={false} name="No Data" connectNulls />
+              <Line type="monotone" dataKey="actualTotal" stroke="#155DFC" strokeWidth={2} dot={{ r: 3 }} name="Total Members" connectNulls />
+              {spikeLabel && maxNewMembers > 0 && (
+                <ReferenceDot x={spikeLabel} y={growthData.find(g => g.label === spikeLabel)?.totalMembers} r={5} fill="#EF4444" stroke="none">
+                  <Label value="Registration opened" position="top" fill="#EF4444" fontSize={10} offset={10} />
+                </ReferenceDot>
+              )}
             </LineChart>
           </ResponsiveContainer>
         </div>
 
-<div className="adm-card adm-chart-full">
+        <div className="adm-card adm-chart-full">
           <div className="adm-card-header">
-            <h3 className="adm-card-title">Attendance Trends</h3>
+            <div>
+              <h3 className="adm-card-title">Attendance Trends</h3>
+              <span className="adm-card-sub">{totalAttendanceCount} total attendees recorded — {new Date().getFullYear()}</span>
+            </div>
             <button className="adm-chart-expand-btn" onClick={() => setExpandedChart('attendance')} title="Expand Chart"><Expand size={16} color="#4B5563" strokeWidth={2.5} /></button>
           </div>
           <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={attendVsDonData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+            <BarChart data={attendVsDonData} margin={{ top: 20, right: 8, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
               <XAxis dataKey="label" stroke="#9CA3AF" fontSize={12} />
               <YAxis stroke="#9CA3AF" fontSize={12} allowDecimals={false} />
-              <Tooltip />
+              <Tooltip cursor={{ fill: '#F9FAFB' }} />
               <Legend iconType="square" wrapperStyle={{ paddingTop: '12px', fontSize: '12px' }} />
-              <Bar dataKey="attendance" fill="#155DFC" radius={[6, 6, 0, 0]} name="Attendance" />
+              <Bar dataKey="attendance" fill="#155DFC" radius={[4, 4, 0, 0]} name="Attendance" background={{ fill: '#F3F4F6' }} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -634,30 +723,70 @@ export default function AdminDashboard() {
                   <div className="adm-expand-grid" style={{ gridTemplateColumns: '3fr 7fr' }}>
                     <div className="adm-expand-panel">
                       <h4 className="adm-expand-panel-title">Distribution Overview</h4>
-                      <div className="adm-expand-panel-chart">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <PieChart>
-                            <Pie data={pieData} cx="50%" cy="50%" innerRadius={40} outerRadius={75} paddingAngle={2} dataKey="value" label={({ name, value }) => `₱${value.toLocaleString()}`}>
-                              {pieData.map((entry, index) => (<Cell key={`cell-${index}`} fill={entry.color} />))}
-                            </Pie>
-                            <Tooltip formatter={(value) => `₱${(value || 0).toLocaleString()}`} />
-                            <Legend iconType="circle" iconSize={8} layout="horizontal" align="center" verticalAlign="bottom" wrapperStyle={{ fontSize: '10px', lineHeight: '16px', paddingTop: '8px' }} />
-                          </PieChart>
-                        </ResponsiveContainer>
+                      <div className="adm-expand-panel-chart" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                        <div style={{ flex: 1, minHeight: '260px' }}>
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie data={activePieData} cx="50%" cy="50%" innerRadius={80} outerRadius={120} paddingAngle={2} dataKey="value">
+                                {activePieData.map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={entry.color} />
+                                ))}
+                                <Label 
+                                  value={`₱${pieTotal >= 1000 ? (pieTotal/1000).toFixed(1).replace(/\\.0$/, '') + 'k' : pieTotal}`} 
+                                  position="center" 
+                                  fill="#1e3a5f" 
+                                  style={{ fontSize: '14px', fontWeight: 'bold', fontFamily: 'Inter' }} 
+                                />
+                                <Label 
+                                  value="Total" 
+                                  position="center" 
+                                  dy={12} 
+                                  fill="#6B7280" 
+                                  style={{ fontSize: '10px', fontFamily: 'Inter' }} 
+                                />
+                              </Pie>
+                              <Tooltip formatter={(value, name, props) => [`₱${(value || 0).toLocaleString()} (${Math.round((value/pieTotal)*100)}%)`, props.payload.name]} />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </div>
+                        <div className="adm-pie-legend">
+                          {activePieData.map((cat, i) => (
+                            <div key={i} className="adm-pie-legend-item">
+                              <div className="adm-pie-dot" style={{ background: cat.color }} />
+                              <span className="adm-pie-label">{cat.name}</span>
+                              <span className="adm-pie-val">₱{cat.value.toLocaleString()} — {Math.round((cat.value/pieTotal)*100)}%</span>
+                            </div>
+                          ))}
+                        </div>
+                        {zeroPieData.length > 0 && (
+                          <div style={{ fontSize: '10px', color: '#9CA3AF', textAlign: 'center', marginTop: '8px', fontStyle: 'italic' }}>
+                            ({zeroPieData.map(c => c.name).join(', ')}: no donations yet)
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="adm-expand-panel">
                       <h4 className="adm-expand-panel-title">Top Donor by Community</h4>
                       <div className="adm-expand-panel-chart">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <BarChart data={donationsByBranch} margin={{ top: 10, right: 10, left: -10, bottom: 30 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
-                            <XAxis dataKey="branch" stroke="#9CA3AF" fontSize={11} angle={-20} textAnchor="end" height={55} />
-                            <YAxis stroke="#9CA3AF" fontSize={12} />
-                            <Tooltip formatter={(value) => `₱${(value || 0).toLocaleString()}`} />
-                            <Bar dataKey="total" name="Total Donations" fill="#0D1F45" radius={[4, 4, 0, 0]} barSize={28} />
-                          </BarChart>
-                        </ResponsiveContainer>
+                        {(() => {
+                          const avgDonation = donationsByBranch.length ? donationsByBranch.reduce((sum, b) => sum + b.total, 0) / donationsByBranch.length : 0;
+                          return (
+                            <ResponsiveContainer width="100%" height="100%">
+                              <BarChart data={donationsByBranch} margin={{ top: 10, right: 10, left: -10, bottom: 30 }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
+                                <XAxis dataKey="branch" stroke="#9CA3AF" fontSize={11} angle={-20} textAnchor="end" height={55} />
+                                <YAxis stroke="#9CA3AF" fontSize={12} />
+                                <Tooltip formatter={(value) => `₱${(value || 0).toLocaleString()}`} cursor={{ fill: '#F9FAFB' }} />
+                                {avgDonation > 0 && <ReferenceLine y={avgDonation} stroke="#EF4444" strokeDasharray="3 3" />}
+                                <Bar dataKey="total" name="Total Donations" radius={[4, 4, 0, 0]} barSize={28}>
+                                  {donationsByBranch.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={index === 0 ? '#4a90d9' : '#0D1F45'} />
+                                  ))}
+                                </Bar>
+                              </BarChart>
+                            </ResponsiveContainer>
+                          );
+                        })()}
                       </div>
                     </div>
                   </div>
@@ -725,6 +854,11 @@ export default function AdminDashboard() {
                             <span style={{ color: '#374151' }}>Officers ({officers})</span>
                           </div>
                         </div>
+                        {officerPct > 50 && (
+                          <div style={{ marginTop: '12px', padding: '6px 12px', background: '#FEF3C7', color: '#B45309', borderRadius: '4px', fontSize: '11px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <AlertCircle size={14} /> High officer ratio — review membership
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -755,34 +889,45 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                     <div className="adm-expand-panel">
-                      <h4 className="adm-expand-panel-title">Growth by Community (Top 5)</h4>
+                      <h4 className="adm-expand-panel-title">Growth by Community (Top {growthByBranch.length || 0})</h4>
                       <div className="adm-expand-panel-chart">
                         <ResponsiveContainer width="100%" height="100%">
                           <BarChart data={growthByBranch} margin={{ top: 10, right: 10, left: -20, bottom: 30 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
                             <XAxis dataKey="branch" stroke="#9CA3AF" fontSize={11} angle={-20} textAnchor="end" height={55} />
                             <YAxis stroke="#9CA3AF" fontSize={12} allowDecimals={false} tickFormatter={val => val >= 1000 ? `${(val/1000).toFixed(1)}k` : val} />
-                            <Tooltip />
+                            <Tooltip cursor={{ fill: '#F9FAFB' }} />
                             <Bar dataKey="count" fill="#0D1F45" radius={[4, 4, 0, 0]} name="New Members" barSize={28} />
                           </BarChart>
                         </ResponsiveContainer>
                       </div>
                     </div>
-                    <div className="adm-expand-panel">
+                    <div className="adm-expand-panel" style={{ alignItems: 'center' }}>
                       <h4 className="adm-expand-panel-title">Active vs Inactive</h4>
-                      <div className="adm-expand-panel-chart">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <PieChart>
-                            <Pie data={[
-                              { name: 'Active', value: memberStats.active, fill: '#155DFC' },
-                              { name: 'Inactive', value: memberStats.inactive, fill: '#9CA3AF' }
-                            ]} cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={2} dataKey="value" label={({name, value}) => `${name} (${value})`}>
-                              <Cell fill="#155DFC" />
-                              <Cell fill="#9CA3AF" />
-                            </Pie>
-                            <Tooltip />
-                          </PieChart>
-                        </ResponsiveContainer>
+                      <div className="adm-expand-panel-chart" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        {(() => {
+                          const activePct = memberStats.total > 0 ? (memberStats.active / memberStats.total) * 100 : 0;
+                          const activeColor = activePct < 60 ? '#EF4444' : activePct <= 80 ? '#F59E0B' : '#10B981';
+                          return (
+                            <>
+                              <ResponsiveContainer width="100%" height={180}>
+                                <PieChart>
+                                  <Pie data={[
+                                    { name: 'Active', value: memberStats.active, fill: '#155DFC' },
+                                    { name: 'Inactive', value: memberStats.inactive, fill: '#9CA3AF' }
+                                  ]} cx="50%" cy="50%" innerRadius={45} outerRadius={65} paddingAngle={2} dataKey="value">
+                                    <Cell fill="#155DFC" />
+                                    <Cell fill="#9CA3AF" />
+                                  </Pie>
+                                  <Tooltip />
+                                </PieChart>
+                              </ResponsiveContainer>
+                              <div style={{ marginTop: '8px', padding: '4px 12px', background: `${activeColor}20`, color: activeColor, borderRadius: '12px', fontSize: '12px', fontWeight: 600 }}>
+                                {activePct.toFixed(0)}% Active
+                              </div>
+                            </>
+                          );
+                        })()}
                       </div>
                     </div>
                   </div>
@@ -811,7 +956,7 @@ export default function AdminDashboard() {
                     </div>
                     {attBranch === 'all' ? (
                       <div className="adm-expand-panel">
-                        <h4 className="adm-expand-panel-title">Avg Attendance by Community (Top 5)</h4>
+                        <h4 className="adm-expand-panel-title">Avg Attendance by Community (Top {attendanceByBranch.length || 0})</h4>
                         <div className="adm-expand-panel-chart">
                           <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={attendanceByBranch} margin={{ top: 10, right: 10, left: -10, bottom: 30 }}>

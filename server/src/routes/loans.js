@@ -85,7 +85,10 @@ router.post('/loans/apply', authenticateUser, async (req, res) => {
       interestRate, totalInterest, totalRepayment, monthlyPayment,
       disbursementMethod, disbursementAccount,
       selfieFileName, idFileName,
-      selfieData, idData
+      selfieData, idData,
+      coeData, coeFileName,
+      itrData, itrFileName,
+      hasActiveLoan, activeLoanScreenshotData, activeLoanScreenshotFileName
     } = req.body;
 
     if (!amount || (!loanType && !purpose)) {
@@ -116,6 +119,13 @@ router.post('/loans/apply', authenticateUser, async (req, res) => {
       idFileName: idFileName || null,
       selfieData: selfieData || null,
       idData: idData || null,
+      coeData: coeData || null,
+      coeFileName: coeFileName || null,
+      itrData: itrData || null,
+      itrFileName: itrFileName || null,
+      hasActiveLoan: hasActiveLoan || false,
+      activeLoanScreenshotData: activeLoanScreenshotData || null,
+      activeLoanScreenshotFileName: activeLoanScreenshotFileName || null,
       appliedDate: new Date(), updatedAt: new Date(),
       statusHistory: [{ status: 'pending', date: new Date() }]
     };
@@ -614,7 +624,7 @@ router.get('/loans/:id/schedule', authenticateUser, async (req, res) => {
 router.post('/loans/:id/pay', authenticateUser, async (req, res) => {
     try {
         const { id } = req.params;
-        const { paymentMethod, subMethod, accountName, accountNumber, proofData, proofFileName, successUrl, cancelUrl } = req.body;
+        const { paymentMethod, paymentType: pType = 'regular', amount: reqAmount, monthsCovered: reqMonths, subMethod, accountName, accountNumber, proofData, proofFileName, successUrl, cancelUrl } = req.body;
         const email = req.user.email;
 
         let query = { loanId: id, email };
@@ -627,7 +637,24 @@ router.post('/loans/:id/pay', authenticateUser, async (req, res) => {
         if (dbLoan.status !== 'active') return res.status(400).json({ success: false, message: 'Only active loans can receive payments' });
 
         const loan = enrichLoanWithNextPayment(dbLoan);
-        const amountToPay = loan.upcomingPaymentAmount || loan.monthlyPayment || 0;
+        const defaultAmt = loan.upcomingPaymentAmount || loan.monthlyPayment || 0;
+        const remaining = loan.remainingBalance || loan.totalRepayment || loan.amount || 0;
+
+        let amountToPay = defaultAmt;
+        let monthsCovered = 1;
+
+        if (pType === 'regular') {
+            amountToPay = defaultAmt;
+            monthsCovered = 1;
+        } else if (pType === 'full') {
+            amountToPay = remaining;
+            monthsCovered = (loan.termMonths || 12) - (loan.paidMonths || 0);
+        } else if (pType === 'advance' || pType === 'open') {
+            amountToPay = Number(reqAmount) || 0;
+            if (amountToPay < 500) return res.status(400).json({ success: false, message: 'Minimum payment is ₱500.' });
+            if (amountToPay > remaining) amountToPay = remaining;
+            monthsCovered = Math.min(Math.floor(amountToPay / (loan.monthlyPayment || 1)), (loan.termMonths || 12) - (loan.paidMonths || 0));
+        }
 
         const { settings } = await import('../config/db.js');
         const config = await settings.findOne({ _id: 'global' });
@@ -639,63 +666,44 @@ router.post('/loans/:id/pay', authenticateUser, async (req, res) => {
             }
 
             const payment = {
-                loanId: loan.loanId,
-                loanObjectId: loan._id,
-                email,
-                memberName: loan.memberName,
-                amount: amountToPay,
+                loanId: loan.loanId, loanObjectId: loan._id, email,
+                memberName: loan.memberName, amount: amountToPay,
+                paymentType: pType, monthsCovered,
                 paymentMethod: isManual ? paymentMethod : 'cash',
                 subMethod: isManual && paymentMethod !== 'cash' ? subMethod : null,
                 accountName: isManual && paymentMethod !== 'cash' ? accountName : null,
                 accountNumber: isManual && paymentMethod !== 'cash' ? accountNumber : null,
-                proofData: proofData || null,
-                proofFileName: proofFileName || null,
-                status: 'pending',
-                submittedAt: new Date(),
+                proofData: proofData || null, proofFileName: proofFileName || null,
+                status: 'pending', submittedAt: new Date(),
                 monthNumber: (loan.paidMonths || 0) + 1,
-                isLate: loan.isLate || false,
-                interestMultiplier: loan.interestMultiplier || 1
+                isLate: loan.isLate || false, interestMultiplier: loan.interestMultiplier || 1
             };
-
             await loanPayments.insertOne(payment);
             return res.status(201).json({ success: true, message: 'Payment submitted for verification' });
         }
 
         // --- DIGITAL PAYMENT VIA PAYMONGO ---
         const monthNum = (loan.paidMonths || 0) + 1;
-        const description = `FaithLy Loan Repayment - ${loan.loanId} (Month ${monthNum})`;
-        
-        // Generate Link
+        const description = `FaithLy Loan Repayment - ${loan.loanId} (${pType === 'full' ? 'Full Payment' : pType === 'advance' ? `${monthsCovered} months` : `Month ${monthNum}`})`;
         const sUrl = successUrl || `${process.env.FRONTEND_URL || 'http://localhost:3000'}/loans/${loan.loanId}?pay_success=true`;
         const cUrl = cancelUrl || `${process.env.FRONTEND_URL || 'http://localhost:3000'}/loans/${loan.loanId}?pay_cancelled=true`;
-        
         const user = await users.findOne({ email });
         const billing = { name: user?.fullName || loan.memberName, email, phone: user?.phone || null };
         const checkoutSession = await generatePaymentLink(amountToPay, description, `LOAN-${loan.loanId}-${monthNum}-${Date.now()}`, paymentMethod, sUrl, cUrl, billing);
 
         const payment = {
-            loanId: loan.loanId,
-            loanObjectId: loan._id,
-            email,
-            memberName: loan.memberName,
-            amount: amountToPay,
+            loanId: loan.loanId, loanObjectId: loan._id, email,
+            memberName: loan.memberName, amount: amountToPay,
+            paymentType: pType, monthsCovered,
             paymentMethod,
             paymongoLinkId: checkoutSession.id,
             checkoutUrl: checkoutSession.attributes.checkout_url,
-            status: 'pending',
-            submittedAt: new Date(),
+            status: 'pending', submittedAt: new Date(),
             monthNumber: monthNum,
-            isLate: loan.isLate || false,
-            interestMultiplier: loan.interestMultiplier || 1
+            isLate: loan.isLate || false, interestMultiplier: loan.interestMultiplier || 1
         };
-
         await loanPayments.insertOne(payment);
-        
-        res.status(201).json({ 
-            success: true, 
-            message: 'Checkout session created', 
-            checkoutUrl: checkoutSession.attributes.checkout_url 
-        });
+        res.status(201).json({ success: true, message: 'Checkout session created', checkoutUrl: checkoutSession.attributes.checkout_url });
 
     } catch (err) {
         console.error(err);
@@ -728,12 +736,29 @@ router.put('/admin/loan-payments/:id/confirm', authenticateAdmin, async (req, re
         const loan = await loans.findOne({ _id: payment.loanObjectId });
         if (!loan) return res.status(404).json({ success: false, message: 'Loan not found' });
 
-        const newPaidMonths = (loan.paidMonths || 0) + 1;
         const paymentAmount = payment.amount || loan.monthlyPayment || 0;
-        const newBalance = Math.max(0, (loan.remainingBalance || loan.totalRepayment || loan.amount) - paymentAmount);
-        const isComplete = newPaidMonths >= (loan.termMonths || 12);
+        const pType = payment.paymentType || 'regular';
+        const pMonths = payment.monthsCovered || 1;
 
-        // Compute next due date: (paidMonths + 1) months after disbursement/approval
+        let newPaidMonths;
+        let newBalance;
+        if (pType === 'full') {
+            newPaidMonths = loan.termMonths || 12;
+            newBalance = 0;
+        } else if (pType === 'open') {
+            // Open payments just reduce balance, don't increment months
+            newPaidMonths = loan.paidMonths || 0;
+            newBalance = Math.max(0, (loan.remainingBalance || loan.totalRepayment || loan.amount) - paymentAmount);
+        } else {
+            // regular or advance
+            const months = pType === 'advance' ? pMonths : 1;
+            newPaidMonths = Math.min((loan.paidMonths || 0) + months, loan.termMonths || 12);
+            newBalance = Math.max(0, (loan.remainingBalance || loan.totalRepayment || loan.amount) - paymentAmount);
+        }
+
+        const isComplete = newPaidMonths >= (loan.termMonths || 12) || newBalance <= 0;
+        if (isComplete) { newPaidMonths = loan.termMonths || 12; newBalance = 0; }
+
         const startDate = new Date(loan.disbursementDate || loan.approvedDate || loan.appliedDate);
         const nextDue = new Date(startDate);
         nextDue.setMonth(startDate.getMonth() + newPaidMonths + 1);
@@ -754,6 +779,8 @@ router.put('/admin/loan-payments/:id/confirm', authenticateAdmin, async (req, re
                         date: new Date(),
                         monthNumber: newPaidMonths,
                         amount: paymentAmount,
+                        paymentType: pType,
+                        monthsCovered: pMonths,
                         paymentMethod: payment.paymentMethod || 'cash',
                     }
                 }
@@ -772,7 +799,7 @@ router.put('/admin/loan-payments/:id/confirm', authenticateAdmin, async (req, re
           loan.email,
           'loan',
           'Loan Payment Confirmed',
-          `<h2>Payment Confirmed</h2><p>Your payment of ₱${paymentAmount.toLocaleString()} has been confirmed. Your remaining balance is ₱${newBalance.toLocaleString()}.</p>`,
+          `<h2>Payment Confirmed</h2><p>Your ${pType} payment of ₱${paymentAmount.toLocaleString()} has been confirmed. Your remaining balance is ₱${newBalance.toLocaleString()}.</p>`,
           `Payment of ₱${paymentAmount.toLocaleString()} confirmed. Remaining balance: ₱${newBalance.toLocaleString()}.`
         );
     } catch (err) {

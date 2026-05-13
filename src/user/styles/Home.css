@@ -388,7 +388,6 @@
 }
 
 .uh-grid-bottom>.uh-card {
-  min-height: 420px;
   display: flex;
   flex-direction: column;
   overflow: hidden;

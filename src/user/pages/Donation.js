@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Banknote, CalendarDays, ChevronDown, Download, Heart, Receipt, Share2, X, UploadCloud, FileCheck2 } from 'lucide-react';
-import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { ComposedChart, Bar, Line, Cell, Tooltip, Legend, ResponsiveContainer, XAxis, YAxis, CartesianGrid } from 'recharts';
 import '../styles/Donation.css';
 import ewalletLogo from '../../assets/gcashlogo.png';
 import bank from '../../assets/bank.png';
@@ -443,60 +443,35 @@ export default function Donation() {
               </div>
 
               {/* Category Pie Chart & Recent Donations */}
-              {!loading && stats.categoryBreakdown && Object.keys(stats.categoryBreakdown).length > 0 && (
+              {!loading && (
                 <div className="user-donation-history-preview-layout">
-                  <div className="user-donation-chart-container user-donation-chart-container-inner">
-                    <ResponsiveContainer width="100%" height={250}>
-                      <PieChart>
-                        <Pie
-                          data={Object.entries(stats.categoryBreakdown).map(([name, value]) => ({ name, value }))}
-                          cx="50%" cy="45%"
-                          innerRadius={45} outerRadius={75}
-                          paddingAngle={2} dataKey="value"
-                        >
-                          {Object.entries(stats.categoryBreakdown).map((_, index) => {
-                            const COLORS = ['#0D1F45', '#152B5C', '#1C3873', '#23448A', '#2B51A1', '#325DB8', '#396ACF'];
-                            return <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />;
-                          })}
-                        </Pie>
-                        <Tooltip formatter={(value) => `₱${Number(value).toLocaleString('en-PH', { minimumFractionDigits: 0 })}`} />
-                        <Legend
-                          verticalAlign="bottom"
-                          content={(props) => {
-                            const { payload } = props;
-                            return (
-                              <div style={{ 
-                                display: 'grid', 
-                                gridTemplateColumns: '1fr 1fr', 
-                                gap: '8px 16px', 
-                                width: '100%', 
-                                maxWidth: '320px', 
-                                margin: '0 auto', 
-                                paddingTop: '16px' 
-                              }}>
-                                {payload.map((entry, index) => {
-                                  const isLastOdd = (payload.length % 2 !== 0) && (index === payload.length - 1);
-                                  return (
-                                    <div key={`item-${index}`} style={{ 
-                                      display: 'flex', 
-                                      alignItems: 'center', 
-                                      gap: '8px', 
-                                      gridColumn: isLastOdd ? '1 / -1' : 'auto', 
-                                      justifyContent: isLastOdd ? 'center' : 'flex-start' 
-                                    }}>
-                                      <div style={{ width: '12px', height: '12px', backgroundColor: entry.color, flexShrink: 0 }} />
-                                      <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '13px', color: '#1F2937', whiteSpace: 'nowrap' }}>
-                                        {entry.value}
-                                      </span>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            );
-                          }}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
+                  <div style={{ width: '100%', height: 300, minHeight: 300, position: 'relative' }}>
+                    {(() => {
+                      let runningTotal = 0;
+                      const fallbackMonths = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map(m => ({ month: m, amount: 0 }));
+                      const rawData = stats.monthlyData || fallbackMonths;
+                      
+                      const chartData = rawData.map(d => {
+                        const amt = Number(d.amount) || 0;
+                        runningTotal += amt;
+                        return { ...d, cumulative: runningTotal, amount: amt > 0 ? amt : null };
+                      });
+                      
+                      return (
+                        <ResponsiveContainer width="99%" height="100%">
+                          <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
+                            <XAxis dataKey="month" stroke="#9CA3AF" fontSize={11} />
+                            <YAxis yAxisId="left" stroke="#9CA3AF" fontSize={11} tickFormatter={v => v >= 1000 ? `${(v/1000).toFixed(0)}k` : v} />
+                            <YAxis yAxisId="right" orientation="right" stroke="#9CA3AF" fontSize={11} tickFormatter={v => v >= 1000 ? `${(v/1000).toFixed(0)}k` : v} hide />
+                            <Tooltip cursor={{ fill: '#F9FAFB' }} contentStyle={{ borderRadius: '8px', border: '1px solid #E5E7EB' }} formatter={(v) => '₱' + Math.round(v).toLocaleString()} />
+                            <Legend wrapperStyle={{ fontSize: '12px' }} />
+                            <Bar yAxisId="left" dataKey="amount" name="Monthly Volume" fill="#155DFC" radius={[4, 4, 0, 0]} />
+                            <Line yAxisId="right" type="monotone" dataKey="cumulative" name="Cumulative Total" stroke="#00A63E" strokeWidth={2.5} dot={{ r: 3 }} />
+                          </ComposedChart>
+                        </ResponsiveContainer>
+                      );
+                    })()}
                   </div>
 
                   <div className="user-donation-recent-list-container">

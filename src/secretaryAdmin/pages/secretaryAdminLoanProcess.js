@@ -51,45 +51,44 @@ export default function SecretaryLoanProcess() {
     const processedCount = loans.filter(l => l.disbursed).length;
 
     const handleViewDetails = async (loan) => {
-        let loanHistoryCount = 0;
         const token = localStorage.getItem('secretaryToken') || localStorage.getItem('adminToken') || localStorage.getItem('token');
         const headers = { Authorization: `Bearer ${token}` };
 
-        try {
-            // Fetch real loan history for this member
-            const histRes = await fetch(`${API}/api/admin/loans?search=${encodeURIComponent(loan.email)}&limit=100`, { headers });
-            if (histRes.ok) {
-                const histData = await histRes.json();
-                if (histData.success && histData.loans) {
-                    loanHistoryCount = histData.loans.filter(l => l.status === 'completed').length;
-                }
-            }
-        } catch (err) {
-            console.error('Failed to fetch user loan history:', err);
-        }
-
+        let loanHistoryCount = 0;
         let totalDonations = 0;
         let userChurchId = 'N/A';
         let userPosition = 'Member';
 
+        // Provide immediate visual feedback
+        const loadingToast = toast.loading('Loading member data...');
+
         try {
-            // Fetch donations for this specific member
-            const donRes = await fetch(`${API}/api/admin/donations?search=${encodeURIComponent(loan.email)}`, { headers });
-            if (donRes.ok) {
-                const donData = await donRes.json();
+            // Run all three API calls simultaneously instead of sequentially to drastically reduce wait time
+            const [histRes, donRes, verRes] = await Promise.allSettled([
+                fetch(`${API}/api/admin/loans?search=${encodeURIComponent(loan.email)}&limit=100`, { headers }),
+                fetch(`${API}/api/admin/donations?search=${encodeURIComponent(loan.email)}`, { headers }),
+                fetch(`${API}/api/admin/verifications`, { headers })
+            ]);
+
+            // Process Loan History
+            if (histRes.status === 'fulfilled' && histRes.value.ok) {
+                const histData = await histRes.value.json();
+                if (histData.success && histData.loans) {
+                    loanHistoryCount = histData.loans.filter(l => l.status === 'completed').length;
+                }
+            }
+
+            // Process Donations
+            if (donRes.status === 'fulfilled' && donRes.value.ok) {
+                const donData = await donRes.value.json();
                 if (donData.success && donData.donations) {
                     totalDonations = donData.donations.reduce((sum, d) => sum + Number(d.amount), 0);
                 }
             }
-        } catch (err) {
-            console.error('Failed to fetch user donations:', err);
-        }
 
-        try {
-            // Fetch verification data for this member's real churchId and position
-            const verRes = await fetch(`${API}/api/admin/verifications`, { headers });
-            if (verRes.ok) {
-                const verData = await verRes.json();
+            // Process Verifications
+            if (verRes.status === 'fulfilled' && verRes.value.ok) {
+                const verData = await verRes.value.json();
                 if (verData.success && verData.verifications) {
                     const userVer = verData.verifications.find(v => v.email === loan.email && v.status === 'approved');
                     if (userVer) {
@@ -99,7 +98,9 @@ export default function SecretaryLoanProcess() {
                 }
             }
         } catch (err) {
-            console.error('Failed to fetch user verification:', err);
+            console.error('Failed to fetch user details:', err);
+        } finally {
+            toast.dismiss(loadingToast);
         }
 
         // Synthesize data for the modal

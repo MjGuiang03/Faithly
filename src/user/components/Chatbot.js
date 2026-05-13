@@ -9,7 +9,7 @@ import API from '../../utils/api';
    Fallback Knowledge Base (used when AI is unavailable)
 ───────────────────────────────────────────── */
 const KB = [
-  { patterns: ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening', 'kumusta', 'magandang umaga'], responses: ["Hello! 👋 I'm FaithBot, your FaithLy assistant. How can I help you today?"], quickReplies: ['Loans', 'Donations', 'Attendance'] },
+  { patterns: ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening', 'kumusta', 'magandang umaga'], responses: ["Hello! 👋 I'm PUAC Chatbot, your PUAC assistant. How can I help you today?"], quickReplies: ['Loans', 'Donations', 'Attendance'] },
   { patterns: ['officer', 'verify', 'verification', 'verified', 'get verified'], responses: ["🛡️ **Officer Verification** unlocks access to the **Loans** and **Savings** modules.\n\n**How to get verified:**\n1. From the Home page, look for the **\"Are you an officer?\"** card\n2. Click **\"Yes, verify me\"**\n3. Enter your **Church ID Number** and select your **Church Position**\n4. Submit — administrators will review it within **3–5 business days**"], quickReplies: ['What positions qualify?', 'Loans', 'Savings'] },
   { patterns: ['loan', 'loans', 'borrow', 'apply loan', 'utang', 'hulugan'], responses: ["💳 **Loans** are available exclusively for **verified church officers**.\n\nGo to **Loans** > **Apply for a Loan** > choose type, amount, and term > submit for admin review."], quickReplies: ['Loan requirements', 'Interest rates'] },
   { patterns: ['savings', 'save', 'ipon'], responses: ["🏦 **Savings** is for **verified church officers**. Set personalized goals, track progress, and deposit funds."], quickReplies: ['How to deposit?'] },
@@ -172,7 +172,7 @@ export default function Chatbot({ isOpen, onClose }) {
             </div>
             <div className="cb-header-info">
               <p className="cb-header-name">
-                FaithBot
+                PUAC Chatbot
                 <span className="cb-ai-badge">AI</span>
               </p>
               <span className="cb-header-status">
@@ -198,7 +198,7 @@ export default function Chatbot({ isOpen, onClose }) {
               <div className={`cb-bubble cb-bubble--${msg.sender}`}>
                 {msg.greeting ? (
                   <p className="cb-bubble-text">
-                    👋 Hi <strong>{firstName}</strong>! I'm <strong>FaithBot</strong>, your AI-powered FaithLy assistant.
+                    👋 Hi <strong>{firstName}</strong>! I'm <strong>PUAC Chatbot</strong>, your AI-powered PUAC assistant.
                     I can help you with loans, donations, attendance, and more.
                     I also understand Tagalog! What would you like to know?
                   </p>

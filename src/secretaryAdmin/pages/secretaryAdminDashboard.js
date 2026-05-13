@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { useState, useEffect } from 'react';
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Label } from 'recharts';
 import SecretaryAdminSidebar from '../components/secretaryAdminSidebar';
 import '../../admin/styles/AdminDashboard.css';
 import '../styles/secretaryAdminDashboard.css';
@@ -14,7 +14,7 @@ const fmtDate = (d) => {
   return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 };
 const COLORS = ['#155DFC', '#00A63E', '#F59E0B'];
-const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const YEAR_OPTIONS = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() + i);
 
 export default function SecretaryAdminDashboard() {
@@ -85,6 +85,8 @@ export default function SecretaryAdminDashboard() {
     const thisMonthLoans = [];
     const allDisbursedLoans = [];
 
+    let thisMonthAmount = 0;
+
     activeLoans.forEach(l => {
       if (!l.disbursed) {
         thisAwaitingLoans.push(l);
@@ -98,6 +100,7 @@ export default function SecretaryAdminDashboard() {
         if (disbDate.getFullYear() === currentYear && disbDate.getMonth() === currentMonth) {
           processedMonth++;
           thisMonthLoans.push(l);
+          thisMonthAmount += Number(l.amount) || 0;
         }
 
         totalDisbursedAmount += Number(l.amount) || 0;
@@ -105,11 +108,24 @@ export default function SecretaryAdminDashboard() {
       }
     });
 
+    let prevMonthDisbursed = 0;
+    const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    const prevMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+    allDisbursedLoans.forEach(l => {
+      if (!l.disbursementDate) return;
+      const d = new Date(l.disbursementDate);
+      if (d.getMonth() === prevMonth && d.getFullYear() === prevMonthYear) {
+        prevMonthDisbursed += Number(l.amount) || 0;
+      }
+    });
+
     setStats({
       awaiting: thisAwaitingLoans.length,
       today: processedToday,
       month: processedMonth,
-      disbursed: totalDisbursedAmount
+      disbursed: totalDisbursedAmount,
+      thisMonthAmount,
+      prevMonthDisbursed
     });
     setAwaitingLoans(thisAwaitingLoans);
     setTodayLoans(thisTodayLoans);
@@ -143,7 +159,7 @@ export default function SecretaryAdminDashboard() {
       { name: 'Cash', value: cashAmt, percentage: totalAmt > 0 ? Math.round((cashAmt / totalAmt) * 100) : 0 }
     ]);
 
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const flowData = months.map(m => ({ month: m, released: 0 }));
     disbursedL.forEach(l => {
       if (!l.disbursementDate) return;
@@ -208,7 +224,7 @@ export default function SecretaryAdminDashboard() {
         ) : (
           <>
             {/* Row 1 — 4 Stat Cards */}
-            <div className="adm-stats-grid sec-adm-stats-grid-4">
+            <div className="adm-stats-grid sec-adm-stats-grid-4 sec-adm-mb-6">
               <div className="adm-stat-card sec-adm-clickable-card" onClick={() => setShowAwaitingModal(true)}>
                 <div className="adm-stat-top">
                   <span className="adm-stat-label">Awaiting Processing</span>
@@ -250,8 +266,37 @@ export default function SecretaryAdminDashboard() {
               </div>
             </div>
 
+            {/* MoM Comparison */}
+            <div className="adm-stats-grid sec-adm-stats-grid-mom">
+              <div className="adm-stat-card">
+                <div className="adm-stat-top">
+                  <span className="adm-stat-label">This Month ({MONTH_NAMES[now.getMonth()]})</span>
+                </div>
+                <div className="sec-adm-mom-val-wrap">
+                  <span className="adm-stat-value">{dash(fmt(stats.thisMonthAmount))}</span>
+                  {(() => {
+                    if (stats.prevMonthDisbursed === 0) return null;
+                    const diff = stats.thisMonthAmount - stats.prevMonthDisbursed;
+                    const pct = Math.round((diff / stats.prevMonthDisbursed) * 100);
+                    const isUp = pct >= 0;
+                    return (
+                      <span className={`sec-adm-mom-delta ${isUp ? 'sec-adm-mom-delta-up' : 'sec-adm-mom-delta-down'}`}>
+                        {isUp ? '↑' : '↓'} {Math.abs(pct)}%
+                      </span>
+                    );
+                  })()}
+                </div>
+              </div>
+              <div className="adm-stat-card">
+                <div className="adm-stat-top">
+                  <span className="adm-stat-label">Last Month ({MONTH_NAMES[now.getMonth() === 0 ? 11 : now.getMonth() - 1]})</span>
+                </div>
+                <span className="adm-stat-value">{dash(fmt(stats.prevMonthDisbursed))}</span>
+              </div>
+            </div>
+
             {/* Row 2 — Charts */}
-            <div className="adm-analytics-row adm-analytics-row-sec">
+            <div className="adm-analytics-row adm-analytics-row-sec sec-adm-mt-16">
               {/* Monthly Disbursements */}
               <div className="adm-card">
                 <div className="adm-card-header">
@@ -259,6 +304,10 @@ export default function SecretaryAdminDashboard() {
                     <div>
                       <h3 className="adm-card-title">Monthly Disbursements</h3>
                       <span className="adm-card-sub">Funds released per month</span>
+                      {(() => {
+                        const ytd = moneyFlowData.reduce((s, d) => s + d.released, 0);
+                        return <div className="sec-adm-ytd-text">YTD: ₱{ytd.toLocaleString()}</div>;
+                      })()}
                     </div>
                     <select value={chartYear} onChange={e => setChartYear(parseInt(e.target.value))} className="adm-filter-select">
                       {YEAR_OPTIONS.map(y => <option key={y} value={y}>{y}</option>)}
@@ -266,13 +315,26 @@ export default function SecretaryAdminDashboard() {
                   </div>
                 </div>
                 <ResponsiveContainer width="100%" height={220}>
-                  <BarChart data={moneyFlowData} margin={{ top: 4, right: 8, left: -10, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-                    <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
-                    <YAxis stroke="#9CA3AF" fontSize={12} />
-                    <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #E5E7EB' }} formatter={(v) => '₱' + v.toLocaleString()} />
-                    <Bar dataKey="released" fill="#155DFC" name="Disbursed" radius={[4, 4, 0, 0]} />
-                  </BarChart>
+                  {(() => {
+                    const maxReleased = Math.max(...moneyFlowData.map(d => d.released));
+                    const chartData = moneyFlowData.map(d => ({
+                      ...d,
+                      released: d.released > 0 ? d.released : maxReleased * 0.01 // ghost bar
+                    }));
+                    return (
+                      <BarChart data={chartData} margin={{ top: 4, right: 8, left: -10, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+                        <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
+                        <YAxis stroke="#9CA3AF" fontSize={12} tickFormatter={v => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} />
+                        <Tooltip cursor={{ fill: '#F9FAFB' }} contentStyle={{ borderRadius: '8px', border: '1px solid #E5E7EB' }} formatter={(v, n, props) => props.payload.released === maxReleased * 0.01 ? '₱0' : '₱' + Math.round(v).toLocaleString()} />
+                        <Bar dataKey="released" name="Disbursed" radius={[4, 4, 0, 0]}>
+                          {chartData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.released === maxReleased * 0.01 ? '#F3F4F6' : '#1e3a5f'} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    );
+                  })()}
                 </ResponsiveContainer>
               </div>
 
@@ -284,37 +346,59 @@ export default function SecretaryAdminDashboard() {
                     <span className="adm-card-sub">Disbursement distribution</span>
                   </div>
                 </div>
-                <ResponsiveContainer width="100%" height={160}>
-                  <PieChart>
-                    <Pie data={paymentMethodData} cx="50%" cy="50%" innerRadius={40} outerRadius={65} paddingAngle={3} dataKey="value">
-                      {paymentMethodData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value) => '₱' + value.toLocaleString()} />
-                  </PieChart>
+                <ResponsiveContainer width="100%" height={220}>
+                  {(() => {
+                    const activeMethods = paymentMethodData.filter(d => d.percentage > 0);
+                    const zeroMethods = paymentMethodData.filter(d => d.percentage === 0);
+                    const totalVal = activeMethods.reduce((s, d) => s + d.value, 0);
+                    const PIE_COLORS = ['#1e3a5f', '#4a90d9', '#9CA3AF'];
+                    return (
+                      <div className="sec-adm-pie-wrapper">
+                        <div className="sec-adm-pie-inner">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie data={activeMethods} cx="50%" cy="50%" innerRadius={40} outerRadius={65} paddingAngle={3} dataKey="value">
+                                {activeMethods.map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                                ))}
+                                {/* Centered label for recharts Pie */}
+                                <Label value={`₱${totalVal >= 1000 ? (totalVal / 1000).toFixed(1).replace(/\\.0$/, '') + 'k' : totalVal}`} position="center" fill="#1e3a5f" style={{ fontSize: '14px', fontWeight: 'bold' }} />
+                                <Label value="Total" position="center" dy={16} fill="#6B7280" style={{ fontSize: '10px' }} />
+                              </Pie>
+                              <Tooltip formatter={(value) => '₱' + value.toLocaleString()} />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </div>
+                        <div className="adm-pie-legend adm-pie-legend-spaced">
+                          {activeMethods.map((entry, i) => (
+                            <div key={i} className="adm-pie-legend-item">
+                              <div className="adm-pie-dot" style={{ background: PIE_COLORS[i % PIE_COLORS.length] }} />
+                              <span className="adm-pie-label">{entry.name}</span>
+                              <span className="adm-pie-val">₱{entry.value >= 1000 ? (entry.value / 1000).toFixed(0) + 'k' : entry.value} ({entry.percentage}%)</span>
+                            </div>
+                          ))}
+                        </div>
+                        {zeroMethods.length > 0 && (
+                          <div className="sec-adm-zero-methods">
+                            ({zeroMethods.map(m => m.name).join(', ')}: 0%)
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </ResponsiveContainer>
-                <div className="adm-pie-legend adm-pie-legend-spaced">
-                  {paymentMethodData.map((entry, i) => (
-                    <div key={i} className="adm-pie-legend-item">
-                      <div className="adm-pie-dot" style={{ background: COLORS[i] }} />
-                      <span className="adm-pie-label">{entry.name}</span>
-                      <span className="adm-pie-val">{entry.percentage}%</span>
-                    </div>
-                  ))}
-                </div>
               </div>
             </div>
 
             {/* Row 3 — Processing Overview */}
-            <div className="adm-card">
+            <div className="adm-card sec-adm-mt-16">
               <div className="adm-card-header">
                 <div>
                   <h3 className="adm-card-title">Processing Overview</h3>
                   <span className="adm-card-sub">Key disbursement metrics</span>
                 </div>
               </div>
-              <div className="adm-stats-grid" style={{ gap: '10px', width: '100%', gridTemplateColumns: 'repeat(4, 1fr)' }}>
+              <div className="adm-stats-grid sec-adm-stats-overview-grid">
                 <div className="adm-summary-card">
                   <span className="adm-summary-label">Total Amount Requested</span>
                   <span className="adm-summary-value green">₱{reportStats.totalReceived.toLocaleString()}</span>
@@ -325,12 +409,54 @@ export default function SecretaryAdminDashboard() {
                 </div>
                 <div className="adm-summary-card">
                   <span className="adm-summary-label">Total Released</span>
-                  <span className="adm-summary-value" style={{ color: '#EF4444' }}>₱{reportStats.totalReleased.toLocaleString()}</span>
+                  <span className="adm-summary-value sec-adm-color-red">₱{reportStats.totalReleased.toLocaleString()}</span>
                 </div>
                 <div className="adm-summary-card">
                   <span className="adm-summary-label">Processing Rate</span>
-                  <span className="adm-summary-value" style={{ color: '#8B5CF6' }}>{reportStats.processingRate}%</span>
+                  <span className="adm-summary-value sec-adm-color-purple">{reportStats.processingRate}%</span>
                 </div>
+              </div>
+            </div>
+
+            {/* Row 4 — Recent Transactions */}
+            <div className="adm-card sec-adm-mt-16">
+              <div className="adm-card-header">
+                <h3 className="adm-card-title">Recent Transactions</h3>
+              </div>
+              <div className="sec-adm-table-container">
+                <table className="sec-adm-table">
+                  <thead>
+                    <tr className="sec-adm-table-thead-tr">
+                      <th className="sec-adm-table-th">Date</th>
+                      <th className="sec-adm-table-th">Member</th>
+                      <th className="sec-adm-table-th">Amount</th>
+                      <th className="sec-adm-table-th">Method</th>
+                      <th className="sec-adm-table-th">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {disbursedLoans.slice(0, 5).map(l => (
+                      <tr key={l._id} className="sec-adm-table-tbody-tr">
+                        <td className="sec-adm-table-td-date">{fmtDate(l.disbursementDate)}</td>
+                        <td className="sec-adm-table-td-member">{l.memberName || 'N/A'}</td>
+                        <td className="sec-adm-table-td-amount">{fmt(l.amount)}</td>
+                        <td className="sec-adm-table-td">
+                          <span className="sec-adm-table-badge-method">
+                            {l.paymentMethod || 'Cash'}
+                          </span>
+                        </td>
+                        <td className="sec-adm-table-td">
+                          <span className="sec-adm-table-badge-status">
+                            Completed
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                    {disbursedLoans.length === 0 && (
+                      <tr><td colSpan="5" className="sec-adm-table-empty">No recent transactions.</td></tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
           </>
