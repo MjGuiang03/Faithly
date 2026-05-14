@@ -353,7 +353,7 @@ export default function Home() {
 
       {/* Welcome Header */}
       <div className="uh-welcome-header" style={{ marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-        <h1 style={{ fontSize: '28px', fontWeight: '700', color: '#0f172a', margin: 0, letterSpacing: '-0.02em', fontFamily: "'Cormorant Garamond', serif" }}>
+        <h1 style={{ fontSize: '28px', fontWeight: '900', color: '#0f172a', margin: 0, letterSpacing: '-0.02em', fontFamily: "'Cormorant Garamond', serif" }}>
           Welcome back{profile?.fullName ? `, ${profile.fullName.split(' ')[0]}` : ''}!
         </h1>
         <p style={{ fontSize: '16px', color: '#64748b', margin: 0, fontFamily: "'Inter', sans-serif", lineHeight: '1.5' }}>

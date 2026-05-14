@@ -1,11 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 
 import Chatbot from './Chatbot';
 import NotificationPrompt from '../../components/NotificationPrompt';
-import { MessageCircle, X } from 'lucide-react';
-import { useEffect } from 'react';
+import { MessageCircle, X, Menu } from 'lucide-react';
 
 export default function UserLayout() {
   const [chatOpen, setChatOpen] = useState(false);
@@ -40,6 +39,14 @@ export default function UserLayout() {
       />
       
       <div className="user-main-content">
+        {/* Mobile floating toggle button */}
+        <button 
+          className="user-sidebar-mobile-toggle-btn" 
+          onClick={toggleSidebar}
+          aria-label="Open sidebar"
+        >
+          <Menu size={24} color="#1e3a8a" />
+        </button>
 
         <div className="user-page-container">
           <Outlet />

@@ -20,20 +20,18 @@
 /* ── Donation Modal Content ── */
 .donation-modal-content {
   background: #ffffff;
-  border-radius: 24px;
+  border-radius: 18px;
   width: 100%;
-  max-width: 680px;
+  max-width: 540px;
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
   box-shadow: 0 32px 80px rgba(19, 38, 84, 0.4);
   animation: slideUpModal 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   padding: 0;
-  border: 1px solid rgba(201, 168, 76, 0.3); /* gold border */
-  
-  /* Hide scrollbar for IE, Edge and Firefox */
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */
@@ -49,13 +47,13 @@
 /* ── Close Button ── */
 .donation-modal-close {
   position: absolute;
-  top: 24px;
-  right: 24px;
+  top: 16px;
+  right: 16px;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: #ffffff;
   cursor: pointer;
-  padding: 8px;
+  padding: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -74,11 +72,11 @@
 /* ── Header ── */
 .donation-modal-header {
   text-align: center;
-  padding: 48px 48px 32px;
+  padding: 28px 28px 20px;
   position: relative;
   background: linear-gradient(160deg, #1E3A8A 0%, #132654 100%);
   color: #ffffff;
-  border-radius: 24px 24px 0 0;
+  border-radius: 18px 18px 0 0;
   overflow: hidden;
 }
 
@@ -97,9 +95,9 @@
 
 .donation-modal-header h2 {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 2.8rem;
-  color: #C9A84C; /* gold */
-  margin: 0 0 16px 0;
+  font-size: 2rem;
+  color: #C9A84C;
+  margin: 0 0 8px 0;
   font-weight: 600;
   letter-spacing: 0.02em;
   position: relative;
@@ -109,27 +107,27 @@
 .donation-modal-header p {
   font-family: 'DM Sans', sans-serif;
   color: rgba(255, 255, 255, 0.8);
-  font-size: 1.05rem;
-  line-height: 1.6;
+  font-size: 0.85rem;
+  line-height: 1.5;
   margin: 0 auto;
-  max-width: 480px;
+  max-width: 400px;
   position: relative;
   z-index: 1;
 }
 
 /* ── Methods Container ── */
 .donation-methods-container {
-  padding: 32px 48px 48px;
+  padding: 20px 24px 24px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 14px;
   background: #ffffff;
 }
 
 /* ── Individual Method Card ── */
 .donation-method-card {
   border: 1px solid rgba(30, 58, 138, 0.12);
-  border-radius: 16px;
+  border-radius: 12px;
   overflow: hidden;
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
   background: #F8F9FC;
@@ -142,7 +140,7 @@
 }
 
 .donation-method-header {
-  padding: 16px 24px;
+  padding: 10px 18px;
   display: flex;
   align-items: center;
   position: relative;
@@ -154,7 +152,7 @@
 .donation-method-header h3 {
   margin: 0;
   font-family: 'DM Sans', sans-serif;
-  font-size: 1.15rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: #1E3A8A;
   letter-spacing: 0.04em;
@@ -162,7 +160,7 @@
   z-index: 1;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .donation-method-header h3::before {
@@ -175,20 +173,20 @@
 }
 
 .donation-method-body {
-  padding: 24px;
+  padding: 14px 18px;
   display: flex;
   flex-direction: row;
-  gap: 32px;
+  gap: 18px;
   align-items: center;
 }
 
 .donation-qr {
-  width: 140px;
-  height: 140px;
+  width: 100px;
+  height: 100px;
   object-fit: contain;
-  border-radius: 12px;
+  border-radius: 10px;
   background: white;
-  padding: 12px;
+  padding: 8px;
   border: 1px solid rgba(30, 58, 138, 0.1);
   box-shadow: 0 4px 12px rgba(30, 58, 138, 0.05);
   flex-shrink: 0;
@@ -204,15 +202,16 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
 }
 
 .detail-row {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 3px;
   position: relative;
-  padding-bottom: 12px;
+  padding-bottom: 8px;
+  padding-right: 40px;
   border-bottom: 1px dashed rgba(30, 58, 138, 0.15);
 }
 
@@ -223,7 +222,7 @@
 
 .detail-label {
   font-family: 'DM Sans', sans-serif;
-  font-size: 0.75rem;
+  font-size: 0.68rem;
   font-weight: 600;
   text-transform: uppercase;
   color: #5A6A9A;
@@ -232,7 +231,7 @@
 
 .detail-value {
   font-family: 'DM Sans', sans-serif;
-  font-size: 1.15rem;
+  font-size: 0.95rem;
   color: #0F1E4A;
   font-weight: 500;
   word-break: break-all;
@@ -242,7 +241,7 @@
 .copy-btn {
   position: absolute;
   right: 0;
-  bottom: 10px;
+  bottom: 6px;
   background: white;
   border: 1px solid rgba(30, 58, 138, 0.15);
   border-radius: 8px;
@@ -280,6 +279,10 @@
     gap: 24px;
   }
   
+  .donation-details {
+    width: 100%;
+  }
+  
   .donation-qr {
     align-self: center;
     width: 120px;
@@ -287,8 +290,8 @@
   }
   
   .copy-btn {
-    top: 0;
-    bottom: auto;
+    top: auto;
+    bottom: 6px;
     transform: none;
   }
   

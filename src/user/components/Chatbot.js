@@ -18,7 +18,7 @@ const KB = [
   { patterns: ['branch', 'location', 'address', 'simbahan'], responses: ["🏛️ Visit the **Branches** page to find locations, contact info, and service schedules."], quickReplies: ['My branch', 'Attendance'] },
   { patterns: ['settings', 'profile', 'password', 'account'], responses: ["⚙️ Go to **Settings** to update profile, change password, or manage notifications."], quickReplies: ['Change password', 'Home'] },
   { patterns: ['notification', 'alert', 'updates'], responses: ["🔔 Check **Notifications** for loan updates, donation confirmations, and more."], quickReplies: ['Loans', 'Donations'] },
-  { patterns: ['what is faithly', 'about faithly', 'puac', 'ano ang faithly'], responses: ["🙏 **FaithLy** is the official church portal of the **Philippine United Apostolic Church (PUAC)**. It lets members manage loans, savings, donations, attendance, and more — all in one platform."], quickReplies: ['Loans', 'Donations'] },
+  { patterns: ['what is faithly', 'about faithly', 'puac', 'ano ang faithly', 'what is puac'], responses: ["🙏 **PUAC Member Portal** is the official church portal of the **Philippine United Apostolic Church (PUAC)**. It lets members manage loans, savings, donations, attendance, and more — all in one platform."], quickReplies: ['Loans', 'Donations'] },
 ];
 
 const FALLBACK_REPLIES = ['Loans', 'Donations', 'Attendance', 'Branches'];
@@ -261,7 +261,7 @@ export default function Chatbot({ isOpen, onClose }) {
           <input
             ref={inputRef}
             className="cb-input"
-            placeholder="Ask me anything about FaithLy..."
+            placeholder="Ask me anything about PUAC..."
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKeyDown}

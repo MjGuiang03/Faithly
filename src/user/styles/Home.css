@@ -1813,6 +1813,10 @@ div.uh-modal-meta span {
 
 /* ── Mobile ── */
 @media (max-width: 768px) {
+  .uh-welcome-header {
+    margin-left: 50px;
+  }
+
   .uh-stats-grid {
     grid-template-columns: 1fr;
     gap: 10px;

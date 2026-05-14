@@ -12,6 +12,7 @@
   justify-content: center;
   z-index: 1000;
   padding: 1rem;
+  animation: user-login-fadeIn 0.2s ease;
 }
 
 /* ── Container / Card ── */
@@ -28,6 +29,17 @@
   max-width: 428px;
   position: relative;
   overflow: hidden;
+  animation: user-login-slideUp 0.3s ease;
+}
+
+@keyframes user-login-fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes user-login-slideUp {
+  from { opacity: 0; transform: translateY(40px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .user-login-container {
