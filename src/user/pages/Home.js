@@ -26,8 +26,7 @@ export default function Home() {
 
   const [donationStats, setDonationStats] = useState({ totalDonated: 0 });
   const [monthlyDonationCount, setMonthlyDonationCount] = useState(0);
-  const [attendanceStats, setAttendanceStats] = useState({ total: 0 });
-  const [monthlyAttendanceCount, setMonthlyAttendanceCount] = useState(0);
+
   const [recentActivity, setRecentActivity] = useState([]);
   const [savingsStats, setSavingsStats] = useState({ totalSavings: 0, thisMonth: 0 });
   const [savingsGoalsList, setSavingsGoalsList] = useState([]);
@@ -94,14 +93,6 @@ export default function Home() {
           return dt.getMonth() === thisMonth && dt.getFullYear() === thisYear;
         });
         setMonthlyDonationCount(monthlyDons.length);
-      }
-      if (attendanceRes.ok && attendanceData.success) {
-        setAttendanceStats(attendanceData.stats || { total: 0 });
-        const monthlyAtt = (attendanceData.attendance || []).filter(a => {
-          const dt = new Date(a.createdAt);
-          return dt.getMonth() === thisMonth && dt.getFullYear() === thisYear;
-        });
-        setMonthlyAttendanceCount(monthlyAtt.length);
       }
 
       if (savingsRes.ok && savingsData.success) {

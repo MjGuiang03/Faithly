@@ -1,15 +1,14 @@
-import { useNavigate } from 'react-router';
+
 import { useAuth } from '../../context/AuthContext';
 
 import '../styles/Branches.css';
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { MapPin, Search, Globe, CalendarDays, X, ChevronDown } from 'lucide-react';
+import { MapPin, Search, X, ChevronDown } from 'lucide-react';
 import BranchMap from '../components/BranchMap';
 import { branchData, REGION_ORDER, REGION_LABELS, DAY_COLORS, COMMUNITY_MAP } from '../components/branchData';
 
 
 export default function Branches() {
-  const navigate = useNavigate();
   const { profile } = useAuth();
 
   const [search, setSearch] = useState('');

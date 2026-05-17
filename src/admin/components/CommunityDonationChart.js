@@ -66,7 +66,7 @@ export default function CommunityDonationChart({ communityBreakdown = {} }) {
 
   const filteredCommunities = useMemo(() => {
     return allCommunities.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
-  }, [searchQuery]);
+  }, [searchQuery, allCommunities]);
 
   const toggleComm = (name) => {
     const next = new Set(selected);
@@ -89,7 +89,7 @@ export default function CommunityDonationChart({ communityBreakdown = {} }) {
 
   const chartData = useMemo(() => {
     return allCommunities.filter(c => selected.has(c.name));
-  }, [selected]);
+  }, [selected, allCommunities]);
 
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
 
@@ -172,7 +172,7 @@ export default function CommunityDonationChart({ communityBreakdown = {} }) {
                   <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(229, 231, 235, 0.4)' }} />
                   <Bar dataKey="amount" radius={[4, 4, 0, 0]}>
                     {chartData.map((entry, index) => (
-                      <cell key={`cell-${index}`} fill={getColor(index)} />
+                      <Cell key={`cell-${index}`} fill={getColor(index)} />
                     ))}
                   </Bar>
                 </BarChart>

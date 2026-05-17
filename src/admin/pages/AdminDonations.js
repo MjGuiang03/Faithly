@@ -5,7 +5,7 @@ import useDebounce from '../../hooks/useDebounce';
 import '../styles/AdminDonations.css';
 
 import API from '../../utils/api';
-import { Banknote, Users, Calculator, Search, XCircle, ChevronLeft, ChevronRight, Heart } from 'lucide-react';
+import { Banknote, Search, ChevronLeft, ChevronRight, Heart } from 'lucide-react';
 import CommunityDonationChart from '../components/CommunityDonationChart';
 import DonationCategoriesPie from '../components/DonationCategoriesPie';
 
@@ -48,8 +48,8 @@ export default function AdminDonationsNew() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all'); 
   const [showRejectedModal, setShowRejectedModal] = useState(false);
-  const [rejectedLoading, setRejectedLoading] = useState(false);
-  const [rejectedList, setRejectedList] = useState([]);
+  const rejectedLoading = false;
+  const rejectedList = [];
   const debouncedSearch = useDebounce(search, 400);
   const ITEMS_PER_PAGE = 5;
 
