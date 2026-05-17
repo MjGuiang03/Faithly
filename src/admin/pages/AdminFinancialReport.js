@@ -8,7 +8,7 @@ import {
 import html2pdf from 'html2pdf.js';
 import '../styles/AdminFinancialReport.css';
 import API from '../../utils/api';
-import { FileText, Printer, RefreshCw, Sparkles, Calendar, ChevronDown, Download } from 'lucide-react';
+import { FileText, Printer, RefreshCw, Sparkles, Calendar, ChevronDown, Download, MapPin, AlertCircle, X } from 'lucide-react';
 
 const fmt = (n) => `₱${(Number(n) || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const PIE_COLORS = ['#2563eb', '#8b5cf6', '#06b6d4', '#f59e0b', '#ef4444', '#10b981', '#ec4899'];
@@ -24,39 +24,65 @@ export default function AdminFinancialReport() {
 
   const [reportMonth, setReportMonth] = useState('');
   const [reportYear, setReportYear] = useState(now.getFullYear());
+  const [reportType, setReportType] = useState('all');
+  const [reportCommunity, setReportCommunity] = useState('');
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [exporting, setExporting] = useState(false);
+  const [communities, setCommunities] = useState([]);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const adminRole = localStorage.getItem('adminRole'); // 'admin', 'loanAdmin', 'secretaryAdmin'
 
   // Load cached report from sessionStorage on mount
   useEffect(() => {
     try {
-      const cached = sessionStorage.getItem(SESSION_KEY);
+      const cached = sessionStorage.getItem(`${SESSION_KEY}_${adminRole}`);
       if (cached) {
         const parsed = JSON.parse(cached);
         setReport(parsed.report);
         setReportMonth(parsed.month ?? '');
         setReportYear(parsed.year ?? now.getFullYear());
+        setReportType(parsed.type ?? 'all');
       }
     } catch { /* ignore parse errors */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [adminRole]);
+
+  // Fetch communities on mount (admin only)
+  useEffect(() => {
+    if (adminRole !== 'admin') return;
+    const fetchBranches = async () => {
+      try {
+        const token = localStorage.getItem('adminToken');
+        const res = await fetch(`${API}/api/admin/branches`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (data.branches) {
+          setCommunities(data.branches.map(b => b.name).sort());
+        }
+      } catch (err) {
+        console.error('Failed to fetch communities:', err);
+      }
+    };
+    fetchBranches();
+  }, [adminRole]);
 
   // Save report to sessionStorage whenever it changes
   useEffect(() => {
     if (report) {
       try {
-        sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+        sessionStorage.setItem(`${SESSION_KEY}_${adminRole}`, JSON.stringify({
           report,
           month: reportMonth,
           year: reportYear,
+          type: reportType,
         }));
       } catch { /* quota exceeded — ignore */ }
     }
-  }, [report, reportMonth, reportYear]);
+  }, [report, reportMonth, reportYear, reportType, adminRole]);
 
   const generateReport = useCallback(async () => {
     setLoading(true);
@@ -68,6 +94,8 @@ export default function AdminFinancialReport() {
       const params = new URLSearchParams();
       params.set('year', reportYear);
       if (reportMonth !== '') params.set('month', reportMonth);
+      params.set('type', reportType);
+      if (reportCommunity) params.set('community', reportCommunity);
 
       const res = await fetch(`${API}/api/admin/financial-report?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -87,7 +115,27 @@ export default function AdminFinancialReport() {
     } finally {
       setLoading(false);
     }
-  }, [reportMonth, reportYear, navigate]);
+  }, [reportMonth, reportYear, reportType, reportCommunity, navigate]);
+
+  const handleGenerateClick = () => {
+    setShowConfirm(true);
+  };
+
+  const handleConfirmGenerate = () => {
+    setShowConfirm(false);
+    generateReport();
+  };
+
+  const getReportTypeName = () => {
+    if (reportType === 'donations') return 'Donations Only';
+    if (reportType === 'attendance') return 'Attendance Only';
+    return 'Comprehensive';
+  };
+
+  const getPeriodName = () => {
+    if (reportMonth !== '') return `${MONTHS[parseInt(reportMonth)]} ${reportYear}`;
+    return `Full Year ${reportYear}`;
+  };
 
   const handlePrint = () => {
     window.print();
@@ -162,6 +210,31 @@ export default function AdminFinancialReport() {
       {/* ── Filter Bar ── */}
       <div className="fin-report-filter-bar no-print">
         <div className="fin-report-filter-group">
+          {adminRole === 'admin' && (
+            <div className="fin-report-filter">
+              <FileText size={14} />
+              <select value={reportType} onChange={e => setReportType(e.target.value)} className="fin-report-select">
+                <option value="all">Comprehensive</option>
+                <option value="donations">Donations Only</option>
+                <option value="attendance">Attendance Only</option>
+              </select>
+              <ChevronDown size={12} className="fin-report-select-arrow" />
+            </div>
+          )}
+
+          {adminRole === 'admin' && communities.length > 0 && (
+            <div className="fin-report-filter">
+              <MapPin size={14} />
+              <select value={reportCommunity} onChange={e => setReportCommunity(e.target.value)} className="fin-report-select">
+                <option value="">All Communities</option>
+                {communities.map(c => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+              <ChevronDown size={12} className="fin-report-select-arrow" />
+            </div>
+          )}
+
           <div className="fin-report-filter">
             <Calendar size={14} />
             <select value={reportMonth} onChange={e => setReportMonth(e.target.value)} className="fin-report-select">
@@ -185,7 +258,7 @@ export default function AdminFinancialReport() {
 
         <button
           className="fin-report-btn primary"
-          onClick={generateReport}
+          onClick={handleGenerateClick}
           disabled={loading}
         >
           {loading ? (
@@ -256,7 +329,7 @@ export default function AdminFinancialReport() {
           </div>
 
           {/* Donations Section - Only for Super Admin */}
-          {report.donations && adminRole === 'admin' && (
+          {report.donations && adminRole === 'admin' && (report.reportType === 'all' || report.reportType === 'donations') && (
             <div className="fin-report-section">
               <div className="fin-report-section-header">
                 <h2 className="fin-report-section-title">💝 Donations Overview</h2>
@@ -449,7 +522,7 @@ export default function AdminFinancialReport() {
           )}
 
           {/* Member Growth & Attendance - Only for Super Admin */}
-          {(report.memberGrowth || report.attendance) && adminRole === 'admin' && (
+          {(report.memberGrowth || report.attendance) && adminRole === 'admin' && (report.reportType === 'all' || report.reportType === 'attendance') && (
             <div className="fin-report-section">
               <div className="fin-report-section-header">
                 <h2 className="fin-report-section-title">👥 Membership & Engagement</h2>
@@ -553,6 +626,45 @@ export default function AdminFinancialReport() {
           </div>
           <h2>Generate an Automated Report</h2>
           <p>Select a time period and click "Generate Report" to create an AI-powered operational analysis.</p>
+        </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {showConfirm && (
+        <div className="fin-confirm-overlay" onClick={() => setShowConfirm(false)}>
+          <div className="fin-confirm-modal" onClick={e => e.stopPropagation()}>
+            <button className="fin-confirm-close" onClick={() => setShowConfirm(false)}>
+              <X size={18} />
+            </button>
+            <div className="fin-confirm-icon">
+              <AlertCircle size={28} />
+            </div>
+            <h3 className="fin-confirm-title">Confirm Report Generation</h3>
+            <p className="fin-confirm-desc">Please review the details below before proceeding. AI report generation may take 10–15 seconds.</p>
+            <div className="fin-confirm-details">
+              <div className="fin-confirm-row">
+                <span className="fin-confirm-label">Report Type</span>
+                <span className="fin-confirm-value">{getReportTypeName()}</span>
+              </div>
+              <div className="fin-confirm-row">
+                <span className="fin-confirm-label">Period</span>
+                <span className="fin-confirm-value">{getPeriodName()}</span>
+              </div>
+              {adminRole === 'admin' && (
+                <div className="fin-confirm-row">
+                  <span className="fin-confirm-label">Community</span>
+                  <span className="fin-confirm-value">{reportCommunity || 'All Communities'}</span>
+                </div>
+              )}
+            </div>
+            <div className="fin-confirm-actions">
+              <button className="fin-report-btn secondary" onClick={() => setShowConfirm(false)}>Cancel</button>
+              <button className="fin-report-btn primary" onClick={handleConfirmGenerate}>
+                <Sparkles size={16} />
+                Generate Report
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

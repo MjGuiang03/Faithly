@@ -2,156 +2,31 @@ import { useNavigate } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 
 import '../styles/Branches.css';
-import { useState, useMemo, useEffect } from 'react';
-import { MapPin, Search, Globe, CalendarDays, X } from 'lucide-react';
+import { useState, useMemo, useEffect, useRef } from 'react';
+import { MapPin, Search, Globe, CalendarDays, X, ChevronDown } from 'lucide-react';
+import BranchMap from '../components/BranchMap';
+import { branchData, REGION_ORDER, REGION_LABELS, DAY_COLORS, COMMUNITY_MAP } from '../components/branchData';
 
-
-// ─── Branch data ordered North → South ───────────────────────────────────────
-const branchData = [
-  // ── CAR: Kalinga ──
-  { region: 'CAR', province: 'Kalinga', name: 'Tabuk', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }, { day: 'Wednesday', time: '7:00 PM' }] },
-  { region: 'CAR', province: 'Kalinga', name: 'Zapote', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'CAR', province: 'Kalinga', name: 'Bliss', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'CAR', province: 'Kalinga', name: 'Libanon', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'CAR', province: 'Kalinga', name: 'Batong Buhay', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'CAR', province: 'Kalinga', name: 'Balatoc', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'CAR', province: 'Kalinga', name: 'Lat-nog', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  // ── CAR: Abra ──
-  { region: 'CAR', province: 'Abra', name: 'Lamao', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'CAR', province: 'Abra', name: 'Lingey', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'CAR', province: 'Abra', name: 'Cabaruyan', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'CAR', province: 'Abra', name: 'Ducligan', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'CAR', province: 'Abra', name: 'Gangal', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'CAR', province: 'Abra', name: 'Bila-Bila', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'CAR', province: 'Abra', name: 'Naguillian', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'CAR', province: 'Abra', name: 'Ud-udiao', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'CAR', province: 'Abra', name: 'Villa Conchita', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'CAR', province: 'Abra', name: 'Ay-yeng Manabo', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'CAR', province: 'Abra', name: 'Dao-angan', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'CAR', province: 'Abra', name: 'Kilong-olao', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'CAR', province: 'Abra', name: 'Bao-yan', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'CAR', province: 'Abra', name: 'Amti', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'CAR', province: 'Abra', name: 'Danac', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'CAR', province: 'Abra', name: 'Bengued', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }, { day: 'Wednesday', time: '7:00 PM' }] },
-  { region: 'CAR', province: 'Abra', name: 'Sappaac', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'CAR', province: 'Abra', name: 'Saccaang', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  // ── CAR: Benguet ──
-  { region: 'CAR', province: 'Benguet', name: 'Baguio', serviceTimes: [{ day: 'Sunday', time: '8:00 AM & 10:00 AM' }, { day: 'Wednesday', time: '7:00 PM' }] },
-  // ── Region II: Isabela ──
-  { region: 'Region II', province: 'Isabela', name: 'Santiago City', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }, { day: 'Friday', time: '7:00 PM' }] },
-  // ── Region I: Pangasinan ──
-  { region: 'Region I', province: 'Pangasinan', name: 'Dagupan', serviceTimes: [{ day: 'Sunday', time: '10:00 AM' }, { day: 'Wednesday', time: '7:30 PM' }] },
-  { region: 'Region I', province: 'Pangasinan', name: 'Mangatarem', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'Region I', province: 'Pangasinan', name: 'Laoak Langka', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'Region I', province: 'Pangasinan', name: 'Orbiztondo', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'Region I', province: 'Pangasinan', name: 'Malasique, Bolaoit', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'Region I', province: 'Pangasinan', name: 'Taloyan', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'Region I', province: 'Pangasinan', name: 'Binmaley', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'Region I', province: 'Pangasinan', name: 'San Carlos', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }, { day: 'Friday', time: '7:00 PM' }] },
-  { region: 'Region I', province: 'Pangasinan', name: 'Manaoag', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'Region I', province: 'Pangasinan', name: 'Pozorrobio', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'Region I', province: 'Pangasinan', name: 'Alcala', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  // ── Region III: Bulacan ──
-  { region: 'Region III', province: 'Bulacan', name: 'Meycauayan City', serviceTimes: [{ day: 'Sunday', time: '8:00 AM & 10:00 AM' }, { day: 'Wednesday', time: '7:00 PM' }, { day: 'Friday', time: '6:00 PM' }] },
-  { region: 'Region III', province: 'Bulacan', name: 'Camalig', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'Region III', province: 'Bulacan', name: 'San Jose Del Monte', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }, { day: 'Wednesday', time: '7:30 PM' }] },
-  // ── Region III: Tarlac ──
-  { region: 'Region III', province: 'Tarlac', name: 'Pacpaco, San Manuel', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'Region III', province: 'Tarlac', name: 'Victoria', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  // ── Region III: Nueva Ecija ──
-  { region: 'Region III', province: 'Nueva Ecija', name: 'Bambanaba, Cuyapo', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  // ── NCR ──
-  { region: 'NCR', province: 'NCR', name: 'Valenzuela City', serviceTimes: [{ day: 'Sunday', time: '9:00 AM & 11:00 AM' }, { day: 'Tuesday', time: '7:00 PM' }] },
-  { region: 'NCR', province: 'NCR', name: 'Tandang Sora, Quezon City', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }, { day: 'Wednesday', time: '7:00 PM' }] },
-  { region: 'NCR', province: 'NCR', name: 'COA, Quezon City', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'NCR', province: 'NCR', name: 'Payatas, Quezon City', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'NCR', province: 'NCR', name: 'Malaria, Caloocan', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  // ── Region IV-A: Rizal ──
-  { region: 'Region IV-A', province: 'Rizal', name: 'Montalban', serviceTimes: [{ day: 'Sunday', time: '9:30 AM' }, { day: 'Friday', time: '7:00 PM' }] },
-  // ── Region VII: Cebu ──
-  { region: 'Region VII', province: 'Cebu', name: 'Mandaue', serviceTimes: [{ day: 'Sunday', time: '9:00 AM & 11:00 AM' }, { day: 'Wednesday', time: '7:00 PM' }] },
-  { region: 'Region VII', province: 'Cebu', name: 'Li-loan', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'Region VII', province: 'Cebu', name: 'Calero', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'Region VII', province: 'Cebu', name: 'Compostela', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  // ── Region XIII: Agusan Del Norte ──
-  { region: 'Region XIII', province: 'Agusan Del Norte', name: 'Butuan City', serviceTimes: [{ day: 'Sunday', time: '9:00 AM & 11:00 AM' }, { day: 'Wednesday', time: '7:00 PM' }] },
-  { region: 'Region XIII', province: 'Agusan Del Norte', name: 'RTR', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'Region XIII', province: 'Agusan Del Norte', name: 'Jabonga, Bangonay', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'Region XIII', province: 'Agusan Del Norte', name: 'Kasiklan', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'Region XIII', province: 'Agusan Del Norte', name: 'San Mateo', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'Region XIII', province: 'Agusan Del Norte', name: 'Fatima Kim.13', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'Region XIII', province: 'Agusan Del Norte', name: 'Bayugan', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'Region XIII', province: 'Agusan Del Norte', name: 'Ibuan', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'Region XIII', province: 'Agusan Del Norte', name: 'Balubo', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  // ── Region XIII: Surigao Del Norte ──
-  { region: 'Region XIII', province: 'Surigao Del Norte', name: 'Alegria', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'Region XIII', province: 'Surigao Del Norte', name: 'Bonifacio', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'Region XIII', province: 'Surigao Del Norte', name: 'Matin-ao', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  { region: 'Region XIII', province: 'Surigao Del Norte', name: 'Ipil', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-  // ── Region XIII: Surigao Del Sur ──
-  { region: 'Region XIII', province: 'Surigao Del Sur', name: 'Kinabigtasan Tago', serviceTimes: [{ day: 'Sunday', time: '9:00 AM' }] },
-];
-
-const REGION_ORDER = ['CAR', 'Region II', 'Region I', 'Region III', 'NCR', 'Region IV-A', 'Region VII', 'Region XIII'];
-
-const REGION_LABELS = {
-  'CAR': 'Cordillera Administrative Region',
-  'Region II': 'Cagayan Valley',
-  'Region I': 'Ilocos Region',
-  'Region III': 'Central Luzon',
-  'NCR': 'National Capital Region',
-  'Region IV-A': 'CALABARZON',
-  'Region VII': 'Central Visayas',
-  'Region XIII': 'Caraga Region',
-};
-
-const DAY_COLORS = {
-  Sunday: { background: '#eff4ff', color: '#155dfc' },
-  Tuesday: { background: '#fdf4ff', color: '#9333ea' },
-  Wednesday: { background: '#fff7ed', color: '#c2410c' },
-  Friday: { background: '#fefce8', color: '#a16207' },
-};
-
-const COMMUNITY_MAP = {
-  'Tabuk': 'Tabuk', 'Zapote': 'Zapote', 'Bliss': 'Bliss', 'Libanon': 'Libanon',
-  'Batong Buhay': 'Batong Buhay', 'Balatoc': 'Balatoc', 'Lat-nog': 'Lat-nog',
-  'Santiago City': 'Santiago City',
-  'Lamao': 'Lamao', 'Lingey': 'Lingey', 'Cabaruyan': 'Cabaruyan', 'Ducligan': 'Ducligan',
-  'Gangal': 'Gangal', 'Bila-Bila': 'Bila-Bila', 'Naguillian': 'Naguillian', 'Ud-udiao': 'Ud-udiao',
-  'Villa Conchita': 'Villa Conchita', 'Ay-yeng Manabo': 'Ay-yeng Manabo', 'Dao-angan': 'Dao-angan',
-  'Kilong-olao': 'Kilong-olao', 'Bao-yan': 'Bao-yan', 'Amti': 'Amti', 'Danac': 'Danac',
-  'Bengued': 'Bengued', 'Sappaac': 'Sappaac', 'Saccaang': 'Saccaang',
-  'Baguio': 'Baguio', 'Montalban': 'Montalban',
-  'Valenzuela City': 'Valenzuela City',
-  'Tandang Sora, Quezon City': 'Tandang Sora, Quezon City',
-  'COA, Quezon City': 'COA, Quezon City',
-  'Payatas, Quezon City': 'Payatas, Quezon City',
-  'Malaria, Caloocan': 'Malaria, Caloocan',
-  'Meycauayan City': 'Meycauayan City', 'Camalig': 'Camalig', 'San Jose Del Monte': 'San Jose Del Monte',
-  'Pacpaco, San Manuel': 'Pacpaco, San Manuel', 'Victoria': 'Victoria',
-  'Bambanaba, Cuyapo': 'Bambanaba, Cuyapo',
-  'Dagupan': 'Dagupan', 'Mangatarem': 'Mangatarem', 'Laoak Langka': 'Laoak Langka',
-  'Orbiztondo': 'Orbiztondo', 'Malasiqui, Bolaoit': 'Malasique, Bolaoit', 'Taloyan': 'Taloyan',
-  'Binmaley': 'Binmaley', 'San Carlos': 'San Carlos', 'Manaoag': 'Manaoag',
-  'Pozorrubio': 'Pozorrobio', 'Alcala': 'Alcala',
-  'Butuan City': 'Butuan City', 'RTR': 'RTR', 'Jabonga, Bangonay': 'Jabonga, Bangonay',
-  'Kasiklan': 'Kasiklan', 'San Mateo': 'San Mateo', 'Fatima Kim.13': 'Fatima Kim.13',
-  'Bayugan': 'Bayugan', 'Ibuan': 'Ibuan', 'Balubo': 'Balubo',
-  'Mandaue': 'Mandaue', 'Liloan': 'Li-loan', 'Calero': 'Calero', 'Compostela': 'Compostela',
-  'Alegria': 'Alegria', 'Bonifacio': 'Bonifacio', 'Matin-ao': 'Matin-ao', 'Ipil': 'Ipil',
-  'Kinabigtasan, Tago': 'Kinabigtasan Tago',
-};
 
 export default function Branches() {
   const navigate = useNavigate();
   const { profile } = useAuth();
 
   const [search, setSearch] = useState('');
-  const [activeRegion, setActiveRegion] = useState(null); // key of expanded region
   const [drawerBranch, setDrawerBranch] = useState(null);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [drawerMounted, setDrawerMounted] = useState(false);
-  const [isClosingRegion, setIsClosingRegion] = useState(false);
+  const [openRegions, setOpenRegions] = useState(new Set(['CAR']));
+  const [activeBranch, setActiveBranch] = useState(null);
+  const flyToRef = useRef(null);
+
+  const toggleRegion = (key) => {
+    setOpenRegions(prev => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
+  };
 
   // Resolve user's community branch more robustly
   const userBranch = useMemo(() => {
@@ -194,249 +69,76 @@ export default function Branches() {
     return () => window.removeEventListener('keydown', handler);
   }, []);
 
-  // Stats
-  const totalBranches = branchData.length;
-
-  // Region summary cards
-  const regionSummaries = useMemo(() => {
-    return REGION_ORDER.map(r => {
-      const branches = branchData.filter(b => b.region === r);
-      const provinces = [...new Set(branches.map(b => b.province))];
-      return { key: r, label: REGION_LABELS[r] || r, count: branches.length, provinces };
-    });
-  }, []);
-
-  // Search-filtered branches when a region is expanded
-  const expandedBranches = useMemo(() => {
-    if (!activeRegion) return [];
-    return branchData.filter(b => {
-      const matchR = b.region === activeRegion;
-      const matchS = !search || b.name.toLowerCase().includes(search.toLowerCase()) || b.province.toLowerCase().includes(search.toLowerCase());
-      return matchR && matchS;
-    });
-  }, [activeRegion, search]);
-
-  // Search across all branches (when search is active and no region selected)
-  const searchResults = useMemo(() => {
-    if (!search) return [];
-    return branchData.filter(b =>
-      b.name.toLowerCase().includes(search.toLowerCase()) ||
-      b.province.toLowerCase().includes(search.toLowerCase()) ||
-      b.region.toLowerCase().includes(search.toLowerCase())
-    );
-  }, [search]);
-
-  const activeRegionData = activeRegion ? regionSummaries.find(r => r.key === activeRegion) : null;
-
-  const handleRegionClick = (key) => {
-    if (activeRegion === key) {
-      handleClearRegion();
-    } else {
-      setActiveRegion(key);
-      setSearch('');
-    }
-  };
-
-  const handleClearRegion = () => {
-    setIsClosingRegion(true);
-    setTimeout(() => {
-      setActiveRegion(null);
-      setSearch('');
-      setIsClosingRegion(false);
-    }, 220); // Sync with CSS animation duration
-  };
-
-  const displayCount = search && !activeRegion
-    ? searchResults.length
-    : activeRegion
-      ? expandedBranches.length
-      : totalBranches;
 
   return (
     <>
-      <div className="user-branches-container">
-
-        {/* ── My Community Spotlight ──────────────────────────── */}
-        {userBranch ? (
-          <div className="ubr-community-spotlight user-fade-in">
-            <div className="ubr-spotlight-details">
-              <div className="ubr-spotlight-tag">Your Home Community</div>
-              <h2 className="ubr-spotlight-name">{userBranch.name}</h2>
-              <div className="ubr-spotlight-info">
-                <div className="ubr-info-item">
-                  <Globe size={16} />
-                  <span>{userBranch.region} · {userBranch.province}</span>
-                </div>
-                <div className="ubr-info-item">
-                  <CalendarDays size={16} />
-                  <div className="ubr-service-list">
-                    {userBranch.serviceTimes.map((s, idx) => (
-                      <span key={idx} className="ubr-service-tag">
-                        <strong>{s.day}</strong> {s.time}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              <div className="ubr-spotlight-actions">
-                <button className="ubr-cta ubr-cta--primary" onClick={() => openDrawer(userBranch)}>View Complete Profile</button>
-                <a 
-                  href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(userBranch.name + ', ' + userBranch.province)},Philippines`} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="ubr-cta ubr-cta--outline"
-                >
-                  Get Directions
-                </a>
-              </div>
+      <div className="ubr-map-shell">
+        {/* Left sidebar */}
+        <div className="ubr-map-sidebar">
+          {/* Home branch banner */}
+          {userBranch && (
+            <div className="ubr-map-home-banner" onClick={() => { flyToRef.current?.(userBranch); setActiveBranch(userBranch); }}>
+              <div className="ubr-map-home-label">Your Home Community</div>
+              <div className="ubr-map-home-name">{userBranch.name}</div>
+              <div className="ubr-map-home-meta">{userBranch.region} · {userBranch.province}</div>
             </div>
-            <div className="ubr-spotlight-map">
-              <iframe
-                title="Branch Map"
-                src={`https://maps.google.com/maps?q=${encodeURIComponent(userBranch.name + ', ' + userBranch.province)},Philippines&t=&z=14&ie=UTF8&iwloc=&output=embed`}
-                frameBorder="0"
-                scrolling="no"
-                marginHeight="0"
-                marginWidth="0"
-              />
+          )}
+
+          {/* Search */}
+          <div style={{ padding: '12px 14px', borderBottom: '0.8px solid var(--border)', flexShrink: 0 }}>
+            <div style={{ position: 'relative' }}>
+              <Search className="ubr-search-icon" size={16} />
+              <input className="ubr-search-input" placeholder="Search communities…"
+                value={search} onChange={e => setSearch(e.target.value)} />
             </div>
           </div>
-        ) : (
-          <div className="ubr-no-community-placeholder user-fade-in">
-            <div className="ubr-placeholder-icon">🏠</div>
-            <h3>Highlight Your Community</h3>
-            <p>Select your home community in settings to pins your local church details and service schedules right here.</p>
-            <button className="ubr-cta ubr-cta--primary" onClick={() => navigate('/settings')} style={{ marginTop: '16px' }}>
-              Set Home Community
-            </button>
-          </div>
-        )}
 
-        {/* ── Search Bar ─────────────────────────────────────── */}
-        <div className="ubr-search-row">
-          <div className="ubr-search-wrap">
-            <Search className="ubr-search-icon" size={20} color="#99A1AF" />
-            <input
-              className="ubr-search-input"
-              placeholder="Search branches…"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
+          {/* Region accordion list */}
+          <div className="ubr-map-region-list">
+            {REGION_ORDER.map(regionKey => {
+              const regionBranches = branchData.filter(b => b.region === regionKey);
+              const filtered = search
+                ? regionBranches.filter(b => b.name.toLowerCase().includes(search.toLowerCase()))
+                : regionBranches;
+              if (filtered.length === 0) return null;
+              const isOpen = openRegions.has(regionKey);
+              return (
+                <div key={regionKey} className="ubr-map-region-group">
+                  <button className="ubr-map-region-header"
+                    onClick={() => toggleRegion(regionKey)}>
+                    <span className="ubr-region-badge">{regionKey}</span>
+                    <span className="ubr-map-region-label">{REGION_LABELS[regionKey]}</span>
+                    <span className="ubr-map-region-count">{filtered.length}</span>
+                    <ChevronDown size={14} style={{ transform: isOpen ? 'rotate(180deg)' : '', transition: 'transform 0.2s', color: '#9aa3b8', marginLeft: 'auto' }} />
+                  </button>
+                  {isOpen && (
+                    <div className="ubr-map-branch-list">
+                      {filtered.map((branch, i) => (
+                        <button key={i}
+                          className={`ubr-map-branch-item ${activeBranch?.name === branch.name ? 'active' : ''} ${userBranch?.name === branch.name ? 'mine' : ''}`}
+                          onClick={() => { flyToRef.current?.(branch); setActiveBranch(branch); }}>
+                          <MapPin size={12} />
+                          <span>{branch.name}</span>
+                          {userBranch?.name === branch.name && <span className="ubr-my-tag">Mine</span>}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
-          <span className="ubr-branch-count">{displayCount} {displayCount === 1 ? 'branch' : 'branches'}</span>
         </div>
 
-        {/* ── Region Cards Grid ──────────────────────────────── */}
-        {(!search || activeRegion) && (
-          <>
-            <p className="ubr-select-hint">Select a region to browse branches</p>
-            <div className="ubr-region-grid">
-              {regionSummaries.map(r => (
-                <button
-                  key={r.key}
-                  className={`ubr-region-card${activeRegion === r.key ? ' ubr-region-card--active' : ''}`}
-                  onClick={() => handleRegionClick(r.key)}
-                >
-                  <span className="ubr-region-badge">{r.key}</span>
-                  <span className="ubr-region-name">{r.label}</span>
-                  <span className="ubr-region-count">{r.count} {r.count === 1 ? 'branch' : 'branches'}</span>
-                </button>
-              ))}
-            </div>
-          </>
-        )}
-
-        {/* ── Expanded Region Branch List ────────────────────── */}
-        {activeRegion && (
-          <div className={`ubr-expanded-region ${isClosingRegion ? 'ubr-expanded-region--closing' : ''}`}>
-            <div className="ubr-expanded-header">
-              <div className="ubr-expanded-title-wrap">
-                <span className="ubr-expanded-name">{REGION_LABELS[activeRegion]} ({activeRegion})</span>
-                <span className="ubr-expanded-meta">
-                  {activeRegionData?.count} branches · {activeRegionData?.provinces.join(', ')}
-                </span>
-              </div>
-              <button className="ubr-clear-btn" onClick={handleClearRegion}>
-                Clear ×
-              </button>
-            </div>
-
-            {expandedBranches.length === 0 ? (
-              <div className="ubr-no-results">No branches match your search.</div>
-            ) : (
-              <div className="ubr-branch-list-grid">
-                {expandedBranches.map((branch, idx) => {
-                  const isMyBranch = userBranchName && branch.name === userBranchName;
-                  return (
-                    <button
-                      key={idx}
-                      className={`ubr-branch-row${isMyBranch ? ' ubr-branch-row--mine' : ''}`}
-                      onClick={() => openDrawer(branch)}
-                    >
-                      <div className="ubr-branch-row-left">
-                        <MapPin className="ubr-pin-icon" size={14} />
-                        <div className="ubr-branch-info">
-                          <span className="ubr-branch-name">{branch.name}</span>
-                          <div className="ubr-branch-days">
-                            {branch.serviceTimes.map((s, i) => (
-                              <span key={i} className="ubr-day-pill" style={DAY_COLORS[s.day] || {}}>
-                                {s.day.slice(0, 3)}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                      {isMyBranch && <span className="ubr-my-tag">My Community</span>}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ── Global Search Results (no region selected) ────── */}
-        {search && !activeRegion && (
-          <div className={`ubr-expanded-region ${isClosingRegion ? 'ubr-expanded-region--closing' : ''}`}>
-            <div className="ubr-expanded-header">
-              <span className="ubr-expanded-name">Search results for "{search}"</span>
-              <button className="ubr-clear-btn" onClick={() => setSearch('')}>Clear ×</button>
-            </div>
-            {searchResults.length === 0 ? (
-              <div className="ubr-no-results">No branches match your search.</div>
-            ) : (
-              <div className="ubr-branch-list-grid">
-                {searchResults.map((branch, idx) => {
-                  const isMyBranch = userBranchName && branch.name === userBranchName;
-                  return (
-                    <button
-                      key={idx}
-                      className={`ubr-branch-row${isMyBranch ? ' ubr-branch-row--mine' : ''}`}
-                      onClick={() => openDrawer(branch)}
-                    >
-                      <div className="ubr-branch-row-left">
-                        <MapPin className="ubr-pin-icon" size={14} />
-                        <div className="ubr-branch-info">
-                          <span className="ubr-branch-name">{branch.name}</span>
-                          <div className="ubr-branch-days">
-                            {branch.serviceTimes.map((s, i) => (
-                              <span key={i} className="ubr-day-pill" style={DAY_COLORS[s.day] || {}}>
-                                {s.day.slice(0, 3)}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                      <span className="ubr-region-tag">{branch.region}</span>
-                      {isMyBranch && <span className="ubr-my-tag">My Community</span>}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
-
+        {/* Map */}
+        <div className="ubr-map-area">
+          <BranchMap
+            branches={branchData}
+            userBranch={userBranch}
+            onBranchClick={(branch) => { openDrawer(branch); }}
+            flyToRef={flyToRef}
+          />
+        </div>
       </div>
 
       {/* ── Drawer ─────────────────────────────────────────────── */}

@@ -12,7 +12,7 @@ import { generatePaymentLink } from '../utils/paymongo.js';
 router.post('/donations', authenticateUser, async (req, res) => {
   try {
     const email = req.user.email;
-    const { amount, category, isRecurring, paymentMethod } = req.body;
+    const { amount, category, community, isRecurring, paymentMethod } = req.body;
 
     if (!amount || !category) {
       return res.status(400).json({ success: false, message: 'Amount and category are required' });
@@ -40,6 +40,7 @@ router.post('/donations', authenticateUser, async (req, res) => {
         member: user.fullName,
         amount: Number(amount),
         category,
+        community,
         method: paymentMethod || 'Manual',
         subMethod: subMethod || '',
         accountName: accountName || '',
@@ -74,6 +75,7 @@ router.post('/donations', authenticateUser, async (req, res) => {
       member: user.fullName,
       amount: Number(amount),
       category,
+      community,
       method: paymentMethod || 'PayMongo', // Store the specific method chosen
       type: isRecurring ? 'Recurring' : 'One-time',
       status: 'pending',
@@ -220,6 +222,17 @@ router.get('/admin/donations', authenticateAdmin, async (req, res) => {
     const pendingCount = allForStats.filter(d => !d.status || d.status === 'pending').length;
     const rejectedCount = allForStats.filter(d => d.status === 'rejected').length;
 
+    const communityBreakdown = {};
+    const categoryBreakdown = {};
+    
+    confirmedAll.forEach(d => {
+      if (d.community) {
+        communityBreakdown[d.community] = (communityBreakdown[d.community] || 0) + (Number(d.amount) || 0);
+      }
+      const cat = d.category || 'General Fund';
+      categoryBreakdown[cat] = (categoryBreakdown[cat] || 0) + (Number(d.amount) || 0);
+    });
+
     const stats = {
       totalCount: confirmedAll.length,
       total: totalAmount,
@@ -230,6 +243,8 @@ router.get('/admin/donations', authenticateAdmin, async (req, res) => {
       avgDonation,
       pendingCount,
       rejectedCount,
+      communityBreakdown,
+      categoryBreakdown,
     };
 
     res.status(200).json({

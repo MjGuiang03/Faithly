@@ -17,6 +17,10 @@ import bentoImg1 from '../../assets/events/IMG_8439.JPG';
 import bentoImg2 from '../../assets/events/pic4.jfif';
 import youthCampImg from '../../assets/events/IMG_8460.JPG';
 import missionImg from '../../assets/events/pic5.jfif';
+import featureTransactions from '../../assets/features/transactions1.png';
+import featureOperations from '../../assets/features/operations.png';
+import featureConnected from '../../assets/features/connected.JPG';
+import featureChatbot from '../../assets/features/chatbot1.JPG';
 import '../styles/WelcomePage.css';
 
 export default function WelcomePage() {
@@ -267,21 +271,19 @@ export default function WelcomePage() {
             </div>
             <div className="wpt-hero-visual">
               <div className="wpt-hero-card-stack">
-                <div className="wpt-hero-card wpt-hero-card-main">
-                  <div className="wpt-card-cross"></div>
+                <div className="wpt-hero-card wpt-hero-card-main wpt-shine-card">
                   <div className="wpt-hero-card-main-inner">
                     <h3>Member Dashboard</h3>
-                    <p>Loans · Savings · Attendance · Donation</p>
+                    <p>Savings · Attendance · Donation</p>
                   </div>
                 </div>
-                <div className="wpt-hero-card wpt-hero-card-float">
+                <div className="wpt-hero-card wpt-hero-card-float wpt-shine-card">
                   <div className="wpt-float-tag">This Month</div>
                   <div>
                     <div className="wpt-float-value">₱84,200</div>
                     <div className="wpt-float-label">Total Donations Received</div>
                   </div>
                 </div>
-                <div className="wpt-hero-gold-bar"></div>
               </div>
             </div>
           </div>
@@ -312,7 +314,7 @@ export default function WelcomePage() {
                 <img src={youthCampImg} alt="Youth Ministry" className="wpt-carousel-img-placeholder" style={{ objectFit: 'cover', width: '100%', height: '100%', borderRadius: '12px' }} />
                 <div className="wpt-carousel-overlay">
                   <div className="wpt-carousel-tag">Youth Ministry</div>
-                  <div className="wpt-carousel-slide-title">Youth Leadership Summit — Cebu</div>
+                  <div className="wpt-carousel-slide-title">Youth Leadership Summit</div>
                 </div>
               </div>
               <div className="wpt-carousel-slide">
@@ -333,7 +335,7 @@ export default function WelcomePage() {
                 <img src={divineService} alt="Baptism Sunday" className="wpt-carousel-img-placeholder" style={{ objectFit: 'cover', width: '100%', height: '100%', borderRadius: '12px' }} />
                 <div className="wpt-carousel-overlay">
                   <div className="wpt-carousel-tag">Baptism Sunday</div>
-                  <div className="wpt-carousel-slide-title">Water Baptism — 47 New Believers</div>
+                  <div className="wpt-carousel-slide-title">Water Baptism</div>
                 </div>
               </div>
             </div>
@@ -364,37 +366,25 @@ export default function WelcomePage() {
             </div>
             <div className="wpt-features-grid">
               <div className="wpt-feature-card wpt-reveal wpt-delay-05" ref={addToRefs}>
-                <div className="wpt-feature-icon">💳</div>
-                <h3>Loan Management &amp; Repayment</h3>
-                <p>Track church loans, set repayment schedules, and receive automated reminders for members and leadership.</p>
+                <div className="wpt-feature-img"><img src={featureTransactions} alt="Manage Transactions" /></div>
+                <h3>Manage Transactions</h3>
+                <p>Handle savings goals, tithes, offerings, and donations via GCash, Maya, or bank transfer — all in one place.</p>
                 <div className="wpt-feature-tag">Finance</div>
               </div>
               <div className="wpt-feature-card wpt-reveal wpt-delay-10" ref={addToRefs}>
-                <div className="wpt-feature-icon">🎯</div>
-                <h3>Savings Goals</h3>
-                <p>Set personal and group savings targets, monitor progress, and celebrate milestones together as a congregation.</p>
-                <div className="wpt-feature-tag">Savings</div>
+                <div className="wpt-feature-img"><img src={featureOperations} alt="Track Church Operations" /></div>
+                <h3>Track Church Operations</h3>
+                <p>Maintain digital member profiles, log service attendance, and generate reports per branch automatically.</p>
+                <div className="wpt-feature-tag">Operations</div>
               </div>
               <div className="wpt-feature-card wpt-reveal wpt-delay-15" ref={addToRefs}>
-                <div className="wpt-feature-icon">🙏</div>
-                <h3>Donations &amp; Payments</h3>
-                <p>Accept tithes and offerings via GCash, Maya, bank transfer, or cash — all recorded automatically.</p>
-                <div className="wpt-feature-tag">Giving</div>
-              </div>
-              <div className="wpt-feature-card wpt-reveal wpt-delay-20" ref={addToRefs}>
-                <div className="wpt-feature-icon">📋</div>
-                <h3>Attendance Tracking</h3>
-                <p>Maintain digital member profiles, log service attendance, and generate attendance reports per branch.</p>
-                <div className="wpt-feature-tag">Members</div>
-              </div>
-              <div className="wpt-feature-card wpt-reveal wpt-delay-25" ref={addToRefs}>
-                <div className="wpt-feature-icon">📢</div>
-                <h3>Branch Announcements</h3>
+                <div className="wpt-feature-img"><img src={featureConnected} alt="Stay Connected" /></div>
+                <h3>Stay Connected</h3>
                 <p>Broadcast updates, post event schedules, and maintain a live branch directory across all locations.</p>
                 <div className="wpt-feature-tag">Communication</div>
               </div>
-              <div className="wpt-feature-card wpt-reveal wpt-delay-30" ref={addToRefs}>
-                <div className="wpt-feature-icon">🤖</div>
+              <div className="wpt-feature-card wpt-reveal wpt-delay-20" ref={addToRefs}>
+                <div className="wpt-feature-img"><img src={featureChatbot} alt="24/7 Chatbot Assistant" /></div>
                 <h3>24/7 Chatbot Assistant</h3>
                 <p>Answer member queries, guide new visitors, and provide support around the clock — always available.</p>
                 <div className="wpt-feature-tag">AI Support</div>
@@ -530,7 +520,6 @@ export default function WelcomePage() {
                 <ul>
                   <li><a href="#">Member Login</a></li>
                   <li><a href="#">Savings Goals</a></li>
-                  <li><a href="#">Loan Tracking</a></li>
                   <li><a href="#">Attendance</a></li>
                 </ul>
               </div>

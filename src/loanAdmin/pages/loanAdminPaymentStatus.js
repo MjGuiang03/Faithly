@@ -6,8 +6,7 @@ import '../styles/loanAdminLoanManagement.css';
 import '../styles/loanAdminPaymentStatus.css';
 import API from '../../utils/api';
 import { PiggyBank, Search, X } from 'lucide-react';
-
-
+import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, Legend, Label } from 'recharts';
 const fmt = (n) => n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : '₱0.00';
 const fmtDate = (d) => { if (!d) return 'N/A'; return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); };
 
@@ -42,6 +41,9 @@ export default function LoanAdminPaymentStatus() {
   const [allSavings, setAllSavings] = useState([]);
   const [savingsFilter, setSavingsFilter] = useState('all');
   const [savingsTypeFilter, setSavingsTypeFilter] = useState('all'); // 'all', 'deposit', 'withdrawal'
+  const [selectedSavings, setSelectedSavings] = useState(null);
+  
+  const [loanHistory, setLoanHistory] = useState([]);
 
   // Manual Approval State
   const [approvalMethod, setApprovalMethod] = useState('gateway');
@@ -119,7 +121,17 @@ export default function LoanAdminPaymentStatus() {
     finally { setPendingLoading(false); }
   }, [token, isSavingsRoute]);
 
-  useEffect(() => { fetchLoans(); fetchSavings(); fetchSettings(); }, [fetchLoans, fetchSavings, fetchSettings]);
+  const fetchLoanHistory = useCallback(async () => {
+    try {
+      const res = await fetch(`${API}/api/admin/loans/payments?limit=200`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      if (data.success) {
+        setLoanHistory(data.payments.filter(p => p.status !== 'pending') || []);
+      }
+    } catch { /* silent */ }
+  }, [token]);
+
+  useEffect(() => { fetchLoans(); fetchSavings(); fetchSettings(); fetchLoanHistory(); }, [fetchLoans, fetchSavings, fetchSettings, fetchLoanHistory]);
 
   useEffect(() => {
     if (approvalMethod === 'manual') fetchPendingApprovals();
@@ -366,77 +378,156 @@ export default function LoanAdminPaymentStatus() {
         )}
 
         {isSavingsRoute && (
-          <div className="loan-admin-mgmt-stats" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
-            <div className="loan-admin-mgmt-stat-card">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', minHeight: '24px' }}>
-                <p className="loan-admin-mgmt-stat-label" style={{ margin: 0 }}>Total Savings</p>
-                <select value={savingsFilter} onChange={e => setSavingsFilter(e.target.value)} style={{ fontSize: '11px', padding: '2px 4px', borderRadius: '4px', border: '1px solid #D1D5DB' }}>
-                  <option value="all">All Time</option>
-                  <option value="this_month">This Month</option>
-                  <option value="this_year">This Year</option>
-                </select>
+          <div className="la-savings-overview-grid">
+            {/* Left Column: Chart */}
+            <div className="loan-admin-mgmt-table-container la-savings-chart-card">
+              <h3 className="la-savings-chart-title">Savings by Role</h3>
+              <div className="la-savings-chart-content">
+                {(() => {
+                  const memberVal = confirmedSavings.filter(s => s.type === 'deposit' && ((s.position || '').toLowerCase() === 'member' || !s.position)).reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+                  const officerVal = confirmedSavings.filter(s => s.type === 'deposit' && ((s.position || '').toLowerCase() !== 'member' && s.position)).reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+                  const pieTotal = memberVal + officerVal;
+                  const pieData = [
+                    { name: 'Members', value: memberVal, color: '#0D1F45' },
+                    { name: 'Officers', value: officerVal, color: '#60A5FA' }
+                  ];
+
+                  if (pieTotal === 0) {
+                    return <p style={{ color: '#9CA3AF', fontSize: '14px' }}>No savings deposits available yet.</p>;
+                  }
+
+                  return (
+                    <div className="la-savings-chart-wrapper">
+                      <ResponsiveContainer width="100%" height={240}>
+                        <PieChart>
+                          <Pie
+                            data={pieData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={70}
+                            outerRadius={110}
+                            paddingAngle={2}
+                            dataKey="value"
+                          >
+                            {pieData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                            <Label 
+                              value={`₱${pieTotal >= 1000 ? (pieTotal/1000).toFixed(1).replace(/\.0$/, '') + 'k' : pieTotal}`} 
+                              position="center" 
+                              fill="#1e3a5f" 
+                              style={{ fontSize: '18px', fontWeight: 'bold', fontFamily: 'Inter' }} 
+                            />
+                            <Label 
+                              value="Total" 
+                              position="center" 
+                              dy={16} 
+                              fill="#6B7280" 
+                              style={{ fontSize: '12px', fontFamily: 'Inter' }} 
+                            />
+                          </Pie>
+                          <RechartsTooltip formatter={(value, name, props) => [`₱${(value || 0).toLocaleString()} (${Math.round((value/pieTotal)*100)}%)`, props.payload.name]} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                      <div className="la-savings-pie-legend">
+                        {pieData.map((cat, i) => (
+                          <div key={i} className="la-savings-pie-legend-item">
+                            <div className="la-savings-pie-legend-label">
+                              <div className="la-savings-pie-legend-dot" style={{ background: cat.color }} />
+                              <span className="la-savings-pie-legend-name">{cat.name}</span>
+                            </div>
+                            <span className="la-savings-pie-legend-val">₱{cat.value.toLocaleString()} — {Math.round((cat.value/pieTotal)*100)}%</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
-              <p className="loan-admin-mgmt-stat-value approved">{fmt(totalSavingsFiltered)}</p>
             </div>
-            <div className="loan-admin-mgmt-stat-card">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', minHeight: '24px' }}>
-                <p className="loan-admin-mgmt-stat-label" style={{ margin: 0 }}>Total Withdrawals</p>
+
+            {/* Right Column: 3 Stat Cards */}
+            <div className="la-savings-cards-col">
+              <div className="loan-admin-mgmt-stat-card la-savings-stat-card">
+                <div className="la-savings-stat-header">
+                  <p className="loan-admin-mgmt-stat-label la-savings-stat-label-text">Total Savings</p>
+                  <select value={savingsFilter} onChange={e => setSavingsFilter(e.target.value)} className="la-savings-filter-select">
+                    <option value="all">All Time</option>
+                    <option value="this_month">This Month</option>
+                    <option value="this_year">This Year</option>
+                  </select>
+                </div>
+                <p className="loan-admin-mgmt-stat-value approved">{fmt(totalSavingsFiltered)}</p>
               </div>
-              <p className="loan-admin-mgmt-stat-value" style={{ color: '#DC2626' }}>{fmt(totalWithdrawalsFiltered)}</p>
-            </div>
-            <div 
-              className="loan-admin-mgmt-stat-card" 
-              onClick={() => setActiveTab('pending')}
-              style={{ cursor: 'pointer' }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', minHeight: '24px' }}>
-                <p className="loan-admin-mgmt-stat-label" style={{ margin: 0 }}>Pending Review</p>
+
+              <div className="loan-admin-mgmt-stat-card la-savings-stat-card">
+                <div className="la-savings-stat-header">
+                  <p className="loan-admin-mgmt-stat-label la-savings-stat-label-text">Total Withdrawals</p>
+                </div>
+                <p className="loan-admin-mgmt-stat-value" style={{ color: '#DC2626' }}>{fmt(totalWithdrawalsFiltered)}</p>
               </div>
-              <p className="loan-admin-mgmt-stat-value" style={{ color: '#EA580C' }}>{pendingSavings.length}</p>
+
+              <div 
+                className="loan-admin-mgmt-stat-card la-savings-stat-card" 
+                onClick={() => setActiveTab('pending')}
+              >
+                <div className="la-savings-stat-header">
+                  <p className="loan-admin-mgmt-stat-label la-savings-stat-label-text">Pending Review</p>
+                </div>
+                <p className="loan-admin-mgmt-stat-value" style={{ color: '#EA580C' }}>{pendingSavings.length}</p>
+              </div>
             </div>
           </div>
         )}
 
-
-
-        {approvalMethod === 'manual' && (
-          <div style={{ display: 'flex', gap: '16px', marginBottom: '16px', borderBottom: '1px solid #E5E7EB' }}>
+        {(!isSavingsRoute || approvalMethod === 'manual') && (
+          <div className="la-tabs-container">
             <button 
               onClick={() => setActiveTab(isSavingsRoute ? 'savings' : 'loans')}
-              style={{ padding: '8px 16px', background: 'none', border: 'none', borderBottom: activeTab !== 'pending' ? '2px solid #155DFC' : '2px solid transparent', color: activeTab !== 'pending' ? '#155DFC' : '#6B7280', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}
+              className={`la-tab-btn ${activeTab === (isSavingsRoute ? 'savings' : 'loans') ? 'active' : ''}`}
             >
               {isSavingsRoute ? 'Savings Records' : 'Active Loans'}
             </button>
-            <button 
-              onClick={() => setActiveTab('pending')}
-              style={{ padding: '8px 16px', background: 'none', border: 'none', borderBottom: activeTab === 'pending' ? '2px solid #155DFC' : '2px solid transparent', color: activeTab === 'pending' ? '#155DFC' : '#6B7280', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}
-            >
-              Pending Approvals
-              {(isSavingsRoute ? pendingSavings.length : pendingLoanPayments.length) > 0 && (
-                <span style={{ background: '#DC2626', color: '#fff', borderRadius: '12px', padding: '2px 8px', fontSize: '11px', marginLeft: '6px' }}>
-                  {isSavingsRoute ? pendingSavings.length : pendingLoanPayments.length}
-                </span>
-              )}
-            </button>
+            {!isSavingsRoute && (
+              <button 
+                onClick={() => setActiveTab('history')}
+                className={`la-tab-btn ${activeTab === 'history' ? 'active' : ''}`}
+              >
+                Payment History
+              </button>
+            )}
+            {approvalMethod === 'manual' && (
+              <button 
+                onClick={() => setActiveTab('pending')}
+                className={`la-tab-btn ${activeTab === 'pending' ? 'active' : ''}`}
+              >
+                Pending Approvals
+                {(isSavingsRoute ? pendingSavings.length : pendingLoanPayments.length) > 0 && (
+                  <span className="la-tab-badge">
+                    {isSavingsRoute ? pendingSavings.length : pendingLoanPayments.length}
+                  </span>
+                )}
+              </button>
+            )}
           </div>
         )}
 
-        <div className="loan-admin-mgmt-search" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', background: 'white', border: '1px solid #E5E7EB', borderRadius: '8px', padding: '0 12px' }}>
+        <div className="la-search-container">
+          <div className="la-search-wrapper">
             <Search size={18} color="#9CA3AF" />
             <input 
               type="text" 
               placeholder={isSavingsRoute ? "Search by member name or goal..." : "Search by member name or loan ID..."} 
               value={searchQuery} 
               onChange={(e) => setSearchQuery(e.target.value)} 
-              style={{ border: 'none', padding: '10px 8px', outline: 'none', width: '100%', fontFamily: 'Inter', fontSize: '14px' }}
+              className="la-search-input"
             />
           </div>
           {isSavingsRoute && activeTab === 'savings' && (
             <select 
               value={savingsTypeFilter} 
               onChange={(e) => setSavingsTypeFilter(e.target.value)}
-              style={{ padding: '10px 12px', borderRadius: '8px', border: '1px solid #E5E7EB', fontSize: '14px', fontFamily: 'Inter', background: 'white', color: '#374151', cursor: 'pointer' }}
+              className="la-search-select"
             >
               <option value="all">All Types</option>
               <option value="deposit">Deposits Only</option>
@@ -446,8 +537,10 @@ export default function LoanAdminPaymentStatus() {
         </div>
 
         {activeTab === 'savings' && isSavingsRoute && (
-          <div className="loan-admin-mgmt-table-container">
-            <table className="loan-admin-mgmt-table">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '20px' }}>
+            {/* Table */}
+            <div className="loan-admin-mgmt-table-container" style={{ margin: 0 }}>
+              <table className="loan-admin-mgmt-table">
               <thead>
                 <tr>
                   <th>Date</th>
@@ -473,7 +566,7 @@ export default function LoanAdminPaymentStatus() {
                     const matchesType = savingsTypeFilter === 'all' || s.type === savingsTypeFilter;
                     return matchesSearch && matchesType;
                   }).map(txn => (
-                    <tr key={txn._id} className="loan-admin-mgmt-table-row-hover">
+                    <tr key={txn._id} className="loan-admin-mgmt-table-row-hover" onClick={() => setSelectedSavings(txn)} style={{ cursor: 'pointer' }}>
                       <td>{fmtDate(txn.confirmedAt || txn.date)}</td>
                       <td>
                         <div className="loan-admin-mgmt-table-member">
@@ -498,6 +591,7 @@ export default function LoanAdminPaymentStatus() {
                 )}
               </tbody>
             </table>
+            </div>
           </div>
         )}
 
@@ -612,9 +706,63 @@ export default function LoanAdminPaymentStatus() {
           </div>
         )}
 
-
-
-
+        {/* Payment History Tab (Loans Only) */}
+        {activeTab === 'history' && !isSavingsRoute && (
+          <div className="loan-admin-mgmt-table-container">
+            <table className="loan-admin-mgmt-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Member</th>
+                  <th>Type</th>
+                  <th>Amount</th>
+                  <th>Method</th>
+                  <th>Reference</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr><td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>Loading...</td></tr>
+                ) : loanHistory.filter(txn => {
+                  return (txn.memberName || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         (txn.loanId || '').toLowerCase().includes(searchQuery.toLowerCase());
+                }).length === 0 ? (
+                  <tr><td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>No payment history found</td></tr>
+                ) : (
+                  loanHistory.filter(txn => {
+                    return (txn.memberName || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+                           (txn.loanId || '').toLowerCase().includes(searchQuery.toLowerCase());
+                  }).map(txn => (
+                    <tr key={txn._id} className="loan-admin-mgmt-table-row-hover" onClick={() => setPendingDetail(txn)} style={{ cursor: 'pointer' }}>
+                      <td>{fmtDate(txn.submittedAt || txn.createdAt || txn.date)}</td>
+                      <td>
+                        <div className="loan-admin-mgmt-table-member">
+                          <p className="loan-admin-mgmt-table-member-name">{txn.memberName || txn.email}</p>
+                          <p className="loan-admin-mgmt-table-member-email">{`Loan: ${txn.loanId}`}</p>
+                        </div>
+                      </td>
+                      <td>
+                        <span style={{ display: 'inline-block', padding: '3px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 700, fontFamily: 'Inter', textTransform: 'capitalize', background: txn.paymentType === 'full' ? '#DCFCE7' : txn.paymentType === 'advance' ? '#DBEAFE' : '#F3F4F6', color: txn.paymentType === 'full' ? '#166534' : txn.paymentType === 'advance' ? '#1E3A8A' : '#374151' }}>
+                          {txn.paymentType || 'regular'}
+                          {txn.monthsCovered > 1 && ` (${txn.monthsCovered}mo)`}
+                        </span>
+                      </td>
+                      <td className="loan-admin-mgmt-table-amount" style={{ color: '#EA580C' }}>{fmt(txn.amount)}</td>
+                      <td style={{ textTransform: 'capitalize' }}>{txn.paymentMethod || 'cash'}</td>
+                      <td>{txn.referenceNumber || '—'}</td>
+                      <td>
+                        <span className={`ps-status-badge ${txn.status === 'confirmed' ? 'on-track' : 'default'}`}>
+                          {txn.status === 'confirmed' ? 'Confirmed' : 'Rejected'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
 
 
 
@@ -715,15 +863,17 @@ export default function LoanAdminPaymentStatus() {
         <div className="loan-admin-mgmt-modal-overlay" onClick={() => !actionLoading && setPendingDetail(null)} style={{ zIndex: 2000 }}>
           <div className="loan-admin-mgmt-modal-container" style={{ maxWidth: '440px' }} onClick={(e) => e.stopPropagation()}>
             <div className="loan-admin-mgmt-modal-header">
-              <h2 className="loan-admin-mgmt-modal-title">Review Transaction</h2>
+              <h2 className="loan-admin-mgmt-modal-title">
+                {pendingDetail.status === 'pending' ? 'Review Transaction' : 'Transaction Detail'}
+              </h2>
               <button className="loan-admin-mgmt-modal-close" onClick={() => setPendingDetail(null)}><X size={16} /></button>
             </div>
             <div style={{ padding: '16px 24px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '16px' }}>
-                <div><p style={{ margin: 0, fontSize: '12px', color: '#6B7280' }}>Member</p><p style={{ margin: 0, fontWeight: 600 }}>{pendingDetail.memberName || pendingDetail.email}</p></div>
-                <div><p style={{ margin: 0, fontSize: '12px', color: '#6B7280' }}>Amount</p><p style={{ margin: 0, fontWeight: 700, color: '#EA580C' }}>{fmt(pendingDetail.amount)}</p></div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', rowGap: '16px', columnGap: '12px', marginBottom: '16px' }}>
+                <div><p style={{ margin: 0, marginBottom: '4px', fontSize: '12px', color: '#6B7280' }}>Member</p><p style={{ margin: 0, fontWeight: 600 }}>{pendingDetail.memberName || pendingDetail.email}</p></div>
+                <div><p style={{ margin: 0, marginBottom: '4px', fontSize: '12px', color: '#6B7280' }}>Amount</p><p style={{ margin: 0, fontWeight: 700, color: '#EA580C', fontSize: '16px' }}>{fmt(pendingDetail.amount)}</p></div>
                 <div>
-                  <p style={{ margin: 0, fontSize: '12px', color: '#6B7280' }}>Payment Type</p>
+                  <p style={{ margin: 0, marginBottom: '4px', fontSize: '12px', color: '#6B7280' }}>Payment Type</p>
                   <p style={{ margin: 0, fontWeight: 700, textTransform: 'capitalize' }}>
                     <span style={{ display: 'inline-block', padding: '3px 10px', borderRadius: '6px', fontSize: '12px', background: pendingDetail.paymentType === 'full' ? '#DCFCE7' : pendingDetail.paymentType === 'advance' ? '#DBEAFE' : '#F3F4F6', color: pendingDetail.paymentType === 'full' ? '#166534' : pendingDetail.paymentType === 'advance' ? '#1E3A8A' : '#374151' }}>
                       {pendingDetail.paymentType || 'regular'}
@@ -731,23 +881,23 @@ export default function LoanAdminPaymentStatus() {
                   </p>
                 </div>
                 <div>
-                  <p style={{ margin: 0, fontSize: '12px', color: '#6B7280' }}>Months Covered</p>
+                  <p style={{ margin: 0, marginBottom: '4px', fontSize: '12px', color: '#6B7280' }}>Months Covered</p>
                   <p style={{ margin: 0, fontWeight: 700, color: '#111827' }}>{pendingDetail.monthsCovered > 0 ? `${pendingDetail.monthsCovered} month${pendingDetail.monthsCovered > 1 ? 's' : ''}` : 'Partial'}</p>
                 </div>
                 <div>
-                  <p style={{ margin: 0, fontSize: '12px', color: '#6B7280' }}>Method</p>
+                  <p style={{ margin: 0, marginBottom: '4px', fontSize: '12px', color: '#6B7280' }}>Method</p>
                   <p style={{ margin: 0, fontWeight: 600, textTransform: 'capitalize' }}>
                     {pendingDetail.paymentMethod || 'cash'}
                     {pendingDetail.subMethod ? ` (${pendingDetail.subMethod})` : ''}
                   </p>
                 </div>
-                <div><p style={{ margin: 0, fontSize: '12px', color: '#6B7280' }}>Reference #</p><p style={{ margin: 0, fontWeight: 600 }}>{pendingDetail.referenceNumber || '—'}</p></div>
+                <div><p style={{ margin: 0, marginBottom: '4px', fontSize: '12px', color: '#6B7280' }}>Reference #</p><p style={{ margin: 0, fontWeight: 600 }}>{pendingDetail.referenceNumber || '—'}</p></div>
                 
                 {pendingDetail.accountName && (
-                  <div><p style={{ margin: 0, fontSize: '12px', color: '#6B7280' }}>Sender Account Name</p><p style={{ margin: 0, fontWeight: 600 }}>{pendingDetail.accountName}</p></div>
+                  <div><p style={{ margin: 0, marginBottom: '4px', fontSize: '12px', color: '#6B7280' }}>Sender Account Name</p><p style={{ margin: 0, fontWeight: 600 }}>{pendingDetail.accountName}</p></div>
                 )}
                 {pendingDetail.accountNumber && (
-                  <div><p style={{ margin: 0, fontSize: '12px', color: '#6B7280' }}>Sender Account No.</p><p style={{ margin: 0, fontWeight: 600 }}>{pendingDetail.accountNumber}</p></div>
+                  <div><p style={{ margin: 0, marginBottom: '4px', fontSize: '12px', color: '#6B7280' }}>Sender Account No.</p><p style={{ margin: 0, fontWeight: 600 }}>{pendingDetail.accountNumber}</p></div>
                 )}
               </div>
 
@@ -759,7 +909,11 @@ export default function LoanAdminPaymentStatus() {
               )}
 
               <div style={{ borderTop: '1px solid #E5E7EB', paddingTop: '16px' }}>
-                {!showRejectInput ? (
+                {pendingDetail.status !== 'pending' ? (
+                  <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <button onClick={() => setPendingDetail(null)} style={{ padding: '8px 20px', borderRadius: '8px', border: 'none', backgroundColor: '#155DFC', color: 'white', fontWeight: 600, cursor: 'pointer' }}>Close</button>
+                  </div>
+                ) : !showRejectInput ? (
                   <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
                     <button onClick={() => setShowRejectInput(true)} disabled={actionLoading} style={{ padding: '8px 16px', borderRadius: '6px', border: 'none', backgroundColor: '#FEE2E2', color: '#DC2626', fontWeight: 600, cursor: 'pointer' }}>Reject</button>
                     <button onClick={handleApprovePending} disabled={actionLoading} style={{ padding: '8px 16px', borderRadius: '6px', border: 'none', backgroundColor: '#16A34A', color: 'white', fontWeight: 600, cursor: 'pointer' }}>{actionLoading ? 'Approving...' : 'Approve'}</button>
@@ -780,6 +934,45 @@ export default function LoanAdminPaymentStatus() {
       )}
 
 
+
+      {/* ── Savings Detail Modal ── */}
+      {selectedSavings && (
+        <div className="loan-admin-mgmt-modal-overlay" onClick={() => setSelectedSavings(null)} style={{ zIndex: 2000 }}>
+          <div className="loan-admin-mgmt-modal-container" style={{ maxWidth: '440px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="loan-admin-mgmt-modal-header">
+              <h2 className="loan-admin-mgmt-modal-title">Savings Transaction Detail</h2>
+              <button className="loan-admin-mgmt-modal-close" onClick={() => setSelectedSavings(null)}><X size={16} /></button>
+            </div>
+            <div style={{ padding: '16px 24px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', rowGap: '16px', columnGap: '12px', marginBottom: '16px' }}>
+                <div><p style={{ margin: 0, marginBottom: '4px', fontSize: '12px', color: '#6B7280' }}>Member Name</p><p style={{ margin: 0, fontSize: '15px', fontWeight: 600 }}>{selectedSavings.memberName || selectedSavings.email}</p></div>
+                <div><p style={{ margin: 0, marginBottom: '4px', fontSize: '12px', color: '#6B7280' }}>Email</p><p style={{ margin: 0, fontSize: '15px', fontWeight: 600 }}>{selectedSavings.email}</p></div>
+                <div><p style={{ margin: 0, marginBottom: '4px', fontSize: '12px', color: '#6B7280' }}>Goal</p><p style={{ margin: 0, fontSize: '15px', fontWeight: 600 }}>{selectedSavings.goalName || 'General Savings'}</p></div>
+                <div><p style={{ margin: 0, marginBottom: '4px', fontSize: '12px', color: '#6B7280' }}>Type</p>
+                  <p style={{ margin: 0, fontWeight: 700, textTransform: 'capitalize' }}>
+                    <span className={`savings-type-badge savings-type-${selectedSavings.type}`}>{selectedSavings.type}</span>
+                  </p>
+                </div>
+                <div><p style={{ margin: 0, marginBottom: '4px', fontSize: '12px', color: '#6B7280' }}>Amount</p><p style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: selectedSavings.type === 'withdrawal' ? '#DC2626' : '#16A34A' }}>{fmt(selectedSavings.amount)}</p></div>
+                <div><p style={{ margin: 0, marginBottom: '4px', fontSize: '12px', color: '#6B7280' }}>Date Confirmed</p><p style={{ margin: 0, fontSize: '15px', fontWeight: 600 }}>{fmtDate(selectedSavings.confirmedAt || selectedSavings.date)}</p></div>
+                <div><p style={{ margin: 0, marginBottom: '4px', fontSize: '12px', color: '#6B7280' }}>Method</p><p style={{ margin: 0, fontSize: '15px', fontWeight: 600, textTransform: 'capitalize' }}>{selectedSavings.paymentMethod || 'cash'}</p></div>
+                <div><p style={{ margin: 0, marginBottom: '4px', fontSize: '12px', color: '#6B7280' }}>Reference #</p><p style={{ margin: 0, fontSize: '15px', fontWeight: 600 }}>{selectedSavings.referenceNumber || '—'}</p></div>
+              </div>
+
+              {(selectedSavings.proofData || selectedSavings.proofOfPayment) && (
+                <div style={{ marginTop: '16px', marginBottom: '16px' }}>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#6B7280', marginBottom: '8px' }}>Proof of Payment</p>
+                  <img src={selectedSavings.proofData || selectedSavings.proofOfPayment} alt="Proof" style={{ width: '100%', maxHeight: '200px', objectFit: 'contain', borderRadius: '8px', border: '1px solid #E5E7EB' }} />
+                </div>
+              )}
+
+              <div style={{ borderTop: '1px solid #E5E7EB', paddingTop: '16px', display: 'flex', justifyContent: 'flex-end' }}>
+                <button onClick={() => setSelectedSavings(null)} style={{ padding: '8px 20px', borderRadius: '8px', border: 'none', backgroundColor: '#155DFC', color: 'white', fontWeight: 600, cursor: 'pointer' }}>Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Walk-in Transaction Modal ── */}
       {showWalkinModal && (
@@ -838,19 +1031,23 @@ export default function LoanAdminPaymentStatus() {
                       </div>
                     )}
                   </div>
-                  {walkinSelectedMember && (
-                    <div className="walkin-form-group">
-                      <label className="walkin-label">Select Savings Goal</label>
-                      <select className="walkin-select" value={walkinSelectedGoal} onChange={(e) => setWalkinSelectedGoal(e.target.value)} disabled={walkinGoals.length === 0}>
-                        {walkinGoals.length === 0 ? <option value="">No Active Goals Found</option> : <option value="">-- Choose Goal --</option>}
-                        {walkinGoals.map(g => (
-                          <option key={g._id} value={g._id}>
-                            {g.name} — Progress: {fmt(g.savedAmount)} / {fmt(g.targetAmount)}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
+                  <div className="walkin-form-group">
+                    <label className="walkin-label">Select Savings Goal</label>
+                    <select className="walkin-select" value={walkinSelectedGoal} onChange={(e) => setWalkinSelectedGoal(e.target.value)} disabled={!walkinSelectedMember || walkinGoals.length === 0}>
+                      {!walkinSelectedMember ? (
+                        <option value="">-- Search and Select a Member First --</option>
+                      ) : walkinGoals.length === 0 ? (
+                        <option value="">No Active Goals Found</option>
+                      ) : (
+                        <option value="">-- Choose Goal --</option>
+                      )}
+                      {walkinGoals.map(g => (
+                        <option key={g._id} value={g._id}>
+                          {g.name} — Progress: {fmt(g.savedAmount)} / {fmt(g.targetAmount)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </>
               )}
 

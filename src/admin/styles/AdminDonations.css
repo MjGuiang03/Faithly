@@ -22,7 +22,7 @@
 /* Stats Cards */
 .admin-don-new-stats {
   display: grid;
-  grid-template-columns: 1fr 1.1fr 1.1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 12px;
   margin-bottom: 20px;
 }
@@ -674,4 +674,26 @@
   border-top: 2px solid white;
   border-radius: 50%;
   animation: admin-don-new-spin 1s linear infinite;
+}
+
+/* ── Content Layout (Table + Chart) ── */
+.admin-don-content-layout {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.admin-don-table-col {
+  background: transparent;
+}
+
+.admin-don-chart-col {
+  /* Chart component handles its own inner styling */
+}
+
+@media (max-width: 1100px) {
+  .admin-don-content-layout {
+    grid-template-columns: 1fr;
+  }
 }

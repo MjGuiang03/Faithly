@@ -95,6 +95,7 @@ export default function LoanAdminLoanManagement() {
     const [loans, setLoans] = useState([]);
     const [allLoansStats, setAllLoansStats] = useState([]);
     const [interestFilter, setInterestFilter] = useState('all');
+    const [statusFilter, setStatusFilter] = useState('all');
     const [stats, setStats] = useState({ pending: 0, active: 0, rejected: 0 });
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(null);
@@ -124,6 +125,7 @@ export default function LoanAdminLoanManagement() {
             params.set('page', page);
             params.set('limit', LIMIT);
             if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim());
+            if (statusFilter !== 'all') params.set('status', statusFilter);
 
             const res = await fetch(`${API}/api/admin/loans?${params}`, {
                 headers: { Authorization: `Bearer ${token}` },
@@ -147,10 +149,10 @@ export default function LoanAdminLoanManagement() {
         } finally {
             setLoading(false);
         }
-    }, [page, debouncedSearch, navigate]);
+    }, [page, debouncedSearch, statusFilter, navigate]);
 
     useEffect(() => { fetchLoans(); }, [fetchLoans]);
-    useEffect(() => { setPage(1); }, [debouncedSearch]);
+    useEffect(() => { setPage(1); }, [debouncedSearch, statusFilter]);
 
     const fetchAllLoansStats = useCallback(async () => {
         try {
@@ -405,19 +407,19 @@ export default function LoanAdminLoanManagement() {
 
                 {/* Status Cards */}
                 <div className="loan-admin-mgmt-stats" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
-                    <div className="loan-admin-mgmt-stat-card">
+                    <div className="loan-admin-mgmt-stat-card" onClick={() => setStatusFilter(statusFilter === 'pending' ? 'all' : 'pending')} style={{ cursor: 'pointer', border: statusFilter === 'pending' ? '2px solid #3B82F6' : '1px solid #E5E7EB', transform: statusFilter === 'pending' ? 'translateY(-2px)' : 'none', transition: 'all 0.2s' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', minHeight: '24px' }}>
                             <p className="loan-admin-mgmt-stat-label" style={{ margin: 0 }}>Pending Review</p>
                         </div>
                         <p className="loan-admin-mgmt-stat-value pending">{counts.pending}</p>
                     </div>
-                    <div className="loan-admin-mgmt-stat-card">
+                    <div className="loan-admin-mgmt-stat-card" onClick={() => setStatusFilter(statusFilter === 'approved' ? 'all' : 'approved')} style={{ cursor: 'pointer', border: statusFilter === 'approved' ? '2px solid #10B981' : '1px solid #E5E7EB', transform: statusFilter === 'approved' ? 'translateY(-2px)' : 'none', transition: 'all 0.2s' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', minHeight: '24px' }}>
                             <p className="loan-admin-mgmt-stat-label" style={{ margin: 0 }}>Approved</p>
                         </div>
                         <p className="loan-admin-mgmt-stat-value approved">{counts.active}</p>
                     </div>
-                    <div className="loan-admin-mgmt-stat-card">
+                    <div className="loan-admin-mgmt-stat-card" onClick={() => setStatusFilter(statusFilter === 'rejected' ? 'all' : 'rejected')} style={{ cursor: 'pointer', border: statusFilter === 'rejected' ? '2px solid #EF4444' : '1px solid #E5E7EB', transform: statusFilter === 'rejected' ? 'translateY(-2px)' : 'none', transition: 'all 0.2s' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', minHeight: '24px' }}>
                             <p className="loan-admin-mgmt-stat-label" style={{ margin: 0 }}>Rejected</p>
                         </div>

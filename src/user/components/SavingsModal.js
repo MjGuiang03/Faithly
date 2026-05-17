@@ -101,7 +101,7 @@ function DepositModal({ goals, onClose }) {
             if (paymentMethod !== 'Cash') {
                 if (!subMethod) { setError(`Please select a ${paymentMethod} option.`); return; }
                 if (!accountName.trim()) { setError('Please enter the account name.'); return; }
-                if (!accountNumber.trim()) { setError('Please enter the account number.'); return; }
+                if (accountNumber.trim().length !== 11) { setError('Sender Account Number must be exactly 11 digits.'); return; }
             }
         }
         
@@ -130,6 +130,19 @@ function DepositModal({ goals, onClose }) {
             setLoading(false);
         }
     };
+
+    const isFormComplete = 
+        numAmt > 0 &&
+        selectedGoal !== '' &&
+        paymentMethod !== '' &&
+        (approvalMethod !== 'manual' || (
+            proofBase64 !== '' &&
+            (paymentMethod === 'Cash' || (
+                subMethod !== '' &&
+                accountName.trim() !== '' &&
+                accountNumber.trim().length === 11
+            ))
+        ));
 
     return (
         <div className="svm-overlay" onClick={onClose}>
@@ -259,9 +272,10 @@ function DepositModal({ goals, onClose }) {
                                         <input 
                                           type="text" 
                                           className="user-donation-input" 
-                                          placeholder="09123456789 or 1234567890"
+                                          placeholder="09123456789"
+                                          maxLength={11}
                                           value={accountNumber}
-                                          onChange={(e) => setAccountNumber(e.target.value)}
+                                          onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, '').slice(0, 11))}
                                         />
                                       </div>
                                     </div>
@@ -322,7 +336,7 @@ function DepositModal({ goals, onClose }) {
 
                 <div className="svm-modal-footer">
                     <button className="svm-btn-cancel" onClick={onClose} disabled={loading}>Cancel</button>
-                    <button className="svm-btn-submit" onClick={handleSubmit} disabled={loading}>
+                    <button className="svm-btn-submit" onClick={handleSubmit} disabled={loading} style={{ opacity: (!isFormComplete || loading) ? 0.6 : 1, cursor: (!isFormComplete || loading) ? 'not-allowed' : 'pointer' }}>
                         {loading ? <span className="btn-spinner" /> : 'Confirm deposit'}
                     </button>
                 </div>
@@ -389,6 +403,10 @@ function NewGoalModal({ onClose }) {
             setLoading(false);
         }
     };
+
+    const isFormComplete = 
+        resolvedName !== '' &&
+        targetAmount !== '' && parseFloat(targetAmount.replace(/,/g, '')) > 0;
 
     return (
         <div className="svm-overlay" onClick={onClose}>
@@ -470,7 +488,7 @@ function NewGoalModal({ onClose }) {
 
                 <div className="svm-modal-footer">
                     <button className="svm-btn-cancel" onClick={onClose} disabled={loading}>Cancel</button>
-                    <button className="svm-btn-submit" onClick={handleSubmit} disabled={loading}>
+                    <button className="svm-btn-submit" onClick={handleSubmit} disabled={loading} style={{ opacity: (!isFormComplete || loading) ? 0.6 : 1, cursor: (!isFormComplete || loading) ? 'not-allowed' : 'pointer' }}>
                         {loading ? <span className="btn-spinner" /> : 'Create goal'}
                     </button>
                 </div>
@@ -530,8 +548,11 @@ function QuickDepositModal({ goal, goals, onClose }) {
     const handleSubmit = async () => {
         if (!numAmt || numAmt <= 0) { setError('Enter a valid amount.'); return; }
         if (!paymentMethod) { setError('Please select a payment method.'); return; }
-        if (approvalMethod === 'manual' && !proofBase64) {
-            setError('Please upload your proof of payment.'); return;
+        if (approvalMethod === 'manual') {
+            if (!proofBase64) { setError('Please upload your proof of payment.'); return; }
+            if (!subMethod) { setError(`Please select a ${paymentMethod} option.`); return; }
+            if (!accountName.trim()) { setError('Please enter the account name.'); return; }
+            if (accountNumber.trim().length !== 11) { setError('Sender Account Number must be exactly 11 digits.'); return; }
         }
         setError('');
         setLoading(true);
@@ -540,7 +561,7 @@ function QuickDepositModal({ goal, goals, onClose }) {
             const res = await fetch(`${API}/api/savings/deposit`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ goalId: goal._id, amount: numAmt, note, paymentMethod, proofOfPayment: proofBase64 }),
+                body: JSON.stringify({ goalId: goal._id, amount: numAmt, note, paymentMethod, subMethod, accountName, accountNumber, proofOfPayment: proofBase64 }),
             });
             const data = await res.json();
             if (!res.ok || !data.success) throw new Error(data.message || 'Deposit failed.');
@@ -559,6 +580,16 @@ function QuickDepositModal({ goal, goals, onClose }) {
             setLoading(false);
         }
     };
+
+    const isFormComplete = 
+        numAmt > 0 &&
+        paymentMethod !== '' && paymentMethod !== 'cash' &&
+        (approvalMethod !== 'manual' || (
+            proofBase64 !== '' &&
+            subMethod !== '' &&
+            accountName.trim() !== '' &&
+            accountNumber.trim().length === 11
+        ));
 
     return (
         <div className="svm-overlay" onClick={onClose}>
@@ -699,9 +730,10 @@ function QuickDepositModal({ goal, goals, onClose }) {
                                                 <input 
                                                   type="text" 
                                                   className="user-donation-input" 
-                                                  placeholder="09123456789 or 1234567890"
+                                                  placeholder="09123456789"
+                                                  maxLength={11}
                                                   value={accountNumber}
-                                                  onChange={(e) => setAccountNumber(e.target.value)}
+                                                  onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, '').slice(0, 11))}
                                                 />
                                               </div>
                                             </div>
@@ -745,7 +777,7 @@ function QuickDepositModal({ goal, goals, onClose }) {
                 {!success && (
                     <div className="svm-modal-footer">
                         <button className="svm-btn-cancel" onClick={onClose} disabled={loading}>Cancel</button>
-                        <button className="svm-btn-submit" onClick={handleSubmit} disabled={loading || !numAmt}>
+                        <button className="svm-btn-submit" onClick={handleSubmit} disabled={loading} style={{ opacity: (!isFormComplete || loading) ? 0.6 : 1, cursor: (!isFormComplete || loading) ? 'not-allowed' : 'pointer' }}>
                             {loading ? <span className="btn-spinner" /> : `Deposit ${numAmt > 0 ? fmt(numAmt) : ''}`}
                         </button>
                     </div>

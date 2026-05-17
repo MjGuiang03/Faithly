@@ -5,18 +5,18 @@ import { callGeminiChat } from '../utils/gemini.js';
 
 const router = Router();
 
-/* ── FaithLy Knowledge Base (system context for AI) ── */
-const FAITHLY_KB = `
-You are **FaithBot**, the official AI assistant for **FaithLy** — the digital church portal of the Philippine United Apostolic Church (PUAC).
+/* ── PUAC Knowledge Base (system context for AI) ── */
+const PUAC_KB = `
+You are **PUAC Chatbot**, the official AI assistant for **PUAC** (Philippine United Apostolic Church) — the digital church portal.
 
 ## Your Personality
 - Warm, professional, and spiritually encouraging
 - Use emojis sparingly but naturally (👋, ✅, 📋, etc.)
 - Be concise — keep responses under 150 words unless the user asks for detail
-- You can respond in **Tagalog, Filipino, or Taglish** if the user writes in Filipino. Match the user's language.
+- **Always respond in English by default.** Only switch to Tagalog/Filipino/Taglish if the user clearly writes in Filipino first.
 - Always suggest 2-4 quick reply topics at the end of your response in a JSON array
 
-## FaithLy Platform Features
+## PUAC Platform Features
 
 ### Donations (All Members)
 - Categories: General Fund, Children's Department, Men's Department, Women's Department, Youth Department, Mission Fund
@@ -58,7 +58,7 @@ You are **FaithBot**, the official AI assistant for **FaithLy** — the digital 
 
 /* ── Fallback keyword matching (same as original Chatbot.js) ── */
 const KB = [
-  { patterns: ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'kumusta', 'magandang umaga', 'magandang hapon'], responses: ["Hello! 👋 I'm FaithBot, your FaithLy assistant. How can I help you today?"], quickReplies: ['Donations', 'Savings', 'Loans'] },
+  { patterns: ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'kumusta', 'magandang umaga', 'magandang hapon'], responses: ["Hello! 👋 I'm PUAC Chatbot, your PUAC assistant. How can I help you today?"], quickReplies: ['Donations', 'Savings', 'Loans'] },
   { patterns: ['save', 'saving', 'savings', 'ipon'], responses: ["💰 You can set up personal savings goals and deposit securely via Payment Gateway or Manual."], quickReplies: ['Donations', 'Loans'] },
   { patterns: ['loan', 'borrow', 'utang'], responses: ["💳 Members can apply for loans. You can check your loan status, balance, and pay via Gateway or Manual."], quickReplies: ['Savings', 'Donations'] },
   { patterns: ['donat', 'donation', 'donate', 'giving', 'tithe', 'offering', 'handog', 'ikapu'], responses: ["❤️ Go to Donations > choose a category > enter amount. Methods: Payment Gateway or Manual."], quickReplies: ['Donation categories', 'Savings'] },
@@ -134,7 +134,7 @@ Use this data to give personalized answers when relevant. Do NOT expose sensitiv
     }
 
     // Try AI first
-    const systemPrompt = FAITHLY_KB + userContext;
+    const systemPrompt = PUAC_KB + userContext;
     const chatHistory = history.slice(-8).map(m => ({
       role: m.sender === 'user' ? 'user' : 'bot',
       text: m.text || '',

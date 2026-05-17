@@ -207,7 +207,7 @@
 /* ── LEFT COLUMN ── */
 .wpt-welcome-left {
   color: white;
-  padding: 48px 40px 48px 36px;
+  padding: 48px 40px 48px 60px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -266,7 +266,7 @@
 /* Headline */
 .wpt-welcome-headline {
   font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(3rem, 4.5vw, 5rem);
+  font-size: clamp(3rem, 5vw, 5.5rem);
   font-weight: 500;
   line-height: 1.15;
   color: white;
@@ -489,7 +489,7 @@
     grid-template-rows: 1fr 1fr 1fr;
     height: 720px;
   }
-  
+
   .wpt-welcome-photo-stack {
     display: contents;
   }
@@ -497,18 +497,19 @@
 
 @media (max-width: 560px) {
   .wpt-welcome-left {
-    text-align: center;
-    align-items: center;
+    text-align: left;
   }
+
   .wpt-welcome-eyebrow {
     margin-left: 0;
-    justify-content: center;
   }
+
   .wpt-welcome-headline {
-    font-size: 3.2rem;
+    font-size: 4rem;
   }
+
   .wpt-welcome-body {
-    text-align: center;
+    text-align: left;
     margin-left: auto;
     margin-right: auto;
   }
@@ -973,10 +974,10 @@
 
 .wpt-hero-card-main-inner {
   color: white;
+  text-align: left;
 }
 
 .wpt-hero-card-main-inner h3 {
-  font-family: 'Cormorant Garamond', serif;
   font-size: 1.5rem;
   font-weight: 600;
   line-height: 1.2;
@@ -990,49 +991,19 @@
   text-transform: uppercase;
 }
 
-.wpt-card-cross {
-  position: absolute;
-  top: 28px;
-  right: 28px;
-  width: 48px;
-  height: 60px;
-  opacity: 0.15;
-}
-
-.wpt-card-cross::before {
-  content: '';
-  position: absolute;
-  left: 50%;
-  top: 0;
-  transform: translateX(-50%);
-  width: 8px;
-  height: 100%;
-  background: white;
-  border-radius: 3px;
-}
-
-.wpt-card-cross::after {
-  content: '';
-  position: absolute;
-  top: 30%;
-  left: 0;
-  width: 100%;
-  height: 8px;
-  background: white;
-  border-radius: 3px;
-}
-
 .wpt-hero-card-float {
   width: 58%;
   height: 160px;
   bottom: 0;
-  left: 0;
+  left: -10%;
   background: var(--wpt-white);
   border: 1px solid var(--wpt-border);
   padding: 20px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  text-align: left;
+  box-shadow: 0 16px 40px rgba(30, 58, 138, 0.08);
 }
 
 .wpt-float-tag {
@@ -1044,7 +1015,6 @@
 }
 
 .wpt-float-value {
-  font-family: 'Cormorant Garamond', serif;
   font-size: 2rem;
   font-weight: 600;
   color: var(--wpt-navy);
@@ -1053,6 +1023,39 @@
 .wpt-float-label {
   font-size: 0.75rem;
   color: var(--wpt-text-muted);
+}
+
+.wpt-shine-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.wpt-shine-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.4) 50%, rgba(255, 255, 255, 0) 100%);
+  transform: skewX(-25deg);
+  pointer-events: none;
+  animation: wpt-shine-anim 3s infinite;
+  z-index: 10;
+}
+
+@keyframes wpt-shine-anim {
+  0% {
+    left: -100%;
+  }
+
+  20% {
+    left: 200%;
+  }
+
+  100% {
+    left: 200%;
+  }
 }
 
 .wpt-hero-gold-bar {
@@ -1364,35 +1367,33 @@
 
 .wpt-features-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 20px;
 }
 
-@media (max-width: 900px) {
-  .wpt-features-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-@media (max-width: 580px) {
+@media (max-width: 700px) {
   .wpt-features-grid {
     grid-template-columns: 1fr;
   }
 }
 
 .wpt-feature-card {
-  background: var(--wpt-off-white);
-  border: 1px solid var(--wpt-border);
+  background: var(--wpt-navy);
+  border: 1px solid var(--wpt-navy-dark);
   border-radius: 14px;
   padding: 28px 24px;
   transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
   cursor: default;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 420px;
 }
 
 .wpt-feature-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 16px 48px rgba(30, 58, 138, 0.1);
-  border-color: rgba(30, 58, 138, 0.25);
+  box-shadow: 0 16px 48px rgba(30, 58, 138, 0.4);
+  border-color: var(--wpt-navy-light);
 }
 
 .wpt-feature-icon {
@@ -1408,28 +1409,51 @@
   color: white;
 }
 
+.wpt-feature-img {
+  width: 100%;
+  height: 200px;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  background: var(--wpt-navy-dark);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.wpt-feature-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.wpt-feature-card:hover .wpt-feature-img img {
+  transform: scale(1.04);
+}
+
 .wpt-feature-card h3 {
   font-size: 0.95rem;
   font-weight: 600;
-  color: var(--wpt-navy-dark);
+  color: var(--wpt-white);
   margin-bottom: 8px;
 }
 
 .wpt-feature-card p {
   font-size: 0.82rem;
-  color: var(--wpt-text-muted);
+  color: rgba(255, 255, 255, 0.7);
   line-height: 1.6;
 }
 
 .wpt-feature-tag {
   display: inline-block;
+  align-self: flex-start;
   margin-top: 14px;
   font-size: 0.68rem;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--wpt-navy);
-  background: var(--wpt-navy-faint);
+  color: var(--wpt-white);
+  background: rgba(255, 255, 255, 0.15);
   padding: 4px 10px;
   border-radius: 100px;
 }
@@ -2161,17 +2185,21 @@
     gap: 40px;
     padding-top: 40px;
   }
+
   .wpt-hero-eyebrow {
     position: relative;
     font-size: 3.5rem;
     margin-bottom: 20px;
   }
+
   .wpt-hero-actions {
     justify-content: center;
   }
+
   .wpt-hero-stats {
     justify-content: center;
   }
+
   .wpt-hero-sub {
     margin: 0 auto 36px;
   }
@@ -2183,15 +2211,18 @@
     text-align: center;
     padding: 40px 32px;
   }
+
   .wpt-cta-actions {
     flex-direction: column;
     align-items: center;
     width: 100%;
   }
+
   .wpt-cta-actions a {
     width: 100%;
     justify-content: center;
   }
+
   .wpt-cta-sub {
     margin: 0 auto;
   }
@@ -2201,21 +2232,26 @@
   .wpt-nav {
     padding: 0 4%;
   }
+
   .wpt-nav-links {
     gap: 16px;
   }
+
   .wpt-nav-name {
     font-size: 1.4rem;
   }
+
   .wpt-logo-img {
     width: 36px;
     height: 36px;
   }
+
   .wpt-carousel-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 16px;
   }
+
   .wpt-bento-item:nth-child(1),
   .wpt-bento-item:nth-child(2),
   .wpt-bento-item:nth-child(3),
@@ -2224,48 +2260,93 @@
   .wpt-bento-item:nth-child(6) {
     grid-column: span 12;
   }
+
+  .wpt-hero-card-stack {
+    height: 420px;
+    max-width: 440px;
+    margin: 0 auto;
+  }
+
+  .wpt-hero-card-main {
+    width: 85%;
+    height: 280px;
+    padding: 20px;
+    left: 15%;
+    right: auto;
+  }
+
+  .wpt-hero-card-main-inner h3 {
+    font-size: 1.3rem;
+  }
+
+  .wpt-hero-card-main-inner p {
+    font-size: 0.7rem;
+  }
+
+  .wpt-hero-card-float {
+    width: 75%;
+    height: 140px;
+    padding: 16px;
+    left: 0;
+  }
+
+  .wpt-float-value {
+    font-size: 1.6rem;
+  }
 }
 
 @media (max-width: 560px) {
+
   .wpt-nav-links li:nth-child(1),
   .wpt-nav-links li:nth-child(2) {
     display: none;
   }
+
   .wpt-hero-title {
     font-size: 2.6rem;
   }
+
   .wpt-hero-eyebrow {
     font-size: 2.4rem;
   }
+
   .wpt-hero-actions {
     flex-direction: column;
     width: 100%;
   }
+
   .wpt-hero-actions a {
     width: 100%;
     justify-content: center;
   }
+
   .wpt-welcome-ctas {
     flex-direction: column;
     width: 100%;
   }
+
   .wpt-welcome-ctas a {
     width: 100%;
     justify-content: center;
   }
+
   .wpt-cta-strip {
     padding: 40px 5%;
   }
+
   .wpt-cta-inner {
     padding: 32px 24px;
   }
+
   .wpt-cta-title {
     font-size: 1.8rem;
   }
+
   .wpt-footer-top {
     grid-template-columns: 1fr;
     gap: 32px;
   }
+
   .wpt-footer-bottom {
     flex-direction: column;
     gap: 16px;

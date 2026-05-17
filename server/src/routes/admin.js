@@ -376,12 +376,116 @@ router.get('/branches', authenticateAdmin, async (req, res) => {
     const statsMap = {};
     userStats.forEach(s => { if (s._id) statsMap[s._id] = s.count; });
 
+    // 2.5 Aggregate donations per branch from users
+    const branchDonations = await donations.aggregate([
+      { $match: { status: 'confirmed' } },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'email',
+          foreignField: 'email',
+          as: 'user'
+        }
+      },
+      { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
+      {
+        $addFields: {
+           targetBranch: { $cond: [ { $ifNull: ['$community', false] }, '$community', '$user.branch' ] }
+        }
+      },
+      {
+        $group: {
+          _id: '$targetBranch',
+          totalAmount: { $sum: '$amount' },
+          sameCommunityAmount: {
+            $sum: {
+              $cond: [
+                { $eq: ['$targetBranch', '$user.branch'] },
+                '$amount',
+                0
+              ]
+            }
+          },
+          otherCommunityAmount: {
+            $sum: {
+              $cond: [
+                { $ne: ['$targetBranch', '$user.branch'] },
+                '$amount',
+                0
+              ]
+            }
+          }
+        }
+      }
+    ]).toArray();
+    const donationStatsMap = {};
+    branchDonations.forEach(d => { 
+      if (d._id) {
+        donationStatsMap[d._id] = {
+          totalAmount: d.totalAmount,
+          sameCommunityAmount: d.sameCommunityAmount,
+          otherCommunityAmount: d.otherCommunityAmount
+        };
+      }
+    });
+    // 2.7 Aggregate attendance per branch for the current year
+    const startOfYear = new Date(new Date().getFullYear(), 0, 1);
+    startOfYear.setHours(0,0,0,0);
+
+    const branchAttendance = await attendance.aggregate([
+      { 
+        $match: { 
+          status: { $regex: /^(present|late)$/i }
+        } 
+      },
+      {
+        $addFields: {
+           targetBranch: { $ifNull: ['$community', { $ifNull: ['$branch', '$userBranch'] }] },
+           actualDate: { $ifNull: ['$date', '$createdAt'] }
+        }
+      },
+      {
+        $match: {
+           actualDate: { $gte: startOfYear }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            branch: '$targetBranch',
+            month: { $month: '$actualDate' },
+            year: { $year: '$actualDate' }
+          },
+          count: { $sum: 1 }
+        }
+      }
+    ]).toArray();
+
+    const attendanceStatsMap = {};
+    branchAttendance.forEach(a => {
+      const bName = a._id.branch;
+      if (bName) {
+        if (!attendanceStatsMap[bName]) attendanceStatsMap[bName] = [];
+        attendanceStatsMap[bName].push({
+          month: a._id.month,
+          year: a._id.year,
+          count: a.count
+        });
+      }
+    });
+
     // 3. Merge
     const merged = dbBranches.map(b => {
       const members = statsMap[b.name] || 0;
+      const donStats = donationStatsMap[b.name] || { totalAmount: 0, sameCommunityAmount: 0, otherCommunityAmount: 0 };
+      const attData = attendanceStatsMap[b.name] || [];
       return {
         ...b,
         members,
+        totalDonations: donStats.totalAmount,
+        sameCommunityAmount: donStats.sameCommunityAmount,
+        otherCommunityAmount: donStats.otherCommunityAmount,
+        attendanceHistory: attData,
         status: members > 0 ? 'Active' : 'Idle'
       };
     });
@@ -800,7 +904,21 @@ router.get('/savings/deposits', authenticateAdmin, async (req, res) => {
       ];
     }
 
-    const deposits = await savingsTransactions.find(query).sort({ date: -1 }).toArray();
+    const rawDeposits = await savingsTransactions.find(query).sort({ date: -1 }).toArray();
+    
+    // Enrich with user positions and roles
+    const emails = [...new Set(rawDeposits.map(d => d.email).filter(Boolean))];
+    const userDocs = await users.find({ email: { $in: emails } }).project({ email: 1, position: 1, role: 1 }).toArray();
+    const userMap = userDocs.reduce((acc, user) => {
+      acc[user.email] = user.position || (user.role === 'officer' ? 'officer' : 'member');
+      return acc;
+    }, {});
+
+    const deposits = rawDeposits.map(d => ({
+      ...d,
+      position: userMap[d.email] || 'member'
+    }));
+
     res.json({ success: true, deposits });
   } catch (err) {
     console.error('Failed to fetch savings transactions:', err);

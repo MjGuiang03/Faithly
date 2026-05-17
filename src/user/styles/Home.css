@@ -1,8 +1,8 @@
-/* ─────────────────────────────────────────────
-   Home.css — FaithLy User Dashboard
-   Type scale: 12 · 14 · 16 · 20
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+   Home.css â€” FaithLy User Dashboard
+   Type scale: 12 Â· 14 Â· 16 Â· 20
    Color: primary + semantic accents on icon boxes
-   ───────────────────────────────────────────── */
+   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 .user-home-layout {
   display: flex;
@@ -12,7 +12,7 @@
 }
 
 
-/* ── Stats ── */
+/* â”€â”€ Stats â”€â”€ */
 
 .uh-stats-grid {
   display: grid;
@@ -72,8 +72,31 @@
   background: #1C3873 !important;
 }
 
-.uh-stat-card--attendance {
-  background: #23448A !important;
+.uh-stat-card--verse-mini {
+  background: linear-gradient(135deg, #2a1a00 0%, #4a3520 100%) !important;
+}
+
+.uh-stat-verse-text {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.75);
+  font-family: 'Inter', sans-serif;
+  font-style: italic;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.uh-stat-sub--gold {
+  color: #c9a84c !important;
+  font-weight: 700 !important;
+}
+
+.uh-stat-card--verse-mini .uh-stat-icon-box {
+  background: rgba(201, 168, 76, 0.2);
+  color: #c9a84c;
 }
 
 .uh-stat-text {
@@ -224,12 +247,12 @@
   background: rgba(225, 29, 72, 0.12);
 }
 
-.dark .uh-stat-card--attendance .uh-stat-icon-box {
-  background: rgba(30, 58, 138, 0.15);
+.dark .uh-stat-card--verse-mini .uh-stat-icon-box {
+  background: rgba(201, 168, 76, 0.15);
 }
 
 
-/* ── Cards ── */
+/* â”€â”€ Cards â”€â”€ */
 
 .uh-card {
   background: var(--card);
@@ -361,7 +384,7 @@
 }
 
 
-/* ── Grids ── */
+/* â”€â”€ Grids â”€â”€ */
 
 .uh-grid-main {
   display: grid;
@@ -384,7 +407,7 @@
   grid-template-columns: 1fr 1fr;
   gap: 14px;
   margin-bottom: 20px;
-  align-items: stretch;
+  align-items: start;
 }
 
 .uh-grid-bottom>.uh-card {
@@ -394,28 +417,30 @@
 }
 
 
-/* ── Quick Actions — light per-action color tint ── */
+/* â”€â”€ Quick Actions â€” light per-action color tint â”€â”€ */
 
 .uh-actions {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: repeat(2, 1fr);
-  /* Ensure two rows that fill space */
+  display: flex;
+  flex-direction: column;
   gap: 12px;
   width: 100%;
   flex: 1;
-  /* Grow to fill the card height */
   margin-bottom: 4px;
-  /* Slight bottom clearance */
+}
+
+.uh-actions--grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
 }
 
 .uh-action {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
   /* Center content vertically when button grows */
-  gap: 12px;
+  gap: 16px;
   padding: 16px;
   border-radius: 12px;
   border: none;
@@ -436,6 +461,39 @@
   filter: brightness(1.1);
 }
 
+.uh-actions--grid .uh-action {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 14px;
+  gap: 12px;
+}
+
+.uh-actions--grid .uh-action__text {
+  gap: 4px;
+}
+
+.uh-actions--grid .uh-action__arrow {
+  position: absolute;
+  bottom: 14px;
+  right: 14px;
+}
+
+.uh-actions--grid .uh-action {
+  position: relative;
+}
+
+.uh-actions--grid .uh-action__title {
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.uh-actions--grid .uh-action__desc {
+  font-size: 10.5px;
+  line-height: 1.3;
+  padding-right: 12px;
+}
+
 .uh-action__icon {
   width: 40px;
   height: 40px;
@@ -446,7 +504,7 @@
   flex-shrink: 0;
 }
 
-/* Per-action icon tints — subtle, just the icon box */
+/* Per-action icon tints â€” subtle, just the icon box */
 .uh-action--donate {
   background: #E11D48 !important;
 }
@@ -488,11 +546,13 @@
 }
 
 .uh-action__arrow {
-  display: none;
+  display: block;
+  margin-left: auto;
+  opacity: 0.7;
 }
 
 
-/* ── Prayer Wall — warm accent ── */
+/* â”€â”€ Prayer Wall â€” warm accent â”€â”€ */
 
 .uh-card--prayer {
   display: flex;
@@ -558,7 +618,7 @@
   font-family: 'Inter', sans-serif;
 }
 
-/* Prayer CTA — uses purple for variety */
+/* Prayer CTA â€” uses purple for variety */
 .uh-card--prayer .uh-cta {
   background: var(--sidebar);
 }
@@ -601,19 +661,22 @@
   cursor: not-allowed;
 }
 
+.uh-card--events {
+  padding: 0 !important;
+  overflow: hidden;
+}
+
 .uh-carousel-viewport {
   width: 100%;
   overflow: hidden;
-  border-radius: 5px;
-  margin-bottom: 8px;
   flex: 1;
-  display: flex;
-  flex-direction: column;
+  min-height: 0;
 }
 
 .uh-carousel-track {
   display: flex;
   transition: transform 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+  height: 100%;
 }
 
 .uh-carousel-slide {
@@ -621,129 +684,142 @@
   width: 100%;
   min-width: 100%;
   cursor: pointer;
+  height: 100%;
 }
 
-.uh-event-hero {
-  border-radius: 5px;
-  display: flex;
-  flex-direction: column-reverse;
-  min-height: auto;
+/* ── Slide Hero (image + overlay + pills + content) ── */
+
+.uh-slide-hero {
   position: relative;
+  height: 100%;
   overflow: hidden;
-  transition: all 0.3s ease;
+  background: linear-gradient(135deg, #0a1628 0%, #1e3a8a 100%);
 }
 
-.uh-event-hero__content {
-  flex: 1;
-  padding: 18px 20px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  position: relative;
-  z-index: 2;
-
-}
-
-.uh-event-hero__image {
-  flex: none;
+.uh-slide-hero__img {
   width: 100%;
-  height: 220px;
-  background-size: cover;
-  background-position: center;
-  position: relative;
-  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.78);
+  display: block;
 }
 
-.uh-event-hero:hover .uh-event-hero__image {
-  transform: scale(1.05);
-}
-
-.uh-event-hero__badge {
+.uh-slide-hero__overlay {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  font-size: 10px;
-  font-weight: 800;
-  text-transform: uppercase;
-  padding: 4px 12px;
-  border-radius: 20px;
-  letter-spacing: 0.06em;
-  background: rgba(255, 255, 255, 0.85) !important;
-  backdrop-filter: blur(4px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 10;
+  inset: 0;
+  background: linear-gradient(to top, rgba(5,15,40,0.88) 0%, rgba(5,15,40,0.4) 40%, rgba(5,15,40,0.05) 65%, transparent 100%);
+  pointer-events: none;
+  z-index: 2;
 }
 
-.uh-event-hero__main-info {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 4px;
-}
-
-.uh-event-hero__date {
+/* Top pills */
+.uh-slide-hero__top {
   position: absolute;
   top: 12px;
   left: 12px;
+  right: 12px;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.85) !important;
-  backdrop-filter: blur(4px);
+  justify-content: space-between;
+  z-index: 5;
+}
+
+.uh-slide-pill {
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 0.5px solid rgba(255,255,255,0.25);
+  border-radius: 10px;
   padding: 6px 12px;
-  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.uh-slide-pill--date {
+  flex-direction: column;
+  gap: 0;
   line-height: 1;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 10;
 }
 
-.uh-event-hero--no-image .uh-event-hero__content {
-  padding-top: 64px;
-}
-
-.uh-event-hero__day {
+.uh-slide-pill__day {
   font-size: 20px;
   font-weight: 800;
-  letter-spacing: -1px;
+  color: white;
+  font-family: 'Inter', sans-serif;
 }
 
-.uh-event-hero__month {
-  font-size: 11px;
+.uh-slide-pill__month {
+  font-size: 9px;
   font-weight: 700;
+  color: rgba(255,255,255,0.7);
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  opacity: 0.8;
-  margin-top: 4px;
+  font-family: 'Inter', sans-serif;
 }
 
-.uh-event-hero__title {
-  font-size: 17px;
+.uh-slide-pill--cat {
+  font-size: 9px;
+  font-weight: 800;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-family: 'Inter', sans-serif;
+  height: fit-content;
+}
+
+/* Bottom content */
+.uh-slide-hero__bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0 16px 28px;
+  z-index: 5;
+}
+
+.uh-slide-hero__title {
+  font-size: 16px;
   font-weight: 700;
-  color: var(--foreground);
-  margin: 0;
-  line-height: 1.2;
+  color: white;
+  margin: 0 0 6px;
+  line-height: 1.3;
+  font-family: 'Inter', sans-serif;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.uh-event-hero__footer {
-  margin-top: 2px;
+.uh-slide-hero__meta {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  color: var(--text-muted);
+  gap: 12px;
+  font-size: 11px;
   font-weight: 500;
+  color: rgba(255,255,255,0.72);
+  font-family: 'Inter', sans-serif;
 }
 
-.uh-dot-sep {
-  opacity: 0.5;
+.uh-slide-hero__meta span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── Carousel Footer ── */
+
+.uh-carousel-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-top: 0.5px solid var(--border);
 }
 
 .uh-carousel-dots {
   display: flex;
-  justify-content: center;
-  gap: 6px;
-  margin-bottom: 8px;
+  gap: 5px;
+  align-items: center;
 }
 
 .uh-carousel-dot {
@@ -758,21 +834,15 @@
 }
 
 .uh-carousel-dot--active {
-  background: var(--primary);
+  background: #1e3a8a;
   width: 18px;
-  border-radius: 6px;
+  border-radius: 3px;
 }
 
-.uh-events-see-all-btn {
-  justify-content: center;
-  padding: 8px 0;
-  border-top: 1px solid var(--border);
-  border-radius: 0;
-  gap: 6px;
-}
-
-.dark .uh-event-hero {
-  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.1);
+.uh-text-btn--sm {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  gap: 4px !important;
 }
 
 .dark .uh-carousel-dot--active {
@@ -780,7 +850,7 @@
 }
 
 
-/* ── Activity ── */
+/* â”€â”€ Activity â”€â”€ */
 
 .uh-events-count-badge {
   background: #EF4444;
@@ -908,7 +978,7 @@
 }
 
 
-/* ── Community ── */
+/* â”€â”€ Community â”€â”€ */
 
 .uh-card--community {
   display: flex;
@@ -973,7 +1043,7 @@
 }
 
 
-/* ── Modals ── */
+/* â”€â”€ Modals â”€â”€ */
 
 .uh-overlay {
   position: fixed;
@@ -1012,6 +1082,282 @@
   max-width: 920px;
 }
 
+/* ── Event Detail Modal (uh-edm) ── */
+.uh-edm {
+  background: white;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.25);
+  animation: uh-slide 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.uh-edm__hero {
+  position: relative;
+  height: 280px;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0a1628 0%, #1e3a8a 100%);
+}
+
+.uh-edm__hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.82);
+  display: block;
+  cursor: pointer;
+  transition: transform 0.4s ease;
+}
+
+.uh-edm__hero-img:hover {
+  transform: scale(1.03);
+}
+
+.uh-edm__hero-empty {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.35);
+}
+
+.uh-edm__hero-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(5,15,40,0.88) 0%, rgba(5,15,40,0.35) 45%, transparent 100%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Top bar */
+.uh-edm__topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 14px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  z-index: 5;
+}
+
+.uh-edm__cat-pill {
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 0.5px solid rgba(255,255,255,0.22);
+  border-radius: 8px;
+  padding: 5px 14px;
+  font-size: 9px;
+  font-weight: 800;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-family: 'Inter', sans-serif;
+}
+
+.uh-edm__close {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: 0.5px solid rgba(255,255,255,0.22);
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  padding: 0;
+}
+
+.uh-edm__close:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+/* Nav arrows */
+.uh-edm__nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(4px);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  padding: 0;
+}
+
+.uh-edm__nav:hover {
+  background: rgba(0,0,0,0.55);
+}
+
+.uh-edm__nav--prev { left: 12px; }
+.uh-edm__nav--next { right: 12px; }
+
+/* Bottom content over image */
+.uh-edm__hero-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0 20px 20px;
+  z-index: 5;
+}
+
+.uh-edm__title {
+  font-size: 20px;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 8px;
+  line-height: 1.25;
+  font-family: 'Inter', sans-serif;
+}
+
+.uh-edm__hero-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.72);
+  font-family: 'Inter', sans-serif;
+}
+
+.uh-edm__hero-meta span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Image dots */
+.uh-edm__dots {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  z-index: 5;
+}
+
+.uh-edm__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.35);
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.uh-edm__dot--active {
+  background: white;
+  width: 18px;
+  border-radius: 3px;
+}
+
+/* Body */
+.uh-edm__body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.uh-edm__desc {
+  margin-bottom: 16px;
+}
+
+.uh-edm__desc p {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.75;
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+}
+
+.uh-edm__toggle {
+  background: none;
+  border: none;
+  color: #1e3a8a;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  margin-top: 6px;
+  font-family: 'Inter', sans-serif;
+}
+
+.uh-edm__toggle:hover {
+  text-decoration: underline;
+}
+
+.uh-edm__divider {
+  height: 1px;
+  background: var(--border);
+  margin-bottom: 16px;
+}
+
+.uh-edm__info-row {
+  display: flex;
+  gap: 12px;
+}
+
+.uh-edm__info-chip {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--accent);
+  border: 0.5px solid var(--border);
+  border-radius: 12px;
+}
+
+.uh-edm__info-chip > svg {
+  color: #1e3a8a;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.uh-edm__info-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 2px;
+  font-family: 'Inter', sans-serif;
+}
+
+.uh-edm__info-value {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--foreground);
+  font-family: 'Inter', sans-serif;
+  line-height: 1.3;
+}
+
 .uh-modal--list {
   max-width: 580px;
 }
@@ -1045,15 +1391,28 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, #0a1628 0%, #1e3a8a 100%);
 }
 
 .uh-modal__title {
   font-family: 'Inter', sans-serif;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
-  color: #111827;
+  color: #ffffff;
   margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.uh-modal__header .uh-modal__close-sm {
+  background: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.uh-modal__header .uh-modal__close-sm:hover {
+  background: rgba(255, 255, 255, 0.25);
+  color: white;
 }
 
 .uh-modal__close-sm {
@@ -1096,30 +1455,36 @@
 
 .uh-prayer-input-container {
   display: flex;
-  gap: 8px;
-  padding: 20px 24px;
+  gap: 10px;
+  padding: 16px 24px;
   border-bottom: 1px solid var(--border);
+  background: var(--accent);
 }
 
 .uh-prayer-input {
   flex: 1;
-  padding: 10px 12px;
-  border-radius: 8px;
+  padding: 11px 16px;
+  border-radius: 100px;
   border: 1px solid var(--border);
-  background: var(--input-background);
+  background: var(--card);
   color: var(--foreground);
   font-family: 'Inter', sans-serif;
-  font-size: 14px;
+  font-size: 13px;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .uh-prayer-input:focus {
-  outline: 2px solid var(--primary);
-  border-color: transparent;
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
 }
 
 .uh-prayer-post-btn {
   width: auto;
-  padding: 10px 16px;
+  padding: 10px 20px;
+  border-radius: 100px;
+  font-weight: 700;
+  font-size: 13px;
 }
 
 .uh-prayer-list-scroll {
@@ -1130,28 +1495,38 @@
 }
 
 .uh-prayer-item--new {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   display: flex;
   border-radius: 12px;
-  background: var(--accent);
-  overflow: visible;
+  background: var(--card);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.uh-prayer-item--new:hover {
+  border-color: rgba(30, 58, 138, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .uh-prayer-item__bar--new {
   width: 4px;
-  border-radius: 4px 0 0 4px;
+  border-radius: 0;
+  background: linear-gradient(180deg, #1e3a8a, #3b82f6);
+  flex-shrink: 0;
 }
 
 .uh-prayer-item__body--new {
-  padding: 14px 18px;
+  padding: 14px 16px;
   flex: 1;
 }
 
 .uh-prayer-item__text--new {
   font-size: 14px;
-  margin-bottom: 8px;
+  margin: 0 0 8px 0;
   font-style: italic;
   color: var(--foreground);
+  line-height: 1.6;
 }
 
 .uh-prayer-item__meta--new {
@@ -1162,13 +1537,14 @@
 
 .uh-prayer-item__author--new {
   font-weight: 700;
-  font-size: 13px;
-  color: var(--primary);
+  font-size: 12px;
+  color: #1e3a8a;
 }
 
 .uh-prayer-item__time--new {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-muted);
+  font-weight: 500;
 }
 
 .uh-event {
@@ -1191,14 +1567,6 @@
   background: var(--secondary);
 }
 
-.uh-event__accent {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-}
-
 .uh-event__date {
   display: flex;
   flex-direction: column;
@@ -1207,7 +1575,7 @@
   min-width: 60px;
   height: 60px;
   background: var(--secondary);
-  border-radius: 10px;
+  border-radius: 5px;
   text-align: center;
 }
 
@@ -1338,7 +1706,7 @@
 }
 
 
-/* ── Announcement card (shared) ── */
+/* â”€â”€ Announcement card (shared) â”€â”€ */
 
 .ann-card {
   background: white;
@@ -1577,7 +1945,7 @@ div.uh-modal-meta span {
 }
 
 
-/* ── Skeletons ── */
+/* â”€â”€ Skeletons â”€â”€ */
 
 @keyframes uh-shimmer {
   0% {
@@ -1607,7 +1975,7 @@ div.uh-modal-meta span {
 }
 
 
-/* ── Header (parent layout) ── */
+/* â”€â”€ Header (parent layout) â”€â”€ */
 
 .user-home-header-container {
   display: flex;
@@ -1677,7 +2045,7 @@ div.uh-modal-meta span {
 }
 
 
-/* ── Officer prompt ── */
+/* â”€â”€ Officer prompt â”€â”€ */
 
 .user-officer-prompt-card {
   position: relative;
@@ -1768,7 +2136,7 @@ div.uh-modal-meta span {
 }
 
 
-/* ── Scrollbar ── */
+/* â”€â”€ Scrollbar â”€â”€ */
 
 .user-notif-dropdown::-webkit-scrollbar {
   width: 5px;
@@ -1791,9 +2159,9 @@ div.uh-modal-meta span {
 }
 
 
-/* ── Responsive ── */
+/* â”€â”€ Responsive â”€â”€ */
 
-/* ── Tablet / small desktop ── */
+/* â”€â”€ Tablet / small desktop â”€â”€ */
 @media (max-width: 1200px) {
   .uh-stats-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -1811,7 +2179,7 @@ div.uh-modal-meta span {
   }
 }
 
-/* ── Mobile ── */
+/* â”€â”€ Mobile â”€â”€ */
 @media (max-width: 768px) {
   .uh-welcome-header {
     margin-left: 50px;
@@ -1842,7 +2210,7 @@ div.uh-modal-meta span {
     min-height: 0 !important;
   }
 
-  /* ── Quick Actions: force 2-column, all 4 buttons always visible ── */
+  /* â”€â”€ Quick Actions: force 2-column, all 4 buttons always visible â”€â”€ */
   div.uh-actions {
     display: grid !important;
     grid-template-columns: 1fr 1fr !important;
@@ -1873,7 +2241,7 @@ div.uh-modal-meta span {
     transform: none !important;
   }
 
-  /* Prayer wall — prevent overflow */
+  /* Prayer wall â€” prevent overflow */
   .uh-prayer-item__text {
     overflow-wrap: break-word;
     word-break: break-word;
@@ -1884,7 +2252,7 @@ div.uh-modal-meta span {
     overflow-x: hidden;
   }
 
-  /* Events carousel — keep inside card bounds */
+  /* Events carousel â€” keep inside card bounds */
   .uh-carousel-viewport {
     overflow: hidden;
     width: 100%;
@@ -1971,7 +2339,7 @@ div.uh-modal-meta span {
 }
 
 
-/* ── Small mobile ── */
+/* â”€â”€ Small mobile â”€â”€ */
 @media (max-width: 480px) {
   div.uh-actions {
     display: grid !important;
@@ -2051,7 +2419,7 @@ div.uh-modal-meta span {
   }
 }
 
-/* ── Church Events — overflow & text fixes ── */
+/* â”€â”€ Church Events â€” overflow & text fixes â”€â”€ */
 
 /* Card itself must not overflow */
 .uh-card--events {
@@ -2083,7 +2451,7 @@ div.uh-modal-meta span {
   overflow: hidden;
 }
 
-/* Event hero — contained */
+/* Event hero â€” contained */
 .uh-event-hero {
   min-width: 0;
   max-width: 100%;
@@ -2093,7 +2461,7 @@ div.uh-modal-meta span {
   overflow-wrap: break-word;
 }
 
-/* Title — clamp to 2 lines */
+/* Title â€” clamp to 2 lines */
 .uh-event-hero__title {
   overflow: hidden;
   display: -webkit-box;
@@ -2104,7 +2472,7 @@ div.uh-modal-meta span {
   max-width: 100%;
 }
 
-/* Body — clamp to 3 lines */
+/* Body â€” clamp to 3 lines */
 .uh-event-hero__body {
   overflow: hidden;
   display: -webkit-box;
@@ -2115,7 +2483,7 @@ div.uh-modal-meta span {
   max-width: 100%;
 }
 
-/* Footer — prevent wrapping overflow */
+/* Footer â€” prevent wrapping overflow */
 .uh-event-hero__footer {
   flex-wrap: wrap;
   min-width: 0;
@@ -2123,7 +2491,7 @@ div.uh-modal-meta span {
   overflow: hidden;
 }
 
-/* Badge — don't push outside card */
+/* Badge â€” don't push outside card */
 .uh-event-hero__badge {
   max-width: calc(100% - 28px);
   overflow: hidden;
@@ -2131,7 +2499,7 @@ div.uh-modal-meta span {
   white-space: nowrap;
 }
 
-/* ── Empty State Enhancements ── */
+/* â”€â”€ Empty State Enhancements â”€â”€ */
 .uh-empty-state {
   display: flex;
   flex-direction: column;
@@ -2211,20 +2579,9 @@ div.uh-modal-meta span {
 }
 
 @keyframes uh-pulse {
-  0% {
-    transform: scale(0.8);
-    opacity: 0.2;
-  }
-
-  50% {
-    transform: scale(1.2);
-    opacity: 0.1;
-  }
-
-  100% {
-    transform: scale(0.8);
-    opacity: 0.2;
-  }
+  0% { transform: scale(0.8); opacity: 0.2; }
+  50% { transform: scale(1.2); opacity: 0.1; }
+  100% { transform: scale(0.8); opacity: 0.2; }
 }
 
 .dark .uh-empty-state {
@@ -2233,4 +2590,593 @@ div.uh-modal-meta span {
 
 .dark .uh-empty-state__pulse {
   opacity: 0.1;
+}
+
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   Insights Card (Savings Goal + Payment Reminder + Prayer Trigger)
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+
+.uh-card--insights {
+  display: flex;
+  flex-direction: column;
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.uh-insights-header {
+  padding: 16px 22px 12px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.uh-insight-block {
+  padding: 20px 22px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.uh-insight-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.uh-insight-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.uh-insight-icon--savings { background: #D1FAE5; color: #059669; }
+.uh-insight-icon--loan { background: #DBEAFE; color: #2563EB; }
+.uh-insight-icon--late { background: #FEE2E2; color: #DC2626; }
+
+.dark .uh-insight-icon--savings { background: rgba(5, 150, 105, 0.15); }
+.dark .uh-insight-icon--loan { background: rgba(37, 99, 235, 0.15); }
+.dark .uh-insight-icon--late { background: rgba(220, 38, 38, 0.15); }
+
+.uh-insight-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.uh-insight-divider {
+  height: 1px;
+  flex-shrink: 0;
+  background: var(--border);
+  margin: 0 18px;
+}
+
+.uh-insight-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0 2px;
+}
+
+.uh-insight-empty p {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+}
+
+.uh-insight-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--primary);
+  background: transparent;
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 4px;
+}
+
+.uh-insight-cta:hover {
+  background: var(--primary);
+  color: white;
+}
+
+
+/* â”€â”€ Savings Goal Progress â”€â”€ */
+
+.uh-savings-goal {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.uh-savings-goal__info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.uh-savings-goal__name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--foreground);
+  font-family: 'Inter', sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 65%;
+}
+
+.uh-savings-goal__pct {
+  font-size: 15px;
+  font-weight: 800;
+  color: #059669;
+  font-family: 'Inter', sans-serif;
+}
+
+.uh-progress-bar {
+  width: 100%;
+  height: 10px;
+  border-radius: 100px;
+  background: var(--accent);
+  overflow: hidden;
+}
+
+.uh-progress-bar__fill {
+  height: 100%;
+  border-radius: 100px;
+  background: linear-gradient(90deg, #059669, #34d399);
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 4px;
+  box-shadow: 0 0 8px rgba(5, 150, 105, 0.3);
+}
+
+.uh-savings-goal__amounts {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--foreground);
+  font-family: 'Inter', sans-serif;
+}
+
+.uh-savings-goal__target {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+
+/* â”€â”€ Payment Reminder â”€â”€ */
+
+.uh-payment-reminder {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.uh-payment-reminder__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.uh-payment-reminder__label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  font-family: 'Inter', sans-serif;
+}
+
+.uh-payment-reminder__value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--foreground);
+  font-family: 'Inter', sans-serif;
+}
+
+.uh-payment-reminder__value--late {
+  color: #DC2626;
+}
+
+.uh-payment-reminder__badge-row {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 2px;
+}
+
+.uh-payment-reminder__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.02em;
+}
+
+.uh-payment-reminder__badge--ok {
+  background: #DBEAFE;
+  color: #1e3a8a;
+}
+
+.uh-payment-reminder__badge--late {
+  background: #FEE2E2;
+  color: #DC2626;
+}
+
+.dark .uh-payment-reminder__badge--ok {
+  background: rgba(30, 58, 138, 0.2);
+}
+
+.dark .uh-payment-reminder__badge--late {
+  background: rgba(220, 38, 38, 0.15);
+}
+
+
+/* â”€â”€ Prayer Wall Trigger â”€â”€ */
+
+.uh-prayer-trigger {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 22px;
+  width: 100%;
+  border: none;
+  background: var(--accent);
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: 'Inter', sans-serif;
+  color: var(--foreground);
+}
+
+.uh-prayer-trigger:hover {
+  background: var(--accent);
+}
+
+.uh-prayer-trigger__text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  text-align: left;
+  flex: 1;
+}
+
+.uh-prayer-trigger__title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.uh-prayer-trigger__count {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.uh-prayer-trigger__arrow {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   Today's Verse Card â€” Premium Design
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+
+.uh-card--verse {
+  display: flex;
+  overflow: hidden;
+  padding: 0 !important;
+  position: relative;
+  background: linear-gradient(135deg, #fdfcf8 0%, #f9f6ee 50%, #f5f0e1 100%) !important;
+  border: 1px solid rgba(201, 168, 76, 0.15) !important;
+}
+
+.dark .uh-card--verse {
+  background: linear-gradient(135deg, rgba(201, 168, 76, 0.04) 0%, rgba(201, 168, 76, 0.08) 100%) !important;
+  border-color: rgba(201, 168, 76, 0.12) !important;
+}
+
+.uh-verse__accent {
+  width: 4px;
+  flex-shrink: 0;
+  background: linear-gradient(180deg, #c9a84c, #d4b65e, #c9a84c);
+  border-radius: 14px 0 0 14px;
+}
+
+.uh-verse__content {
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+}
+
+.uh-verse__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.uh-verse__icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: rgba(201, 168, 76, 0.15);
+  color: #c9a84c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.uh-verse__text {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--foreground);
+  font-family: 'Inter', sans-serif;
+  line-height: 1.75;
+  margin: 0;
+  padding: 0;
+  border: none;
+  font-style: italic;
+  opacity: 0.88;
+}
+
+.uh-verse__ref {
+  font-size: 12px;
+  font-weight: 700;
+  color: #c9a84c;
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.dark .uh-verse__icon {
+  background: rgba(201, 168, 76, 0.12);
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   Monthly Calendar Card
+   ══════════════════════════════════════════════════════════════ */
+
+.uh-card--calendar {
+  height: auto !important;
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.uh-cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px 8px;
+  background: linear-gradient(135deg, #0a1628 0%, #1e3a8a 100%);
+}
+
+.uh-cal-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.uh-cal-nav {
+  display: flex;
+  gap: 2px;
+}
+
+.uh-cal-nav button {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: none;
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  padding: 0;
+}
+
+.uh-cal-nav button:hover {
+  background: rgba(255, 255, 255, 0.25);
+  color: white;
+}
+
+.uh-cal-body {
+  padding: 8px 12px 10px;
+}
+
+.uh-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+}
+
+.uh-cal-weekday {
+  font-size: 9px;
+  font-weight: 700;
+  color: #1e3a8a;
+  font-family: 'Inter', sans-serif;
+  text-align: center;
+  padding: 2px 0 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.5;
+}
+
+.uh-cal-cell {
+  height: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--foreground);
+  font-family: 'Inter', sans-serif;
+  border-radius: 8px;
+  position: relative;
+  cursor: default;
+  transition: all 0.15s;
+}
+
+.uh-cal-cell--empty {
+  pointer-events: none;
+}
+
+.uh-cal-cell--today {
+  background: #1e3a8a;
+  color: white !important;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(30, 58, 138, 0.35);
+}
+
+.uh-cal-cell--event {
+  cursor: pointer;
+  font-weight: 700;
+  color: #1e3a8a;
+}
+
+.uh-cal-cell--event:hover {
+  background: rgba(30, 58, 138, 0.08);
+}
+
+.uh-cal-cell--today.uh-cal-cell--event:hover {
+  background: #162e6e;
+}
+
+.uh-cal-cell__dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #c9a84c;
+  position: absolute;
+  bottom: 2px;
+}
+
+.uh-cal-cell--today .uh-cal-cell__dot {
+  background: rgba(255, 255, 255, 0.8);
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   Responsive Breakpoints
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .uh-grid-main {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .uh-grid-main > .uh-card {
+    height: auto;
+    min-height: 280px;
+  }
+
+  .uh-card--events {
+    grid-column: 1 / -1;
+  }
+
+  .uh-grid-bottom {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .uh-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Small tablet / large phone */
+@media (max-width: 768px) {
+  .uh-grid-main {
+    grid-template-columns: 1fr;
+  }
+
+  .uh-grid-main > .uh-card {
+    height: auto;
+    min-height: auto;
+  }
+
+  .uh-card--events {
+    grid-column: auto;
+  }
+
+  .uh-grid-bottom {
+    grid-template-columns: 1fr;
+  }
+
+  .uh-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .uh-event-hero__image {
+    height: 180px;
+  }
+
+  .uh-actions--grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Phone */
+@media (max-width: 480px) {
+  .uh-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .uh-stat-card__body {
+    padding: 16px 14px;
+  }
+
+  .uh-stat-value {
+    font-size: 22px;
+  }
+
+  .uh-actions--grid {
+    grid-template-columns: 1fr;
+  }
+
+  .uh-grid-main,
+  .uh-grid-bottom {
+    gap: 10px;
+  }
+
+  .uh-card {
+    padding: 14px 16px;
+  }
+
+  .uh-event-hero__image {
+    height: 150px;
+  }
+
+  .uh-event-hero__title {
+    font-size: 15px;
+  }
 }

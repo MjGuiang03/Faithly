@@ -142,27 +142,22 @@ export default function AdminDashboard() {
       }
 
       // ── Process Donation Categories (Pie Chart) ──
-      if (donationsData.success && donationsData.donations) {
-        const catTotals = {
-          'General Fund': 0, 'Children\'s Department': 0, 'Men\'s Department': 0, 'Women\'s Department': 0, 'Youth Department': 0, 'Mission Fund': 0
-        };
-        const confirmedDonations = donationsData.donations.filter(d => (d.status || '').toLowerCase() === 'confirmed');
-        confirmedDonations.forEach(d => {
-          const amt = Number(d.amount) || 0;
-          const cat = d.category || 'General Fund';
-          if (catTotals[cat] !== undefined) {
-            catTotals[cat] += amt;
-          } else {
-            catTotals['General Fund'] += amt;
-          }
-        });
-        
+      if (donationsData.success && donationsData.stats) {
+        const catStats = donationsData.stats.categoryBreakdown || {};
         setPieData(INITIAL_DONATION_CATEGORIES.map(cat => ({
           ...cat,
-          value: catTotals[cat.name]
+          value: catStats[cat.name] || 0
         })));
 
         // ── Donations by Branch ──
+        // Since the backend now aggregates this over ALL donations, we use it directly.
+        const commStats = donationsData.stats.communityBreakdown || {};
+        
+        // If there are legacy donations without a community, we can fallback to members mapping
+        // but for now, we'll map what the backend gives us, plus any legacy ones we can find in the first page
+        const branchDonMap = { ...commStats };
+        const confirmedDonations = (donationsData.donations || []).filter(d => (d.status || '').toLowerCase() === 'confirmed');
+        
         const emailToBranch = {};
         if (membersData.success && membersData.members) {
           membersData.members.forEach(m => { 
@@ -170,13 +165,17 @@ export default function AdminDashboard() {
             if (b && b !== 'Unknown') emailToBranch[m.email] = b; 
           });
         }
-        const branchDonMap = {};
+        
+        // Only add to branchDonMap if it wasn't already tracked natively by the backend
         confirmedDonations.forEach(d => {
-          const branch = emailToBranch[d.email];
-          if (branch) {
-            branchDonMap[branch] = (branchDonMap[branch] || 0) + (Number(d.amount) || 0);
+          if (!d.community) {
+            const branch = emailToBranch[d.email];
+            if (branch) {
+              branchDonMap[branch] = (branchDonMap[branch] || 0) + (Number(d.amount) || 0);
+            }
           }
         });
+
         setDonationsByBranch(
           Object.entries(branchDonMap)
             .map(([branch, total]) => ({ branch, total }))
@@ -870,31 +869,31 @@ export default function AdminDashboard() {
               })()}
 
               {expandedChart === 'growth' && (
-                <>
-                  <div className="adm-expand-grid" style={{ gridTemplateColumns: '4fr 3fr 3fr' }}>
-                    <div className="adm-expand-panel">
-                      <h4 className="adm-expand-panel-title">Growth Trend (Line)</h4>
-                      <div className="adm-expand-panel-chart">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <LineChart data={growthData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-                            <XAxis dataKey="label" stroke="#9CA3AF" fontSize={12} />
-                            <YAxis stroke="#9CA3AF" fontSize={12} allowDecimals={false} tickFormatter={val => val >= 1000 ? `${(val/1000).toFixed(1)}k` : val} />
-                            <Tooltip />
-                            <Legend iconType="circle" />
-                            {(growthView === 'both' || growthView === 'total') && <Line type="monotone" dataKey="totalMembers" stroke="#155DFC" strokeWidth={2.5} dot={{ r: 3 }} name="Total Members" />}
-                            {(growthView === 'both' || growthView === 'new') && <Line type="monotone" dataKey="newMembers" stroke="#0D1F45" strokeWidth={2.5} dot={{ r: 3 }} name="New Members" />}
-                          </LineChart>
-                        </ResponsiveContainer>
-                      </div>
+                <div className="adm-expand-growth-wrapper">
+                  <div className="adm-expand-panel adm-expand-growth-line-panel">
+                    <h4 className="adm-expand-panel-title">Growth Trend (Line)</h4>
+                    <div className="adm-expand-panel-chart adm-expand-growth-line-chart">
+                      <ResponsiveContainer width="100%" height={260}>
+                        <LineChart data={growthData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+                          <XAxis dataKey="label" stroke="#9CA3AF" fontSize={12} />
+                          <YAxis stroke="#9CA3AF" fontSize={12} allowDecimals={false} tickFormatter={val => val >= 1000 ? `${(val/1000).toFixed(1)}k` : val} />
+                          <Tooltip />
+                          <Legend iconType="circle" />
+                          {(growthView === 'both' || growthView === 'total') && <Line type="monotone" dataKey="totalMembers" stroke="#155DFC" strokeWidth={2.5} dot={{ r: 3 }} name="Total Members" />}
+                          {(growthView === 'both' || growthView === 'new') && <Line type="monotone" dataKey="newMembers" stroke="#0D1F45" strokeWidth={2.5} dot={{ r: 3 }} name="New Members" />}
+                        </LineChart>
+                      </ResponsiveContainer>
                     </div>
-                    <div className="adm-expand-panel">
+                  </div>
+                  <div className="adm-expand-grid adm-expand-growth-bottom-grid">
+                    <div className="adm-expand-panel adm-expand-growth-bar-panel">
                       <h4 className="adm-expand-panel-title">Growth by Community (Top {growthByBranch.length || 0})</h4>
-                      <div className="adm-expand-panel-chart">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <BarChart data={growthByBranch} margin={{ top: 10, right: 10, left: -20, bottom: 30 }}>
+                      <div className="adm-expand-panel-chart adm-expand-growth-bar-chart">
+                        <ResponsiveContainer width="100%" height={220}>
+                          <BarChart data={growthByBranch} margin={{ top: 10, right: 10, left: -20, bottom: 10 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
-                            <XAxis dataKey="branch" stroke="#9CA3AF" fontSize={11} angle={-20} textAnchor="end" height={55} />
+                            <XAxis dataKey="branch" stroke="#9CA3AF" fontSize={11} angle={-20} textAnchor="end" height={45} />
                             <YAxis stroke="#9CA3AF" fontSize={12} allowDecimals={false} tickFormatter={val => val >= 1000 ? `${(val/1000).toFixed(1)}k` : val} />
                             <Tooltip cursor={{ fill: '#F9FAFB' }} />
                             <Bar dataKey="count" fill="#0D1F45" radius={[4, 4, 0, 0]} name="New Members" barSize={28} />
@@ -902,28 +901,36 @@ export default function AdminDashboard() {
                         </ResponsiveContainer>
                       </div>
                     </div>
-                    <div className="adm-expand-panel" style={{ alignItems: 'center' }}>
+                    <div className="adm-expand-panel adm-expand-growth-pie-panel">
                       <h4 className="adm-expand-panel-title">Active vs Inactive</h4>
-                      <div className="adm-expand-panel-chart" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      <div className="adm-expand-panel-chart adm-expand-growth-pie-chart">
                         {(() => {
                           const activePct = memberStats.total > 0 ? (memberStats.active / memberStats.total) * 100 : 0;
-                          const activeColor = activePct < 60 ? '#EF4444' : activePct <= 80 ? '#F59E0B' : '#10B981';
+                          const inactivePct = memberStats.total > 0 ? (memberStats.inactive / memberStats.total) * 100 : 0;
                           return (
                             <>
-                              <ResponsiveContainer width="100%" height={180}>
-                                <PieChart>
+                              <ResponsiveContainer width="100%" height={220}>
+                                <PieChart margin={{ top: 0, right: 0, bottom: 20, left: 0 }}>
                                   <Pie data={[
-                                    { name: 'Active', value: memberStats.active, fill: '#155DFC' },
-                                    { name: 'Inactive', value: memberStats.inactive, fill: '#9CA3AF' }
+                                    { name: 'Active', value: memberStats.active, fill: '#0D1F45' },
+                                    { name: 'Inactive', value: memberStats.inactive, fill: '#155DFC' }
                                   ]} cx="50%" cy="50%" innerRadius={45} outerRadius={65} paddingAngle={2} dataKey="value">
+                                    <Cell fill="#0D1F45" />
                                     <Cell fill="#155DFC" />
-                                    <Cell fill="#9CA3AF" />
                                   </Pie>
-                                  <Tooltip />
+                                  <Tooltip formatter={(value) => [value, 'Members']} />
+                                  <Legend 
+                                    verticalAlign="bottom" 
+                                    height={36}
+                                    formatter={(value, entry) => {
+                                      const pct = value === 'Active' ? activePct : inactivePct;
+                                      return <span style={{ color: '#4B5563', fontSize: '12px', fontWeight: 500 }}>{value}: {entry.payload.value} ({pct.toFixed(1)}%)</span>;
+                                    }}
+                                  />
                                 </PieChart>
                               </ResponsiveContainer>
-                              <div style={{ marginTop: '8px', padding: '4px 12px', background: `${activeColor}20`, color: activeColor, borderRadius: '12px', fontSize: '12px', fontWeight: 600 }}>
-                                {activePct.toFixed(0)}% Active
+                              <div className="adm-expand-growth-total-badge">
+                                {memberStats.total} Total Members
                               </div>
                             </>
                           );
@@ -932,9 +939,9 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                   <div className="adm-expand-interpretation">
-                    <strong>Interpretation:</strong> The left panel shows cumulative membership growth. The middle panel highlights the top communities driving new registrations. The right panel contextualizes overall growth against the current ratio of active to inactive members.
+                    <strong>Interpretation:</strong> The top panel shows cumulative membership growth over time. The bottom-left panel highlights the top communities driving new registrations, while the bottom-right panel contextualizes overall growth against the current ratio of active to inactive members.
                   </div>
-                </>
+                </div>
               )}
 
               {expandedChart === 'attendance' && (

@@ -140,11 +140,11 @@ export default function Sidebar({ collapsed, setCollapsed, toggleCollapsed }) {
 
   const allNavItems = [
     { path: '/home', icon: <LayoutGrid size={20} />, label: 'Home' },
-    { path: '/savings', icon: <Wallet size={20} />, label: 'Savings', officerOnly: true },
+    { path: '/savings', icon: <Wallet size={20} />, label: 'Savings' },
     { path: '/loans', icon: <FileText size={20} />, label: 'Loans', officerOnly: true },
     { path: '/donation', icon: <Heart size={20} />, label: 'Donations' },
     { path: '/attendance', icon: <Calendar size={20} />, label: 'Attendance' },
-    { path: '/branches', icon: <Building2 size={20} />, label: 'Branches' },
+    { path: '/branches', icon: <Building2 size={20} />, label: 'Communities' },
     { path: '/notifications', icon: <Bell size={20} />, label: 'Notifications' },
     { path: '/settings', icon: <Settings size={20} />, label: 'Settings' },
   ];
@@ -181,15 +181,38 @@ export default function Sidebar({ collapsed, setCollapsed, toggleCollapsed }) {
           </div>
         </div>
 
-        {/* Navigation — clicking these ONLY navigates, never touches collapsed */}
+        {/* Navigation — grouped with dividers */}
         <div className="user-sidebar-nav">
-          {navItems.map(({ path, icon, label }) => (
-            <button
-              key={path}
-              onClick={() => handleNavClick(path)}
-              className={`user-sidebar-nav-button ${isActive(path) ? 'active' : ''}`}
-              title={collapsed ? label : undefined}
-            >
+          {/* Main */}
+          {navItems.filter(n => ['/home'].includes(n.path)).map(({ path, icon, label }) => (
+            <button key={path} onClick={() => handleNavClick(path)} className={`user-sidebar-nav-button ${isActive(path) ? 'active' : ''}`} title={collapsed ? label : undefined}>
+              <span className="user-sidebar-nav-icon">{icon}</span>
+              {!collapsed && <span>{label}</span>}
+            </button>
+          ))}
+
+          {!collapsed && <div className="user-sidebar-divider"><span>Finance</span></div>}
+          {collapsed && <div className="user-sidebar-divider-dot" />}
+          {navItems.filter(n => ['/savings', '/loans', '/donation'].includes(n.path)).map(({ path, icon, label }) => (
+            <button key={path} onClick={() => handleNavClick(path)} className={`user-sidebar-nav-button ${isActive(path) ? 'active' : ''}`} title={collapsed ? label : undefined}>
+              <span className="user-sidebar-nav-icon">{icon}</span>
+              {!collapsed && <span>{label}</span>}
+            </button>
+          ))}
+
+          {!collapsed && <div className="user-sidebar-divider"><span>Activity</span></div>}
+          {collapsed && <div className="user-sidebar-divider-dot" />}
+          {navItems.filter(n => ['/attendance', '/branches'].includes(n.path)).map(({ path, icon, label }) => (
+            <button key={path} onClick={() => handleNavClick(path)} className={`user-sidebar-nav-button ${isActive(path) ? 'active' : ''}`} title={collapsed ? label : undefined}>
+              <span className="user-sidebar-nav-icon">{icon}</span>
+              {!collapsed && <span>{label}</span>}
+            </button>
+          ))}
+
+          {!collapsed && <div className="user-sidebar-divider"><span>System</span></div>}
+          {collapsed && <div className="user-sidebar-divider-dot" />}
+          {navItems.filter(n => ['/notifications', '/settings'].includes(n.path)).map(({ path, icon, label }) => (
+            <button key={path} onClick={() => handleNavClick(path)} className={`user-sidebar-nav-button ${isActive(path) ? 'active' : ''}`} title={collapsed ? label : undefined}>
               <span className="user-sidebar-nav-icon">{icon}</span>
               {!collapsed && <span>{label}</span>}
               {path === '/notifications' && unreadNotifCount > 0 && (
@@ -205,8 +228,8 @@ export default function Sidebar({ collapsed, setCollapsed, toggleCollapsed }) {
         <div className="user-sidebar-profile">
           <div 
             className={`user-sidebar-profile-info ${collapsed ? 'collapsed' : ''}`}
-            onClick={() => navigate('/settings')}
-            title={collapsed ? 'Settings' : undefined}
+            onClick={() => handleNavClick('/profile')}
+            title={collapsed ? 'Profile' : undefined}
           >
             <div className="user-sidebar-profile-avatar">
               {profile?.photoUrl ? (

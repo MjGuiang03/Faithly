@@ -188,6 +188,40 @@
   flex-shrink: 0;
 }
 
+/* ── Sidebar nav dividers ── */
+.user-sidebar-divider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px 4px;
+  user-select: none;
+}
+
+.user-sidebar-divider span {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.3);
+  font-family: 'Inter', sans-serif;
+  white-space: nowrap;
+}
+
+.user-sidebar-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.user-sidebar-divider-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  margin: 8px auto;
+}
+
 /* ── Profile section ── */
 .user-sidebar-profile {
   padding: 16px;

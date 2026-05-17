@@ -19,6 +19,7 @@ import Notifications from './user/pages/Notifications';
 import Settings from './user/pages/Settings';
 import LoanDetail from './user/pages/LoanDetail';
 import Savings from './user/pages/Savings';
+import Profile from './user/pages/Profile';
 
 // Admin Pages
 
@@ -156,6 +157,7 @@ export default function App() {
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/savings" element={<Savings />} />
+              <Route path="/profile" element={<Profile />} />
               <Route path="/loans/:loanId" element={<LoanDetail />} />
             </Route>
 

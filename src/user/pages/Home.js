@@ -1,12 +1,11 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 
 import API from '../../utils/api';
 import '../styles/Home.css';
-import { Banknote, CalendarDays, CheckCircle, ChevronRight, ChevronLeft, Heart, MapPin, PiggyBank, Wallet, FileText, Megaphone, ArrowRight } from 'lucide-react';
+import { Banknote, CalendarDays, CheckCircle, ChevronRight, ChevronLeft, Clock, Heart, MapPin, PiggyBank, Wallet, FileText, Megaphone, ArrowRight, BookOpen, Target, AlertCircle, X } from 'lucide-react';
 import { isOfficerPosition } from '../../utils/officerPositions';
-
 
 const CAT_COLORS = {
   Events: { bg: '#FFF7ED', color: '#C2410C' },
@@ -53,7 +52,7 @@ export default function Home() {
       const headers = { Authorization: `Bearer ${token}` };
 
       const branch = profile?.branch || '';
-      const [loansRes, donationsRes, attendanceRes, annRes, savingsRes, savingsGoalsRes, prayersRes, savingsTxnRes] = await Promise.all([
+      const [loansRes, donationsRes, attendanceRes, annRes, savingsRes, savingsGoalsRes, prayersRes, savingsTxnRes, loanPaymentsRes] = await Promise.all([
         fetch(`${API}/api/loans/my-loans`, { headers }),
         fetch(`${API}/api/donations/my-donations`, { headers }),
         fetch(`${API}/api/attendance/my-attendance`, { headers }),
@@ -62,9 +61,10 @@ export default function Home() {
         fetch(`${API}/api/savings/goals`, { headers }),
         fetch(`${API}/api/prayers`, { headers }),
         fetch(`${API}/api/savings/transactions?limit=5`, { headers }),
+        fetch(`${API}/api/loans/my-payments`, { headers }),
       ]);
 
-      const [loansData, donationsData, attendanceData, annData, savingsData, savingsGoalsData, prayersData, savingsTxnData] = await Promise.all([
+      const [loansData, donationsData, attendanceData, annData, savingsData, savingsGoalsData, prayersData, savingsTxnData, loanPaymentsData] = await Promise.all([
         loansRes.ok ? loansRes.json() : { success: false },
         donationsRes.ok ? donationsRes.json() : { success: false },
         attendanceRes.ok ? attendanceRes.json() : { success: false },
@@ -73,6 +73,7 @@ export default function Home() {
         savingsGoalsRes.ok ? savingsGoalsRes.json() : { success: false },
         prayersRes.ok ? prayersRes.json() : { success: false },
         savingsTxnRes.ok ? savingsTxnRes.json() : { success: false },
+        loanPaymentsRes.ok ? loanPaymentsRes.json() : { success: false },
       ]);
 
       const now = new Date();
@@ -166,6 +167,19 @@ export default function Home() {
             amount: `₱${Number(loan.amount).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
             date: new Date(loan.appliedDate),
             status: loan.status,
+          });
+        });
+      }
+
+      if (loanPaymentsData.success && loanPaymentsData.payments?.length) {
+        loanPaymentsData.payments.slice(0, 5).forEach(payment => {
+          activities.push({
+            type: 'loan',
+            title: payment.status === 'confirmed' ? 'Loan Payment Confirmed' : 'Loan Payment Pending',
+            loanId: payment.loanId,
+            amount: `₱${Number(payment.amount).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+            date: new Date(payment.submittedAt || payment.createdAt),
+            status: payment.status,
           });
         });
       }
@@ -296,14 +310,14 @@ export default function Home() {
       action: () => navigate('/attendance'),
       icon: <CalendarDays size={18} />
     },
+    {
+      title: 'Manage Savings',
+      description: 'View and save for your goals',
+      className: 'uh-action--savings',
+      action: () => navigate('/savings'),
+      icon: <Wallet size={18} />
+    },
     ...(isOfficer ? [
-      {
-        title: 'Manage Savings',
-        description: 'View and save for your goals',
-        className: 'uh-action--savings',
-        action: () => navigate('/savings'),
-        icon: <Wallet size={18} />
-      },
       {
         title: 'Loan Services',
         description: 'See history and apply for loans',
@@ -316,6 +330,85 @@ export default function Home() {
 
   const formatCurrency = (val) =>
     `₱${Number(val || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+  // ── Daily Verse ──
+  const DAILY_VERSES = useMemo(() => [
+    { text: "For I know the plans I have for you, declares the Lord, plans to prosper you and not to harm you, plans to give you hope and a future.", ref: "Jeremiah 29:11" },
+    { text: "Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to Him, and He will make your paths straight.", ref: "Proverbs 3:5-6" },
+    { text: "I can do all this through Him who gives me strength.", ref: "Philippians 4:13" },
+    { text: "The Lord is my shepherd, I lack nothing. He makes me lie down in green pastures, He leads me beside quiet waters, He refreshes my soul.", ref: "Psalm 23:1-3" },
+    { text: "Be strong and courageous. Do not be afraid; do not be discouraged, for the Lord your God will be with you wherever you go.", ref: "Joshua 1:9" },
+    { text: "And we know that in all things God works for the good of those who love Him, who have been called according to His purpose.", ref: "Romans 8:28" },
+    { text: "The Lord bless you and keep you; the Lord make His face shine on you and be gracious to you.", ref: "Numbers 6:24-25" },
+    { text: "Come to me, all you who are weary and burdened, and I will give you rest.", ref: "Matthew 11:28" },
+    { text: "But those who hope in the Lord will renew their strength. They will soar on wings like eagles; they will run and not grow weary.", ref: "Isaiah 40:31" },
+    { text: "Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God.", ref: "Philippians 4:6" },
+    { text: "The Lord is close to the brokenhearted and saves those who are crushed in spirit.", ref: "Psalm 34:18" },
+    { text: "For God so loved the world that He gave His one and only Son, that whoever believes in Him shall not perish but have eternal life.", ref: "John 3:16" },
+    { text: "He has shown you, O mortal, what is good. And what does the Lord require of you? To act justly and to love mercy and to walk humbly with your God.", ref: "Micah 6:8" },
+    { text: "Delight yourself in the Lord, and He will give you the desires of your heart.", ref: "Psalm 37:4" },
+    { text: "Cast all your anxiety on Him because He cares for you.", ref: "1 Peter 5:7" },
+    { text: "The Lord is my light and my salvation — whom shall I fear? The Lord is the stronghold of my life — of whom shall I be afraid?", ref: "Psalm 27:1" },
+    { text: "Give thanks to the Lord, for He is good; His love endures forever.", ref: "Psalm 107:1" },
+    { text: "But the fruit of the Spirit is love, joy, peace, forbearance, kindness, goodness, faithfulness, gentleness and self-control.", ref: "Galatians 5:22-23" },
+    { text: "Therefore, if anyone is in Christ, the new creation has come: The old has gone, the new is here!", ref: "2 Corinthians 5:17" },
+    { text: "Each of you should give what you have decided in your heart to give, not reluctantly or under compulsion, for God loves a cheerful giver.", ref: "2 Corinthians 9:7" },
+    { text: "Commit to the Lord whatever you do, and He will establish your plans.", ref: "Proverbs 16:3" },
+    { text: "So do not fear, for I am with you; do not be dismayed, for I am your God. I will strengthen you and help you.", ref: "Isaiah 41:10" },
+    { text: "This is the day the Lord has made; let us rejoice and be glad in it.", ref: "Psalm 118:24" },
+    { text: "Every good and perfect gift is from above, coming down from the Father of the heavenly lights.", ref: "James 1:17" },
+    { text: "And let us not grow weary of doing good, for in due season we will reap, if we do not give up.", ref: "Galatians 6:9" },
+    { text: "The name of the Lord is a fortified tower; the righteous run to it and are safe.", ref: "Proverbs 18:10" },
+    { text: "God is our refuge and strength, an ever-present help in trouble.", ref: "Psalm 46:1" },
+    { text: "Love is patient, love is kind. It does not envy, it does not boast, it is not proud.", ref: "1 Corinthians 13:4" },
+    { text: "Let everything that has breath praise the Lord.", ref: "Psalm 150:6" },
+    { text: "Above all, love each other deeply, because love covers over a multitude of sins.", ref: "1 Peter 4:8" },
+    { text: "A cheerful heart is good medicine, but a crushed spirit dries up the bones.", ref: "Proverbs 17:22" },
+  ], []);
+
+  const dailyVerse = useMemo(() => {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), 0, 0);
+    const dayOfYear = Math.floor((now - start) / 86400000);
+    return DAILY_VERSES[dayOfYear % DAILY_VERSES.length];
+  }, [DAILY_VERSES]);
+
+  // ── Next Payment Info (for officers with active loans) ──
+  const nextPaymentInfo = useMemo(() => {
+    if (!isOfficer || processedLoans.length === 0) return null;
+    const activeLoans = processedLoans.filter(l => l.status === 'active' && l.disbursementDate);
+    if (activeLoans.length === 0) return null;
+
+    let soonest = null;
+    activeLoans.forEach(l => {
+      const paidMonths = l.paidMonths || 0;
+      const term = l.termMonths || 12;
+      if (paidMonths >= term) return;
+      const start = new Date(l.disbursementDate);
+      const nextDue = new Date(start);
+      nextDue.setMonth(start.getMonth() + paidMonths + 1);
+      if (!soonest || nextDue < soonest.dueDate) {
+        soonest = {
+          loanId: l.loanId,
+          dueDate: nextDue,
+          monthlyPayment: l.monthlyPayment || (l.amount / (l.termMonths || 12)),
+          isLate: l.isLate,
+        };
+      }
+    });
+    return soonest;
+  }, [isOfficer, processedLoans]);
+
+  // ── Top Savings Goal ──
+  const topSavingsGoal = useMemo(() => {
+    if (savingsGoalsList.length === 0) return null;
+    // Pick the goal with the highest progress percentage
+    return savingsGoalsList.reduce((best, g) => {
+      const pct = g.targetAmount > 0 ? (g.savedAmount / g.targetAmount) : 0;
+      const bestPct = best.targetAmount > 0 ? (best.savedAmount / best.targetAmount) : 0;
+      return pct > bestPct ? g : best;
+    }, savingsGoalsList[0]);
+  }, [savingsGoalsList]);
 
   const formatAuthorName = (name) => {
     if (!name) return 'Anonymous';
@@ -364,8 +457,8 @@ export default function Home() {
       {/* Stats */}
       <div className="uh-stats-grid">
 
-        {isOfficer && (
-          <div className="uh-stat-card uh-stat-card--savings uh-stat-card--clickable" onClick={() => navigate('/savings')}>
+        {/* Savings Stat Card */}
+        <div className="uh-stat-card uh-stat-card--savings uh-stat-card--clickable" onClick={() => navigate('/savings')}>
             <div className="uh-stat-card__body">
               <div className="uh-stat-icon-box">
                 <PiggyBank size={20} />
@@ -398,7 +491,7 @@ export default function Home() {
               </div>
             )}
           </div>
-        )}
+        {/* End Savings Stat Card */}
 
         {isOfficer && (
           <div className="uh-stat-card uh-stat-card--loans uh-stat-card--clickable" onClick={() => navigate('/loans')}>
@@ -460,20 +553,15 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="uh-stat-card uh-stat-card--attendance uh-stat-card--clickable" onClick={() => navigate('/attendance')}>
+        <div className="uh-stat-card uh-stat-card--verse-mini">
           <div className="uh-stat-card__body">
             <div className="uh-stat-icon-box">
-              <CalendarDays size={20} />
+              <BookOpen size={20} />
             </div>
             <div className="uh-stat-text">
-              <span className="uh-stat-label">Services Attended</span>
-              {loading
-                ? <div className="user-skeleton uh-stat-skel" />
-                : <span className="uh-stat-value user-fade-in">{attendanceStats.total}</span>
-              }
-              {!loading && (
-                <span className="uh-stat-sub">{monthlyAttendanceCount} this month</span>
-              )}
+              <span className="uh-stat-label">Today's Verse</span>
+              <span className="uh-stat-verse-text">"{dailyVerse.text.length > 60 ? dailyVerse.text.slice(0, 60) + '…' : dailyVerse.text}"</span>
+              <span className="uh-stat-sub uh-stat-sub--gold">— {dailyVerse.ref}</span>
             </div>
           </div>
         </div>
@@ -486,7 +574,7 @@ export default function Home() {
         {/* Quick Actions */}
         <div className="uh-card uh-card--quick-actions">
           <h2 className="uh-card__heading">Quick Actions</h2>
-          <div className="uh-actions">
+          <div className={`uh-actions ${isOfficer ? 'uh-actions--grid' : ''}`}>
             {quickActions.map((action, i) => (
               <button key={i} onClick={action.action} className={`uh-action ${action.className}`}>
                 <div className="uh-action__icon">{action.icon}</div>
@@ -500,54 +588,106 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Prayer Wall */}
-        <div className="uh-card uh-card--prayer">
-          <div className="uh-card__header-row">
-            <h2 className="uh-card__heading">Prayer Wall</h2>
+        {/* Savings Goal + Payment Reminder */}
+        <div className="uh-card uh-card--insights">
+          <div className="uh-insights-header">
+            <h2 className="uh-card__heading">My Overview</h2>
           </div>
-          <div className="uh-prayer-list">
-            {prayers.length === 0 ? (
-              <div className="uh-empty-state">
-                <div className="uh-empty-state__icon-wrap">
-                  <Heart size={42} strokeWidth={1} className="uh-empty-state__icon" />
-                  <div className="uh-empty-state__pulse" />
-                </div>
-                <p className="uh-empty-state__text">Be the first to share a prayer or a word of encouragement with our community.</p>
-              </div>
-            ) : (
-              prayers.slice(0, 4).map((prayer) => (
-                <div key={prayer._id || prayer.id} className="uh-prayer-item">
-                  <div className="uh-prayer-item__body">
-                    <p className="uh-prayer-item__text">"{prayer.text}"</p>
-                    <div className="uh-prayer-item__meta">
-                      <span className="uh-prayer-item__author">{prayer.author}</span>
-                      <span className="uh-prayer-item__time">{formatTimeAgo(prayer.createdAt || prayer.date)}</span>
-                    </div>
+
+          {/* Savings Goal Progress */}
+          <div className="uh-insight-block">
+            <div className="uh-insight-header">
+              <div className="uh-insight-icon uh-insight-icon--savings"><Target size={16} /></div>
+              <h3 className="uh-insight-title">Savings Goal</h3>
+            </div>
+            {topSavingsGoal ? (() => {
+              const pct = topSavingsGoal.targetAmount > 0
+                ? Math.min(100, Math.round((topSavingsGoal.savedAmount / topSavingsGoal.targetAmount) * 100))
+                : 0;
+              return (
+                <div className="uh-savings-goal">
+                  <div className="uh-savings-goal__info">
+                    <span className="uh-savings-goal__name">{topSavingsGoal.name}</span>
+                    <span className="uh-savings-goal__pct">{pct}%</span>
+                  </div>
+                  <div className="uh-progress-bar">
+                    <div className="uh-progress-bar__fill" style={{ width: `${pct}%` }} />
+                  </div>
+                  <div className="uh-savings-goal__amounts">
+                    <span>{formatCurrency(topSavingsGoal.savedAmount)}</span>
+                    <span className="uh-savings-goal__target">of {formatCurrency(topSavingsGoal.targetAmount)}</span>
                   </div>
                 </div>
-              ))
+              );
+            })() : (
+              <div className="uh-insight-empty">
+                <p>No active savings goals.</p>
+                <button className="uh-insight-cta" onClick={() => navigate('/savings')}>
+                  Create Goal <ArrowRight size={12} />
+                </button>
+              </div>
             )}
           </div>
-          <button className="uh-cta" onClick={() => setShowPrayerModal(true)}>
-            <span>Share a Prayer</span>
-            <ArrowRight size={14} />
+
+          <div className="uh-insight-divider" />
+
+          {/* Upcoming Payment Reminder */}
+          <div className="uh-insight-block">
+            <div className="uh-insight-header">
+              <div className={`uh-insight-icon ${nextPaymentInfo?.isLate ? 'uh-insight-icon--late' : 'uh-insight-icon--loan'}`}>
+                {nextPaymentInfo?.isLate ? <AlertCircle size={16} /> : <Banknote size={16} />}
+              </div>
+              <h3 className="uh-insight-title">Next Payment</h3>
+            </div>
+            {nextPaymentInfo ? (() => {
+              const now = new Date();
+              const due = new Date(nextPaymentInfo.dueDate);
+              const diffDays = Math.ceil((due - now) / 86400000);
+              const isOverdue = diffDays < 0;
+              return (
+                <div className={`uh-payment-reminder ${isOverdue ? 'uh-payment-reminder--overdue' : ''}`}>
+                  <div className="uh-payment-reminder__row">
+                    <span className="uh-payment-reminder__label">Amount Due</span>
+                    <span className="uh-payment-reminder__value">{formatCurrency(nextPaymentInfo.monthlyPayment)}</span>
+                  </div>
+                  <div className="uh-payment-reminder__row">
+                    <span className="uh-payment-reminder__label">Due Date</span>
+                    <span className={`uh-payment-reminder__value ${isOverdue ? 'uh-payment-reminder__value--late' : ''}`}>
+                      {due.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </span>
+                  </div>
+                  <div className="uh-payment-reminder__badge-row">
+                    <span className={`uh-payment-reminder__badge ${isOverdue ? 'uh-payment-reminder__badge--late' : 'uh-payment-reminder__badge--ok'}`}>
+                      {isOverdue ? `${Math.abs(diffDays)} day${Math.abs(diffDays) > 1 ? 's' : ''} overdue` : `${diffDays} day${diffDays > 1 ? 's' : ''} left`}
+                    </span>
+                  </div>
+                  <button className="uh-insight-cta" onClick={() => navigate('/loans')}>
+                    View Loan <ArrowRight size={12} />
+                  </button>
+                </div>
+              );
+            })() : (
+              <div className="uh-insight-empty">
+                <p>{isOfficer ? 'No upcoming payments.' : 'Loan services are for officers.'}</p>
+              </div>
+            )}
+          </div>
+
+          <div className="uh-insight-divider" />
+
+          {/* Prayer Wall mini trigger */}
+          <button className="uh-prayer-trigger" onClick={() => setShowPrayerModal(true)}>
+            <Heart size={16} />
+            <div className="uh-prayer-trigger__text">
+              <span className="uh-prayer-trigger__title">Prayer Wall</span>
+              <span className="uh-prayer-trigger__count">{prayers.length} prayer{prayers.length !== 1 ? 's' : ''}</span>
+            </div>
+            <ChevronRight size={14} className="uh-prayer-trigger__arrow" />
           </button>
         </div>
 
         {/* Events Carousel */}
         <div className="uh-card uh-card--events">
-          <div className="uh-card__header-row">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <h2 className="uh-card__heading">Announcements</h2>
-              {upcomingEvents.length > 0 && (
-                <span className="uh-events-count-badge">{upcomingEvents.length}</span>
-              )}
-            </div>
-            <button className="uh-text-btn" onClick={() => setShowAllEvents(true)}>
-              <span>See all</span>
-              <ArrowRight size={12} style={{ marginLeft: '4px' }} />
-            </button>
-          </div>
 
           <div className="uh-carousel-viewport">
             {upcomingEvents.length === 0 ? (
@@ -561,7 +701,6 @@ export default function Home() {
                 style={{ transform: `translateX(-${currentEventIndex * 100}%)` }}
               >
                 {upcomingEvents.map((evt, i) => {
-                  const catStyle = CAT_COLORS[evt.category] || CAT_COLORS.General;
                   const hasImage = !!(evt.images?.[0] || evt.image);
                   const imageUrl = evt.images?.[0] || evt.image;
                   return (
@@ -570,31 +709,29 @@ export default function Home() {
                       className="uh-carousel-slide"
                       onClick={() => { setSelectedEvent(evt); setModalImageIndex(0); setIsModalExpanded(false); }}
                     >
-                      <div className={`uh-event-hero ${!hasImage ? 'uh-event-hero--no-image' : ''}`} style={{ background: catStyle.bg }}>
-                        <div className="uh-event-hero__badge" style={{ color: catStyle.color }}>
-                          {evt.category}
-                        </div>
-                        <div className="uh-event-hero__date" style={{ color: catStyle.color }}>
-                          <span className="uh-event-hero__day">{evt.day}</span>
-                          <span className="uh-event-hero__month">{evt.month}</span>
-                        </div>
-                        <div className="uh-event-hero__content">
-                          <div className="uh-event-hero__main-info">
-                            <h3 className="uh-event-hero__title">{evt.title}</h3>
-                          </div>
-                          <div className="uh-event-hero__footer">
-                            <MapPin size={12} />
-                            <span>{evt.branch.split(',')[0]}</span>
-                            <span className="uh-dot-sep">·</span>
-                            <span>{evt.time || 'All Day'}</span>
-                          </div>
-                        </div>
+                      <div className="uh-slide-hero">
                         {hasImage && (
-                          <div
-                            className="uh-event-hero__image"
-                            style={{ backgroundImage: `url(${imageUrl})` }}
-                          />
+                          <img className="uh-slide-hero__img" src={imageUrl} alt="" />
                         )}
+                        <div className="uh-slide-hero__overlay" />
+                        {/* Top pills */}
+                        <div className="uh-slide-hero__top">
+                          <div className="uh-slide-pill uh-slide-pill--date">
+                            <span className="uh-slide-pill__day">{evt.day}</span>
+                            <span className="uh-slide-pill__month">{evt.month}</span>
+                          </div>
+                          <div className="uh-slide-pill uh-slide-pill--cat">
+                            {evt.category}
+                          </div>
+                        </div>
+                        {/* Bottom content */}
+                        <div className="uh-slide-hero__bottom">
+                          <h3 className="uh-slide-hero__title">{evt.title}</h3>
+                          <div className="uh-slide-hero__meta">
+                            <span><Clock size={11} /> {evt.time || 'All Day'}</span>
+                            <span><MapPin size={11} /> {evt.branch?.split(',')[0]}</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   );
@@ -603,14 +740,19 @@ export default function Home() {
             )}
           </div>
 
-          <div className="uh-carousel-dots">
-            {upcomingEvents.map((_, i) => (
-              <button
-                key={i}
-                className={`uh-carousel-dot ${i === currentEventIndex ? 'uh-carousel-dot--active' : ''}`}
-                onClick={() => setCurrentEventIndex(i)}
-              />
-            ))}
+          <div className="uh-carousel-footer">
+            <div className="uh-carousel-dots">
+              {upcomingEvents.map((_, i) => (
+                <button
+                  key={i}
+                  className={`uh-carousel-dot ${i === currentEventIndex ? 'uh-carousel-dot--active' : ''}`}
+                  onClick={() => setCurrentEventIndex(i)}
+                />
+              ))}
+            </div>
+            <button className="uh-text-btn uh-text-btn--sm" onClick={() => setShowAllEvents(true)}>
+              See all <ArrowRight size={11} />
+            </button>
           </div>
         </div>
       </div>
@@ -659,30 +801,68 @@ export default function Home() {
           )}
         </div>
 
-        {/* Community */}
-        <div className="uh-card uh-card--community">
-          <h2 className="uh-card__heading">
-            Your Community
-            {profile?.branch && (
-              <span className="uh-heading-sub"> · {profile.branch.replace(/\s*Community\s*/gi, '')}</span>
-            )}
-          </h2>
-          <div className="uh-map-wrap">
-            <iframe
-              title="Community Map"
-              width="100%"
-              height="100%"
-              loading="lazy"
-              allowFullScreen
-              src={`https://maps.google.com/maps?q=${encodeURIComponent(profile?.branch || 'Meycauayan City, Bulacan')},Philippines&t=&z=14&ie=UTF8&iwloc=&output=embed`}
-            />
-          </div>
-          <p className="uh-community-text">Stay updated with your local branch and upcoming events in your area.</p>
-          <button className="uh-cta" onClick={() => navigate('/branches')}>
-            <span>Explore Community</span>
-            <ArrowRight size={14} />
-          </button>
-        </div>
+        {/* Monthly Calendar */}
+        {(() => {
+          const now = new Date();
+          const year = now.getFullYear();
+          const month = now.getMonth();
+          const firstDay = new Date(year, month, 1);
+          const lastDay = new Date(year, month + 1, 0);
+          const startWeekday = (firstDay.getDay() + 6) % 7; // Monday = 0
+          const daysInMonth = lastDay.getDate();
+          const today = now.getDate();
+
+          // Get event days this month
+          const eventDays = {};
+          allAnnouncements.forEach(evt => {
+            if (evt.dateObj) {
+              const d = new Date(evt.dateObj);
+              if (d.getMonth() === month && d.getFullYear() === year) {
+                const day = d.getDate();
+                if (!eventDays[day]) eventDays[day] = [];
+                eventDays[day].push(evt);
+              }
+            }
+          });
+
+          const cells = [];
+          for (let i = 0; i < startWeekday; i++) cells.push(null);
+          for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+
+          return (
+            <div className="uh-card uh-card--calendar">
+              <div className="uh-cal-header">
+                <h2 className="uh-cal-title">
+                  {firstDay.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                </h2>
+              </div>
+              <div className="uh-cal-body">
+                <div className="uh-cal-grid">
+                  {['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'].map(d => (
+                    <div key={d} className="uh-cal-weekday">{d}</div>
+                  ))}
+                  {cells.map((day, i) => (
+                    <div
+                      key={i}
+                      className={`uh-cal-cell ${!day ? 'uh-cal-cell--empty' : ''} ${day === today ? 'uh-cal-cell--today' : ''} ${day && eventDays[day] ? 'uh-cal-cell--event' : ''}`}
+                      onClick={() => {
+                        if (day && eventDays[day]) {
+                          setSelectedEvent(eventDays[day][0]);
+                          setModalImageIndex(0);
+                          setIsModalExpanded(false);
+                        }
+                      }}
+                      title={day && eventDays[day] ? eventDays[day].map(e => e.title).join(', ') : ''}
+                    >
+                      {day && <span>{day}</span>}
+                      {day && eventDays[day] && <div className="uh-cal-cell__dot" />}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Prayer Wall Modal */}
@@ -743,119 +923,108 @@ export default function Home() {
       {/* Event Detail Modal */}
       {selectedEvent && (
         <div className="uh-overlay" onClick={() => setSelectedEvent(null)}>
-          <div className="uh-modal uh-modal--detail" onClick={e => e.stopPropagation()}>
-            <button className="uh-modal__close" onClick={() => setSelectedEvent(null)}>×</button>
+          <div className="uh-edm" onClick={e => e.stopPropagation()}>
+            {/* Hero Image Zone */}
+            <div className="uh-edm__hero">
+              {selectedEvent.images && selectedEvent.images.length > 0 ? (
+                <>
+                  <img
+                    src={selectedEvent.images[modalImageIndex]}
+                    alt=""
+                    className="uh-edm__hero-img"
+                    onClick={() => window.open(selectedEvent.images[modalImageIndex], '_blank')}
+                    title="Click to view full image"
+                  />
+                  {selectedEvent.images.length > 1 && (
+                    <>
+                      <button
+                        className="uh-edm__nav uh-edm__nav--prev"
+                        onClick={(e) => { e.stopPropagation(); setModalImageIndex(prev => prev === 0 ? selectedEvent.images.length - 1 : prev - 1); }}
+                      ><ChevronLeft size={18} /></button>
+                      <button
+                        className="uh-edm__nav uh-edm__nav--next"
+                        onClick={(e) => { e.stopPropagation(); setModalImageIndex(prev => (prev + 1) % selectedEvent.images.length); }}
+                      ><ChevronRight size={18} /></button>
+                    </>
+                  )}
+                </>
+              ) : selectedEvent.image ? (
+                <img src={selectedEvent.image} alt="" className="uh-edm__hero-img" onClick={() => window.open(selectedEvent.image, '_blank')} title="Click to view full image" />
+              ) : (
+                <div className="uh-edm__hero-empty"><Megaphone size={36} /></div>
+              )}
+              <div className="uh-edm__hero-gradient" />
 
-            <div className={`uh-modal-card uh-modal-card-detail uh-modal-card-${selectedEvent.template || 'banner'}`}>
-              {(selectedEvent.template === 'banner' || !selectedEvent.template) && (
-                <div className="uh-modal-banner" style={{ position: 'relative' }}>
-                  <div className="uh-modal-badge" style={{ color: CAT_COLORS[selectedEvent.category]?.color || '#1e293b' }}>
-                    {selectedEvent.category}
-                  </div>
-                  {selectedEvent.images && selectedEvent.images.length > 0 ? (
-                    <div className="uh-modal-slider" style={{ position: 'relative' }}>
-                      <img 
-                        src={selectedEvent.images[modalImageIndex]} 
-                        alt="" 
-                        onClick={() => window.open(selectedEvent.images[modalImageIndex], '_blank')} 
-                        title="Click to view full image"
-                      />
-                      {selectedEvent.images.length > 1 && (
-                        <>
-                          <button 
-                            className="uh-modal-slider-btn uh-modal-slider-btn--left"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setModalImageIndex(prev => prev === 0 ? selectedEvent.images.length - 1 : prev - 1);
-                            }}
-                          >
-                            <ChevronLeft size={20} />
-                          </button>
-                          <button 
-                            className="uh-modal-slider-btn uh-modal-slider-btn--right"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setModalImageIndex(prev => (prev + 1) % selectedEvent.images.length);
-                            }}
-                          >
-                            <ChevronRight size={20} />
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  ) : selectedEvent.image ? (
-                    <img src={selectedEvent.image} alt="" onClick={() => window.open(selectedEvent.image, '_blank')} title="Click to view full image" />
-                  ) : (
-                    <div className="uh-modal-banner-placeholder"><Megaphone size={32} color="#1E3A8A" /></div>
-                  )}
-                  {selectedEvent.images?.length > 1 && (
-                    <div className="uh-modal-slider-count">{selectedEvent.images.length} photos</div>
-                  )}
+              {/* Top bar */}
+              <div className="uh-edm__topbar">
+                <span className="uh-edm__cat-pill">{selectedEvent.category}</span>
+                <button className="uh-edm__close" onClick={() => setSelectedEvent(null)}>
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Bottom content over image */}
+              <div className="uh-edm__hero-content">
+                <h2 className="uh-edm__title">{selectedEvent.title}</h2>
+                <div className="uh-edm__hero-meta">
+                  <span><CalendarDays size={13} /> {selectedEvent.dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' })}</span>
+                  {selectedEvent.time && <span><Clock size={13} /> {selectedEvent.time}</span>}
+                </div>
+              </div>
+
+              {/* Image dots */}
+              {selectedEvent.images?.length > 1 && (
+                <div className="uh-edm__dots">
+                  {selectedEvent.images.map((_, i) => (
+                    <button
+                      key={i}
+                      className={`uh-edm__dot ${i === modalImageIndex ? 'uh-edm__dot--active' : ''}`}
+                      onClick={(e) => { e.stopPropagation(); setModalImageIndex(i); }}
+                    />
+                  ))}
                 </div>
               )}
+            </div>
 
-              {selectedEvent.template === 'side' && (
-                <div className="uh-modal-side-img" style={{ position: 'relative' }}>
-                  <div className="uh-modal-badge" style={{ color: CAT_COLORS[selectedEvent.category]?.color || '#1e293b' }}>
-                    {selectedEvent.category}
-                  </div>
-                  {selectedEvent.images && selectedEvent.images.length > 0 ? (
-                    <div className="uh-modal-slider" style={{ position: 'relative' }}>
-                      <img 
-                        src={selectedEvent.images[modalImageIndex]} 
-                        alt="" 
-                        onClick={() => window.open(selectedEvent.images[modalImageIndex], '_blank')} 
-                        title="Click to view full image"
-                      />
-                      {selectedEvent.images.length > 1 && (
-                        <>
-                          <button 
-                            className="uh-modal-slider-btn uh-modal-slider-btn--left"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setModalImageIndex(prev => prev === 0 ? selectedEvent.images.length - 1 : prev - 1);
-                            }}
-                          >
-                            <ChevronLeft size={20} />
-                          </button>
-                          <button 
-                            className="uh-modal-slider-btn uh-modal-slider-btn--right"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setModalImageIndex(prev => (prev + 1) % selectedEvent.images.length);
-                            }}
-                          >
-                            <ChevronRight size={20} />
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  ) : selectedEvent.image ? (
-                    <img src={selectedEvent.image} alt="" onClick={() => window.open(selectedEvent.image, '_blank')} title="Click to view full image" />
-                  ) : (
-                    <div className="uh-modal-banner-placeholder"><Megaphone size={24} color="#1E3A8A" /></div>
-                  )}
-                </div>
-              )}
-
-              <div className="uh-modal-body">
-                <h2 className="uh-modal-title">{selectedEvent.title}</h2>
-                <div className="uh-modal-msg">
-                  {selectedEvent.fullBody?.length > 300 && !isModalExpanded
-                    ? selectedEvent.fullBody.substring(0, 300) + '...'
-                    : selectedEvent.fullBody}
-                  {selectedEvent.fullBody?.length > 300 && (
-                    <button 
-                      className="uh-see-more-btn"
+            {/* Body */}
+            <div className="uh-edm__body">
+              {selectedEvent.fullBody && (
+                <div className="uh-edm__desc">
+                  <p>
+                    {selectedEvent.fullBody.length > 300 && !isModalExpanded
+                      ? selectedEvent.fullBody.substring(0, 300) + '...'
+                      : selectedEvent.fullBody}
+                  </p>
+                  {selectedEvent.fullBody.length > 300 && (
+                    <button
+                      className="uh-edm__toggle"
                       onClick={(e) => { e.stopPropagation(); setIsModalExpanded(!isModalExpanded); }}
                     >
-                      {isModalExpanded ? 'See less' : 'See more'}
+                      {isModalExpanded ? 'Show less' : 'Read more'}
                     </button>
                   )}
                 </div>
-                <div className="uh-modal-meta">
-                  <span><CalendarDays size={16} /> {selectedEvent.dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}{selectedEvent.time && ` at ${selectedEvent.time}`}</span>
-                  <span><MapPin size={16} /> {selectedEvent.branch}</span>
+              )}
+
+              <div className="uh-edm__divider" />
+
+              <div className="uh-edm__info-row">
+                <div className="uh-edm__info-chip">
+                  <CalendarDays size={14} />
+                  <div>
+                    <span className="uh-edm__info-label">Date & Time</span>
+                    <span className="uh-edm__info-value">
+                      {selectedEvent.dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                      {selectedEvent.time && ` · ${selectedEvent.time}`}
+                    </span>
+                  </div>
+                </div>
+                <div className="uh-edm__info-chip">
+                  <MapPin size={14} />
+                  <div>
+                    <span className="uh-edm__info-label">Location</span>
+                    <span className="uh-edm__info-value">{selectedEvent.branch}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -879,7 +1048,6 @@ export default function Home() {
                   const catStyle = CAT_COLORS[evt.category] || CAT_COLORS.General;
                   return (
                     <div key={i} className="uh-event" onClick={() => { setShowAllEvents(false); setSelectedEvent(evt); setModalImageIndex(0); setIsModalExpanded(false); }}>
-                      <div className="uh-event__accent" style={{ background: catStyle.color }} />
                       <div className="uh-event__date">
                         <span className="uh-event__day">{evt.day}</span>
                         <span className="uh-event__month">{evt.month}</span>

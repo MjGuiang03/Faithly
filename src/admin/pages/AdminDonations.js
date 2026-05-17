@@ -6,6 +6,8 @@ import '../styles/AdminDonations.css';
 
 import API from '../../utils/api';
 import { Banknote, Users, Calculator, Search, XCircle, ChevronLeft, ChevronRight, Heart } from 'lucide-react';
+import CommunityDonationChart from '../components/CommunityDonationChart';
+import DonationCategoriesPie from '../components/DonationCategoriesPie';
 
 
 const fmt = (n) =>
@@ -141,13 +143,14 @@ export default function AdminDonationsNew() {
       setDonations(data.donations || []);
       setTotalCount(data.totalCount || 0);
       setStats({
+        totalCount: data.stats?.totalCount || 0,
         totalThisMonth: data.stats?.thisMonth || 0,
-        totalDonors:    data.stats?.totalDonors || 0,
-        avgDonation:    data.stats?.avgDonation || 0,
-        thisWeek:       data.stats?.thisWeek || 0,
-        pendingCount:   data.stats?.pendingCount || 0,
-        rejectedCount:  data.stats?.rejectedCount || 0,
+        totalDonors: data.stats?.totalDonors || 0,
+        avgDonation: data.stats?.avgDonation || 0,
+        rejectedCount: data.stats?.rejectedCount || 0,
         percentageChange: data.stats?.percentageChange || '0%',
+        communityBreakdown: data.stats?.communityBreakdown || {},
+        categoryBreakdown: data.stats?.categoryBreakdown || {}
       });
     } catch {
       toast.error('Network error. Could not load donations.');
@@ -175,46 +178,28 @@ export default function AdminDonationsNew() {
 
       </div>
 
-      {/* Stats Cards */}
-      <div className="admin-don-new-stats">
-        <div className="admin-don-new-stat-card">
-          <div className="admin-don-new-stat-header">
-            <span className="admin-don-new-stat-label">Total This Month</span>
-            <div className="adm-stat-icon-wrap"><Banknote size={20} color="white" /></div>
-          </div>
-          <p className="admin-don-new-stat-value">{fmt(stats.totalThisMonth)}</p>
-          <p className="admin-don-new-stat-change">{stats.percentageChange} from last month</p>
+
+
+      {/* Main Content Layout */}
+      <div className="admin-don-content-layout" style={{ marginBottom: '24px' }}>
+        {/* Left Column: Chart */}
+        <div className="admin-don-chart-col">
+          <CommunityDonationChart communityBreakdown={stats.communityBreakdown || {}} />
         </div>
 
-        <div className="admin-don-new-stat-card">
-          <div className="admin-don-new-stat-header">
-            <span className="admin-don-new-stat-label">Total Donors</span>
-            <div className="adm-stat-icon-wrap"><Users size={20} color="white" /></div>
+        {/* Right Column: Card & Pie Chart */}
+        <div className="admin-don-chart-col">
+          <div className="admin-don-new-stats">
+            <div className="admin-don-new-stat-card">
+              <div className="admin-don-new-stat-header">
+                <span className="admin-don-new-stat-label">Total This Month</span>
+                <div className="adm-stat-icon-wrap"><Banknote size={20} color="white" /></div>
+              </div>
+              <p className="admin-don-new-stat-value">{fmt(stats.totalThisMonth)}</p>
+              <p className="admin-don-new-stat-change">{stats.percentageChange} from last month</p>
+            </div>
           </div>
-          <p className="admin-don-new-stat-value">{stats.totalDonors}</p>
-        </div>
-
-        <div className="admin-don-new-stat-card">
-          <div className="admin-don-new-stat-header">
-            <span className="admin-don-new-stat-label">Avg. Donation</span>
-            <div className="adm-stat-icon-wrap"><Calculator size={20} color="white" /></div>
-          </div>
-          <p className="admin-don-new-stat-value">{fmt(stats.avgDonation)}</p>
-        </div>
-
-        <div className="admin-don-new-stat-card admin-don-clickable-card" onClick={async () => {
-          setShowRejectedModal(true);
-          setRejectedLoading(true);
-          const res = await fetch(`${API}/api/admin/donations?status=rejected&limit=100`, { headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }});
-          const data = await res.json();
-          setRejectedList(data.donations || []);
-          setRejectedLoading(false);
-        }}>
-          <div className="admin-don-new-stat-header">
-            <span className="admin-don-new-stat-label">Total Rejected</span>
-            <div className="adm-stat-icon-wrap"><XCircle size={20} color="white" /></div>
-          </div>
-          <p className="admin-don-new-stat-value admin-don-text-red">{stats.rejectedCount}</p>
+          <DonationCategoriesPie categoryBreakdown={stats.categoryBreakdown || {}} />
         </div>
       </div>
 

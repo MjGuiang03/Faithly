@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import '../styles/Notifications.css';
 import API from '../../utils/api';
-import { Banknote, Bell, CalendarDays, Circle, Heart, ChevronDown, ChevronUp, Check } from 'lucide-react';
+import { Banknote, Bell, CalendarDays, Circle, Heart, ChevronDown, ChevronUp, Check, Building2, CircleCheck, AlertCircle, PiggyBank } from 'lucide-react';
 
 
 const fmt = (n) =>
@@ -70,7 +70,7 @@ export default function Notifications() {
         fetch(`${API}/api/donations/my-donations`, { headers: hdrs }),
         fetch(`${API}/api/attendance/my-attendance`, { headers: hdrs }),
         fetch(`${API}/api/savings/transactions`, { headers: hdrs }),
-        fetch(`${API}/api/loans/my-pending-payments`, { headers: hdrs }),
+        fetch(`${API}/api/loans/my-payments`, { headers: hdrs }),
         fetch(`${API}/api/read-notifications`, { headers: hdrs }),
       ]);
 
@@ -133,12 +133,6 @@ export default function Notifications() {
                 message: `Your loan ${l.loanId ? `#${l.loanId}` : ''} for ₱${Number(l.amount).toLocaleString()} has been disbursed via ${(l.paymentMethod || 'cash').toUpperCase()}.`,
                 proofData: l.proofData || null,
               });
-            } else if (history.status === 'payment_confirmed') {
-              items.push({
-                ...hBase, id: `loan-payment-${l._id}-${history.monthNumber || hBase.timestamp}`,
-                title: 'Payment Confirmed',
-                message: `Your Month #${history.monthNumber || ''} payment of ₱${Number(history.amount || l.monthlyPayment || 0).toLocaleString()} via ${(history.paymentMethod || 'cash').toUpperCase()} has been confirmed by the loan admin.`,
-              });
             }
           });
         } else {
@@ -185,15 +179,20 @@ export default function Notifications() {
         }
       });
 
-      /* Pending Payments → notifications */
+      /* Payments → notifications */
       (ppData.payments || []).forEach((p) => {
         items.push({
-          id: `payment-pending-${p._id}`,
-          type: 'payment_pending',
-          timestamp: p.submittedAt,
-          title: 'Payment Submitted — Awaiting Confirmation',
-          message: `Your Month #${p.monthNumber} payment of ₱${Number(p.amount).toLocaleString()} via ${(p.paymentMethod || 'cash').toUpperCase()} has been submitted and is pending admin confirmation.`,
+          id: `payment-${p.status}-${p._id}`,
+          type: 'payment_pending', // Keeps the payment icon styling
+          timestamp: p.submittedAt || p.confirmedAt || p.createdAt,
+          title: p.status === 'pending' ? 'Payment Submitted — Awaiting Confirmation' : (p.status === 'confirmed' ? 'Payment Confirmed' : 'Payment Rejected'),
+          message: p.status === 'pending'
+            ? `Your Month #${p.monthNumber || ''} payment of ₱${Number(p.amount).toLocaleString()} via ${(p.paymentMethod || 'cash').toUpperCase()} has been submitted and is pending admin confirmation.`
+            : (p.status === 'confirmed'
+               ? `Your Month #${p.monthNumber || ''} payment of ₱${Number(p.amount).toLocaleString()} via ${(p.paymentMethod || 'cash').toUpperCase()} has been confirmed by the loan admin.`
+               : `Your Month #${p.monthNumber || ''} payment of ₱${Number(p.amount).toLocaleString()} via ${(p.paymentMethod || 'cash').toUpperCase()} was rejected.`),
           paymentData: p,
+          isUrgent: p.status === 'rejected',
         });
       });
 
@@ -318,38 +317,25 @@ export default function Notifications() {
   };
 
   /* ── UI helpers ── */
-  const getIcon = (type) => {
-    if (type === 'payment_pending') return (
-      <div className="user-notif-icon" style={{ background: '#EEF2FF', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        <Banknote size={18} color="#155DFC" />
+  const getIcon = (type, title = '') => {
+    const wrap = (bg, color, Icon) => (
+      <div style={{ background: bg, borderRadius: '10px', width: '36px', height: '36px', 
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <Icon size={18} color={color} />
       </div>
     );
-    if (type === 'loan') return (
-      <div className="user-notif-icon user-notif-icon-loan">
-        <Banknote size={18} color="#155DFC" />
-      </div>
-    );
-    if (type === 'donation') return (
-      <div className="user-notif-icon user-notif-icon-donation">
-        <Heart size={18} color="#155DFC" />
-      </div>
-    );
-    if (type === 'savings') return (
-      <div className="user-notif-icon" style={{ background: '#EEF2FF', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        <CalendarDays size={18} color="#155DFC" />
-      </div>
-    );
-    if (type === 'attendance') return (
-      <div className="user-notif-icon user-notif-icon-attendance">
-        <CalendarDays size={18} color="#155DFC" />
-      </div>
-    );
-    if (type === 'announcement') return (
-      <div className="user-notif-icon" style={{ background: '#EEF2FF', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        <Bell size={18} color="#155DFC" />
-      </div>
-    );
-    return null;
+
+    if (type === 'loan') {
+      if (title.includes('Disbursed'))  return wrap('var(--secondary)', 'var(--sidebar)', Building2);
+      if (title.includes('Approved'))   return wrap('var(--secondary)', 'var(--sidebar)', CircleCheck);
+      if (title.includes('Reminder'))   return wrap('#FEE2E2', '#B91C1C', AlertCircle);
+      return wrap('var(--secondary)', 'var(--sidebar)', Banknote);
+    }
+    if (type === 'payment_pending')     return wrap('#DCFCE7', '#15803D', CircleCheck);
+    if (type === 'savings')             return wrap('#FEF9C3', '#A16207', PiggyBank);
+    if (type === 'donation')            return wrap('#FDF2F8', '#DB2777', Heart);
+    if (type === 'attendance')          return wrap('#F0FDF4', '#16A34A', CalendarDays);
+    return wrap('var(--secondary)', 'var(--sidebar)', Bell);
   };
 
   const badgeClass = (type) =>
@@ -361,6 +347,7 @@ export default function Notifications() {
 
   const cardClass = (n) => {
     let classes = 'user-notif-card';
+    if (!n.isRead) classes += ' unread';
     if (n.actionRequired) classes += ' user-notif-card-action';
     if (n.isRead) classes += ' user-notif-card-read';
     if (n.type === 'announcement') classes += ' user-notif-card-announcement';
@@ -550,7 +537,7 @@ export default function Notifications() {
           onTouchEnd={handleTouchEnd}
           onClick={() => !isSwiping && onClick()}
         >
-          {getIcon(n.type)}
+          {getIcon(n.type, n.title)}
           <div className="user-notif-body">
             <div className="user-notif-body-header">
               <p className={`user-notif-body-title${n.isRead ? ' read' : ''}`}>
@@ -593,13 +580,13 @@ export default function Notifications() {
                     display: 'flex', 
                     alignItems: 'center', 
                     gap: '4px',
-                    background: '#EFF6FF',
+                    background: 'var(--secondary)',
                     padding: '2px 8px',
                     borderRadius: '6px',
                     marginBottom: '2px'
                   }}>
-                    <Check size={12} color="#2563EB" strokeWidth={4} />
-                    <span style={{ fontSize: '10px', color: '#2563EB', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.02em' }}>Read</span>
+                    <Check size={12} color="var(--sidebar)" strokeWidth={4} />
+                    <span style={{ fontSize: '10px', color: 'var(--sidebar)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.02em' }}>Read</span>
                   </div>
                 )}
                 {n.actionRequired && (
@@ -931,8 +918,18 @@ export default function Notifications() {
                   </div>
 
                   <div className="user-notif-status-bar">
-                    <Circle size={10} fill="#F59E0B" color="#F59E0B" />
-                    <span className="text-amber">Pending admin confirmation</span>
+                    <Circle 
+                      size={10} 
+                      fill={detailModal.paymentData.status === 'confirmed' ? '#10B981' : detailModal.paymentData.status === 'rejected' ? '#EF4444' : '#F59E0B'} 
+                      color={detailModal.paymentData.status === 'confirmed' ? '#10B981' : detailModal.paymentData.status === 'rejected' ? '#EF4444' : '#F59E0B'} 
+                    />
+                    <span style={{ 
+                      fontSize: '13px',
+                      color: detailModal.paymentData.status === 'confirmed' ? '#059669' : detailModal.paymentData.status === 'rejected' ? '#DC2626' : '#D97706', 
+                      fontWeight: 600 
+                    }}>
+                      {detailModal.paymentData.status === 'confirmed' ? 'Payment confirmed by admin' : detailModal.paymentData.status === 'rejected' ? 'Payment rejected' : 'Pending admin confirmation'}
+                    </span>
                   </div>
 
                   {detailModal.paymentData.proofData && (

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authenticateAdmin } from '../middleware/auth.js';
-import { users, loans, donations, savingsGoals, savingsTransactions, attendance, loanPayments, settings, reportCache } from '../config/db.js';
+import { users, loans, donations, savingsGoals, savingsTransactions, attendance, loanPayments, settings, reportCache, branches } from '../config/db.js';
 import { callGemini } from '../utils/gemini.js';
 
 const router = Router();
@@ -153,24 +153,28 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
 
     const dateFilter = { $gte: startDate, $lte: endDate };
 
-    const report = { period: periodLabel, startDate, endDate, generatedAt: new Date(), generatedBy: req.admin.email };
+    const type = req.query.type || 'all';
+    const community = req.query.community || '';
+    const report = { period: periodLabel, startDate, endDate, generatedAt: new Date(), generatedBy: req.admin.email, reportType: type, community: community || 'All Communities' };
 
     // === Donations (Super Admin) ===
     if (role === 'admin') {
-      const periodDonations = await donations.find({ status: 'confirmed', $or: [{ createdAt: dateFilter }, { date: dateFilter }] }).toArray();
-
-      const donByCategory = {};
-      const donByMonth = {};
-      const donByBranch = {};
-      let donTotal = 0;
-
       const allMembersMap = {};
       const allMembers = await users.find({}).toArray();
       allMembers.forEach(m => { allMembersMap[m.email] = m; });
 
-      periodDonations.forEach(d => {
-        const amt = Number(d.amount) || 0;
-        donTotal += amt;
+      if (type === 'all' || type === 'donations') {
+        let donationFilter = { status: 'confirmed', $or: [{ createdAt: dateFilter }, { date: dateFilter }] };
+        const periodDonations = await donations.find(donationFilter).toArray();
+
+      const donByCategory = {};
+      const donByMonth = {};
+      const donByBranch = {};
+        let donTotal = 0;
+
+        periodDonations.forEach(d => {
+          const amt = Number(d.amount) || 0;
+          donTotal += amt;
 
         const cat = d.category || 'General Fund';
         donByCategory[cat] = (donByCategory[cat] || 0) + amt;
@@ -180,36 +184,41 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
         donByMonth[mKey] = (donByMonth[mKey] || 0) + amt;
 
         const member = allMembersMap[d.email];
-        const branch = member?.branch || 'Unknown';
-        donByBranch[branch] = (donByBranch[branch] || 0) + amt;
+        const targetBranch = d.community || member?.branch || 'Unknown';
+        if (community && targetBranch !== community) return; // skip if community filter active
+        donByBranch[targetBranch] = (donByBranch[targetBranch] || 0) + amt;
       });
 
       report.donations = {
         total: donTotal,
         count: periodDonations.length,
         byCategory: Object.entries(donByCategory).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value),
-        byMonth: Object.entries(donByMonth).map(([month, value]) => ({ month, value })).sort((a, b) => a.month.localeCompare(b.month)),
-        byBranch: Object.entries(donByBranch).map(([branch, value]) => ({ branch, value })).sort((a, b) => b.value - a.value),
-      };
+          byMonth: Object.entries(donByMonth).map(([month, value]) => ({ month, value })).sort((a, b) => a.month.localeCompare(b.month)),
+          byBranch: Object.entries(donByBranch).map(([branch, value]) => ({ branch, value })).sort((a, b) => b.value - a.value),
+        };
 
-      // Member growth for period
-      const periodMembers = allMembers.filter(m => {
-        const dt = new Date(m.createdAt);
-        return dt >= startDate && dt <= endDate;
-      });
-      report.memberGrowth = { newMembers: periodMembers.length, totalMembers: allMembers.length };
+        // Member growth for period
+        const periodMembers = allMembers.filter(m => {
+          const dt = new Date(m.createdAt);
+          return dt >= startDate && dt <= endDate;
+        });
+        report.memberGrowth = { newMembers: periodMembers.length, totalMembers: allMembers.length };
+      }
 
-      // Attendance (Moved from Secretary)
-      const periodAttendance = await attendance.find({ date: dateFilter }).toArray();
+      if (type === 'all' || type === 'attendance') {
+        // Attendance (Moved from Secretary)
+        const periodAttendance = await attendance.find({ $or: [{ date: dateFilter }, { createdAt: dateFilter }] }).toArray();
       const attByBranch = {};
       periodAttendance.forEach(a => {
-        const b = a.branch || 'Unknown';
+        const b = a.community || a.branch || a.userBranch || 'Unknown';
+        if (community && b !== community) return; // skip if community filter active
         attByBranch[b] = (attByBranch[b] || 0) + 1;
       });
-      report.attendance = {
-        totalRecords: periodAttendance.length,
-        byBranch: Object.entries(attByBranch).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value),
-      };
+        report.attendance = {
+          totalRecords: periodAttendance.length,
+          byBranch: Object.entries(attByBranch).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value),
+        };
+      }
     }
 
     // === Loans & Savings (Loan Admin ONLY) ===
@@ -288,7 +297,7 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
     }
 
     // === AI Executive Summary with Caching ===
-    const cacheKey = `report_v2_${role}_${reportMonth !== null ? reportMonth : 'full'}_${reportYear}`;
+    const cacheKey = `report_v2_${role}_${req.query.type || 'all'}_${reportMonth !== null ? reportMonth : 'full'}_${reportYear}_${community || 'all'}`;
     
     const cached = await reportCache.findOne({ cacheKey });
     const isOld = cached && (new Date() - new Date(cached.updatedAt) > 24 * 60 * 60 * 1000); 

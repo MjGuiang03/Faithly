@@ -1,0 +1,80 @@
+.dcp-card {
+  background: #ffffff;
+  border-radius: 8px;
+  position: relative;
+  border: 1px solid #e5e7eb;
+  padding: 16px;
+  margin-top: 20px; /* space between Total This Month and this card */
+}
+
+.dcp-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.dcp-card-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.dcp-chart-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.dcp-legend {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dcp-legend-item {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  color: #4b5563;
+  font-family: 'Inter', sans-serif;
+}
+
+.dcp-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.dcp-label {
+  flex: 1;
+}
+
+.dcp-val {
+  font-weight: 600;
+  color: #111827;
+}
+
+.dcp-no-data {
+  font-size: 11px;
+  color: #9ca3af;
+  text-align: center;
+  margin-top: 12px;
+  font-style: italic;
+  font-family: 'Inter', sans-serif;
+}
+
+.dcp-empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #9ca3af;
+  font-size: 13px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px dashed #d1d5db;
+  font-family: 'Inter', sans-serif;
+}

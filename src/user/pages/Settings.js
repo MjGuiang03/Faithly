@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 
 import '../styles/Settings.css';
@@ -6,7 +7,7 @@ import VerifyEmailModal from '../components/VerifyEmail';
 import { useTheme } from '../../context/ThemeContext';
 
 import API from '../../utils/api';
-import { CalendarDays, Edit, Mail, User, XCircle, ChevronDown, ChevronUp, Check, Bell, Lock, Clock, Eye, EyeOff, AlertTriangle } from 'lucide-react';
+import { CalendarDays, Edit, Mail, User, XCircle, ChevronDown, ChevronUp, Check, Bell, Lock, Clock, Eye, EyeOff, AlertTriangle, LogOut } from 'lucide-react';
 import { isOfficerPosition } from '../../utils/officerPositions';
 import { subscribeToPushNotifications, unsubscribeFromPushNotifications } from '../../utils/desktopNotify';
 
@@ -68,8 +69,9 @@ const NOTIF_GROUPS = [
 const ALL_NOTIF_KEYS = NOTIF_GROUPS.flatMap(g => g.items.map(i => i.key));
 
 export default function Settings() {
-  const { user, profile, updateProfile, requestEmailChange, verifyEmailChange } = useAuth();
+  const { user, profile, updateProfile, requestEmailChange, verifyEmailChange, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
 
   const [dynamicBranches, setDynamicBranches] = useState([]);
   useEffect(() => {
@@ -139,6 +141,14 @@ export default function Settings() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
   const [emailConfirmModal, setEmailConfirmModal] = useState({ show: false, names: '' });
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  const handleSignOut = async () => {
+    const result = await signOut();
+    if (result.success) {
+      navigate('/');
+    }
+  };
 
   /* ── Notification prefs ──────────────────────────────────────────────── */
   const [notifPrefs, setNotifPrefs] = useState({
@@ -877,8 +887,34 @@ export default function Settings() {
             </div>
           </div>
 
+          {/* ── Sign Out ────────────────────────────────────────── */}
+          <div className="user-settings-section user-settings-logout-section">
+            <button
+              className="user-settings-logout-btn"
+              onClick={() => setShowLogoutModal(true)}
+            >
+              <LogOut size={18} />
+              Sign out
+            </button>
+            <p className="user-settings-logout-hint">You will be redirected to the welcome page.</p>
+          </div>
+
         </div>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutModal && (
+        <div className="user-logout-modal-overlay" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 99999 }}>
+          <div className="logout-modal-content">
+            <h2 className="user-logout-modal-title">Confirm Logout</h2>
+            <p className="user-logout-modal-message">Are you sure you want to log out of your account?</p>
+            <div className="user-logout-modal-actions">
+              <button className="user-logout-modal-cancel" onClick={() => setShowLogoutModal(false)}>Cancel</button>
+              <button className="user-logout-modal-confirm" onClick={handleSignOut}>Sign out</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Password Reset Modal */}
       {showResetModal && (

@@ -53,6 +53,7 @@ export default function Donation() {
   const { user } = useAuth();
   const [donationAmount, setDonationAmount] = useState('');
   const [donationCategory, setDonationCategory] = useState('');
+  const [donationCommunity, setDonationCommunity] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
   const [subMethod, setSubMethod] = useState('');
   const [accountName, setAccountName] = useState('');
@@ -155,13 +156,14 @@ export default function Donation() {
     const num = Number(String(donationAmount).replace(/,/g, ''));
     if (!num || num <= 0) { setFormError('Please enter a valid donation amount.'); return; }
     if (!donationCategory) { setFormError('Please select a donation category.'); return; }
+    if (!donationCommunity) { setFormError('Please select a community/branch.'); return; }
     if (!paymentMethod) { setFormError('Please select a payment method.'); return; }
     
     if (approvalMethod === 'manual') {
       if (!proofBase64) { setFormError('Please upload your proof of payment.'); return; }
       if (!subMethod) { setFormError(`Please select a ${paymentMethod} option.`); return; }
       if (!accountName.trim()) { setFormError('Please enter the account name.'); return; }
-      if (!accountNumber.trim()) { setFormError('Please enter the account number.'); return; }
+      if (accountNumber.trim().length !== 11) { setFormError('Sender Account Number must be exactly 11 digits.'); return; }
     }
 
     setSubmitting(true);
@@ -170,7 +172,7 @@ export default function Donation() {
       const res = await fetch(`${API}/api/donations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ amount: num, category: donationCategory, paymentMethod, subMethod, accountName, accountNumber, isRecurring, proofOfPayment: proofBase64 }),
+        body: JSON.stringify({ amount: num, category: donationCategory, community: donationCommunity, paymentMethod, subMethod, accountName, accountNumber, isRecurring, proofOfPayment: proofBase64 }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Failed to record donation');
@@ -179,6 +181,7 @@ export default function Donation() {
         alert('Donation submitted! Your payment is pending manual approval.');
         setDonationAmount('');
         setDonationCategory('');
+        setDonationCommunity('');
         setPaymentMethod('');
         setSubMethod('');
         setAccountName('');
@@ -210,6 +213,19 @@ export default function Donation() {
     setSelectedDonation(donation);
     setIsReceiptModalOpen(true);
   };
+
+  const currentNum = Number(String(donationAmount).replace(/,/g, ''));
+  const isFormComplete = 
+    currentNum > 0 &&
+    donationCategory !== '' &&
+    donationCommunity !== '' &&
+    paymentMethod !== '' &&
+    (approvalMethod !== 'manual' || (
+      proofBase64 !== '' &&
+      subMethod !== '' &&
+      accountName.trim() !== '' &&
+      accountNumber.trim().length === 11
+    ));
 
   return (
     <>
@@ -314,6 +330,69 @@ export default function Donation() {
                 </div>
               </div>
 
+              {/* Community / Branch */}
+              <div className="user-donation-form-group">
+                <label className="user-donation-form-label">Community / Branch <span style={{ color: '#dc2626' }}>*</span></label>
+                <div className="user-select-wrapper">
+                  <select
+                    className="user-donation-form-select user-category-select"
+                    value={donationCommunity}
+                    onChange={(e) => { setDonationCommunity(e.target.value); setFormError(''); }}
+                    disabled={submitting}
+                  >
+                    <option value="" disabled>Select a community</option>
+                    <optgroup label="CAR – Kalinga">
+                      <option value="Tabuk">Tabuk</option>
+                      <option value="Zapote">Zapote</option>
+                      <option value="Bliss">Bliss</option>
+                      <option value="Libanon">Libanon</option>
+                      <option value="Batong Buhay">Batong Buhay</option>
+                      <option value="Balatoc">Balatoc</option>
+                      <option value="Lat-nog">Lat-nog</option>
+                    </optgroup>
+                    <optgroup label="CAR – Abra">
+                      <option value="Lamao">Lamao</option>
+                      <option value="Lingey">Lingey</option>
+                      <option value="Cabaruyan">Cabaruyan</option>
+                      <option value="Bengued">Bengued</option>
+                      <option value="Sappaac">Sappaac</option>
+                    </optgroup>
+                    <optgroup label="CAR – Benguet">
+                      <option value="Baguio">Baguio</option>
+                    </optgroup>
+                    <optgroup label="Region II – Isabela">
+                      <option value="Santiago City">Santiago City</option>
+                    </optgroup>
+                    <optgroup label="Region I – Pangasinan">
+                      <option value="Dagupan">Dagupan</option>
+                      <option value="Mangatarem">Mangatarem</option>
+                      <option value="San Carlos">San Carlos</option>
+                      <option value="Manaoag">Manaoag</option>
+                      <option value="Binmaley">Binmaley</option>
+                    </optgroup>
+                    <optgroup label="Region III">
+                      <option value="Meycauayan City">Meycauayan City</option>
+                      <option value="San Jose Del Monte">San Jose Del Monte</option>
+                    </optgroup>
+                    <optgroup label="NCR">
+                      <option value="Valenzuela City">Valenzuela City</option>
+                      <option value="Tandang Sora, Quezon City">Tandang Sora, QC</option>
+                    </optgroup>
+                    <optgroup label="Region IV-A – Rizal">
+                      <option value="Montalban">Montalban</option>
+                    </optgroup>
+                    <optgroup label="Region VII – Cebu">
+                      <option value="Mandaue">Mandaue</option>
+                    </optgroup>
+                    <optgroup label="Region XIII – Caraga">
+                      <option value="Butuan City">Butuan City</option>
+                      <option value="Bayugan">Bayugan</option>
+                    </optgroup>
+                  </select>
+                  <ChevronDown className="user-select-icon" size={18} />
+                </div>
+              </div>
+
               {/* Payment Method */}
               <div className="user-donation-form-group">
                 <label className="user-donation-form-label">Payment Method</label>
@@ -372,7 +451,7 @@ export default function Donation() {
                             )}
                           </div>
                           <div className="user-donation-input-group">
-                            <label className="user-donation-form-label">Sender Account Name</label>
+                            <label className="user-donation-form-label">Sender Account Name <span style={{ color: '#dc2626' }}>*</span></label>
                             <input 
                               type="text" 
                               className="user-donation-input" 
@@ -382,13 +461,14 @@ export default function Donation() {
                             />
                           </div>
                           <div className="user-donation-input-group">
-                            <label className="user-donation-form-label">Sender Account Number</label>
+                            <label className="user-donation-form-label">Sender Account Number <span style={{ color: '#dc2626' }}>*</span></label>
                             <input 
                               type="text" 
                               className="user-donation-input" 
-                              placeholder="09123456789 or 1234567890"
+                              placeholder="09123456789"
+                              maxLength={11}
                               value={accountNumber}
-                              onChange={(e) => setAccountNumber(e.target.value)}
+                              onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, '').slice(0, 11))}
                             />
                           </div>
                         </div>
@@ -422,7 +502,7 @@ export default function Donation() {
 
               {formError && <p className="user-donation-form-error">{formError}</p>}
 
-              <button className="user-donate-btn" onClick={handleDonate} disabled={submitting}>
+              <button className="user-donate-btn" onClick={handleDonate} disabled={submitting} style={{ opacity: (!isFormComplete || submitting) ? 0.6 : 1, cursor: (!isFormComplete || submitting) ? 'not-allowed' : 'pointer' }}>
                 {submitting ? <span className="btn-spinner" /> : (
                   <>
                     <Heart className="user-donate-icon" size={20} color="white" />
@@ -445,34 +525,7 @@ export default function Donation() {
               {/* Category Pie Chart & Recent Donations */}
               {!loading && (
                 <div className="user-donation-history-preview-layout">
-                  <div style={{ width: '100%', height: 300, minHeight: 300, position: 'relative' }}>
-                    {(() => {
-                      let runningTotal = 0;
-                      const fallbackMonths = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map(m => ({ month: m, amount: 0 }));
-                      const rawData = stats.monthlyData || fallbackMonths;
-                      
-                      const chartData = rawData.map(d => {
-                        const amt = Number(d.amount) || 0;
-                        runningTotal += amt;
-                        return { ...d, cumulative: runningTotal, amount: amt > 0 ? amt : null };
-                      });
-                      
-                      return (
-                        <ResponsiveContainer width="99%" height="100%">
-                          <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
-                            <XAxis dataKey="month" stroke="#9CA3AF" fontSize={11} />
-                            <YAxis yAxisId="left" stroke="#9CA3AF" fontSize={11} tickFormatter={v => v >= 1000 ? `${(v/1000).toFixed(0)}k` : v} />
-                            <YAxis yAxisId="right" orientation="right" stroke="#9CA3AF" fontSize={11} tickFormatter={v => v >= 1000 ? `${(v/1000).toFixed(0)}k` : v} hide />
-                            <Tooltip cursor={{ fill: '#F9FAFB' }} contentStyle={{ borderRadius: '8px', border: '1px solid #E5E7EB' }} formatter={(v) => '₱' + Math.round(v).toLocaleString()} />
-                            <Legend wrapperStyle={{ fontSize: '12px' }} />
-                            <Bar yAxisId="left" dataKey="amount" name="Monthly Volume" fill="#155DFC" radius={[4, 4, 0, 0]} />
-                            <Line yAxisId="right" type="monotone" dataKey="cumulative" name="Cumulative Total" stroke="#00A63E" strokeWidth={2.5} dot={{ r: 3 }} />
-                          </ComposedChart>
-                        </ResponsiveContainer>
-                      );
-                    })()}
-                  </div>
+
 
                   <div className="user-donation-recent-list-container">
                     <div className="user-donation-recent-list">
@@ -644,7 +697,7 @@ export default function Donation() {
               <div className="user-receipt-header-content">
                 <Receipt className="user-receipt-main-icon" size={32} />
                 <h2 className="user-receipt-header-title">Donation Receipt</h2>
-                <p className="user-receipt-header-subtitle">Faithly Official Record</p>
+                <p className="user-receipt-header-subtitle">PUAC Official Record</p>
               </div>
               <button
                 className="user-receipt-close-btn"

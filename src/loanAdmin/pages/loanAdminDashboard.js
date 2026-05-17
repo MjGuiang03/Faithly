@@ -282,39 +282,39 @@ export default function LoanAdminDashboard() {
                 <Expand size={18} color="#4B5563" strokeWidth={2.5} />
               </button>
             </div>
-            <ResponsiveContainer width="100%" height={240}>
+            <div style={{ width: '100%', height: '240px' }}>
               {(() => {
                 const activeDisbursements = disbursementByType.filter(d => d.amount > 0);
                 const zeroDisbursements = disbursementByType.filter(d => d.amount === 0);
                 const total = disbursementByType.reduce((s,d) => s + d.amount, 0);
                 return (
-                  <div className="la-chart-wrapper">
-                    <div className="la-chart-inner">
+                  <div className="la-chart-wrapper" style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                    <div className="la-chart-inner" style={{ flex: 1, minHeight: 0 }}>
                       <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={activeDisbursements} layout="vertical" margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                        <BarChart data={activeDisbursements} layout="vertical" margin={{ top: 10, right: 30, left: -20, bottom: 0 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" horizontal={true} vertical={false} />
                           <XAxis type="number" stroke="#9CA3AF" fontSize={12} tickFormatter={formatYAxis} domain={[0, 'dataMax']} hide />
-                          <YAxis dataKey="type" type="category" stroke="#9CA3AF" fontSize={12} width={100} />
+                          <YAxis dataKey="type" type="category" stroke="#9CA3AF" fontSize={11} width={100} />
                           <Tooltip cursor={{ fill: '#F9FAFB' }} contentStyle={{ borderRadius: '8px', border: '1px solid #E5E7EB' }} formatter={(v) => '₱' + v.toLocaleString()} />
                           <Bar dataKey="amount" radius={[0, 4, 4, 0]} barSize={20}>
                             <LabelList dataKey="amount" position="right" formatter={val => val > 0 ? `${Math.round((val/total)*100)}%` : ''} fontSize={11} fill="#6B7280" />
                             {activeDisbursements.map((entry, index) => {
-                              const MONOCHROMATIC_BLUES = ['#0D1F45', '#1E3A8A', '#3B82F6', '#60A5FA', '#93C5FD'];
-                              return <Cell key={`cell-${index}`} fill={MONOCHROMATIC_BLUES[index % MONOCHROMATIC_BLUES.length]} />;
+                              const CHART_COLORS = ['#1E3A8A', '#3B82F6', '#60A5FA', '#F59E0B', '#10B981'];
+                              return <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />;
                             })}
                           </Bar>
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
                     {zeroDisbursements.length > 0 && (
-                      <div className="la-chart-footer">
+                      <div className="la-chart-footer" style={{ fontSize: '12px', color: '#6B7280', paddingTop: '8px' }}>
                         ({zeroDisbursements.map(d => d.type).join(', ')}: ₱0)
                       </div>
                     )}
                   </div>
                 );
               })()}
-            </ResponsiveContainer>
+            </div>
           </div>
         </div>
 
@@ -581,19 +581,19 @@ export default function LoanAdminDashboard() {
               {expandedChart === 'disbursements' && (
                 <>
                   <div className="adm-expand-grid">
-                    <div className="la-expand-cashflow-main">
+                    <div className="adm-expand-panel">
                       <h4 className="adm-expand-panel-title">Amount by Type (Bar)</h4>
-                      <div className="adm-expand-panel-chart" style={{ height: '220px' }}>
+                      <div className="adm-expand-panel-chart">
                         <ResponsiveContainer width="100%" height="100%">
                           <BarChart data={disbursementByType} layout="vertical" margin={{ top: 10, right: 10, left: 0, bottom: 10 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
                             <XAxis type="number" stroke="#9CA3AF" fontSize={12} tickFormatter={formatYAxis} ticks={CHART_TICKS} domain={[0, 500000]} />
-                            <YAxis dataKey="type" type="category" stroke="#9CA3AF" fontSize={12} width={90} />
+                            <YAxis dataKey="type" type="category" stroke="#9CA3AF" fontSize={12} width={110} />
                             <Tooltip formatter={(v) => '₱' + v.toLocaleString()} />
                             <Bar dataKey="amount" radius={[0, 4, 4, 0]}>
                               {disbursementByType.map((_, index) => {
-                                const blues = ['#0D1F45', '#1E3A8A', '#3B82F6', '#60A5FA', '#93C5FD'];
-                                return <Cell key={`cell-${index}`} fill={blues[index % blues.length]} />;
+                                const CHART_COLORS = ['#1E3A8A', '#3B82F6', '#60A5FA', '#F59E0B', '#10B981'];
+                                return <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />;
                               })}
                             </Bar>
                           </BarChart>
@@ -610,8 +610,8 @@ export default function LoanAdminDashboard() {
                               <PieChart>
                                 <Pie data={disbursementByType.map(d => ({ name: d.type, value: d.amount }))} cx="50%" cy="50%" innerRadius={50} outerRadius={100} paddingAngle={2} dataKey="value" label={({ name, percent }) => percent > 0 ? `${(percent * 100).toFixed(0)}%` : ''}>
                                   {disbursementByType.map((_, index) => {
-                                    const blues = ['#0D1F45', '#1E3A8A', '#3B82F6', '#60A5FA', '#93C5FD'];
-                                    return <Cell key={`pie-${index}`} fill={blues[index % blues.length]} />;
+                                    const CHART_COLORS = ['#1E3A8A', '#3B82F6', '#60A5FA', '#F59E0B', '#10B981'];
+                                    return <Cell key={`pie-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />;
                                   })}
                                   <Label value={`₱${total >= 1000 ? (total/1000).toFixed(1).replace(/\\.0$/, '') + 'k' : total}`} position="center" fill="#1e3a5f" style={{ fontSize: '16px', fontWeight: 'bold' }} />
                                   <Label value="Total" position="center" dy={16} fill="#6B7280" style={{ fontSize: '11px' }} />

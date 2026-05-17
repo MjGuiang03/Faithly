@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { CalendarDays, Circle, MapPin, Search, Users, TrendingUp } from 'lucide-react';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid, LabelList } from 'recharts';
 import useDebounce from '../../hooks/useDebounce';
 import '../styles/AdminBranches.css';
 
@@ -143,6 +144,154 @@ function AddCommunityModal({ onClose, onSave }) {
   );
 }
 
+function CommunityInfoModal({ branch, onClose, onEdit, totalAllDonations }) {
+  if (!branch) return null;
+
+  const sameCommunity = branch.sameCommunityAmount || 0;
+  const otherCommunities = branch.otherCommunityAmount || 0;
+  const totalShare = sameCommunity + otherCommunities;
+
+  const pieData = [
+    { name: 'Within Community', value: sameCommunity, fill: '#1E3A8A' },
+    { name: 'Outside Community', value: otherCommunities, fill: '#60A5FA' }
+  ];
+
+  // Process Attendance History for Jan-Dec (Current Year)
+  const attHistory = branch.attendanceHistory || [];
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const currentYear = new Date().getFullYear();
+  
+  const barData = monthNames.map((name, index) => {
+    const monthNum = index + 1;
+    const match = attHistory.find(a => a.month === monthNum && a.year === currentYear);
+    return {
+      name,
+      attendance: match ? match.count : 0
+    };
+  });
+
+  const hasAttendanceData = barData.some(d => d.attendance > 0);
+  const hasDonationData = totalShare > 0;
+
+  return (
+    <div className="admin-att-modal-overlay" onClick={onClose} style={{ zIndex: 100 }}>
+      <div className="admin-att-modal admin-branch-info-modal" onClick={e => e.stopPropagation()}>
+        <div className="admin-att-modal-header">
+           <div className="admin-att-modal-icon admin-branch-info-icon">
+             <MapPin size={20} />
+           </div>
+          <div className="admin-att-modal-title-group">
+            <h2 className="admin-att-modal-title">{branch.name}</h2>
+            <p className="admin-att-modal-subtitle">{branch.province || 'Community Info'}</p>
+          </div>
+          <button className="admin-att-modal-close" onClick={onClose}><XCircle size={20} color="#6B7280" /></button>
+        </div>
+
+        <div className="admin-branch-info-top-wrapper">
+          <div className="admin-branch-info-top-chart">
+            <span className="admin-branch-info-att-header">Attendance Performance</span>
+            <div className="admin-branch-info-att-chart">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={barData} margin={{ top: 5, right: 0, left: -25, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748B' }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748B' }} allowDecimals={false} />
+                  <Tooltip cursor={{ fill: '#F1F5F9' }} contentStyle={{ fontSize: '12px', borderRadius: '6px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }} />
+                  <Bar dataKey="attendance" fill="#155DFC" radius={[4, 4, 0, 0]} maxBarSize={30} name="Attendees">
+                    <LabelList dataKey="attendance" position="top" style={{ fontSize: '9px', fill: '#64748B' }} formatter={(val) => val > 0 ? val : ''} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+
+        <div className="admin-att-modal-body admin-branch-info-body">
+          
+          {/* Left Column (Charts and Cards) */}
+          <div className="admin-branch-info-left">
+            {/* Main Stats */}
+            <div className="admin-branch-info-stats-grid">
+              <div className="admin-branch-info-stat-box">
+                 <span className="admin-branch-info-stat-label">Total Members</span>
+                 <span className="admin-branch-info-stat-val-members">{branch.members || 0}</span>
+              </div>
+              <div className="admin-branch-info-stat-box">
+                 <span className="admin-branch-info-stat-label">Total Donations</span>
+                 <span className="admin-branch-info-stat-val-donations">₱{(branch.totalDonations || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              </div>
+            </div>
+
+            {/* Chart */}
+            <div className="admin-branch-info-chart-box">
+              <span className="admin-branch-info-chart-label">Donation Share</span>
+              <div className="admin-branch-info-chart-wrapper">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie 
+                      data={totalShare > 0 ? pieData : [{ name: 'No Data', value: 1, fill: '#E2E8F0' }]} 
+                      cx="50%" cy="45%" innerRadius={22} outerRadius={32} paddingAngle={2} dataKey="value" stroke="none"
+                      labelLine={totalShare > 0 ? { stroke: '#CBD5E1', strokeWidth: 1 } : false}
+                      label={totalShare > 0 ? ({ cx, cy, midAngle, outerRadius, percent, value, name }) => {
+                        const radius = outerRadius + 12;
+                        const x = cx + radius * Math.cos(-midAngle * Math.PI / 180);
+                        const y = cy + radius * Math.sin(-midAngle * Math.PI / 180);
+                        return (
+                          <text x={x} y={y} fill="#64748B" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize="9px">
+                            {`₱${value.toLocaleString()} (${(percent * 100).toFixed(0)}%)`}
+                          </text>
+                        );
+                      } : false}
+                    >
+                      {(totalShare > 0 ? pieData : [{ name: 'No Data', value: 1, fill: '#E2E8F0' }]).map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value, name) => totalShare > 0 ? `₱${value.toLocaleString()}` : 'No donations'} />
+                    <Legend 
+                      payload={[
+                        { id: 'within', type: 'circle', value: 'Within Community', color: '#1E3A8A' },
+                        { id: 'outside', type: 'circle', value: 'Outside Community', color: '#60A5FA' }
+                      ]}
+                      verticalAlign="bottom" height={24} wrapperStyle={{ fontSize: '11px', color: '#64748B', marginTop: '10px' }} 
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column (Info) */}
+          <div className="admin-branch-info-right">
+            <div className="admin-branch-info-right-header">
+              <span className="admin-branch-info-right-title">Community Details</span>
+              <button onClick={() => onEdit(branch)} className="admin-branch-info-edit-btn" title="Edit Details">
+                <Edit2 size={14} />
+              </button>
+            </div>
+            
+            <div className="admin-branch-info-details">
+              <div className="admin-branch-info-detail-row">
+                <span className="admin-branch-info-detail-label">Lead Pastor</span>
+                <span className="admin-branch-info-detail-val">{branch.pastor || 'Not assigned'}</span>
+              </div>
+              <div className="admin-branch-info-detail-row">
+                <span className="admin-branch-info-detail-label">Address</span>
+                <span className="admin-branch-info-detail-val">{branch.address || branch.location || 'No address provided'}</span>
+              </div>
+              <div className="admin-branch-info-detail-row">
+                <span className="admin-branch-info-detail-label">Status</span>
+                <span className={`admin-branch-info-detail-val ${branch.members > 0 ? 'active' : 'idle'}`}>{branch.members > 0 ? 'Active Community' : 'Idle'}</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminBranches() {
   const navigate = useNavigate();
 
@@ -154,6 +303,7 @@ export default function AdminBranches() {
   const [totalCount, setTotalCount] = useState(0);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingBranch, setEditingBranch] = useState(null);
+  const [viewingBranch, setViewingBranch] = useState(null);
   const [openMenuId, setOpenMenuId] = useState(null);
   
   // Track visible count per province for "View More" pagination
@@ -226,6 +376,7 @@ export default function AdminBranches() {
 
   // Compute stats from fetched branches
   const totalMembers = branches.reduce((s, b) => s + (b.members || 0), 0);
+  const totalAllDonations = branches.reduce((sum, b) => sum + (b.totalDonations || 0), 0);
 
   const groupedBranches = (branches || []).reduce((acc, b) => {
     if (filterActive && (b.members || 0) === 0) return acc;
@@ -361,7 +512,7 @@ export default function AdminBranches() {
                     </thead>
                     <tbody>
                       {displayedList.map(branch => (
-                        <tr key={branch._id}>
+                        <tr key={branch._id} onClick={() => setViewingBranch(branch)} style={{ cursor: 'pointer' }} className="adm-branch-row-hover">
                           <td className="adm-br-name-cell">{branch.name}</td>
                           <td>{branch.pastor || '—'}</td>
                           <td className="adm-br-addr-cell">{branch.address || branch.location || '—'}</td>
@@ -413,6 +564,17 @@ export default function AdminBranches() {
 
       {showAddModal && <AddCommunityModal onClose={() => setShowAddModal(false)} onSave={() => { setShowAddModal(false); fetchBranches(); }} />}
       {editingBranch && <EditCommunityModal branch={editingBranch} onClose={() => setEditingBranch(null)} onSave={() => { setEditingBranch(null); fetchBranches(); }} />}
+      {viewingBranch && (
+        <CommunityInfoModal 
+          branch={viewingBranch} 
+          totalAllDonations={totalAllDonations}
+          onClose={() => setViewingBranch(null)} 
+          onEdit={(b) => {
+            setViewingBranch(null);
+            setEditingBranch(b);
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -525,6 +525,23 @@ router.get('/loans/my-pending-payments', authenticateUser, async (req, res) => {
     }
 });
 
+/* ================== USER - MY PAYMENTS ================== */
+router.get('/loans/my-payments', authenticateUser, async (req, res) => {
+    try {
+        const email = req.user.email;
+        const limit = parseInt(req.query.limit) || 50;
+        const payments = await loanPayments
+            .find({ email })
+            .sort({ submittedAt: -1 })
+            .limit(limit)
+            .toArray();
+        res.json({ success: true, payments });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Failed to fetch payments' });
+    }
+});
+
 /* ================== USER - GET SINGLE LOAN ================== */
 router.get('/loans/:id', authenticateUser, async (req, res) => {
   try {

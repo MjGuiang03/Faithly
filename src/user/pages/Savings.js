@@ -5,7 +5,6 @@ import SavingsModals from '../components/SavingsModal';
 import '../styles/Savings.css';
 import API from '../../utils/api';
 import { Circle, PiggyBank, ArrowDownLeft, ArrowUpRight, TrendingUp, Target, Banknote } from 'lucide-react';
-import { isOfficerPosition } from '../../utils/officerPositions';
 
 
 const fmt = (n) =>
@@ -33,16 +32,7 @@ const TxnArrowOut = () => (
 );
 
 export default function Savings() {
-    const navigate = useNavigate();
-    const { user } = useAuth();
 
-    // Redirect non-officers away from Savings
-    const isOfficer = isOfficerPosition(user?.position);
-    useEffect(() => {
-      if (user && !isOfficer) {
-        navigate('/home', { replace: true });
-      }
-    }, [user, isOfficer, navigate]);
 
     /* ── modal state ── */
     const [modal, setModal] = useState(null); // 'deposit' | 'newGoal' | 'quickDeposit' | 'editGoal' | 'transfer'
@@ -592,7 +582,7 @@ function SavingsInstructionModal({ isOpen, onClose, onDeposit, onGoal }) {
             <div className="user-savings-modal-content sv-instruction-modal user-fade-in" style={{ maxWidth: '700px', padding: 0, overflow: 'hidden' }}>
                 <div className="sv-inst-header">
                     <h2>Welcome to Savings</h2>
-                    <p>Start building your financial future with FaithLy. Follow these simple steps to begin growing your funds.</p>
+                    <p>Start building your financial future with PUAC. Follow these simple steps to begin growing your funds.</p>
                 </div>
                 
                 <div className="sv-inst-body" style={{ padding: '32px 24px' }}>

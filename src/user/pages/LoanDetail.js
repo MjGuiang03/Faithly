@@ -160,13 +160,25 @@ function PayNowModal({ loan, onClose, onSuccess }) {
 
     const selected = METHODS.find(m => m.id === method);
 
+    const isFormComplete = (() => {
+        if (computedAmount <= 0) return false;
+        if (paymentType === 'advance' && computedAmount < 500) return false;
+        if (selected?.needsReceipt) {
+            if (!subMethod) return false;
+            if (!accountName.trim()) return false;
+            if (accountNumber.trim().length !== 11) return false;
+            if (!receipt) return false;
+        }
+        return true;
+    })();
+
     const handleConfirm = async () => {
         if (paymentType === 'advance' && computedAmount < 500) return setError('Minimum advance payment is ₱500.');
         if (computedAmount <= 0) return setError('Payment amount must be greater than zero.');
         if (selected?.needsReceipt) {
             if (!subMethod) return setError(`Please select a ${method === 'e-wallet' ? 'E-Wallet' : 'Bank'} option.`);
             if (!accountName.trim()) return setError('Please provide your Account Name.');
-            if (!accountNumber.trim()) return setError('Please provide your Account Number.');
+            if (accountNumber.trim().length !== 11) return setError('Sender Account Number must be exactly 11 digits.');
             if (!receipt) return setError('Please upload your proof of payment before confirming.');
         }
         setError('');
@@ -374,6 +386,31 @@ function PayNowModal({ loan, onClose, onSuccess }) {
                                     <div className="ld-pay-step-text">{step}</div>
                                 </div>
                             ))}
+
+                            {/* Standout Account Details */}
+                            {selected?.id === 'bank' && approvalMethod === 'manual' && (
+                                <div style={{ backgroundColor: '#F0F9FF', border: '1px solid #BAE6FD', borderRadius: '12px', padding: '20px', marginTop: '20px' }}>
+                                    <div style={{ fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', color: '#0369A1', marginBottom: '12px', letterSpacing: '0.5px' }}>Bank Transfer Details</div>
+                                    <div style={{ fontSize: '16px', fontWeight: 700, color: '#0F172A' }}>BDO Unibank</div>
+                                    <div style={{ fontSize: '15px', color: '#334155', marginTop: '6px' }}>Account Name: <strong>Philippine United Apostolic Church</strong></div>
+                                    <div style={{ fontSize: '20px', fontWeight: 800, color: '#1D4ED8', marginTop: '8px', letterSpacing: '1px' }}>0012 3456 7890</div>
+                                </div>
+                            )}
+
+                            {selected?.id === 'e-wallet' && approvalMethod === 'manual' && (
+                                <div style={{ backgroundColor: '#F5F3FF', border: '1px solid #DDD6FE', borderRadius: '12px', padding: '20px', marginTop: '20px', display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
+                                    <div style={{ flex: 1, minWidth: '200px' }}>
+                                        <div style={{ fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', color: '#6D28D9', marginBottom: '12px', letterSpacing: '0.5px' }}>Send GCash To</div>
+                                        <div style={{ fontSize: '15px', color: '#334155' }}>Name: <strong>PUAC Church</strong></div>
+                                        <div style={{ fontSize: '20px', fontWeight: 800, color: '#4C1D95', marginTop: '8px', letterSpacing: '1px' }}>0912 345 6789</div>
+                                    </div>
+                                    <div style={{ flex: 1, minWidth: '200px' }}>
+                                        <div style={{ fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', color: '#6D28D9', marginBottom: '12px', letterSpacing: '0.5px' }}>Send Maya To</div>
+                                        <div style={{ fontSize: '15px', color: '#334155' }}>Name: <strong>PUAC Church</strong></div>
+                                        <div style={{ fontSize: '20px', fontWeight: 800, color: '#4C1D95', marginTop: '8px', letterSpacing: '1px' }}>0998 765 4321</div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* Manual Approval Info Fields */}
@@ -421,9 +458,10 @@ function PayNowModal({ loan, onClose, onSuccess }) {
                                     <input 
                                         type="text" 
                                         className="user-donation-input" 
-                                        placeholder="09123456789 or 1234567890"
+                                        placeholder="09123456789"
+                                        maxLength={11}
                                         value={accountNumber}
-                                        onChange={(e) => setAccountNumber(e.target.value)}
+                                        onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, '').slice(0, 11))}
                                     />
                                 </div>
                             </div>
@@ -466,7 +504,12 @@ function PayNowModal({ loan, onClose, onSuccess }) {
                 {!submitted && (
                     <div className="ld-modal-footer">
                         <button className="ld-footer-btn-cancel" onClick={onClose}>Cancel</button>
-                        <button className="ld-footer-btn-confirm" onClick={handleConfirm} disabled={uploading}>
+                        <button 
+                            className="ld-footer-btn-confirm" 
+                            onClick={handleConfirm} 
+                            disabled={uploading}
+                            style={!isFormComplete && !uploading ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+                        >
                             {uploading ? <span className="btn-spinner" /> : (method === 'cash' || approvalMethod === 'manual' ? 'Submit Payment' : 'Proceed to PayMongo')}
                         </button>
                     </div>
