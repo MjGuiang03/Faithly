@@ -48,7 +48,6 @@ export default function Savings() {
         completedGoals: 0,
         maxLoanable: 0,
     });
-    const [error, setError] = useState('');
     const [txnPage, setTxnPage] = useState(1);
     const [txnTotal, setTxnTotal] = useState(0);
     const TXN_LIMIT = 4;
@@ -73,19 +72,20 @@ export default function Savings() {
         return res.json();
     };
 
-    const { data: overviewData, isValidating: overviewValidating, mutate: mutateOverview } = useSWR(
+    const { data: overviewData, error: overviewError, isValidating: overviewValidating, mutate: mutateOverview } = useSWR(
         txnPage === 1 ? `${API}/api/savings/overview?txnLimit=${TXN_LIMIT}` : null,
         fetcher,
         { revalidateOnFocus: false, revalidateIfStale: true }
     );
 
-    const { data: txnData, isValidating: txnValidating, mutate: mutateTxn } = useSWR(
+    const { data: txnData, error: txnError, isValidating: txnValidating, mutate: mutateTxn } = useSWR(
         txnPage > 1 ? `${API}/api/savings/transactions?page=${txnPage}&limit=${TXN_LIMIT}` : null,
         fetcher,
         { revalidateOnFocus: false, revalidateIfStale: true }
     );
 
     const dataLoading = (txnPage === 1 && overviewValidating && !overviewData) || (txnPage > 1 && txnValidating && !txnData);
+    const error = (overviewError || txnError) ? (overviewError?.message || txnError?.message || 'Failed to load savings data') : '';
 
     useEffect(() => {
         if (txnPage === 1 && overviewData?.success) {
