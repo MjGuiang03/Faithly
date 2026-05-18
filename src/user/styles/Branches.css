@@ -417,6 +417,126 @@
   font-family: 'Inter', sans-serif;
 }
 
+/* ─── Community Statistics ───────────────────────────────── */
+.user-drawer-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.user-drawer-stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 10px;
+  background: var(--secondary);
+  border: 0.8px solid var(--border);
+  border-radius: 6px;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.user-drawer-stat-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+  border-color: var(--primary);
+}
+
+.user-drawer-stat-val {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--primary);
+  font-family: 'Inter', sans-serif;
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+
+.user-drawer-stat-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  font-family: 'Inter', sans-serif;
+}
+
+/* ─── Upcoming Events ────────────────────────────────────── */
+.user-drawer-events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.user-drawer-event-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  background: var(--secondary);
+  border: 0.8px solid var(--border);
+  border-radius: 6px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.user-drawer-event-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+  border-color: var(--primary);
+}
+
+.user-drawer-event-icon {
+  width: 32px;
+  height: 32px;
+  background: var(--blue-tint);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.user-drawer-event-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.user-drawer-event-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--foreground);
+  font-family: 'Inter', sans-serif;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.user-drawer-event-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: 'Inter', sans-serif;
+  flex-wrap: wrap;
+}
+
+.user-drawer-event-cat {
+  font-weight: 600;
+  color: var(--primary);
+  background: var(--blue-tint);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 9.5px;
+}
+
 /* Map container styled inline in Branches.js */
 
 .user-drawer-footer {
@@ -913,6 +1033,25 @@
 
 .dark .user-drawer-contact-val {
   color: var(--text-secondary);
+}
+
+.dark .user-drawer-stat-card {
+  background: var(--input-background);
+  border-color: var(--border);
+}
+
+.dark .user-drawer-event-card {
+  background: var(--input-background);
+  border-color: var(--border);
+}
+
+.dark .user-drawer-event-icon {
+  background: var(--accent);
+}
+
+.dark .user-drawer-event-cat {
+  background: var(--accent);
+  color: var(--primary);
 }
 
 /* ============================================================
