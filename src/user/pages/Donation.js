@@ -73,6 +73,7 @@ export default function Donation() {
   const [approvalMethod, setApprovalMethod] = useState('gateway');
   const [proofFile, setProofFile] = useState(null);
   const [proofBase64, setProofBase64] = useState('');
+  const [successData, setSuccessData] = useState(null);
 
   /* ── History Modal States ── */
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
@@ -185,7 +186,7 @@ export default function Donation() {
       if (!res.ok) throw new Error(data.message || 'Failed to record donation');
       
       if (approvalMethod === 'manual') {
-        alert('Donation submitted! Your payment is pending manual approval.');
+        setSuccessData({ amount: num, category: donationCategory });
         setDonationAmount('');
         setDonationCategory('');
         setDonationCommunity('');
@@ -732,6 +733,36 @@ export default function Donation() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Donation Success Modal ── */}
+      {successData && (
+        <div className="user-donation-success-overlay" onClick={() => setSuccessData(null)}>
+          <div className="user-donation-success-modal" onClick={e => e.stopPropagation()}>
+            <div className="user-donation-success-icon-wrap">
+              <FileCheck2 size={48} color="#10B981" />
+            </div>
+            <h2 className="user-donation-success-title">Donation Submitted!</h2>
+            <p className="user-donation-success-subtitle">Your payment is pending manual approval.</p>
+            
+            <div className="user-donation-success-details">
+              <p className="user-donation-success-detail-label">Amount Contributed</p>
+              <h3 className="user-donation-success-amount">{fmt(successData.amount)}</h3>
+              <div className="user-donation-success-category">
+                <Heart size={16} color="#2563eb" fill="#2563eb" />
+                <span>{successData.category}</span>
+              </div>
+            </div>
+
+            <p className="user-donation-success-note">
+              Our administrators will review your uploaded proof of payment. Thank you for your generous support!
+            </p>
+
+            <button className="user-donation-success-close" onClick={() => setSuccessData(null)}>
+              Done
+            </button>
           </div>
         </div>
       )}
