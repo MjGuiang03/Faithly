@@ -3,11 +3,10 @@ import { useNavigate } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 
 import '../styles/Settings.css';
-import VerifyEmailModal from '../components/VerifyEmail';
 import { useTheme } from '../../context/ThemeContext';
 
 import API from '../../utils/api';
-import { CalendarDays, Edit, Mail, User, XCircle, ChevronDown, ChevronUp, Check, Bell, Lock, Clock, Eye, EyeOff, AlertTriangle, LogOut } from 'lucide-react';
+import { Mail, User, XCircle, Check, Bell, Lock, Eye, EyeOff, AlertTriangle, LogOut } from 'lucide-react';
 import { subscribeToPushNotifications, unsubscribeFromPushNotifications } from '../../utils/desktopNotify';
 
 /* ─── Community options removed in favor of dynamic fetching ─── */

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import '../styles/Notifications.css';
 import API from '../../utils/api';
-import { Banknote, Bell, CalendarDays, Circle, Heart, ChevronDown, ChevronUp, Check, Building2, CircleCheck, AlertCircle, PiggyBank, BadgeCheck, Landmark } from 'lucide-react';
+import { Banknote, Bell, CalendarDays, Circle, Heart, ChevronDown, ChevronUp, Check, CircleCheck, AlertCircle, PiggyBank, BadgeCheck, Landmark } from 'lucide-react';
 
 
 const fmt = (n) =>
