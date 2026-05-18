@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import useSWR from 'swr';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import LoanAdminSidebar from './loanAdminSidebar';
@@ -26,44 +27,49 @@ export default function LoanAdminNotif() {
     const [loading, setLoading] = useState(true);
     const [detailModal, setDetailModal] = useState(null);
 
+    const token = localStorage.getItem('adminToken');
+    const fetcherSingle = (url) => fetch(url, { headers: { Authorization: `Bearer ${token}` } }).then(async res => {
+        if (!res.ok) {
+            if (res.status === 401 || res.status === 403) throw new Error('AuthError');
+            const data = await res.json();
+            throw new Error(data.message || 'Failed to fetch notifications');
+        }
+        return res.json();
+    });
+
+    const { data: notifData, error: notifError, isValidating: loadingNotifs } = useSWR(
+        token ? `${API}/api/admin/notifications` : null,
+        fetcherSingle,
+        { revalidateOnFocus: false, revalidateIfStale: true }
+    );
+
     useEffect(() => {
-        const token = localStorage.getItem('adminToken');
-        if (!token) { navigate('/'); return; }
-
-        const fetchNotifications = async () => {
-            setLoading(true);
-            try {
-                const res = await fetch(`${API}/api/admin/notifications`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                const data = await res.json();
-
-                if (!res.ok) {
-                    if (res.status === 401 || res.status === 403) {
-                        navigate('/');
-                        return;
-                    }
-                    toast.error(data.message || 'Failed to fetch notifications');
-                    return;
-                }
-
-                const readIds = new Set(data.readIds || []);
-
-                // Filter only loan and savings notifications
-                const activeNotifs = (data.notifications || [])
-                    .filter(n => n.type === 'loan' || n.type === 'savings')
-                    .map(n => ({ ...n, isRead: readIds.has(n.id) }));
-
-                setNotifications(activeNotifs);
-            } catch (err) {
-                toast.error('Network error. Could not load notifications.');
-            } finally {
-                setLoading(false);
+        if (notifError) {
+            if (notifError.message === 'AuthError') {
+                navigate('/');
+            } else {
+                toast.error(notifError.message || 'Network error. Could not load notifications.');
             }
-        };
+        }
+    }, [notifError, navigate]);
 
-        fetchNotifications();
-    }, [navigate]);
+    useEffect(() => {
+        if (notifData) {
+            const readIds = new Set(notifData.readIds || []);
+            const activeNotifs = (notifData.notifications || [])
+                .filter(n => n.type === 'loan' || n.type === 'savings')
+                .map(n => ({ ...n, isRead: readIds.has(n.id) }));
+            setNotifications(activeNotifs);
+        }
+    }, [notifData]);
+
+    useEffect(() => {
+        setLoading(loadingNotifs && !notifData);
+    }, [loadingNotifs, notifData]);
+
+    useEffect(() => {
+        if (!token) { navigate('/'); }
+    }, [navigate, token]);
 
     const getFilteredNotifications = () => {
         if (activeFilter === 'all') return notifications;

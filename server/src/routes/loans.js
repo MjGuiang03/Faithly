@@ -21,11 +21,30 @@ router.get('/admin/member-savings', authenticateAdmin, async (req, res) => {
     const totalSavings = goals.reduce((sum, g) => sum + (g.savedAmount || 0), 0);
 
     let transactions = [];
+    let monthlyTrend = [];
     if (!email) {
-      transactions = await savingsTransactions.find({ type: 'deposit' }).toArray();
+      // Aggregate monthly trend on the server instead of sending all raw transactions
+      const currentYear = new Date().getFullYear();
+      const yearStart = new Date(currentYear, 0, 1);
+      const yearEnd = new Date(currentYear + 1, 0, 1);
+      
+      monthlyTrend = await savingsTransactions.aggregate([
+        { $match: { type: 'deposit', date: { $gte: yearStart, $lt: yearEnd } } },
+        { $group: { 
+          _id: { $month: "$date" }, 
+          savings: { $sum: { $convert: { input: "$amount", to: "double", onError: 0, onNull: 0 } } }
+        }},
+        { $sort: { _id: 1 } }
+      ]).toArray();
     }
 
-    res.json({ success: true, totalSavings, transactions });
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const formattedTrend = months.map((m, i) => {
+      const found = monthlyTrend.find(t => t._id === i + 1);
+      return { month: m, savings: found ? found.savings : 0 };
+    });
+
+    res.json({ success: true, totalSavings, transactions, monthlyTrend: formattedTrend });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Failed to fetch member savings' });
@@ -231,17 +250,37 @@ router.get('/admin/loans', authenticateAdmin, async (req, res) => {
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     
-    const disbursedLoans = await loans.find({ disbursed: true }).project({ amount: 1 }).toArray();
-    const totalDisbursed = disbursedLoans.reduce((sum, l) => sum + (l.amount || 0), 0);
+    const statsPipeline = [
+      {
+        $facet: {
+          pending: [{ $match: { status: 'pending' } }, { $count: "count" }],
+          approved: [{ $match: { status: 'approved' } }, { $count: "count" }],
+          active: [{ $match: { status: 'active' } }, { $count: "count" }],
+          completed: [{ $match: { status: 'completed' } }, { $count: "count" }],
+          rejected: [{ $match: { status: 'rejected' } }, { $count: "count" }],
+          totalThisMonth: [
+            { $match: { appliedDate: { $gte: monthStart }, status: { $ne: 'cancelled' } } },
+            { $count: "count" }
+          ],
+          totalDisbursed: [
+            { $match: { disbursed: true } },
+            { $group: { _id: null, total: { $sum: { $convert: { input: "$amount", to: "double", onError: 0, onNull: 0 } } } } }
+          ]
+        }
+      }
+    ];
 
+    const statsResultArr = await loans.aggregate(statsPipeline).toArray();
+    const sr = statsResultArr[0] || {};
+    
     const stats = {
-      pending:        await loans.countDocuments({ status: 'pending' }),
-      approved:       await loans.countDocuments({ status: 'approved' }),
-      active:         await loans.countDocuments({ status: 'active' }),
-      completed:      await loans.countDocuments({ status: 'completed' }),
-      rejected:       await loans.countDocuments({ status: 'rejected' }),
-      totalThisMonth: await loans.countDocuments({ appliedDate: { $gte: monthStart }, status: { $ne: 'cancelled' } }),
-      totalDisbursed
+      pending: sr.pending[0]?.count || 0,
+      approved: sr.approved[0]?.count || 0,
+      active: sr.active[0]?.count || 0,
+      completed: sr.completed[0]?.count || 0,
+      rejected: sr.rejected[0]?.count || 0,
+      totalThisMonth: sr.totalThisMonth[0]?.count || 0,
+      totalDisbursed: sr.totalDisbursed[0]?.total || 0
     };
 
     res.status(200).json({ 

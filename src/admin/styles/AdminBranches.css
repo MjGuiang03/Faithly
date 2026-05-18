@@ -152,15 +152,19 @@
 }
 
 /* Search UI Fixes */
-.admin-branch-search-wrapper {
+.admin-branch-search-container {
   display: flex;
   align-items: center;
   gap: 12px;
   min-width: 450px;
-  position: relative;
 }
 
-.admin-members-search-icon {
+.admin-branch-search-input-box {
+  position: relative;
+  flex: 1;
+}
+
+.admin-branch-search-icon {
   position: absolute;
   left: 12px;
   top: 50%;
@@ -170,17 +174,19 @@
   z-index: 1;
 }
 
-.admin-members-search-input {
+.admin-branch-search-input {
   width: 100%;
   padding: 10px 12px 10px 40px;
   border: 1px solid #E5E7EB;
   border-radius: 8px;
   font-size: 14px;
+  height: 44px;
+  box-sizing: border-box;
   transition: all 0.2s;
   background: white;
 }
 
-.admin-members-search-input:focus {
+.admin-branch-search-input:focus {
   outline: none;
   border-color: #0D1F45;
   box-shadow: 0 0 0 3px rgba(13, 31, 69, 0.1);
@@ -372,8 +378,11 @@
 .admin-branch-btn-add {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  padding: 10px 20px;
+  padding: 0 20px;
+  height: 44px;
+  box-sizing: border-box;
   background: #0D1F45;
   color: white;
   border: none;

@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import useSWR from 'swr';
 import { toast } from 'sonner';
 import useDebounce from '../../hooks/useDebounce';
 import '../styles/AdminAttendance.css';
@@ -185,7 +186,6 @@ export default function AdminAttendance() {
 
   // History Sessions
   const [historySessions, setHistorySessions] = useState([]);
-  const [historyLoading, setHistoryLoading] = useState(false);
   const [historyPage, setHistoryPage] = useState(1);
   const [historyTotalPages, setHistoryTotalPages] = useState(1);
   const [historyTotalCount, setHistoryTotalCount] = useState(0);
@@ -197,7 +197,6 @@ export default function AdminAttendance() {
   // Drilldown: viewing a specific session's logs
   const [viewingSession, setViewingSession] = useState(null);
   const [sessionLogs, setSessionLogs] = useState([]);
-  const [sessionLogsLoading, setSessionLogsLoading] = useState(false);
   const [logsPage, setLogsPage] = useState(1);
   const [logsTotalCount, setLogsTotalCount] = useState(0);
 
@@ -216,139 +215,89 @@ export default function AdminAttendance() {
 
   const rfidBuffer = useRef('');
 
-  // 1. Fetch Active Sessions
-  const fetchActiveSessions = useCallback(async () => {
-    try {
-      const token = localStorage.getItem('adminToken');
-      const res = await fetch(`${API}/api/admin/attendance/sessions/active`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (data.success) {
-         setActiveSessions(data.sessions);
-      }
-    } catch(err) { console.error('Failed to get active sessions', err); }
-  }, []);
+  const fetcherSingle = (url) => fetch(url, { headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` } }).then(res => res.json());
 
-  const fetchHistorySessions = useCallback(async (pg = 1) => {
-    setHistoryLoading(true);
-    try {
-      const token = localStorage.getItem('adminToken');
-      const res = await fetch(`${API}/api/admin/attendance/sessions/history?page=${pg}&limit=${PER_PAGE}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (data.success) {
-        setHistorySessions(data.sessions);
-        setHistoryTotalPages(data.totalPages || 1);
-        setHistoryTotalCount(data.totalCount || 0);
-      }
-    } catch (err) { console.error('Failed to get history sessions', err); }
-    finally { setHistoryLoading(false); }
-  }, []);
+  // 1. Fetch Active Sessions
+  const { data: activeSessionsData } = useSWR(
+    `${API}/api/admin/attendance/sessions/active`,
+    fetcherSingle,
+    { revalidateOnFocus: false, refreshInterval: 5000 }
+  );
 
   useEffect(() => {
-    if (activeTab === 'history') {
-      fetchHistorySessions(historyPage);
+    if (activeSessionsData && activeSessionsData.success) {
+       setActiveSessions(activeSessionsData.sessions || []);
     }
-  }, [activeTab, historyPage, fetchHistorySessions]);
+  }, [activeSessionsData]);
 
-  // 2. Fetch Logs & Stats
-  const fetchAttendance = useCallback(async () => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem('adminToken');
+  // 2. Fetch History Sessions
+  const { data: historySessionsData, isValidating: historyLoading } = useSWR(
+    activeTab === 'history' ? `${API}/api/admin/attendance/sessions/history?page=${historyPage}&limit=${PER_PAGE}` : null,
+    fetcherSingle,
+    { revalidateOnFocus: false }
+  );
+
+  useEffect(() => {
+    if (historySessionsData && historySessionsData.success) {
+      setHistorySessions(historySessionsData.sessions || []);
+      setHistoryTotalPages(historySessionsData.totalPages || 1);
+      setHistoryTotalCount(historySessionsData.totalCount || 0);
+    }
+  }, [historySessionsData]);
+
+  // 3. Fetch Logs & Stats
+  const attendanceQueryParams = useMemo(() => {
       const params = new URLSearchParams({ page, limit: LIMIT });
       if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim());
       if (filterBranch && filterBranch !== 'all') params.set('branch', filterBranch);
       if (filterStatus && filterStatus !== 'all') params.set('status', filterStatus);
-
-      // If viewing logs for a specific session, we can filter, but usually admin wants to see all.
-      // E.g. we could do params.set('session', selectedSession.sessionId) to lock table to current sess.
-      
-      const res = await fetch(`${API}/api/admin/attendance?${params.toString()}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-
-      if (res.ok && data.success) {
-        setLogs(data.attendance || []);
-        setTotalCount(data.totalCount || 0);
-        setStats({
-          totalToday: data.stats?.totalToday || 0,
-          servicesThisWeek: data.stats?.servicesThisWeek || 0,
-          avgAttendance: data.stats?.avgAttendance || 0,
-          lateToday: data.stats?.lateToday || 0,
-        });
-      }
-    } catch (err) {
-      toast.error('Failed to fetch attendance data');
-    } finally {
-      setLoading(false);
-    }
+      return params.toString();
   }, [page, debouncedSearch, filterBranch, filterStatus]);
 
-  // Initial loads
+  const { data: attendanceData, isValidating: attendanceLoading, mutate: fetchAttendance } = useSWR(
+    `${API}/api/admin/attendance?${attendanceQueryParams}`,
+    fetcherSingle,
+    { revalidateOnFocus: false }
+  );
+
   useEffect(() => {
-    fetchActiveSessions();
-    fetchAttendance();
-  }, [fetchActiveSessions, fetchAttendance]);
+    if (attendanceData && attendanceData.success) {
+      setLogs(attendanceData.attendance || []);
+      setTotalCount(attendanceData.totalCount || 0);
+      setStats({
+          totalToday: attendanceData.stats?.totalToday || 0,
+          servicesThisWeek: attendanceData.stats?.servicesThisWeek || 0,
+          avgAttendance: attendanceData.stats?.avgAttendance || 0,
+          lateToday: attendanceData.stats?.lateToday || 0,
+      });
+    }
+  }, [attendanceData]);
+
+  useEffect(() => { setLoading(attendanceLoading && !attendanceData); }, [attendanceLoading, attendanceData]);
 
   useEffect(() => { setPage(1); }, [debouncedSearch, filterBranch, filterStatus]);
 
-  // 3. Fetch logs for a specific session (drilldown) — server-side paginated
-  const fetchSessionLogs = useCallback(async (session, pg = 1) => {
-    setSessionLogsLoading(true);
-    try {
-      const token = localStorage.getItem('adminToken');
-      const res = await fetch(`${API}/api/admin/attendance?session=${session.sessionId}&page=${pg}&limit=${PER_PAGE}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (data.success) {
-        setSessionLogs(data.attendance || []);
-        setLogsTotalCount(data.totalCount || data.attendance?.length || 0);
-      }
-    } catch (err) {
-      toast.error('Failed to load session logs');
-    } finally {
-      setSessionLogsLoading(false);
+  // 4. Session Logs (drilldown)
+  const { data: sessionLogsData, isValidating: sessionLogsLoading } = useSWR(
+    viewingSession ? `${API}/api/admin/attendance?session=${viewingSession.sessionId}&page=${logsPage}&limit=${PER_PAGE}` : null,
+    fetcherSingle,
+    { revalidateOnFocus: false, refreshInterval: viewingSession && logsPage === 1 ? 3000 : 0 }
+  );
+
+  useEffect(() => {
+    if (sessionLogsData && sessionLogsData.success) {
+      setSessionLogs(sessionLogsData.attendance || []);
+      setLogsTotalCount(sessionLogsData.totalCount || sessionLogsData.attendance?.length || 0);
     }
-  }, []);
+  }, [sessionLogsData]);
 
   const handleSessionClick = (session) => {
     setViewingSession(session);
     setLogsPage(1);
-    fetchSessionLogs(session, 1);
   };
-
-  // Poll for new logs while viewing a session
-  useEffect(() => {
-    let interval;
-    if (viewingSession && logsPage === 1) {
-      interval = setInterval(() => {
-        // Fetch quietly without triggering the loading spinner overlay
-        const token = localStorage.getItem('adminToken');
-        const cacheBuster = `_t=${Date.now()}`;
-        fetch(`${API}/api/admin/attendance?session=${viewingSession.sessionId}&page=1&limit=${PER_PAGE}&${cacheBuster}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            setSessionLogs(data.attendance || []);
-            setLogsTotalCount(data.totalCount || data.attendance?.length || 0);
-          }
-        })
-        .catch(() => {});
-      }, 3000);
-    }
-    return () => clearInterval(interval);
-  }, [viewingSession, logsPage]);
 
   const handleLogsPageChange = (newPage) => {
     setLogsPage(newPage);
-    fetchSessionLogs(viewingSession, newPage);
   };
 
   const handleBackToSessions = () => {

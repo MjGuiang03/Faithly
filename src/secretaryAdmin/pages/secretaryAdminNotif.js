@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import useSWR from 'swr';
 import SecretaryAdminSidebar from '../components/secretaryAdminSidebar';
 import '../styles/secretaryAdminNotif.css';
 
@@ -13,42 +14,38 @@ export default function SecretaryAdminNotif() {
     const [loading, setLoading] = useState(true);
     const [detailModal, setDetailModal] = useState(null);
 
-    const fetchNotifications = async () => {
-        try {
-            setLoading(true);
-            const token = localStorage.getItem('secretaryToken') || localStorage.getItem('adminToken') || localStorage.getItem('token');
-            const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
-            
-            const res = await fetch(`${API}/api/admin/notifications`, { headers });
-            const data = await res.json();
-            
-            if (data.success && data.notifications) {
-                const readIds = new Set(data.readIds || []);
-                const notifs = data.notifications
-                    .filter(n => n.type === 'loan')
-                    .map(n => ({
-                        id: n.id,
-                        loanId: n.meta?.loanId,
-                        member: n.meta?.memberName,
-                        amount: n.meta?.amount,
-                        title: n.title,
-                        message: n.message,
-                        date: new Date(n.timestamp).toLocaleDateString('en-US'),
-                        time: new Date(n.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-                        isRead: readIds.has(n.id)
-                    }));
-                setNotifications(notifs);
-            }
-        } catch (err) {
-            console.error('Failed to fetch notifications:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const token = localStorage.getItem('secretaryToken') || localStorage.getItem('adminToken') || localStorage.getItem('token');
+    const fetcherSingle = (url) => fetch(url, { headers: { Authorization: `Bearer ${token}` } }).then(res => res.json());
+
+    const { data: notifData, isValidating: loadingNotifs } = useSWR(
+        token ? `${API}/api/admin/notifications` : null,
+        fetcherSingle,
+        { revalidateOnFocus: false, revalidateIfStale: true }
+    );
 
     useEffect(() => {
-        fetchNotifications();
-    }, []);
+        if (notifData && notifData.success && notifData.notifications) {
+            const readIds = new Set(notifData.readIds || []);
+            const notifs = notifData.notifications
+                .filter(n => n.type === 'loan')
+                .map(n => ({
+                    id: n.id,
+                    loanId: n.meta?.loanId,
+                    member: n.meta?.memberName,
+                    amount: n.meta?.amount,
+                    title: n.title,
+                    message: n.message,
+                    date: new Date(n.timestamp).toLocaleDateString('en-US'),
+                    time: new Date(n.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+                    isRead: readIds.has(n.id)
+                }));
+            setNotifications(notifs);
+        }
+    }, [notifData]);
+
+    useEffect(() => {
+        setLoading(loadingNotifs && !notifData);
+    }, [loadingNotifs, notifData]);
 
     const unreadCount = notifications.filter(n => !n.isRead).length;
 

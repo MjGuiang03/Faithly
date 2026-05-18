@@ -1,11 +1,12 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
+import useSWR from 'swr';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
   BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
-import html2pdf from 'html2pdf.js';
+
 import '../styles/AdminFinancialReport.css';
 import API from '../../utils/api';
 import { FileText, Printer, RefreshCw, Sparkles, Calendar, ChevronDown, Download, MapPin, AlertCircle, X } from 'lucide-react';
@@ -56,24 +57,19 @@ export default function AdminFinancialReport() {
   }, [adminRole]);
 
   // Fetch communities on mount (admin only)
+  const fetcherSingle = (url) => fetch(url, { headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` } }).then(res => res.json());
+  
+  const { data: branchesResp } = useSWR(
+    adminRole === 'admin' ? `${API}/api/admin/branches?limit=1000` : null,
+    fetcherSingle,
+    { revalidateOnFocus: false }
+  );
+
   useEffect(() => {
-    if (adminRole !== 'admin') return;
-    const fetchBranches = async () => {
-      try {
-        const token = localStorage.getItem('adminToken');
-        const res = await fetch(`${API}/api/admin/branches?limit=1000`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        if (data.branches) {
-          setBranchesData(data.branches);
-        }
-      } catch (err) {
-        console.error('Failed to fetch branches:', err);
-      }
-    };
-    fetchBranches();
-  }, [adminRole]);
+    if (branchesResp && branchesResp.branches) {
+      setBranchesData(branchesResp.branches);
+    }
+  }, [branchesResp]);
 
   // Save report to sessionStorage whenever it changes
   useEffect(() => {
@@ -177,6 +173,7 @@ export default function AdminFinancialReport() {
         pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] },
       };
 
+      const html2pdf = (await import('html2pdf.js')).default;
       await html2pdf().set(opt).from(element).save();
       toast.success('PDF exported successfully');
     } catch (err) {

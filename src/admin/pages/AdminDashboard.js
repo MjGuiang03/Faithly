@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import useSWR from 'swr';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
@@ -57,7 +58,6 @@ export default function AdminDashboard() {
   const [attendVsDonData, setAttendVsDonData] = useState([]);
   const [growthByBranch, setGrowthByBranch] = useState([]);
   const [attendanceByBranch, setAttendanceByBranch] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [rawMembers, setRawMembers] = useState([]);
   const [rawAttendance, setRawAttendance] = useState([]);
   
@@ -77,119 +77,97 @@ export default function AdminDashboard() {
   const [aiInsightsTime, setAiInsightsTime] = useState(null);
 
 
-  const fetchAll = useCallback(async () => {
-    setLoading(true);
-    const token = localStorage.getItem('adminToken');
-    const headers = { Authorization: `Bearer ${token}` };
-    try {
-      const [membersRes, loansRes, donationsRes, attendRes] = await Promise.all([
-        fetch(`${API}/api/admin/members?limit=1000`,      { headers }),
-        fetch(`${API}/api/admin/loans`,                  { headers }),
-        fetch(`${API}/api/admin/donations`,              { headers }),
-        fetch(`${API}/api/admin/attendance?limit=10000`,  { headers }),
-      ]);
+  const fetcherSingle = (url) => 
+    fetch(url, { headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` } })
+      .then(res => res.ok ? res.json() : { success: false });
 
-      const [membersData, loansData, donationsData, attendData] = await Promise.all([
-        membersRes.json(),
-        loansRes.json(),
-        donationsRes.json(),
-        attendRes.json(),
-      ]);
+  const { data: membersData, isValidating: membersValidating } = useSWR(`${API}/api/admin/members?limit=100`, fetcherSingle, { revalidateOnFocus: false });
+  const { data: loansData } = useSWR(`${API}/api/admin/loans?limit=1`, fetcherSingle, { revalidateOnFocus: false });
+  const { data: donationsData, isValidating: donationsValidating } = useSWR(`${API}/api/admin/donations?limit=1`, fetcherSingle, { revalidateOnFocus: false });
+  const { data: attendData, isValidating: attendValidating } = useSWR(`${API}/api/admin/attendance?limit=500`, fetcherSingle, { revalidateOnFocus: false });
 
-      if (attendData && attendData.success && attendData.attendance) {
-        setRawAttendance(attendData.attendance);
-      }
+  // Progressive loading states
+  const membersLoading = !membersData && membersValidating;
+  const donationsLoading = !donationsData && donationsValidating;
+  const attendanceLoading = !attendData && attendValidating;
 
-      const now = new Date();
-      const currentMonth = now.getMonth();
-      const currentYear = now.getFullYear();
-
-      // --- 1. Use Member Stats from server ---
-      if (membersData.success && membersData.stats) {
-        setRawMembers(membersData.members || []);
-        setMemberStats({
-          total: membersData.stats.total || 0,
-          active: membersData.stats.active || 0,
-          inactive: membersData.stats.inactive || 0,
-          newThisMonth: membersData.stats.newThisMonth || 0
-        });
-      }
-
-      if (loansData.success && loansData.stats) {
-        setLoanStats({ active: loansData.stats.active || 0, pending: loansData.stats.pending || 0, totalDisbursed: loansData.stats.totalDisbursed || 0 });
-      }
-
-      // --- 2. Use Donation Stats from server ---
-      if (donationsData.success && donationsData.stats) {
-        setDonationStats({
-          thisMonth: donationsData.stats.thisMonth || 0,
-          total: donationsData.stats.total || 0
-        });
-      }
-
-
-      // Members by branch
-      if (membersData.success && membersData.members) {
-        setRawMembers(membersData.members);
-        const branchMap = {};
-        membersData.members.forEach(m => {
-          const b = m.branch || m.community;
-          if (b && b !== 'Unknown') {
-            branchMap[b] = (branchMap[b] || 0) + 1;
-          }
-        });
-        setMembersByBranch(Object.entries(branchMap).map(([branch, count]) => ({ branch, count })));
-      }
-
-      // ── Process Donation Categories (Pie Chart) ──
-      if (donationsData.success && donationsData.stats) {
-        const catStats = donationsData.stats.categoryBreakdown || {};
-        setPieData(INITIAL_DONATION_CATEGORIES.map(cat => ({
-          ...cat,
-          value: catStats[cat.name] || 0
-        })));
-
-        // ── Donations by Branch ──
-        // Since the backend now aggregates this over ALL donations, we use it directly.
-        const commStats = donationsData.stats.communityBreakdown || {};
-        
-        // If there are legacy donations without a community, we can fallback to members mapping
-        // but for now, we'll map what the backend gives us, plus any legacy ones we can find in the first page
-        const branchDonMap = { ...commStats };
-        const confirmedDonations = (donationsData.donations || []).filter(d => (d.status || '').toLowerCase() === 'confirmed');
-        
-        const emailToBranch = {};
-        if (membersData.success && membersData.members) {
-          membersData.members.forEach(m => { 
-            const b = m.branch || m.community;
-            if (b && b !== 'Unknown') emailToBranch[m.email] = b; 
-          });
-        }
-        
-        // Only add to branchDonMap if it wasn't already tracked natively by the backend
-        confirmedDonations.forEach(d => {
-          if (!d.community) {
-            const branch = emailToBranch[d.email];
-            if (branch) {
-              branchDonMap[branch] = (branchDonMap[branch] || 0) + (Number(d.amount) || 0);
-            }
-          }
-        });
-
-        setDonationsByBranch(
-          Object.entries(branchDonMap)
-            .map(([branch, total]) => ({ branch, total }))
-            .sort((a, b) => b.total - a.total)
-        );
-      }
-
-    } catch (err) {
-      console.error(err);
-      toast.error('Failed to fetch dashboard data');
-    } finally {
-      setLoading(false);
+  // 1. Process Attendance Data
+  useEffect(() => {
+    if (attendData && attendData.success && attendData.attendance) {
+      setRawAttendance(attendData.attendance);
     }
-  }, []);
+  }, [attendData]);
+
+  // 2. Process Members & Loans Data
+  useEffect(() => {
+    if (membersData && membersData.success && membersData.stats) {
+      setRawMembers(membersData.members || []);
+      setMemberStats({
+        total: membersData.stats.total || 0,
+        active: membersData.stats.active || 0,
+        inactive: membersData.stats.inactive || 0,
+        newThisMonth: membersData.stats.newThisMonth || 0
+      });
+      
+      const branchMap = {};
+      (membersData.members || []).forEach(m => {
+        const b = m.branch || m.community;
+        if (b && b !== 'Unknown') {
+          branchMap[b] = (branchMap[b] || 0) + 1;
+        }
+      });
+      setMembersByBranch(Object.entries(branchMap).map(([branch, count]) => ({ branch, count })));
+    }
+    
+    if (loansData && loansData.success && loansData.stats) {
+      setLoanStats({ active: loansData.stats.active || 0, pending: loansData.stats.pending || 0, totalDisbursed: loansData.stats.totalDisbursed || 0 });
+    }
+  }, [membersData, loansData]);
+
+  // 3. Process Donations Data (Depends on membersData for legacy mapping)
+  useEffect(() => {
+    if (donationsData && donationsData.success && donationsData.stats) {
+      setDonationStats({
+        thisMonth: donationsData.stats.thisMonth || 0,
+        total: donationsData.stats.total || 0
+      });
+
+      const catStats = donationsData.stats.categoryBreakdown || {};
+      setPieData(INITIAL_DONATION_CATEGORIES.map(cat => ({
+        ...cat,
+        value: catStats[cat.name] || 0
+      })));
+
+      const commStats = donationsData.stats.communityBreakdown || {};
+      const branchDonMap = { ...commStats };
+      
+      const confirmedDonations = (donationsData.donations || []).filter(d => (d.status || '').toLowerCase() === 'confirmed');
+      const emailToBranch = {};
+      
+      if (membersData && membersData.success && membersData.members) {
+        membersData.members.forEach(m => { 
+          const b = m.branch || m.community;
+          if (b && b !== 'Unknown') emailToBranch[m.email] = b; 
+        });
+      }
+      
+      confirmedDonations.forEach(d => {
+        if (!d.community) {
+          const branch = emailToBranch[d.email];
+          if (branch) {
+            branchDonMap[branch] = (branchDonMap[branch] || 0) + (Number(d.amount) || 0);
+          }
+        }
+      });
+
+      setDonationsByBranch(
+        Object.entries(branchDonMap)
+          .map(([branch, total]) => ({ branch, total }))
+          .sort((a, b) => b.total - a.total)
+      );
+    }
+  }, [donationsData, membersData]);
+
 
   /* ── Fetch AI Insights ── */
   const fetchAiInsights = useCallback(async (refresh = false) => {
@@ -213,9 +191,8 @@ export default function AdminDashboard() {
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
     if (!token) { navigate('/'); return; }
-    fetchAll();
     fetchAiInsights();
-  }, [navigate, fetchAll, fetchAiInsights]);
+  }, [navigate, fetchAiInsights]);
 
 
   // --- Derived Growth Data ---
@@ -374,11 +351,21 @@ export default function AdminDashboard() {
       setAttendanceByBranch([]);
     }
   }, [rawAttendance, attYear, attMonth, attBranch]);
-  const dash = (v) => loading ? '—' : v;
+
 
   const pieTotal = pieData.reduce((sum, item) => sum + (item.value || 0), 0);
   const activePieData = pieData.filter(d => d.value > 0);
   const zeroPieData = pieData.filter(d => d.value === 0);
+
+  const sortedDonationData = [...pieData].sort((a, b) => b.value - a.value).map(item => {
+    const percentage = pieTotal > 0 ? ((item.value / pieTotal) * 100).toFixed(1) : 0;
+    return {
+      ...item,
+      percentage,
+      displayLabel: `₱${(item.value || 0).toLocaleString()} (${percentage}%)`,
+      fillColor: item.value > 0 ? item.color : '#D1D5DB'
+    };
+  });
 
   const maxMembersInBranch = membersByBranch.length > 0 ? Math.max(...membersByBranch.map(b => b.count)) : 0;
   const isHorizontalMembers = maxMembersInBranch <= 3;
@@ -425,8 +412,8 @@ export default function AdminDashboard() {
               <Users size={18} color="white" />
             </div>
           </div>
-          <div className="adm-stat-value">{dash(memberStats.total.toLocaleString())}</div>
-          <div className="adm-stat-sub"><span className="adm-stat-sub-highlight">+{dash(memberStats.newThisMonth)} new</span> this month</div>
+          <div className="adm-stat-value">{membersLoading ? '—' : memberStats.total.toLocaleString()}</div>
+          <div className="adm-stat-sub"><span className="adm-stat-sub-highlight">+{membersLoading ? '—' : memberStats.newThisMonth} new</span> this month</div>
         </div>
 
         <div className="adm-stat-card green adm-clickable-card" onClick={() => navigate('/admin/branches')}>
@@ -436,7 +423,7 @@ export default function AdminDashboard() {
               <MapPin size={18} color="white" />
             </div>
           </div>
-          <div className="adm-stat-value">{dash(membersByBranch.length > 0 ? membersByBranch.length : 68)}</div>
+          <div className="adm-stat-value">{membersLoading ? '—' : (membersByBranch.length > 0 ? membersByBranch.length : 68)}</div>
           <div className="adm-stat-sub"><span className="adm-stat-sub-highlight">Active</span> communities</div>
         </div>
 
@@ -447,8 +434,8 @@ export default function AdminDashboard() {
               <Heart size={18} color="white" />
             </div>
           </div>
-          <div className="adm-stat-value">{loading ? '—' : `₱${(donationStats.total || 0).toLocaleString()}`}</div>
-          <div className="adm-stat-sub"><span className="adm-stat-sub-highlight">+₱{loading ? '—' : (donationStats.thisMonth || 0).toLocaleString()}</span> this month</div>
+          <div className="adm-stat-value">{donationsLoading ? '—' : `₱${(donationStats.total || 0).toLocaleString()}`}</div>
+          <div className="adm-stat-sub"><span className="adm-stat-sub-highlight">+₱{donationsLoading ? '—' : (donationStats.thisMonth || 0).toLocaleString()}</span> this month</div>
         </div>
       </div>
 
@@ -516,50 +503,53 @@ export default function AdminDashboard() {
 
       {/* ── Row 2: Analytics Row ── */}
       <div className="adm-analytics-row">
-        {/* Donation Categories Pie */}
-        <div className="adm-card adm-card-pie">
+        {/* Donation Categories Bar */}
+        <div className="adm-card adm-card-bar">
           <div className="adm-card-header">
-            <h3 className="adm-card-title">Donation Categories</h3>
+            <div>
+              <h3 className="adm-card-title">Donation Categories</h3>
+              <span className="adm-card-sub">Total: ₱{(pieTotal || 0).toLocaleString()}</span>
+            </div>
             <button className="adm-chart-expand-btn" onClick={() => setExpandedChart('donations')} title="Expand Chart"><Expand size={16} color="#4B5563" strokeWidth={2.5} /></button>
           </div>
-          <div className="adm-pie-chart-container">
-            <ResponsiveContainer width="100%" height={160}>
-              <PieChart>
-                <Pie data={activePieData} cx="50%" cy="50%" innerRadius={45} outerRadius={72} paddingAngle={2} dataKey="value">
-                  {activePieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+          <div className="adm-bar-chart-container" style={{ padding: '10px 0', height: '220px' }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                layout="vertical"
+                data={sortedDonationData}
+                margin={{ top: 0, right: 90, left: 0, bottom: 0 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#F3F4F6" />
+                <XAxis type="number" hide />
+                <YAxis 
+                  type="category" 
+                  dataKey="name" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 11, fill: '#4B5563' }} 
+                  width={130} 
+                  tickFormatter={(val) => val.length > 18 ? val.substring(0, 18) + '...' : val}
+                />
+                <Tooltip 
+                  cursor={{ fill: '#F9FAFB' }}
+                  formatter={(value, name, props) => {
+                    const p = props.payload;
+                    return [`₱${value.toLocaleString()} (${p.percentage}%)`, 'Donations'];
+                  }}
+                />
+                <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={20} minPointSize={2}>
+                  {sortedDonationData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fillColor} />
                   ))}
-                  <Label 
-                    value={`₱${pieTotal >= 1000 ? (pieTotal/1000).toFixed(1).replace(/\\.0$/, '') + 'k' : pieTotal}`} 
-                    position="center" 
-                    fill="#1e3a5f" 
-                    style={{ fontSize: '14px', fontWeight: 'bold', fontFamily: 'Inter' }} 
-                  />
-                  <Label 
-                    value="Total" 
-                    position="center" 
-                    dy={12} 
+                  <LabelList 
+                    dataKey="displayLabel" 
+                    position="right" 
                     fill="#6B7280" 
-                    style={{ fontSize: '10px', fontFamily: 'Inter' }} 
+                    fontSize={11} 
                   />
-                </Pie>
-                <Tooltip formatter={(value, name, props) => [`₱${(value || 0).toLocaleString()} (${Math.round((value/pieTotal)*100)}%)`, props.payload.name]} />
-              </PieChart>
+                </Bar>
+              </BarChart>
             </ResponsiveContainer>
-            <div className="adm-pie-legend">
-              {activePieData.map((cat, i) => (
-                <div key={i} className="adm-pie-legend-item">
-                  <div className="adm-pie-dot" style={{ background: cat.color }} />
-                  <span className="adm-pie-label">{cat.name}</span>
-                  <span className="adm-pie-val">₱{cat.value.toLocaleString()} — {Math.round((cat.value/pieTotal)*100)}%</span>
-                </div>
-              ))}
-            </div>
-            {zeroPieData.length > 0 && (
-              <div style={{ fontSize: '10px', color: '#9CA3AF', textAlign: 'center', marginTop: '8px', fontStyle: 'italic' }}>
-                ({zeroPieData.map(c => c.name).join(', ')}: no donations yet)
-              </div>
-            )}
           </div>
         </div>
 
@@ -719,49 +709,48 @@ export default function AdminDashboard() {
             <div className="adm-expand-body">
               {expandedChart === 'donations' && (
                 <>
-                  <div className="adm-expand-grid" style={{ gridTemplateColumns: '3fr 7fr' }}>
+                  <div className="adm-expand-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
                     <div className="adm-expand-panel">
                       <h4 className="adm-expand-panel-title">Distribution Overview</h4>
-                      <div className="adm-expand-panel-chart" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                      <div className="adm-expand-panel-chart" style={{ display: 'flex', flexDirection: 'column', height: '100%', paddingTop: '10px' }}>
                         <div style={{ flex: 1, minHeight: '260px' }}>
                           <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                              <Pie data={activePieData} cx="50%" cy="50%" innerRadius={80} outerRadius={120} paddingAngle={2} dataKey="value">
-                                {activePieData.map((entry, index) => (
-                                  <Cell key={`cell-${index}`} fill={entry.color} />
+                            <BarChart
+                              layout="vertical"
+                              data={sortedDonationData}
+                              margin={{ top: 10, right: 90, left: 10, bottom: 10 }}
+                            >
+                              <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#F3F4F6" />
+                              <XAxis type="number" hide />
+                              <YAxis 
+                                type="category" 
+                                dataKey="name" 
+                                axisLine={false} 
+                                tickLine={false} 
+                                tick={{ fontSize: 12, fill: '#4B5563' }} 
+                                width={160} 
+                              />
+                              <Tooltip 
+                                cursor={{ fill: '#F9FAFB' }}
+                                formatter={(value, name, props) => {
+                                  const p = props.payload;
+                                  return [`₱${value.toLocaleString()} (${p.percentage}%)`, 'Donations'];
+                                }}
+                              />
+                              <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={24} minPointSize={2}>
+                                {sortedDonationData.map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={entry.fillColor} />
                                 ))}
-                                <Label 
-                                  value={`₱${pieTotal >= 1000 ? (pieTotal/1000).toFixed(1).replace(/\\.0$/, '') + 'k' : pieTotal}`} 
-                                  position="center" 
-                                  fill="#1e3a5f" 
-                                  style={{ fontSize: '14px', fontWeight: 'bold', fontFamily: 'Inter' }} 
-                                />
-                                <Label 
-                                  value="Total" 
-                                  position="center" 
-                                  dy={12} 
+                                <LabelList 
+                                  dataKey="displayLabel" 
+                                  position="right" 
                                   fill="#6B7280" 
-                                  style={{ fontSize: '10px', fontFamily: 'Inter' }} 
+                                  fontSize={12} 
                                 />
-                              </Pie>
-                              <Tooltip formatter={(value, name, props) => [`₱${(value || 0).toLocaleString()} (${Math.round((value/pieTotal)*100)}%)`, props.payload.name]} />
-                            </PieChart>
+                              </Bar>
+                            </BarChart>
                           </ResponsiveContainer>
                         </div>
-                        <div className="adm-pie-legend">
-                          {activePieData.map((cat, i) => (
-                            <div key={i} className="adm-pie-legend-item">
-                              <div className="adm-pie-dot" style={{ background: cat.color }} />
-                              <span className="adm-pie-label">{cat.name}</span>
-                              <span className="adm-pie-val">₱{cat.value.toLocaleString()} — {Math.round((cat.value/pieTotal)*100)}%</span>
-                            </div>
-                          ))}
-                        </div>
-                        {zeroPieData.length > 0 && (
-                          <div style={{ fontSize: '10px', color: '#9CA3AF', textAlign: 'center', marginTop: '8px', fontStyle: 'italic' }}>
-                            ({zeroPieData.map(c => c.name).join(', ')}: no donations yet)
-                          </div>
-                        )}
                       </div>
                     </div>
                     <div className="adm-expand-panel">

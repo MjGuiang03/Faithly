@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import useSWR from 'swr';
 import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
 import LoanApplicationModal from '../components/LoanApplicationModal';
@@ -74,44 +75,49 @@ export default function Loans() {
     }
   }, [profile, isVerified, navigate]);
 
-  const fetchAll = useCallback(async () => {
-    setDataLoading(true);
-    const token = localStorage.getItem('token');
+  const token = localStorage.getItem('token');
+  const urls = useMemo(() => {
+    if (!token) return null;
+    return [
+      `${API}/api/loans/my-loans?page=${page}&limit=${LIMIT}`,
+      `${API}/api/savings/stats`,
+    ];
+  }, [token, page]);
+
+  const fetcher = async (urlsToFetch) => {
     const headers = { Authorization: `Bearer ${token}` };
-    try {
-      const [loansRes, statsRes] = await Promise.all([
-        fetch(`${API}/api/loans/my-loans?page=${page}&limit=${LIMIT}`, { headers }),
-        fetch(`${API}/api/savings/stats`, { headers }),
-      ]);
-      
-      const loansData = await loansRes.json();
-      const statsData = await statsRes.json();
+    const responses = await Promise.all([
+      fetch(urlsToFetch[0], { headers }),
+      fetch(urlsToFetch[1], { headers })
+    ]);
+    return Promise.all(responses.map(res => res.ok ? res.json() : { success: false }));
+  };
 
-      if (loansRes.ok && loansData.success) {
-        setLoans(loansData.loans || []);
-        setStats(loansData.stats || { totalBorrowed: 0, remainingBalance: 0, activeCount: 0 });
-        setTotalCount(loansData.pagination?.totalItems || 0);
-        setError(null);
-        
-        if ((loansData.loans || []).length === 0 && !hasClosedInstruction) {
-            setShowInstruction(true);
-        }
-      } else {
-        setError(loansData.message || 'Failed to fetch loans');
-      }
+  const { data, isValidating, mutate } = useSWR(urls, fetcher, { revalidateOnFocus: false, revalidateIfStale: true });
 
-      if (statsRes.ok && statsData.success) {
-        setTotalSavings(statsData.stats?.totalSavings || 0);
-        setPendingSavings(statsData.stats?.pendingSavings || 0);
+  useEffect(() => {
+    if (!data) return;
+    setDataLoading(isValidating && !data);
+    const [loansData, statsData] = data;
+
+    if (loansData && loansData.success) {
+      setLoans(loansData.loans || []);
+      setStats(loansData.stats || { totalBorrowed: 0, remainingBalance: 0, activeCount: 0 });
+      setTotalCount(loansData.pagination?.totalItems || 0);
+      setError(null);
+      if ((loansData.loans || []).length === 0 && !hasClosedInstruction) {
+          setShowInstruction(true);
       }
-    } catch {
-      setError('Connection failure');
-    } finally {
-      setDataLoading(false);
+    } else {
+      setError(loansData?.message || 'Failed to fetch loans');
     }
-  }, [page, hasClosedInstruction]);
 
-  useEffect(() => { fetchAll(); }, [fetchAll]);
+    if (statsData && statsData.success) {
+      setTotalSavings(statsData.stats?.totalSavings || 0);
+      setPendingSavings(statsData.stats?.pendingSavings || 0);
+    }
+    if (data) setDataLoading(false);
+  }, [data, isValidating, hasClosedInstruction]);
 
   const handleApplyClick = () => {
     if (!isVerified) {
@@ -124,7 +130,7 @@ export default function Loans() {
     }
   };
 
-  const handleLoanClose = () => { setIsLoanModalOpen(false); fetchAll(); };
+  const handleLoanClose = () => { setIsLoanModalOpen(false); mutate(); };
 
   const handleCancelClick = (loanId) => {
     setCancelModalData({ open: true, loanId });
@@ -163,7 +169,7 @@ export default function Loans() {
       if (data.success) {
         toast.success("Loan application cancelled");
         closeCancelModal();
-        fetchAll();
+        mutate();
       } else {
         toast.error(data.message || "Failed to cancel loan");
       }
@@ -310,7 +316,7 @@ export default function Loans() {
           {error && (
             <div className="ul-error-banner">
               <span>Error {error}</span>
-              <button onClick={fetchAll} className="ul-retry-btn">Retry</button>
+              <button onClick={() => mutate()} className="ul-retry-btn">Retry</button>
             </div>
           )}
 

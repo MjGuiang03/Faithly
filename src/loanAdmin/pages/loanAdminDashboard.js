@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import useSWR from 'swr';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import {
@@ -45,7 +46,7 @@ export default function LoanAdminDashboard() {
   const [disbursementByType, setDisbursementByType] = useState([]);
   const [totalSavings, setTotalSavings] = useState(0);
   const [savingsMonthly, setSavingsMonthly] = useState([]);
-  const [loading, setLoading] = useState(true);
+
 
   // Modal states
   const [showMonthModal, setShowMonthModal] = useState(false);
@@ -56,78 +57,89 @@ export default function LoanAdminDashboard() {
   const [disbModalYear, setDisbModalYear] = useState('all');
   const [expandedChart, setExpandedChart] = useState(null);
 
+  const token = localStorage.getItem('adminToken');
+  const currentYear = new Date().getFullYear();
+
+  const fetcherSingle = (url) => fetch(url, { headers: { Authorization: `Bearer ${token}` } }).then(res => {
+    if (res.status === 401 || res.status === 403) { navigate('/'); return { success: false }; }
+    return res.json();
+  });
+
+  const { data: loansData, isValidating: loadingLoans } = useSWR(
+    token ? `${API}/api/admin/loans` : null,
+    fetcherSingle,
+    { revalidateOnFocus: false }
+  );
+
+  const { data: reportsData, isValidating: loadingReports } = useSWR(
+    token ? `${API}/api/admin/loan-reports?year=${currentYear}` : null,
+    fetcherSingle,
+    { revalidateOnFocus: false }
+  );
+
+  const { data: savingsData, isValidating: loadingSavings } = useSWR(
+    token ? `${API}/api/admin/member-savings` : null,
+    fetcherSingle,
+    { revalidateOnFocus: false }
+  );
+
   useEffect(() => {
-    const token = localStorage.getItem('adminToken');
     if (!token) { navigate('/'); return; }
+  }, [token, navigate]);
 
-    const fetchDashboard = async () => {
-      setLoading(true);
-      try {
-        const currentYear = new Date().getFullYear();
-        const [loansRes, reportsRes] = await Promise.all([
-          fetch(`${API}/api/admin/loans`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${API}/api/admin/loan-reports?year=${currentYear}`, { headers: { Authorization: `Bearer ${token}` } })
-        ]);
-
-        const data = await loansRes.json();
-        const reportsData = await reportsRes.json();
-
-        if (!loansRes.ok) {
-          if (loansRes.status === 401 || loansRes.status === 403) { navigate('/'); return; }
-          toast.error(data.message || 'Failed to fetch dashboard data');
-          return;
-        }
-
-        setStats({
-          pending:        data.stats?.pending        || 0,
-          active:         (data.stats?.active || 0) + (data.stats?.completed || 0),
-          totalThisMonth: data.stats?.totalThisMonth || 0,
-          totalDisbursed: data.stats?.totalDisbursed || 0,
-        });
-
-        setAllLoans(data.loans || []);
-
-        const upcoming = (data.loans || [])
-          .filter(l => l.status === 'active' || l.status === 'pending')
-          .slice(0, 5);
+  useEffect(() => {
+    if (loansData) {
+      if (loansData.message && !loansData.success && !loansData.loans) {
+        toast.error(loansData.message || 'Failed to fetch dashboard data');
+      } else {
+        setStats(prev => ({
+          ...prev,
+          pending: loansData.stats?.pending || 0,
+          active: (loansData.stats?.active || 0) + (loansData.stats?.completed || 0),
+          totalThisMonth: loansData.stats?.totalThisMonth || 0,
+          totalDisbursed: loansData.stats?.totalDisbursed || 0,
+        }));
+        setAllLoans(loansData.loans || []);
+        const upcoming = (loansData.loans || []).filter(l => l.status === 'active' || l.status === 'pending').slice(0, 5);
         setRecentLoans(upcoming);
-
-        if (reportsData.success) {
-          setMonthlyData(reportsData.monthlyData || []);
-          setDisbursementByType(reportsData.disbursementByType || []);
-        }
-
-        // Fetch savings data
-        try {
-          const savRes = await fetch(`${API}/api/admin/member-savings`, { headers: { Authorization: `Bearer ${token}` } });
-          const savData = await savRes.json();
-          if (savRes.ok) {
-            setTotalSavings(savData.totalSavings || 0);
-            // Build monthly savings trend (Jan-Dec)
-            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-            const monthlyTrend = months.map(m => ({ month: m, savings: 0 }));
-            if (savData.transactions) {
-              savData.transactions.forEach(t => {
-                const d = new Date(t.date || t.createdAt);
-                if (d.getFullYear() === currentYear) {
-                  monthlyTrend[d.getMonth()].savings += Number(t.amount) || 0;
-                }
-              });
-            }
-            setSavingsMonthly(monthlyTrend);
-          }
-        } catch { /* silent */ }
-      } catch {
-        toast.error('Network error. Could not load dashboard.');
-      } finally {
-        setLoading(false);
       }
-    };
+    }
+  }, [loansData]);
 
-    fetchDashboard();
-  }, [navigate]);
+  useEffect(() => {
+    if (reportsData && reportsData.success) {
+      setMonthlyData(reportsData.monthlyData || []);
+      setDisbursementByType(reportsData.disbursementByType || []);
+    }
+  }, [reportsData]);
 
-  const dash = (v) => loading ? '—' : v;
+  useEffect(() => {
+    if (savingsData) {
+      setTotalSavings(savingsData.totalSavings || 0);
+      // Use pre-aggregated monthlyTrend from server if available
+      if (savingsData.monthlyTrend && savingsData.monthlyTrend.length > 0) {
+        setSavingsMonthly(savingsData.monthlyTrend);
+      } else {
+        // Fallback: process raw transactions (backward compatibility)
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        const monthlyTrend = months.map(m => ({ month: m, savings: 0 }));
+        if (savingsData.transactions) {
+          savingsData.transactions.forEach(t => {
+            const d = new Date(t.date || t.createdAt);
+            if (d.getFullYear() === currentYear) {
+              monthlyTrend[d.getMonth()].savings += Number(t.amount) || 0;
+            }
+          });
+        }
+        setSavingsMonthly(monthlyTrend);
+      }
+    }
+  }, [savingsData, currentYear]);
+
+  // For UI rendering, loading is active only when data is missing and it's fetching
+  const isLoading = (!loansData && loadingLoans) || (!reportsData && loadingReports) || (!savingsData && loadingSavings);
+
+  const dash = (v) => isLoading ? '—' : v;
 
   // Derived: all disbursed loans
   const allDisbursedLoans = allLoans.filter(l => l.disbursed && l.disbursementDate);

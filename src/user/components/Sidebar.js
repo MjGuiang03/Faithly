@@ -260,7 +260,7 @@ export default function Sidebar({ collapsed, setCollapsed, toggleCollapsed }) {
       {/* Logout Confirmation Modal */}
       {showLogoutModal && (
         <div className="user-logout-modal-overlay">
-          <div className="logout-modal-content">
+          <div className="user-logout-modal-content">
             <h2 className="user-logout-modal-title">Confirm Logout</h2>
             <p className="user-logout-modal-message">Are you sure you want to log out of your account?</p>
             <div className="user-logout-modal-actions">

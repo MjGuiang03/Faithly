@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import useSWR from 'swr';
 import '../styles/Notifications.css';
 import API from '../../utils/api';
 import { Banknote, Bell, CalendarDays, Circle, Heart, ChevronDown, ChevronUp, Check, CircleCheck, AlertCircle, PiggyBank, BadgeCheck, Landmark } from 'lucide-react';
@@ -42,9 +43,7 @@ const fmtTime = (date, isReminder) => {
 
 export default function Notifications() {
   const [activeFilter, setActiveFilter] = useState('all');
-  const [rawItems, setRawItems] = useState([]);
   const [readIds, setReadIds] = useState(new Set());
-  const [loading, setLoading] = useState(true);
   const [detailModal, setDetailModal] = useState(null);
   const [expandedGroups, setExpandedGroups] = useState(new Set());
   const [expandedSimple, setExpandedSimple] = useState(new Set());
@@ -65,39 +64,36 @@ export default function Notifications() {
   const [termsModal, setTermsModal] = useState(null);  // the loan object
   const [termsLoading, setTermsLoading] = useState(false);
 
-  /* ── Fetch real data from all 3 endpoints ── */
-  const fetchAll = useCallback(async () => {
-    setLoading(true);
-    const token = localStorage.getItem('token');
-    const hdrs = { Authorization: `Bearer ${token}` };
+  const fetcherSingle = (url) => fetch(url, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }).then(res => res.ok ? res.json() : { success: false });
 
-    try {
-      const [lRes, dRes, aRes, sRes, ppRes, readRes] = await Promise.all([
-        fetch(`${API}/api/loans/my-loans`, { headers: hdrs }),
-        fetch(`${API}/api/donations/my-donations`, { headers: hdrs }),
-        fetch(`${API}/api/attendance/my-attendance`, { headers: hdrs }),
-        fetch(`${API}/api/savings/transactions`, { headers: hdrs }),
-        fetch(`${API}/api/loans/my-payments`, { headers: hdrs }),
-        fetch(`${API}/api/read-notifications`, { headers: hdrs }),
-      ]);
+  const { data: lData, isValidating: lValidating } = useSWR(`${API}/api/loans/my-loans`, fetcherSingle, { revalidateOnFocus: false });
+  const { data: dData, isValidating: dValidating } = useSWR(`${API}/api/donations/my-donations`, fetcherSingle, { revalidateOnFocus: false });
+  const { data: aData, isValidating: aValidating } = useSWR(`${API}/api/attendance/my-attendance`, fetcherSingle, { revalidateOnFocus: false });
+  const { data: sData, isValidating: sValidating } = useSWR(`${API}/api/savings/transactions`, fetcherSingle, { revalidateOnFocus: false });
+  const { data: ppData, isValidating: ppValidating } = useSWR(`${API}/api/loans/my-payments`, fetcherSingle, { revalidateOnFocus: false });
+  const { data: readData, isValidating: readValidating, mutate: mutateRead } = useSWR(`${API}/api/read-notifications`, fetcherSingle, { revalidateOnFocus: false });
 
-      const [lData, dData, aData, sData, ppData, readData] = await Promise.all([
-        lRes.ok ? lRes.json() : { loans: [] },
-        dRes.ok ? dRes.json() : { donations: [] },
-        aRes.ok ? aRes.json() : { attendance: [] },
-        sRes.ok ? sRes.json() : { transactions: [] },
-        ppRes.ok ? ppRes.json() : { payments: [] },
-        readRes.ok ? readRes.json() : { readIds: [] },
-      ]);
-      setReadIds(new Set(readData.readIds || []));
+  const loading = (!lData && lValidating) || 
+                  (!dData && dValidating) ||
+                  (!aData && aValidating) ||
+                  (!sData && sValidating) ||
+                  (!ppData && ppValidating) ||
+                  (!readData && readValidating);
 
-      const items = [];
+  useEffect(() => {
+    if (readData && readData.readIds) {
+      setReadIds(new Set(readData.readIds));
+    }
+  }, [readData]);
 
-      /* Loans → notifications */
-      (lData.loans || []).forEach((l) => {
+  const rawItems = useMemo(() => {
+    const items = [];
+
+    /* Loans → notifications */
+    if (lData && lData.loans) {
+      lData.loans.forEach((l) => {
         const base = { id: `loan-${l._id}`, type: 'loan', timestamp: l.appliedDate || l.createdAt };
 
-        /* Special: awaiting member approval */
         if (l.status === 'awaiting_member_approval' && l.modifiedTerms) {
           items.push({
             ...base,
@@ -113,7 +109,6 @@ export default function Notifications() {
 
         if (l.statusHistory && l.statusHistory.length > 0) {
           l.statusHistory.forEach((history) => {
-            // For historical notifications, we use the status at that time
             const hBase = { ...base, timestamp: history.date, loanData: { ...l, status: history.status } };
             if (history.status === 'pending') {
               items.push({
@@ -143,7 +138,6 @@ export default function Notifications() {
             }
           });
         } else {
-          // Fallback for older loans without statusHistory
           if (l.status === 'approved' || l.status === 'active') {
             items.push({
               ...base, id: `loan-approved-${l._id}`,
@@ -180,17 +174,19 @@ export default function Notifications() {
             timestamp: l.nextPaymentDate,
             isReminder: true,
             isUrgent: isOverdue,
-            loanData: l, // Bug fix: passing loanData for payment reminder
+            loanData: l,
             message: `Your loan payment of ₱${Number(l.monthlyPayment || l.amount).toLocaleString()} is due on ${new Date(l.nextPaymentDate).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' })}. Please settle on time to avoid penalties.`,
           });
         }
       });
+    }
 
-      /* Payments → notifications */
-      (ppData.payments || []).forEach((p) => {
+    /* Payments → notifications */
+    if (ppData && ppData.payments) {
+      ppData.payments.forEach((p) => {
         items.push({
           id: `payment-${p.status}-${p._id}`,
-          type: 'payment_pending', // Keeps the payment icon styling
+          type: 'payment_pending',
           timestamp: p.submittedAt || p.confirmedAt || p.createdAt,
           title: p.status === 'pending' ? 'Payment Submitted — Awaiting Confirmation' : (p.status === 'confirmed' ? 'Payment Confirmed' : 'Payment Rejected'),
           message: p.status === 'pending'
@@ -202,9 +198,11 @@ export default function Notifications() {
           isUrgent: p.status === 'rejected',
         });
       });
+    }
 
-      /* Donations → notifications */
-      (dData.donations || []).forEach((d) => {
+    /* Donations → notifications */
+    if (dData && dData.donations) {
+      dData.donations.forEach((d) => {
         if (d.status === 'confirmed') {
           items.push({
             id: `donation-confirmed-${d._id}`,
@@ -228,9 +226,11 @@ export default function Notifications() {
           });
         }
       });
+    }
 
-      /* Savings → notifications */
-      (sData.transactions || []).filter(t => t.type === 'deposit' && t.status === 'confirmed').forEach((s) => {
+    /* Savings → notifications */
+    if (sData && sData.transactions) {
+      sData.transactions.filter(t => t.type === 'deposit' && t.status === 'confirmed').forEach((s) => {
         items.push({
           id: `savings-${s._id}`,
           type: 'savings',
@@ -241,9 +241,11 @@ export default function Notifications() {
           goalName: s.goalName
         });
       });
+    }
 
-      /* Attendance → notifications */
-      (aData.attendance || []).forEach((a) => {
+    /* Attendance → notifications */
+    if (aData && aData.attendance) {
+      aData.attendance.forEach((a) => {
         items.push({
           id: `attendance-${a._id}`,
           type: 'attendance',
@@ -254,18 +256,11 @@ export default function Notifications() {
           recordedBy: a.recordedBy // if available
         });
       });
-
-      /* Sort newest first */
-      items.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-      setRawItems(items);
-    } catch (err) {
-      console.error('Notifications fetch error:', err);
-    } finally {
-      setLoading(false);
     }
-  }, []);
 
-  useEffect(() => { fetchAll(); }, [fetchAll]);
+    items.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    return items;
+  }, [lData, ppData, dData, sData, aData]);
 
   /* ── Derived state ── */
   const notifications = rawItems
@@ -375,7 +370,8 @@ export default function Notifications() {
       const data = await res.json();
       if (!res.ok) { alert(data.message || 'Failed'); return; }
       setTermsModal(null);
-      fetchAll();
+      // Wait for re-fetch or rely on SWR revalidation
+      mutateRead();
     } catch {
       alert('Network error. Please try again.');
     } finally {

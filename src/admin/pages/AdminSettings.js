@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import useSWR from 'swr';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import '../styles/AdminSettings.css';
@@ -24,27 +25,25 @@ export default function AdminSettings() {
     const adminEmail = localStorage.getItem('adminEmail');
     if (!adminEmail) {
       navigate('/');
-      return;
     }
-
-    const fetchSettings = async () => {
-      try {
-        const token = localStorage.getItem('adminToken');
-        const res = await fetch(`${API}/api/admin/settings`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const data = await res.json();
-        if (data.success && data.settings) {
-          const currentMethod = data.settings.paymentApprovalMethod || 'gateway';
-          setSettings(prev => ({ ...prev, approvalMethod: currentMethod }));
-          setSavedApprovalMethod(currentMethod);
-        }
-      } catch (err) {
-        console.error('Failed to fetch settings', err);
-      }
-    };
-    fetchSettings();
   }, [navigate]);
+
+  const token = localStorage.getItem('adminToken');
+  const fetcherSingle = (url) => fetch(url, { headers: { Authorization: `Bearer ${token}` } }).then(res => res.json());
+
+  const { data: settingsData, mutate: refreshSettings } = useSWR(
+    token ? `${API}/api/admin/settings` : null,
+    fetcherSingle,
+    { revalidateOnFocus: false }
+  );
+
+  useEffect(() => {
+    if (settingsData && settingsData.success && settingsData.settings) {
+        const currentMethod = settingsData.settings.paymentApprovalMethod || 'gateway';
+        setSettings(prev => ({ ...prev, approvalMethod: currentMethod }));
+        setSavedApprovalMethod(currentMethod);
+    }
+  }, [settingsData]);
 
   const handleSave = async (section) => {
     if (section === 'Payment') {
@@ -63,6 +62,7 @@ export default function AdminSettings() {
           toast.success('Payment settings updated successfully');
           setSavedApprovalMethod(settings.approvalMethod);
           setIsEditingPayment(false);
+          refreshSettings();
         } else {
           toast.error(data.message || 'Failed to update payment settings');
         }

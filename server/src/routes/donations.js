@@ -6,6 +6,9 @@ import { authenticateUser, authenticateAdmin } from '../middleware/auth.js';
 
 const router = Router();
 
+// In-memory stats cache (60s TTL)
+let donationStatsCache = { data: null, ts: 0 };
+
 import { generatePaymentLink } from '../utils/paymongo.js';
 
 /* ================== USER - MAKE A DONATION ================== */
@@ -182,15 +185,6 @@ router.get('/admin/donations', authenticateAdmin, async (req, res) => {
       ];
     }
 
-    const totalCount   = await donations.countDocuments(query);
-    const allDonations = await donations.find(query)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .toArray();
-
-    // Stats from ALL confirmed donations (for totals)
-    const allForStats = await donations.find({}).toArray();
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
@@ -199,17 +193,78 @@ router.get('/admin/donations', authenticateAdmin, async (req, res) => {
     startOfWeek.setDate(now.getDate() - now.getDay());
     startOfWeek.setHours(0, 0, 0, 0);
 
-    const confirmedAll = allForStats.filter(d => d.status === 'confirmed');
-    const thisMonthDons = confirmedAll.filter(d => new Date(d.createdAt) >= startOfMonth);
-    const lastMonthDons = confirmedAll.filter(d => {
-      const dDate = new Date(d.createdAt);
-      return dDate >= startOfLastMonth && dDate <= endOfLastMonth;
-    });
-    const thisWeekDons  = confirmedAll.filter(d => new Date(d.createdAt) >= startOfWeek);
+    const safeAmount = { $convert: { input: "$amount", to: "double", onError: 0, onNull: 0 } };
 
-    const thisMonth   = thisMonthDons.reduce((s, d) => s + (Number(d.amount) || 0), 0);
-    const lastMonth   = lastMonthDons.reduce((s, d) => s + (Number(d.amount) || 0), 0);
-    const thisWeek    = thisWeekDons.reduce((s, d) => s + (Number(d.amount) || 0), 0);
+    const statsPipeline = [
+      {
+        $facet: {
+          totals: [
+            { $match: { status: 'confirmed' } },
+            {
+              $group: {
+                _id: null,
+                totalAmount: { $sum: safeAmount },
+                count: { $sum: 1 },
+                uniqueEmails: { $addToSet: "$email" }
+              }
+            }
+          ],
+          thisMonth: [
+            { $match: { status: 'confirmed', createdAt: { $gte: startOfMonth } } },
+            { $group: { _id: null, total: { $sum: safeAmount } } }
+          ],
+          lastMonth: [
+            { $match: { status: 'confirmed', createdAt: { $gte: startOfLastMonth, $lte: endOfLastMonth } } },
+            { $group: { _id: null, total: { $sum: safeAmount } } }
+          ],
+          thisWeek: [
+            { $match: { status: 'confirmed', createdAt: { $gte: startOfWeek } } },
+            { $group: { _id: null, total: { $sum: safeAmount } } }
+          ],
+          pendingCount: [
+            { $match: { $or: [{ status: 'pending' }, { status: { $exists: false } }] } },
+            { $count: "count" }
+          ],
+          rejectedCount: [
+            { $match: { status: 'rejected' } },
+            { $count: "count" }
+          ],
+          communityBreakdown: [
+            { $match: { status: 'confirmed', community: { $exists: true, $ne: null } } },
+            { $group: { _id: "$community", total: { $sum: safeAmount } } }
+          ],
+          categoryBreakdown: [
+            { $match: { status: 'confirmed' } },
+            { $group: { _id: { $ifNull: ["$category", "General Fund"] }, total: { $sum: safeAmount } } }
+          ]
+        }
+      }
+    ];
+
+    // Use cached stats if fresh (within 60s), otherwise recompute
+    const STATS_TTL = 60000;
+    const useCache = donationStatsCache.data && (Date.now() - donationStatsCache.ts < STATS_TTL);
+
+    const [totalCount, allDonations, statsResultArr] = await Promise.all([
+      donations.countDocuments(query),
+      donations.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray(),
+      useCache ? Promise.resolve(null) : donations.aggregate(statsPipeline).toArray()
+    ]);
+
+    if (statsResultArr) {
+      donationStatsCache.data = statsResultArr;
+      donationStatsCache.ts = Date.now();
+    }
+
+    const cachedOrFresh = statsResultArr || donationStatsCache.data;
+    const sr = cachedOrFresh[0];
+    
+    const totals = sr.totals[0] || { totalAmount: 0, count: 0, uniqueEmails: [] };
+    const thisMonth = sr.thisMonth[0]?.total || 0;
+    const lastMonth = sr.lastMonth[0]?.total || 0;
+    const thisWeek = sr.thisWeek[0]?.total || 0;
+    const pendingCount = sr.pendingCount[0]?.count || 0;
+    const rejectedCount = sr.rejectedCount[0]?.count || 0;
 
     let percentageChange = 0;
     if (lastMonth === 0) {
@@ -218,30 +273,25 @@ router.get('/admin/donations', authenticateAdmin, async (req, res) => {
       percentageChange = ((thisMonth - lastMonth) / lastMonth) * 100;
     }
     const formattedPercentage = (percentageChange > 0 ? '+' : '') + Math.round(percentageChange) + '%';
-    const totalAmount = confirmedAll.reduce((s, d) => s + (Number(d.amount) || 0), 0);
-    const uniqueEmails = new Set(confirmedAll.map(d => d.email)).size;
-    const avgDonation  = confirmedAll.length > 0 ? Math.round(totalAmount / confirmedAll.length) : 0;
-    const pendingCount = allForStats.filter(d => !d.status || d.status === 'pending').length;
-    const rejectedCount = allForStats.filter(d => d.status === 'rejected').length;
+    const avgDonation = totals.count > 0 ? Math.round(totals.totalAmount / totals.count) : 0;
 
     const communityBreakdown = {};
+    sr.communityBreakdown.forEach(item => {
+      if (item._id) communityBreakdown[item._id] = item.total;
+    });
+
     const categoryBreakdown = {};
-    
-    confirmedAll.forEach(d => {
-      if (d.community) {
-        communityBreakdown[d.community] = (communityBreakdown[d.community] || 0) + (Number(d.amount) || 0);
-      }
-      const cat = d.category || 'General Fund';
-      categoryBreakdown[cat] = (categoryBreakdown[cat] || 0) + (Number(d.amount) || 0);
+    sr.categoryBreakdown.forEach(item => {
+      if (item._id) categoryBreakdown[item._id] = item.total;
     });
 
     const stats = {
-      totalCount: confirmedAll.length,
-      total: totalAmount,
+      totalCount: totals.count,
+      total: totals.totalAmount,
       thisMonth,
       thisWeek,
       percentageChange: formattedPercentage,
-      totalDonors: uniqueEmails,
+      totalDonors: totals.uniqueEmails.length,
       avgDonation,
       pendingCount,
       rejectedCount,
@@ -258,7 +308,8 @@ router.get('/admin/donations', authenticateAdmin, async (req, res) => {
       stats
     });
   } catch (err) {
-    console.error(err);
+    console.error('❌ GET /admin/donations error:', err.message);
+    console.error(err.stack);
     res.status(500).json({ success: false, message: 'Failed to fetch donations' });
   }
 });

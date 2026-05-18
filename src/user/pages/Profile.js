@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
+import useSWR from 'swr';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 import API from '../../utils/api';
@@ -18,6 +19,7 @@ export default function Profile() {
   const navigate = useNavigate();
   const { profile, user, updateProfile, requestEmailChange, verifyEmailChange } = useAuth();
   const token = localStorage.getItem('token');
+  const isOfficer = profile?.position && isOfficerPosition(profile.position);
 
   /* ── Personal Info State ── */
   const [isEditing, setIsEditing] = useState(false);
@@ -35,6 +37,11 @@ export default function Profile() {
 
   const [showEmailOtp, setShowEmailOtp] = useState(false);
   const [pendingEmail, setPendingEmail] = useState('');
+  
+  const [activityPage, setActivityPage] = useState(1);
+  const [activityList, setActivityList] = useState([]);
+  const [hasMoreActivity, setHasMoreActivity] = useState(true);
+  const [activityLoading, setActivityLoading] = useState(false);
 
   const [dynamicBranches, setDynamicBranches] = useState([]);
   useEffect(() => {
@@ -137,98 +144,59 @@ export default function Profile() {
     setFormError('');
     setIsEditing(false);
   };
-  const [loading, setLoading] = useState(true);
-  const [donations, setDonations] = useState([]);
-  const [attendance, setAttendance] = useState([]);
-  const [loanStats, setLoanStats] = useState({ completed: 0, active: 0, total: 0 });
-  const [savingsStats, setSavingsStats] = useState({ totalSavings: 0, completedGoals: 0, activeGoals: 0 });
-  const [recentActivity, setRecentActivity] = useState([]);
+  const fetcherSingle = (url) => fetch(url, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }).then(res => res.ok ? res.json() : { success: false });
 
-  const isOfficer = isOfficerPosition(profile?.position);
+  const { data: dData, isValidating: dValidating } = useSWR(token ? `${API}/api/donations/my-donations` : null, fetcherSingle, { revalidateOnFocus: false });
+  const { data: attData, isValidating: attValidating } = useSWR(token ? `${API}/api/attendance/my-attendance` : null, fetcherSingle, { revalidateOnFocus: false });
+  const { data: loanData, isValidating: loanValidating } = useSWR(token ? `${API}/api/loans/my-loans` : null, fetcherSingle, { revalidateOnFocus: false });
+  const { data: savData, isValidating: savValidating } = useSWR(token ? `${API}/api/savings/stats` : null, fetcherSingle, { revalidateOnFocus: false });
+  const { data: savGoalsData, isValidating: savGoalsValidating } = useSWR(token ? `${API}/api/savings/goals` : null, fetcherSingle, { revalidateOnFocus: false });
 
-  const fetchProfileData = useCallback(async () => {
-    if (!token) return;
-    setLoading(true);
-    try {
-      const headers = { Authorization: `Bearer ${token}` };
-      const [donRes, attRes, loanRes, savRes, savGoalsRes, savTxnRes, loanPayRes] = await Promise.all([
-        fetch(`${API}/api/donations/my-donations`, { headers }),
-        fetch(`${API}/api/attendance/my-attendance`, { headers }),
-        fetch(`${API}/api/loans/my-loans`, { headers }),
-        fetch(`${API}/api/savings/stats`, { headers }),
-        fetch(`${API}/api/savings/goals`, { headers }),
-        fetch(`${API}/api/savings/transactions?limit=5`, { headers }),
-        fetch(`${API}/api/loans/my-payments`, { headers }),
-      ]);
+  const loading = (!dData && dValidating) || (!attData && attValidating) || (!loanData && loanValidating) || (!savData && savValidating) || (!savGoalsData && savGoalsValidating) || activityLoading;
 
-      const [donData, attData, loanData, savData, savGoalsData, savTxnData, loanPayData] = await Promise.all([
-        donRes.ok ? donRes.json() : { success: false },
-        attRes.ok ? attRes.json() : { success: false },
-        loanRes.ok ? loanRes.json() : { success: false },
-        savRes.ok ? savRes.json() : { success: false },
-        savGoalsRes.ok ? savGoalsRes.json() : { success: false },
-        savTxnRes.ok ? savTxnRes.json() : { success: false },
-        loanPayRes.ok ? loanPayRes.json() : { success: false },
-      ]);
-
-      if (donData.success) {
-        setDonations(donData.donations?.filter(d => d.status === 'confirmed') || []);
-      }
-      if (attData.success) {
-        setAttendance(attData.attendance || []);
-      }
-      if (loanData.success) {
-        const loans = loanData.loans || [];
-        setLoanStats({
-          completed: loans.filter(l => l.status === 'completed').length,
-          active: loans.filter(l => l.status === 'active').length,
-          total: loans.length
-        });
-      }
-      if (savData.success) {
-        const goals = savGoalsData.success ? (savGoalsData.goals || []) : [];
-        setSavingsStats({
-          totalSavings: savData.stats?.totalSavings || 0,
-          completedGoals: goals.filter(g => g.status === 'completed').length,
-          activeGoals: goals.filter(g => g.status === 'active').length,
-        });
-      }
-
-      // Build recent activity
-      const activities = [];
-      if (donData.success && donData.donations) {
-        donData.donations.filter(d => d.status === 'confirmed').slice(0, 5).forEach(d => {
-          activities.push({ type: 'donation', title: 'Donation Made', sub: d.category || 'General Fund', amount: d.amount, date: new Date(d.createdAt) });
-        });
-      }
-      if (attData.success && attData.attendance) {
-        attData.attendance.slice(0, 3).forEach(a => {
-          activities.push({ type: 'attendance', title: 'Service Attended', sub: a.service || a.branch, date: new Date(a.createdAt) });
-        });
-      }
-      if (loanPayData.success && loanPayData.payments) {
-        loanPayData.payments.filter(p => p.status === 'confirmed').slice(0, 3).forEach(p => {
-          activities.push({ type: 'loan', title: 'Loan Payment', sub: p.loanId, amount: p.amount, date: new Date(p.submittedAt || p.createdAt) });
-        });
-      }
-      if (savTxnData.success && savTxnData.transactions) {
-        savTxnData.transactions.filter(t => t.type === 'deposit' && t.status === 'confirmed').slice(0, 3).forEach(t => {
-          activities.push({ type: 'savings', title: 'Savings Deposit', sub: t.goalName || 'General', amount: t.amount, date: new Date(t.date) });
-        });
-      }
-      activities.sort((a, b) => b.date - a.date);
-      setRecentActivity(activities.slice(0, 8));
-
-    } catch (err) {
-      console.error('Profile data fetch error:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [token]);
-
+  const donations = useMemo(() => dData?.donations?.filter(d => d.status === 'confirmed') || [], [dData]);
+  const attendance = useMemo(() => attData?.attendance || [], [attData]);
+  const loanStats = useMemo(() => {
+    const loans = loanData?.loans || [];
+    return {
+      completed: loans.filter(l => l.status === 'completed').length,
+      active: loans.filter(l => l.status === 'active').length,
+      total: loans.length
+    };
+  }, [loanData]);
+  const savingsStats = useMemo(() => {
+    const goals = savGoalsData?.success ? (savGoalsData.goals || []) : [];
+    return {
+      totalSavings: savData?.stats?.totalSavings || 0,
+      completedGoals: goals.filter(g => g.status === 'completed').length,
+      activeGoals: goals.filter(g => g.status === 'active').length,
+    };
+  }, [savData, savGoalsData]);
+  
   useEffect(() => {
-    fetchProfileData();
-  }, [fetchProfileData]);
+    const fetchActivity = async () => {
+      setActivityLoading(true);
+      try {
+        const res = await fetch(`${API}/api/profile/activity?page=${activityPage}&limit=5`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (activityPage === 1) {
+            setActivityList(data.activities);
+          } else {
+            setActivityList(prev => [...prev, ...data.activities]);
+          }
+          setHasMoreActivity(data.hasMore);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setActivityLoading(false);
+      }
+    };
+    if (token) fetchActivity();
+  }, [activityPage, token]);
 
   // 12-month donation trend
   const donationTrend = useMemo(() => {
@@ -627,18 +595,18 @@ export default function Profile() {
                 Recent Activity
               </h2>
             </div>
-            {loading ? (
+            {activityLoading && activityPage === 1 ? (
               <div className="up-activity-skel">
                 {[1, 2, 3].map(i => <div key={i} className="up-skel-row" />)}
               </div>
-            ) : recentActivity.length === 0 ? (
+            ) : activityList.length === 0 ? (
               <div className="up-empty">
                 <Clock size={28} strokeWidth={1.5} />
                 <p>No recent activity yet.</p>
               </div>
             ) : (
               <div className="up-activity-list">
-                {recentActivity.map((a, i) => (
+                {activityList.map((a, i) => (
                   <div key={i} className={`up-activity up-activity--${a.type}`}>
                     <div className="up-activity__icon">{activityIcon(a.type)}</div>
                     <div className="up-activity__body">
@@ -651,6 +619,30 @@ export default function Profile() {
                     </div>
                   </div>
                 ))}
+                {hasMoreActivity && (
+                  <button 
+                    className="up-view-more-btn" 
+                    onClick={() => setActivityPage(prev => prev + 1)}
+                    disabled={activityLoading}
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      background: 'transparent',
+                      border: '1px dashed var(--border)',
+                      borderRadius: '8px',
+                      color: 'var(--text-muted)',
+                      cursor: activityLoading ? 'not-allowed' : 'pointer',
+                      fontSize: '13px',
+                      marginTop: '8px',
+                      transition: 'all 0.2s',
+                      opacity: activityLoading ? 0.5 : 1
+                    }}
+                    onMouseOver={(e) => { if (!activityLoading) { e.target.style.background = 'var(--bg)'; e.target.style.borderColor = 'var(--primary)'; e.target.style.color = 'var(--primary)'; } }}
+                    onMouseOut={(e) => { if (!activityLoading) { e.target.style.background = 'transparent'; e.target.style.borderColor = 'var(--border)'; e.target.style.color = 'var(--text-muted)'; } }}
+                  >
+                    {activityLoading ? 'Loading...' : 'View More'}
+                  </button>
+                )}
               </div>
             )}
           </div>

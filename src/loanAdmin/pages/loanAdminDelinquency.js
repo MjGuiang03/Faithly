@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
+import useSWR from 'swr';
 import LoanAdminSidebar from './loanAdminSidebar';
 import '../styles/loanAdminLoanManagement.css';
 import '../styles/loanAdminDelinquency.css';
@@ -33,18 +34,24 @@ export default function LoanAdminDelinquency() {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
 
-  const fetchLoans = useCallback(async () => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem('adminToken');
-      const res = await fetch(`${API}/api/admin/loans`, { headers: { Authorization: `Bearer ${token}` } });
-      const data = await res.json();
-      if (data.success) setLoans((data.loans || []).filter(l => l.status === 'active'));
-    } catch { /* silent */ }
-    finally { setLoading(false); }
-  }, []);
+  const token = localStorage.getItem('adminToken');
+  const fetcherSingle = (url) => fetch(url, { headers: { Authorization: `Bearer ${token}` } }).then(res => res.json());
 
-  useEffect(() => { fetchLoans(); }, [fetchLoans]);
+  const { data: loansData, isValidating: loadingLoans } = useSWR(
+    token ? `${API}/api/admin/loans` : null,
+    fetcherSingle,
+    { revalidateOnFocus: false, revalidateIfStale: true }
+  );
+
+  useEffect(() => {
+    if (loansData && loansData.success) {
+      setLoans((loansData.loans || []).filter(l => l.status === 'active'));
+    }
+  }, [loansData]);
+
+  useEffect(() => {
+    setLoading(loadingLoans && !loansData);
+  }, [loadingLoans, loansData]);
 
   const flagged = loans.map(l => {
     const daysLate = getDaysLate(l.nextDueDate || l.approvedDate);

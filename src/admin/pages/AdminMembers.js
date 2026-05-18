@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import useSWR from 'swr';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { ChevronLeft, ChevronRight, Edit, Lock, Search, Trash2, User, UserPlus, Users as UsersIcon, XCircle, X, MoreVertical, Eye, EyeOff, CreditCard, CheckCircle2 } from 'lucide-react';
@@ -735,7 +736,6 @@ export default function AdminMembers() {
   const [searchMembers,  setSearchMembers]  = useState('');
   const [roleFilter,     setRoleFilter]     = useState('all');
   const [currentPage,    setCurrentPage]    = useState(1);
-  const [loadingMembers, setLoadingMembers] = useState(true);
   const [editMember,     setEditMember]     = useState(null);
   const [deleteMember,   setDeleteMember]   = useState(null);
   const [viewMember,     setViewMember]     = useState(null);
@@ -758,38 +758,40 @@ export default function AdminMembers() {
 
   useEffect(() => { if (!getToken()) navigate('/'); }, [navigate]);
 
-  /* ── Fetch members with filters ── */
-  const fetchMembers = useCallback(async () => {
-    try {
-      setLoadingMembers(true);
-      let isOfficerVal = undefined;
-      let statusVal = undefined;
-      let isNewVal = undefined;
+  const fetcherSingle = (url) => fetch(url, { headers: { Authorization: `Bearer ${getToken()}` } }).then(res => {
+    if (res.status === 401 || res.status === 403) { navigate('/'); return { success: false }; }
+    return res.json();
+  });
 
-      if (roleFilter === 'officer') isOfficerVal = 'true';
-      else if (roleFilter === 'member') isOfficerVal = 'false';
-      else if (roleFilter === 'active') statusVal = 'active';
-      else if (roleFilter === 'inactive') statusVal = 'inactive';
-      else if (roleFilter === 'new') isNewVal = 'true';
+  const queryParams = useMemo(() => {
+    let isOfficerVal = undefined;
+    let statusVal = undefined;
+    let isNewVal = undefined;
 
-      const q  = buildQuery({ search: debouncedSearchMembers.trim(), page: currentPage, limit: ITEMS_PER_PAGE, isOfficer: isOfficerVal, status: statusVal, isNew: isNewVal });
-      const res = await fetch(`${API}/api/admin/members?${q}`, {
-        headers: { Authorization: `Bearer ${getToken()}` }
-      });
-      if (res.status === 401 || res.status === 403) { navigate('/'); return; }
-      const data = await res.json();
-      if (!data.success) throw new Error(data.message || 'Failed to load members');
-      setMembers(data.members    || []);
-      setStats(data.stats        || {});
+    if (roleFilter === 'officer') isOfficerVal = 'true';
+    else if (roleFilter === 'member') isOfficerVal = 'false';
+    else if (roleFilter === 'active') statusVal = 'active';
+    else if (roleFilter === 'inactive') statusVal = 'inactive';
+    else if (roleFilter === 'new') isNewVal = 'true';
+
+    return buildQuery({ search: debouncedSearchMembers.trim(), page: currentPage, limit: ITEMS_PER_PAGE, isOfficer: isOfficerVal, status: statusVal, isNew: isNewVal });
+  }, [debouncedSearchMembers, currentPage, roleFilter]);
+
+  const { data, isValidating: loadingMembers, mutate: fetchMembers } = useSWR(
+    `${API}/api/admin/members?${queryParams}`,
+    fetcherSingle,
+    { revalidateOnFocus: false, revalidateIfStale: true }
+  );
+
+  useEffect(() => {
+    if (data?.success) {
+      setMembers(data.members || []);
+      setStats(data.stats || {});
       setPagination(data.pagination || { page: 1, totalPages: 1, totalMembers: 0 });
-    } catch (err) {
-      toast.error(err.message || 'Failed to fetch members');
-    } finally {
-      setLoadingMembers(false);
+    } else if (data && !data.success && data.message) {
+      toast.error(data.message);
     }
-  }, [debouncedSearchMembers, currentPage, navigate, roleFilter]);
-
-  useEffect(() => { fetchMembers(); }, [fetchMembers]);
+  }, [data]);
 
   useEffect(() => { setCurrentPage(1); }, [debouncedSearchMembers, roleFilter]);
 

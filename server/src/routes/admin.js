@@ -71,15 +71,61 @@ router.get('/members', authenticateAdmin, async (req, res) => {
       ];
     }
     if (branch && branch !== 'all') baseQuery.branch = branch;
+    
     // Officers = members with position other than 'Member'
     if (isOfficer === 'true') baseQuery.position = { $regex: /^(?!member$)/i };
     if (isOfficer === 'false') baseQuery.position = { $regex: /^member$/i };
 
-    const allUsers = await users.find(baseQuery).toArray();
     const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-    const withStatus = allUsers.map(user => {
+    // Apply status and isNew filters directly to the database query
+    if (status === 'deactivated') {
+      baseQuery.isDeleted = true;
+    } else if (status === 'inactive') {
+      baseQuery.isDeleted = { $ne: true };
+      baseQuery.$or = [{ lastLoginAt: { $exists: false } }, { lastLoginAt: { $lt: oneWeekAgo } }];
+    } else if (status === 'active') {
+      baseQuery.isDeleted = { $ne: true };
+      baseQuery.lastLoginAt = { $gte: oneWeekAgo };
+    }
+
+    if (req.query.isNew === 'true') {
+      baseQuery.createdAt = { $gte: startOfMonth };
+    }
+
+    // Parallel execution of total count, paginated members, and overall stats
+    const [totalMembers, rawMembers, statsResult] = await Promise.all([
+      users.countDocuments(baseQuery),
+      users.find(baseQuery).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray(),
+      users.aggregate([
+        {
+          $facet: {
+            total: [{ $count: "count" }],
+            deactivated: [{ $match: { isDeleted: true } }, { $count: "count" }],
+            inactive: [
+              { $match: { isDeleted: { $ne: true }, $or: [{ lastLoginAt: { $exists: false } }, { lastLoginAt: { $lt: oneWeekAgo } }] } },
+              { $count: "count" }
+            ],
+            active: [
+              { $match: { isDeleted: { $ne: true }, lastLoginAt: { $gte: oneWeekAgo } } },
+              { $count: "count" }
+            ],
+            officers: [
+              { $match: { position: { $exists: true, $not: { $regex: /^member$/i } } } },
+              { $count: "count" }
+            ],
+            newThisMonth: [
+              { $match: { createdAt: { $gte: startOfMonth } } },
+              { $count: "count" }
+            ]
+          }
+        }
+      ]).toArray()
+    ]);
+
+    const pageMembers = rawMembers.map(user => {
       let userStatus = 'active';
       if (user.isDeleted) {
         userStatus = 'deactivated';
@@ -89,35 +135,17 @@ router.get('/members', authenticateAdmin, async (req, res) => {
       return { ...user, status: userStatus, memberId: user.memberId || `M-${user._id.toString().slice(-5).toUpperCase()}` };
     });
 
-    const allForStats = await users.find({}).toArray();
-    const statsWithStatus = allForStats.map(u => {
-      if (u.isDeleted) return { ...u, status: 'deactivated' };
-      if (!u.lastLoginAt || new Date(u.lastLoginAt) < oneWeekAgo) return { ...u, status: 'inactive' };
-      return { ...u, status: 'active' };
-    });
-
+    const sr = statsResult[0] || {};
     const stats = {
-      total: allForStats.length,
-      active: statsWithStatus.filter(u => u.status === 'active').length,
-      inactive: statsWithStatus.filter(u => u.status === 'inactive').length,
-      deactivated: statsWithStatus.filter(u => u.status === 'deactivated').length,
-      officers: allForStats.filter(u => u.position && u.position.toLowerCase() !== 'member').length,
-      newThisMonth: allForStats.filter(u => {
-        const created = new Date(u.createdAt);
-        return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
-      }).length
+      total: sr.total?.[0]?.count || 0,
+      active: sr.active?.[0]?.count || 0,
+      inactive: sr.inactive?.[0]?.count || 0,
+      deactivated: sr.deactivated?.[0]?.count || 0,
+      officers: sr.officers?.[0]?.count || 0,
+      newThisMonth: sr.newThisMonth?.[0]?.count || 0
     };
 
-    let filtered = (status && status !== 'all') ? withStatus.filter(u => u.status === status) : withStatus;
-    if (req.query.isNew === 'true') {
-      filtered = filtered.filter(u => {
-        const created = new Date(u.createdAt);
-        return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
-      });
-    }
-    const totalMembers = filtered.length;
     const totalPages = Math.ceil(totalMembers / limit) || 1;
-    const pageMembers = filtered.slice(skip, skip + limit);
 
     res.status(200).json({
       success: true,
@@ -1355,32 +1383,73 @@ Rule-based Recommendation: ${recommendationText}`;
 router.get('/loans/payments', authenticateAdmin, async (req, res) => {
   try {
     const { loanPayments, loans, users } = await import('../config/db.js');
-    const { status, limit } = req.query;
+    const { status, limit: qLimit, page: qPage, search } = req.query;
+    
+    const page = parseInt(qPage) || 1;
+    const limit = parseInt(qLimit) || 10;
+    const skip = (page - 1) * limit;
+
     let query = {};
-    if (status) query.status = status;
+    if (status === 'history') {
+      query.status = { $ne: 'pending' };
+    } else if (status) {
+      query.status = status;
+    }
     
     // Filter: Only show manual/proof-based payments for pending approval.
     // Exclude PayMongo automated payments from the pending list.
     if (status === 'pending') {
       query.paymongoLinkId = { $exists: false };
     }
+
+    if (search) {
+      // Need to find matching emails or loanIds first if we want to search by memberName or purpose
+      // For simplicity in a single query, we just search by loanId or email natively
+      query.$or = [
+        { loanId: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+        { referenceNumber: { $regex: search, $options: 'i' } }
+      ];
+    }
     
+    const totalCount = await loanPayments.countDocuments(query);
     const payments = await loanPayments.find(query)
       .sort({ createdAt: -1 })
-      .limit(parseInt(limit) || 100)
+      .skip(skip)
+      .limit(limit)
       .toArray();
 
-    const enriched = await Promise.all(payments.map(async p => {
-        const user = await users.findOne({ email: p.email });
-        const loan = await loans.findOne({ loanId: p.loanId });
-        return {
-            ...p,
-            memberName: user ? user.fullName : 'Unknown',
-            loanPurpose: loan ? loan.purpose : 'Unknown'
-        };
+    const emails = [...new Set(payments.map(p => p.email).filter(Boolean))];
+    const loanIds = [...new Set(payments.map(p => p.loanId).filter(Boolean))];
+
+    const [userDocs, loanDocs] = await Promise.all([
+      users.find({ email: { $in: emails } }).project({ email: 1, fullName: 1 }).toArray(),
+      loans.find({ loanId: { $in: loanIds } }).project({ loanId: 1, purpose: 1 }).toArray()
+    ]);
+
+    const userMap = userDocs.reduce((acc, user) => { 
+      acc[user.email] = user.fullName; 
+      return acc; 
+    }, {});
+    
+    const loanMap = loanDocs.reduce((acc, loan) => { 
+      acc[loan.loanId] = loan.purpose; 
+      return acc; 
+    }, {});
+
+    const enriched = payments.map(p => ({
+        ...p,
+        memberName: userMap[p.email] || 'Unknown',
+        loanPurpose: loanMap[p.loanId] || 'Unknown'
     }));
 
-    res.json({ success: true, payments: enriched });
+    res.json({ 
+      success: true, 
+      payments: enriched,
+      totalCount,
+      totalPages: Math.ceil(totalCount / limit) || 1,
+      currentPage: page
+    });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Failed to fetch loan payments' });
   }

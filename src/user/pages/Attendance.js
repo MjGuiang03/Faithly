@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import useSWR from 'swr';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
@@ -54,29 +55,26 @@ export default function Attendance() {
 
   const token = localStorage.getItem('token');
 
-  const fetchAttendance = useCallback(async () => {
-    setLoading(true);
-    try {
-      const headers = { Authorization: `Bearer ${token}` };
-      const cacheBuster = `_t=${Date.now()}`;
-      const attRes = await fetch(`${API}/api/attendance/my-attendance?page=${page}&limit=${PAGE_SIZE}&${cacheBuster}`, { headers });
-      const attData = await attRes.json();
+  const fetcher = async (url) => {
+    const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+    return res.json();
+  };
 
-      if (attData.success) {
-        setAttendanceData(attData.attendance || []);
-        setStats(attData.stats || { total: 0, thisMonth: 0 });
-      }
-    } catch (err) {
-      console.error('Failed to fetch attendance:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [token, page]);
-
+  const { data, isValidating, mutate } = useSWR(
+    token ? `${API}/api/attendance/my-attendance?page=${page}&limit=${PAGE_SIZE}` : null,
+    fetcher,
+    { revalidateOnFocus: false, revalidateIfStale: true }
+  );
 
   useEffect(() => {
-    fetchAttendance();
-  }, [fetchAttendance]);
+    if (!data) return;
+    setLoading(isValidating && !data);
+    if (data.success) {
+      setAttendanceData(data.attendance || []);
+      setStats(data.stats || { total: 0, thisMonth: 0 });
+    }
+    if (data) setLoading(false);
+  }, [data, isValidating]);
 
   // Attendance rate = thisMonth / weeks in current month * 100 (capped at 100)
   const attendanceRateNum = useMemo(() => {
@@ -96,25 +94,21 @@ export default function Attendance() {
   const [modalLoading, setModalLoading] = useState(false);
   const MODAL_LIMIT = 10;
 
-  const fetchModalHistory = useCallback(async () => {
-    setModalLoading(true);
-    const token = localStorage.getItem('token');
-    try {
-      const res = await fetch(`${API}/api/attendance/my-attendance?page=${modalPage}&limit=${MODAL_LIMIT}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setModalHistory(data.attendance || []);
-        setModalTotalPages(data.totalPages || 1);
-      }
-    } catch { /* silent */ }
-    finally { setModalLoading(false); }
-  }, [modalPage]);
+  const { data: modalData, isValidating: modalValidating } = useSWR(
+    isHistoryModalOpen && token ? `${API}/api/attendance/my-attendance?page=${modalPage}&limit=${MODAL_LIMIT}` : null,
+    fetcher,
+    { revalidateOnFocus: false }
+  );
 
   useEffect(() => {
-    if (isHistoryModalOpen) fetchModalHistory();
-  }, [isHistoryModalOpen, fetchModalHistory]);
+    if (!modalData) return;
+    setModalLoading(modalValidating && !modalData);
+    if (modalData.success) {
+      setModalHistory(modalData.attendance || []);
+      setModalTotalPages(modalData.totalPages || 1);
+    }
+    if (modalData) setModalLoading(false);
+  }, [modalData, modalValidating]);
 
   const handleOpenHistory = () => {
     setModalPage(1);
@@ -139,7 +133,7 @@ export default function Attendance() {
         toast.success(data.message);
         setIsScannerOpen(false);
         setIsScanning(false);
-        fetchAttendance();
+        mutate();
       } else {
         toast.error(data.message);
         setTimeout(() => setIsScanning(false), 2500); // Delay before next scan

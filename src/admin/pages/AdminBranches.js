@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import useSWR from 'swr';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { CalendarDays, Circle, MapPin, Search, Users, TrendingUp } from 'lucide-react';
@@ -313,31 +314,36 @@ export default function AdminBranches() {
   const [growthRate, setGrowthRate] = useState(0);
   const LIMIT = 68;
 
-  const fetchBranches = useCallback(async () => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem('adminToken');
-      const params = new URLSearchParams();
-      params.set('page', page);
-      params.set('limit', LIMIT);
-      if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim());
+  const token = localStorage.getItem('adminToken');
 
-      const res = await fetch(`${API}/api/admin/branches?${params}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (data.success) {
-        setBranches(data.branches || []);
-        setTotalCount(data.totalCount || 0);
-        setTotalServices(data.totalServices || 0);
-        setGrowthRate(data.growthRate || 0);
-      }
-    } catch (err) {
-      toast.error('Failed to fetch branches');
-    } finally {
-      setLoading(false);
-    }
+  const fetcherSingle = (url) => fetch(url, { headers: { Authorization: `Bearer ${token}` } }).then(res => res.json());
+
+  const queryParams = useMemo(() => {
+    const params = new URLSearchParams();
+    params.set('page', page);
+    params.set('limit', LIMIT);
+    if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim());
+    return params.toString();
   }, [page, debouncedSearch]);
+
+  const { data: branchesData, isValidating: loadingBranches, mutate: fetchBranches } = useSWR(
+    token ? `${API}/api/admin/branches?${queryParams}` : null,
+    fetcherSingle,
+    { revalidateOnFocus: false, revalidateIfStale: true }
+  );
+
+  useEffect(() => {
+    if (branchesData && branchesData.success) {
+      setBranches(branchesData.branches || []);
+      setTotalCount(branchesData.totalCount || 0);
+      setTotalServices(branchesData.totalServices || 0);
+      setGrowthRate(branchesData.growthRate || 0);
+    }
+  }, [branchesData]);
+
+  useEffect(() => {
+    setLoading(loadingBranches);
+  }, [loadingBranches]);
 
   const handleDeleteBranch = async (id) => {
     if (!window.confirm('Are you sure you want to remove this community? This will not delete the members associated with it.')) return;
@@ -359,10 +365,8 @@ export default function AdminBranches() {
     const token = localStorage.getItem('adminToken');
     if (!token) {
       navigate('/');
-      return;
     }
-    fetchBranches();
-  }, [navigate, fetchBranches]);
+  }, [navigate]);
 
   useEffect(() => {
     setPage(1);
@@ -404,15 +408,15 @@ export default function AdminBranches() {
           <h1 className="admin-branch-title">Communities</h1>
           <p className="admin-branch-subtitle">Manage church communities by province</p>
         </div>
-        <div className="admin-members-search-wrapper admin-branch-search-wrapper" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <div style={{ position: 'relative', flex: 1 }}>
-            <Search size={18} className="admin-members-search-icon" />
+        <div className="admin-branch-search-container">
+          <div className="admin-branch-search-input-box">
+            <Search size={18} className="admin-branch-search-icon" />
             <input
               type="text"
               placeholder="Search by province or branch..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="admin-members-search-input"
+              className="admin-branch-search-input"
             />
           </div>
           <button className="admin-branch-btn-add" onClick={() => setShowAddModal(true)}>

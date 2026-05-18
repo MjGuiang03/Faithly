@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { PieChart, Pie, Cell, Label, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LabelList, Cell, ResponsiveContainer } from 'recharts';
 import '../styles/DonationCategoriesPie.css';
 
 const INITIAL_DONATION_CATEGORIES = [
@@ -20,71 +20,66 @@ export default function DonationCategoriesPie({ categoryBreakdown = {} }) {
   }, [categoryBreakdown]);
 
   const pieTotal = pieData.reduce((sum, item) => sum + (item.value || 0), 0);
-  const activePieData = pieData.filter(d => d.value > 0);
-  const zeroPieData = pieData.filter(d => d.value === 0);
+
+  const sortedDonationData = useMemo(() => {
+    return [...pieData].sort((a, b) => b.value - a.value).map(item => {
+      const percentage = pieTotal > 0 ? ((item.value / pieTotal) * 100).toFixed(1) : 0;
+      return {
+        ...item,
+        percentage,
+        displayLabel: `₱${(item.value || 0).toLocaleString()} (${percentage}%)`,
+        fillColor: item.value > 0 ? item.color : '#D1D5DB'
+      };
+    });
+  }, [pieData, pieTotal]);
 
   return (
     <div className="dcp-card">
-      <div className="dcp-card-header">
-        <h3 className="dcp-card-title">Donation Categories</h3>
+      <div className="dcp-card-header" style={{ marginBottom: '10px' }}>
+        <div>
+          <h3 className="dcp-card-title" style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: '#111827' }}>Donation Categories</h3>
+          <span style={{ fontSize: '12px', color: '#6B7280' }}>Total: ₱{(pieTotal || 0).toLocaleString()}</span>
+        </div>
       </div>
-      <div className="dcp-chart-container">
-        {activePieData.length === 0 ? (
-          <div className="dcp-empty-state">No donations recorded yet.</div>
-        ) : (
-          <ResponsiveContainer width="100%" height={160}>
-            <PieChart>
-              <Pie 
-                data={activePieData} 
-                cx="50%" 
-                cy="50%" 
-                innerRadius={45} 
-                outerRadius={72} 
-                paddingAngle={2} 
-                dataKey="value"
-              >
-                {activePieData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-                <Label 
-                  value={`₱${pieTotal >= 1000 ? (pieTotal/1000).toFixed(1).replace(/\.0$/, '') + 'k' : pieTotal}`} 
-                  position="center" 
-                  fill="#1e3a5f" 
-                  style={{ fontSize: '14px', fontWeight: 'bold', fontFamily: 'Inter' }} 
-                />
-                <Label 
-                  value="Total" 
-                  position="center" 
-                  dy={12} 
-                  fill="#6B7280" 
-                  style={{ fontSize: '10px', fontFamily: 'Inter' }} 
-                />
-              </Pie>
-              <Tooltip 
-                formatter={(value, name, props) => [`₱${(value || 0).toLocaleString()} (${Math.round((value/pieTotal)*100)}%)`, props.payload.name]} 
-                contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
+      <div className="dcp-chart-container" style={{ padding: '10px 0', height: '220px' }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart
+            layout="vertical"
+            data={sortedDonationData}
+            margin={{ top: 0, right: 90, left: 0, bottom: 0 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#F3F4F6" />
+            <XAxis type="number" hide />
+            <YAxis 
+              type="category" 
+              dataKey="name" 
+              axisLine={false} 
+              tickLine={false} 
+              tick={{ fontSize: 11, fill: '#4B5563' }} 
+              width={130} 
+              tickFormatter={(val) => val.length > 18 ? val.substring(0, 18) + '...' : val}
+            />
+            <Tooltip 
+              cursor={{ fill: '#F9FAFB' }}
+              formatter={(value, name, props) => {
+                const p = props.payload;
+                return [`₱${value.toLocaleString()} (${p.percentage}%)`, 'Donations'];
+              }}
+              contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
+            />
+            <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={20} minPointSize={2}>
+              {sortedDonationData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.fillColor} />
+              ))}
+              <LabelList 
+                dataKey="displayLabel" 
+                position="right" 
+                fill="#6B7280" 
+                fontSize={11} 
               />
-            </PieChart>
-          </ResponsiveContainer>
-        )}
-        
-        {activePieData.length > 0 && (
-          <div className="dcp-legend">
-            {activePieData.map((cat, i) => (
-              <div key={i} className="dcp-legend-item">
-                <div className="dcp-dot" style={{ background: cat.color }} />
-                <span className="dcp-label">{cat.name}</span>
-                <span className="dcp-val">₱{cat.value.toLocaleString()} — {Math.round((cat.value/pieTotal)*100)}%</span>
-              </div>
-            ))}
-          </div>
-        )}
-        
-        {zeroPieData.length > 0 && (
-          <div className="dcp-no-data">
-            ({zeroPieData.map(c => c.name).join(', ')}: no donations yet)
-          </div>
-        )}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
       </div>
     </div>
   );

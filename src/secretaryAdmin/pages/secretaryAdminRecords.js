@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import useSWR from 'swr';
 import useDebounce from '../../hooks/useDebounce';
 import SecretaryAdminSidebar from '../components/secretaryAdminSidebar';
 import '../styles/secretaryAdminRecords.css';
@@ -18,47 +19,47 @@ export default function SecretaryLoanRecords() {
     const [totalCount, setTotalCount] = useState(0);
     const LIMIT = 10;
 
-    const fetchRecords = useCallback(async () => {
-        try {
-            setLoading(true);
-            const token = localStorage.getItem('secretaryToken') || localStorage.getItem('adminToken') || localStorage.getItem('token');
-            const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
-            
-            const params = new URLSearchParams();
-            params.set('page', page);
-            params.set('limit', LIMIT);
-            params.set('disbursed', 'true');
-            if (activeFilter !== 'all') params.set('method', activeFilter);
-            if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim());
+    const token = localStorage.getItem('secretaryToken') || localStorage.getItem('adminToken') || localStorage.getItem('token');
 
-            const res = await fetch(`${API}/api/admin/loans?${params}`, { headers });
-            const data = await res.json();
-            
-            if (data.success && data.loans) {
-                const results = data.loans.map(l => ({
-                    id: l.loanId,
-                    member: l.memberName,
-                    amount: `₱${Number(l.amount).toLocaleString()}`,
-                    purpose: l.purpose,
-                    processedDate: l.disbursementDate ? new Date(l.disbursementDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'N/A',
-                    processedTime: l.disbursementDate ? new Date(l.disbursementDate).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'N/A',
-                    paymentMethod: l.paymentMethod ? (l.paymentMethod.toLowerCase() === 'e-wallet' ? 'E-Wallet' : l.paymentMethod.toLowerCase() === 'bank' ? 'Bank Transfer' : 'Cash') : 'Cash',
-                    reference: l.reference || ''
-                }));
+    const fetcherSingle = (url) => fetch(url, { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` } }).then(res => res.json());
 
-                setRecords(results);
-                setTotalCount(data.totalCount || 0);
-            }
-        } catch (err) {
-            console.error('Failed to fetch records:', err);
-        } finally {
-            setLoading(false);
-        }
+    const queryParams = useMemo(() => {
+        const params = new URLSearchParams();
+        params.set('page', page);
+        params.set('limit', LIMIT);
+        params.set('disbursed', 'true');
+        if (activeFilter !== 'all') params.set('method', activeFilter);
+        if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim());
+        return params.toString();
     }, [page, activeFilter, debouncedSearch]);
 
+    const { data: recordsData, isValidating: loadingRecords } = useSWR(
+        token ? `${API}/api/admin/loans?${queryParams}` : null,
+        fetcherSingle,
+        { revalidateOnFocus: false, revalidateIfStale: true }
+    );
+
     useEffect(() => {
-        fetchRecords();
-    }, [fetchRecords]);
+        if (recordsData && recordsData.success && recordsData.loans) {
+            const results = recordsData.loans.map(l => ({
+                id: l.loanId,
+                member: l.memberName,
+                amount: `₱${Number(l.amount).toLocaleString()}`,
+                purpose: l.purpose,
+                processedDate: l.disbursementDate ? new Date(l.disbursementDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'N/A',
+                processedTime: l.disbursementDate ? new Date(l.disbursementDate).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'N/A',
+                paymentMethod: l.paymentMethod ? (l.paymentMethod.toLowerCase() === 'e-wallet' ? 'E-Wallet' : l.paymentMethod.toLowerCase() === 'bank' ? 'Bank Transfer' : 'Cash') : 'Cash',
+                reference: l.reference || ''
+            }));
+
+            setRecords(results);
+            setTotalCount(recordsData.totalCount || 0);
+        }
+    }, [recordsData]);
+
+    useEffect(() => {
+        setLoading(loadingRecords);
+    }, [loadingRecords]);
 
     useEffect(() => {
         setPage(1);

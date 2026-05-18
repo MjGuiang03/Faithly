@@ -1,5 +1,6 @@
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import useSWR from 'swr';
 import { useAuth } from '../../context/AuthContext';
 // import Sidebar from '../components/Sidebar'; // Moved to UserLayout
 import '../styles/Loandetail.css';
@@ -629,46 +630,48 @@ export default function LoanDetail() {
         if (searchParams.get('pay') === 'true') setShowPayNow(true);
     }, [searchParams]);
 
-    const fetchLoan = useCallback(async () => {
-        setLoading(true);
-        setError('');
-        const token = localStorage.getItem('token');
-        if (!token) { navigate('/'); return; }
+    const token = localStorage.getItem('token');
+    const encodedId = loanId ? encodeURIComponent(loanId) : null;
+    const urls = useMemo(() => {
+        if (!token || !encodedId) return null;
+        return [
+            `${API}/api/loans/${encodedId}`,
+            `${API}/api/loans/${encodedId}/schedule`,
+            `${API}/api/loans/${encodedId}/payment-history`
+        ];
+    }, [token, encodedId]);
+
+    const fetcher = async (urlsToFetch) => {
         const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
-        try {
-            const encodedId = encodeURIComponent(loanId);
-            const [loanRes, schedRes] = await Promise.all([
-                fetch(`${API}/api/loans/${encodedId}`, { headers }),
-                fetch(`${API}/api/loans/${encodedId}/schedule`, { headers }),
-            ]);
-
-            // Fetch confirmed payments for this loan (from payment history endpoint)
-            try {
-                const histRes = await fetch(`${API}/api/loans/${encodedId}/payment-history`, { headers });
-                const histData = histRes.ok ? await histRes.json() : {};
-                setPaymentHistory(histData.payments || []);
-            } catch { /* silent */ }
-            
-            if (loanRes.status === 401) { localStorage.removeItem('token'); navigate('/'); return; }
-            
-            const loanData = await loanRes.json();
-            const schedData = schedRes.ok ? await schedRes.json() : { schedule: [] };
-            
-            if (loanRes.ok && loanData.success) {
-                setLoan(loanData.loan);
-                setSchedule(schedData.schedule || []);
-            } else {
-                setError(loanData.message || 'Failed to load loan details.');
-            }
-        } catch (err) {
-            console.error('Fetch error:', err);
-            setError('Connection failed. Please check your internet or retry later.');
-        } finally {
-            setLoading(false);
+        const responses = await Promise.all(urlsToFetch.map(url => fetch(url, { headers })));
+        
+        // Handle unauthorized
+        if (responses[0].status === 401) {
+            localStorage.removeItem('token');
+            navigate('/');
+            return null;
         }
-    }, [loanId, navigate]);
+        
+        return Promise.all(responses.map(res => res.ok ? res.json() : { success: false }));
+    };
 
-    useEffect(() => { fetchLoan(); }, [fetchLoan]);
+    const { data, isValidating, mutate } = useSWR(urls, fetcher, { revalidateOnFocus: false, revalidateIfStale: true });
+
+    useEffect(() => {
+        if (!data) return;
+        setLoading(isValidating && !data);
+        const [loanData, schedData, histData] = data;
+
+        if (loanData && loanData.success) {
+            setLoan(loanData.loan);
+            setSchedule(schedData?.schedule || []);
+            setPaymentHistory(histData?.payments || []);
+            setError('');
+        } else {
+            setError(loanData?.message || 'Failed to load loan details.');
+        }
+        if (data) setLoading(false);
+    }, [data, isValidating]);
 
     /* Derived */
     const paidCount = schedule.filter(r => r.status === 'paid').length;
@@ -703,7 +706,7 @@ export default function LoanDetail() {
             {error && (
                 <div className="user-loans-error-banner">
                     <span>⚠ {error}</span>
-                    <button onClick={fetchLoan} className="user-loans-retry-btn">Retry</button>
+                    <button onClick={() => mutate()} className="user-loans-retry-btn">Retry</button>
                 </div>
             )}
 
@@ -979,7 +982,7 @@ export default function LoanDetail() {
                 <PayNowModal
                     loan={loan}
                     onClose={() => setShowPayNow(false)}
-                    onSuccess={fetchLoan}
+                    onSuccess={() => mutate()}
                 />
             )}
 

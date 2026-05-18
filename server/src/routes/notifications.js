@@ -8,16 +8,20 @@ const router = Router();
 // Builds a unified notification feed from donations, members, attendance, loans, savings
 router.get('/notifications', authenticateAdmin, async (req, res) => {
   try {
-    const limit = Math.min(200, parseInt(req.query.limit) || 100);
+    const limit = Math.min(100, parseInt(req.query.limit) || 50);
 
-    // Fetch recent events in parallel
-    const [recentDonations, recentMembers, recentAttendance, recentLoans, recentSavings] = await Promise.all([
-      donations.find({}).sort({ createdAt: -1 }).limit(limit).toArray(),
-      users.find({ isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(limit).toArray(),
-      attendance.find({}).sort({ createdAt: -1 }).limit(limit).toArray(),
-      loans.find({}).project({ loanId: 1, memberName: 1, amount: 1, purpose: 1, status: 1, statusHistory: 1, appliedDate: 1, approvedDate: 1, updatedAt: 1, rejectedDate: 1 }).sort({ appliedDate: -1 }).limit(limit).toArray(),
-      savingsTransactions.find({ type: 'deposit' }).sort({ date: -1 }).limit(limit).toArray(),
-    ]);
+    const role = req.admin.role;
+
+    // Fetch recent events in parallel, ONLY if the admin role requires them
+    const promises = [
+      role === 'admin' ? donations.find({}).sort({ createdAt: -1 }).limit(limit).toArray() : Promise.resolve([]),
+      role === 'admin' ? users.find({ isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(limit).toArray() : Promise.resolve([]),
+      role === 'admin' ? attendance.find({}).sort({ createdAt: -1 }).limit(limit).toArray() : Promise.resolve([]),
+      role !== 'admin' ? loans.find({}).project({ loanId: 1, memberName: 1, amount: 1, purpose: 1, status: 1, statusHistory: 1, appliedDate: 1, approvedDate: 1, updatedAt: 1, rejectedDate: 1 }).sort({ appliedDate: -1 }).limit(limit).toArray() : Promise.resolve([]),
+      role === 'loanAdmin' ? savingsTransactions.find({ type: 'deposit' }).sort({ date: -1 }).limit(limit).toArray() : Promise.resolve([]),
+    ];
+
+    const [recentDonations, recentMembers, recentAttendance, recentLoans, recentSavings] = await Promise.all(promises);
 
     const notifications = [];
 

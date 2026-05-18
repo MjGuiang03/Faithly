@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import useSWR from 'swr';
 import { useAuth } from '../../context/AuthContext';
 import { Banknote, CalendarDays, ChevronDown, Download, Heart, Receipt, Share2, X, UploadCloud, FileCheck2 } from 'lucide-react';
 
@@ -86,64 +87,63 @@ export default function Donation() {
   const MODAL_LIMIT = 10;
   const HISTORY_PER_PAGE = 5;
 
-  const fetchHistory = useCallback(async () => {
-    setLoading(true);
-    const token = localStorage.getItem('token');
-    try {
-      const res = await fetch(`${API}/api/donations/my-donations?page=${historyPage}&limit=${HISTORY_PER_PAGE}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setStats(data.stats || { totalDonated: 0, thisYearTotal: 0, totalCount: 0 });
-        setRecentDonations(data.donations || []);
-      }
-    } catch { /* silent */ }
-    finally { setLoading(false); }
-  }, [historyPage]);
+  const token = localStorage.getItem('token');
+  const urls = useMemo(() => {
+    if (!token) return null;
+    return [
+      `${API}/api/donations/my-donations?page=${historyPage}&limit=${HISTORY_PER_PAGE}`,
+      `${API}/api/settings/public`
+    ];
+  }, [token, historyPage]);
 
-  const fetchSettings = useCallback(async () => {
-    try {
-      const res = await fetch(`${API}/api/settings/public`);
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setApprovalMethod(data.paymentApprovalMethod || 'gateway');
-      }
-    } catch { /* silent */ }
-  }, []);
+  const fetcher = async (urlsToFetch) => {
+    const headers = { Authorization: `Bearer ${token}` };
+    const responses = await Promise.all([
+      fetch(urlsToFetch[0], { headers }),
+      fetch(urlsToFetch[1])
+    ]);
+    return Promise.all(responses.map(res => res.ok ? res.json() : { success: false }));
+  };
 
-  const fetchModalHistory = useCallback(async () => {
-    setModalLoading(true);
-    const token = localStorage.getItem('token');
-    try {
-      const catParam = modalCategory ? `&category=${modalCategory}` : '';
-      const pmParam = modalPaymentMethod ? `&paymentMethod=${modalPaymentMethod}` : '';
-      const res = await fetch(`${API}/api/donations/my-donations?page=${modalPage}&limit=${MODAL_LIMIT}${catParam}${pmParam}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setModalHistory(data.donations || []);
-        setModalTotalPages(data.totalPages || 1);
-      }
-    } catch { /* silent */ }
-    finally { setModalLoading(false); }
-  }, [modalPage, modalCategory, modalPaymentMethod]);
+  const { data, isValidating, mutate } = useSWR(urls, fetcher, { revalidateOnFocus: false, revalidateIfStale: true });
+
+  useEffect(() => {
+    if (!data) return;
+    setLoading(isValidating && !data);
+    const [historyData, settingsData] = data;
+    if (historyData && historyData.success) {
+      setStats(historyData.stats || { totalDonated: 0, thisYearTotal: 0, totalCount: 0 });
+      setRecentDonations(historyData.donations || []);
+    }
+    if (settingsData && settingsData.success) {
+      setApprovalMethod(settingsData.paymentApprovalMethod || 'gateway');
+    }
+    if (data) setLoading(false);
+  }, [data, isValidating]);
+
+  const modalUrl = isHistoryModalOpen 
+    ? `${API}/api/donations/my-donations?page=${modalPage}&limit=${MODAL_LIMIT}${modalCategory ? `&category=${modalCategory}` : ''}${modalPaymentMethod ? `&paymentMethod=${modalPaymentMethod}` : ''}`
+    : null;
+
+  const modalFetcher = url => fetch(url, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }).then(r => r.json());
+
+  const { data: modalData, isValidating: isModalValidating } = useSWR(modalUrl, modalFetcher, { revalidateOnFocus: false });
+
+  useEffect(() => {
+    if (!modalData) return;
+    setModalLoading(isModalValidating && !modalData);
+    if (modalData && modalData.success) {
+      setModalHistory(modalData.donations || []);
+      setModalTotalPages(modalData.totalPages || 1);
+    }
+    if (modalData) setModalLoading(false);
+  }, [modalData, isModalValidating]);
 
   useEffect(() => {
     if (user?.branch && !donationCommunity) {
       setDonationCommunity(user.branch);
     }
   }, [user, donationCommunity]);
-
-  useEffect(() => {
-    if (isHistoryModalOpen) fetchModalHistory();
-  }, [isHistoryModalOpen, fetchModalHistory]);
-
-  useEffect(() => { 
-    fetchHistory(); 
-    fetchSettings();
-  }, [fetchHistory, fetchSettings]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -196,7 +196,7 @@ export default function Donation() {
         setAccountNumber('');
         setProofFile(null);
         setProofBase64('');
-        fetchHistory();
+        mutate(); // Refresh the data via SWR
         setSubmitting(false);
       } else if (data.checkoutUrl) {
         window.location.href = data.checkoutUrl;

@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import useSWR from 'swr';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { UserPlus, Search, Edit2, Trash2, Shield, Loader2, X, Info, Eye, EyeOff } from 'lucide-react';
@@ -92,6 +93,31 @@ export default function AdminUserManagement() {
   const token = localStorage.getItem('adminToken');
   const superAdminEmail = localStorage.getItem('adminEmail');
 
+  const fetcherSingle = (url) => fetch(url, { headers: { Authorization: `Bearer ${token}` } }).then(res => res.json());
+
+  const queryParams = useMemo(() => {
+    const params = new URLSearchParams();
+    if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim());
+    return params.toString();
+  }, [debouncedSearch]);
+
+  const { data: adminsData, isValidating: loadingAdmins, mutate: fetchAdmins } = useSWR(
+    token ? `${API}/api/admin/admins?${queryParams}` : null,
+    fetcherSingle,
+    { revalidateOnFocus: false, revalidateIfStale: true }
+  );
+
+  useEffect(() => {
+    if (adminsData && adminsData.success) {
+        setAdminList(adminsData.admins || []);
+        setStats(adminsData.stats || { total: 0, admins: 0, loanAdmins: 0, secretaryAdmins: 0 });
+    }
+  }, [adminsData]);
+
+  useEffect(() => {
+    setLoading(loadingAdmins && !adminsData);
+  }, [loadingAdmins, adminsData]);
+
   useEffect(() => {
     const role = localStorage.getItem('adminRole');
     if (role !== 'admin') {
@@ -99,28 +125,6 @@ export default function AdminUserManagement() {
       navigate('/admin/dashboard');
     }
   }, [navigate]);
-
-  const fetchAdmins = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams();
-      if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim());
-      const res = await fetch(`${API}/api/admin/admins?${params}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (data.success) {
-        setAdminList(data.admins || []);
-        setStats(data.stats || { total: 0, admins: 0, loanAdmins: 0, secretaryAdmins: 0 });
-      }
-    } catch {
-      toast.error('Failed to load admins');
-    } finally {
-      setLoading(false);
-    }
-  }, [token, debouncedSearch]);
-
-  useEffect(() => { fetchAdmins(); }, [fetchAdmins]);
 
   /* ── Create ── */
   const handleCreate = async (e) => {

@@ -226,6 +226,54 @@ router.get('/me', authenticateUser, async (req, res) => {
   }
 });
 
+/* ================== RECENT ACTIVITY FEED ================== */
+router.get('/activity', authenticateUser, async (req, res) => {
+  try {
+    const email = req.user.email;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    
+    // Fetch enough from each collection to ensure correct sorting across all of them
+    const fetchLimit = page * limit;
+
+    const [userDonations, userAttendance, userLoanPayments, userSavings] = await Promise.all([
+      donations.find({ email, status: 'confirmed' }).sort({ createdAt: -1 }).limit(fetchLimit).toArray(),
+      attendance.find({ email }).sort({ createdAt: -1 }).limit(fetchLimit).toArray(),
+      loanPayments.find({ email, status: 'confirmed' }).sort({ submittedAt: -1 }).limit(fetchLimit).toArray(),
+      savingsTransactions.find({ email, type: 'deposit', status: 'confirmed' }).sort({ date: -1 }).limit(fetchLimit).toArray(),
+    ]);
+
+    const activities = [];
+    userDonations.forEach(d => {
+      activities.push({ type: 'donation', title: 'Donation Made', sub: d.category || 'General Fund', amount: d.amount, date: new Date(d.createdAt) });
+    });
+    userAttendance.forEach(a => {
+      activities.push({ type: 'attendance', title: 'Service Attended', sub: a.service || a.branch, date: new Date(a.createdAt) });
+    });
+    userLoanPayments.forEach(p => {
+      activities.push({ type: 'loan', title: 'Loan Payment', sub: p.loanId, amount: p.amount, date: new Date(p.submittedAt || p.createdAt) });
+    });
+    userSavings.forEach(t => {
+      activities.push({ type: 'savings', title: 'Savings Deposit', sub: t.goalName || 'General', amount: t.amount, date: new Date(t.date) });
+    });
+
+    // Sort all combined activities by date descending
+    activities.sort((a, b) => b.date - a.date);
+    
+    // Slice only the requested page chunk
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+    const paginatedActivities = activities.slice(startIndex, endIndex);
+
+    const hasMore = activities.length > endIndex;
+
+    res.json({ success: true, activities: paginatedActivities, hasMore });
+  } catch (err) {
+    console.error('Activity feed error:', err);
+    res.status(500).json({ success: false, message: 'Failed to fetch activity feed' });
+  }
+});
+
 /* ================== NOTIFICATIONS READ STATE ================== */
 router.get('/read-notifications', authenticateUser, async (req, res) => {
   try {

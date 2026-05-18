@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { useState, useEffect } from 'react';
+import useSWR from 'swr';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Label } from 'recharts';
 import SecretaryAdminSidebar from '../components/secretaryAdminSidebar';
 import '../../admin/styles/AdminDashboard.css';
@@ -47,26 +48,28 @@ export default function SecretaryAdminDashboard() {
   const [disbModalMonth, setDisbModalMonth] = useState('all');
   const [disbModalYear, setDisbModalYear] = useState('all');
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = localStorage.getItem('secretaryToken') || localStorage.getItem('adminToken') || localStorage.getItem('token');
-        const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
-        const res = await fetch(`${API}/api/admin/loans`, { headers });
-        if (!res.ok) throw new Error('Failed to fetch loans');
-        const data = await res.json();
+  const token = localStorage.getItem('secretaryToken') || localStorage.getItem('adminToken') || localStorage.getItem('token');
 
-        if (data.success && data.loans) {
-          setRawLoans(data.loans);
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
+  const fetcherSingle = (url) => fetch(url, { headers: { Authorization: `Bearer ${token}` } }).then(res => {
+    if (!res.ok) throw new Error('Failed to fetch loans');
+    return res.json();
+  });
+
+  const { data, isValidating } = useSWR(
+    token ? `${API}/api/admin/loans` : null,
+    fetcherSingle,
+    { revalidateOnFocus: false }
+  );
+
+  useEffect(() => {
+    if (data && data.success && data.loans) {
+      setRawLoans(data.loans);
+    }
+  }, [data]);
+
+  useEffect(() => {
+    setLoading(isValidating && !data);
+  }, [isValidating, data]);
 
   // Derived stats — always uses current month/year
   useEffect(() => {

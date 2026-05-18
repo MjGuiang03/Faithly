@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { CheckCircle, XCircle, Info, AlertCircle, RefreshCw, Download } from 'lucide-react';
-import html2pdf from 'html2pdf.js';
+
 import '../styles/DSSPanel.css';
 
 const fmt = (n) =>
@@ -22,6 +22,7 @@ const DSSPanel = ({ analysis, loading, onRefresh, memberName }) => {
         html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
+      const html2pdf = (await import('html2pdf.js')).default;
       await html2pdf().set(opt).from(element).save();
     } catch (err) {
       console.error('PDF Export Error:', err);

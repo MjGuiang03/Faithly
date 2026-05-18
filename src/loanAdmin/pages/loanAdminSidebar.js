@@ -68,7 +68,7 @@ export default function LoanAdminSidebar() {
     window.addEventListener('admin-notif-read-update', onUpdate);
     
     // Poll every 30 seconds for live updates
-    const intervalId = setInterval(calcUnread, 30000);
+    const intervalId = setInterval(calcUnread, 60000);
     
     return () => {
       window.removeEventListener('admin-notif-read-update', onUpdate);

@@ -8,6 +8,7 @@
     "@testing-library/user-event": "^13.5.0",
     "@yudiel/react-qr-scanner": "^2.5.1",
     "axios": "^1.13.2",
+    "css": "^3.0.0",
     "html2pdf.js": "^0.14.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.446.0",
@@ -19,6 +20,7 @@
     "react-scripts": "5.0.1",
     "recharts": "^2.12.7",
     "sonner": "^1.5.0",
+    "swr": "^2.4.1",
     "tesseract.js": "^5.0.5",
     "web-vitals": "^2.1.4"
   },

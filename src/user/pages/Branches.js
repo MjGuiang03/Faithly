@@ -2,12 +2,14 @@
 import { useAuth } from '../../context/AuthContext';
 
 import '../styles/Branches.css';
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, Suspense, lazy } from 'react';
+import useSWR from 'swr';
 import { MapPin, Search, X, ChevronDown } from 'lucide-react';
-import BranchMap from '../components/BranchMap';
 import { branchData, REGION_ORDER, REGION_LABELS, DAY_COLORS, COMMUNITY_MAP } from '../components/branchData';
 import API from '../../utils/api';
 import { Calendar } from 'lucide-react';
+
+const BranchMap = lazy(() => import('../components/BranchMap'));
 
 
 export default function Branches() {
@@ -21,32 +23,24 @@ export default function Branches() {
   const [activeBranch, setActiveBranch] = useState(null);
   const flyToRef = useRef(null);
 
-  const [branchStats, setBranchStats] = useState({});
-  const [events, setEvents] = useState([]);
+  const fetcher = (url) => fetch(url).then(res => res.json());
 
-  useEffect(() => {
-    fetch(`${API}/api/public/branches`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          const stats = {};
-          data.branches.forEach(b => {
-            stats[b.name] = { members: Number(b.members) || 0, officers: Number(b.officers) || 0 };
-          });
-          setBranchStats(stats);
-        }
-      })
-      .catch(err => console.error("Error fetching branch stats:", err));
+  const { data: branchesData } = useSWR(`${API}/api/public/branches`, fetcher, { revalidateOnFocus: false });
+  const { data: eventsData } = useSWR(`${API}/api/admin/announcements`, fetcher, { revalidateOnFocus: false });
 
-    fetch(`${API}/api/admin/announcements`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.success && Array.isArray(data.announcements)) {
-          setEvents(data.announcements);
-        }
-      })
-      .catch(err => console.error("Error fetching events:", err));
-  }, []);
+  const branchStats = useMemo(() => {
+    const stats = {};
+    if (branchesData?.success) {
+      branchesData.branches.forEach(b => {
+        stats[b.name] = { members: Number(b.members) || 0, officers: Number(b.officers) || 0 };
+      });
+    }
+    return stats;
+  }, [branchesData]);
+
+  const events = useMemo(() => {
+    return eventsData?.success && Array.isArray(eventsData.announcements) ? eventsData.announcements : [];
+  }, [eventsData]);
 
   const branchEvents = useMemo(() => {
     if (!drawerBranch || !events) return [];
@@ -168,12 +162,14 @@ export default function Branches() {
         </div>
 
         <div className="ubr-map-area" style={{ position: 'relative', overflow: 'hidden' }}>
-          <BranchMap
-            branches={branchData}
-            userBranch={userBranch}
-            onBranchClick={(branch) => { openDrawer(branch); }}
-            flyToRef={flyToRef}
-          />
+          <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', width: '100%', color: '#64748b', fontSize: '14px' }}>Loading Map...</div>}>
+            <BranchMap
+              branches={branchData}
+              userBranch={userBranch}
+              onBranchClick={(branch) => { openDrawer(branch); }}
+              flyToRef={flyToRef}
+            />
+          </Suspense>
           
           {/* ── Drawer ─────────────────────────────────────────────── */}
           {drawerMounted && (

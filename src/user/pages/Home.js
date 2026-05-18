@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
+import useSWR from 'swr';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 
@@ -46,48 +47,51 @@ export default function Home() {
 
   const token = localStorage.getItem('token');
 
-  const fetchAllData = useCallback(async () => {
-    setLoading(true);
+  const branch = profile?.branch || '';
+  const urls = useMemo(() => {
+    if (!token) return null;
+    return [
+      `${API}/api/loans/my-loans`,
+      `${API}/api/donations/my-donations`,
+      `${API}/api/attendance/my-attendance`,
+      `${API}/api/admin/announcements${branch ? `?branch=${encodeURIComponent(branch)}` : ''}`,
+      `${API}/api/savings/stats`,
+      `${API}/api/savings/goals`,
+      `${API}/api/prayers`,
+      `${API}/api/savings/transactions?limit=5`,
+      `${API}/api/loans/my-payments`,
+    ];
+  }, [token, branch]);
+
+  const fetcher = async (urlsToFetch) => {
+    const headers = { Authorization: `Bearer ${token}` };
+    const responses = await Promise.all(urlsToFetch.map(url => fetch(url, { headers })));
+    return Promise.all(responses.map(res => res.ok ? res.json() : { success: false }));
+  };
+
+  const { data, isValidating } = useSWR(urls, fetcher, {
+    revalidateOnFocus: false,
+    revalidateIfStale: true
+  });
+
+  useEffect(() => {
+    if (!data) return;
+    setLoading(isValidating && !data); // Only show loading spinner if we don't have cached data
     try {
-      const headers = { Authorization: `Bearer ${token}` };
-
-      const branch = profile?.branch || '';
-      const [loansRes, donationsRes, attendanceRes, annRes, savingsRes, savingsGoalsRes, prayersRes, savingsTxnRes, loanPaymentsRes] = await Promise.all([
-        fetch(`${API}/api/loans/my-loans`, { headers }),
-        fetch(`${API}/api/donations/my-donations`, { headers }),
-        fetch(`${API}/api/attendance/my-attendance`, { headers }),
-        fetch(`${API}/api/admin/announcements${branch ? `?branch=${encodeURIComponent(branch)}` : ''}`, { headers }),
-        fetch(`${API}/api/savings/stats`, { headers }),
-        fetch(`${API}/api/savings/goals`, { headers }),
-        fetch(`${API}/api/prayers`, { headers }),
-        fetch(`${API}/api/savings/transactions?limit=5`, { headers }),
-        fetch(`${API}/api/loans/my-payments`, { headers }),
-      ]);
-
-      const [loansData, donationsData, attendanceData, annData, savingsData, savingsGoalsData, prayersData, savingsTxnData, loanPaymentsData] = await Promise.all([
-        loansRes.ok ? loansRes.json() : { success: false },
-        donationsRes.ok ? donationsRes.json() : { success: false },
-        attendanceRes.ok ? attendanceRes.json() : { success: false },
-        annRes.ok ? annRes.json() : { success: false },
-        savingsRes.ok ? savingsRes.json() : { success: false },
-        savingsGoalsRes.ok ? savingsGoalsRes.json() : { success: false },
-        prayersRes.ok ? prayersRes.json() : { success: false },
-        savingsTxnRes.ok ? savingsTxnRes.json() : { success: false },
-        loanPaymentsRes.ok ? loanPaymentsRes.json() : { success: false },
-      ]);
+      const [loansData, donationsData, attendanceData, annData, savingsData, savingsGoalsData, prayersData, savingsTxnData, loanPaymentsData] = data;
 
       const now = new Date();
       const thisMonth = now.getMonth();
       const thisYear = now.getFullYear();
 
-      if (loansRes.ok && loansData.success) {
+      if (loansData && loansData.success) {
         setLoanStats(loansData.stats || { activeCount: 0, remainingBalance: 0 });
         const activeList = (loansData.loans || []).filter(l => l.status === 'active');
         setActiveLoansList(activeList);
         const rejected = (loansData.loans || []).filter(l => l.status === 'rejected').length;
         setRejectedLoansCount(rejected);
       }
-      if (donationsRes.ok && donationsData.success) {
+      if (donationsData && donationsData.success) {
         setDonationStats(donationsData.stats || { totalDonated: 0 });
         const monthlyDons = (donationsData.donations || []).filter(d => {
           const dt = new Date(d.createdAt);
@@ -96,15 +100,15 @@ export default function Home() {
         setMonthlyDonationCount(monthlyDons.length);
       }
 
-      if (savingsRes.ok && savingsData.success) {
+      if (savingsData && savingsData.success) {
         setSavingsStats(savingsData.stats || { totalSavings: 0, thisMonth: 0 });
       }
 
-      if (savingsGoalsRes.ok && savingsGoalsData.success) {
+      if (savingsGoalsData && savingsGoalsData.success) {
         setSavingsGoalsList((savingsGoalsData.goals || []).filter(g => g.status !== 'completed'));
       }
 
-      if (annRes.ok && annData.success) {
+      if (annData && annData.success) {
         const list = (annData.announcements || []).map(ann => {
           const d = ann.eventDate ? new Date(ann.eventDate) : new Date(ann.createdAt);
           const text = ann.content || ann.body || '';
@@ -134,7 +138,7 @@ export default function Home() {
         setUpcomingEvents(list.slice(0, 4));
       }
 
-      if (prayersRes.ok && prayersData.success) {
+      if (prayersData && prayersData.success) {
         setPrayers(prayersData.prayers || []);
       }
 
@@ -223,16 +227,11 @@ export default function Home() {
       setRecentActivity(activities.slice(0, 3));
 
     } catch (err) {
-      console.error('Failed to fetch dashboard data:', err);
+      console.error('Failed to parse dashboard data:', err);
     } finally {
-      setLoading(false);
+      if (data) setLoading(false);
     }
-  }, [token, profile?.branch]);
-
-  useEffect(() => {
-    if (!token) return;
-    fetchAllData();
-  }, [token, fetchAllData]);
+  }, [data, isValidating, profile?.branch]);
 
   // Auto-swipe for Events Carousel
   useEffect(() => {

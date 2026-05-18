@@ -1,4 +1,4 @@
-import { createWorker } from 'tesseract.js';
+
 
 /**
  * Normalizes text for better matching (lowercase, alphanumeric only)
@@ -19,6 +19,7 @@ const normalize = (text) => text.toLowerCase().replace(/[^a-z0-9]/g, '');
 export const performOCRScan = async (imageBase64, targetName) => {
   let worker = null;
   try {
+    const { createWorker } = await import('tesseract.js');
     worker = await createWorker('eng');
     
     // Perform recognition

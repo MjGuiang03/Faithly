@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import useSWR from 'swr';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import useDebounce from '../../hooks/useDebounce';
@@ -42,7 +43,6 @@ export default function AdminDonationsNew() {
     pendingCount: 0,
     percentageChange: '0%',
   });
-  const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [search, setSearch] = useState('');
@@ -119,27 +119,28 @@ export default function AdminDonationsNew() {
   }, [navigate]);
 
   /* ── Fetch ── */
-  const fetchDonations = useCallback(async () => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem('adminToken');
-      const params = new URLSearchParams();
-      params.set('page', currentPage);
-      params.set('limit', ITEMS_PER_PAGE);
-      if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim());
-      if (statusFilter !== 'all') params.set('status', statusFilter);
+  const fetcherSingle = (url) => fetch(url, { headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` } }).then(res => {
+    if (res.status === 401 || res.status === 403) { navigate('/'); return { success: false }; }
+    return res.json();
+  });
 
-      const res = await fetch(`${API}/api/admin/donations?${params}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
+  const queryParams = useMemo(() => {
+    const params = new URLSearchParams();
+    params.set('page', currentPage);
+    params.set('limit', ITEMS_PER_PAGE);
+    if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim());
+    if (statusFilter !== 'all') params.set('status', statusFilter);
+    return params.toString();
+  }, [debouncedSearch, currentPage, statusFilter]);
 
-      if (!res.ok) {
-        if (res.status === 401 || res.status === 403) { navigate('/'); return; }
-        toast.error(data.message || 'Failed to fetch donations');
-        return;
-      }
+  const { data, isValidating: loading, mutate: fetchDonations } = useSWR(
+    `${API}/api/admin/donations?${queryParams}`,
+    fetcherSingle,
+    { revalidateOnFocus: false, revalidateIfStale: true }
+  );
 
+  useEffect(() => {
+    if (data && data.success !== false && !data.message) {
       setDonations(data.donations || []);
       setTotalCount(data.totalCount || 0);
       setStats({
@@ -152,14 +153,11 @@ export default function AdminDonationsNew() {
         communityBreakdown: data.stats?.communityBreakdown || {},
         categoryBreakdown: data.stats?.categoryBreakdown || {}
       });
-    } catch {
-      toast.error('Network error. Could not load donations.');
-    } finally {
-      setLoading(false);
+    } else if (data && data.message) {
+      toast.error(data.message);
     }
-  }, [currentPage, debouncedSearch, statusFilter, navigate]);
+  }, [data]);
 
-  useEffect(() => { fetchDonations(); }, [fetchDonations]);
   useEffect(() => { setCurrentPage(1); }, [debouncedSearch, statusFilter]);
 
   /* ── Pagination math ── */

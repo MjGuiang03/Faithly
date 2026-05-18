@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
+import useSWR from 'swr';
+import useDebounce from '../../hooks/useDebounce';
 import { useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import LoanAdminSidebar from './loanAdminSidebar';
@@ -42,6 +44,18 @@ export default function LoanAdminPaymentStatus() {
   const [savingsFilter, setSavingsFilter] = useState('all');
   const [savingsTypeFilter, setSavingsTypeFilter] = useState('all'); // 'all', 'deposit', 'withdrawal'
   const [selectedSavings, setSelectedSavings] = useState(null);
+  const [savingsPage, setSavingsPage] = useState(1);
+  const SAVINGS_PER_PAGE = 10;
+  
+  const [historyPage, setHistoryPage] = useState(1);
+  const [historyTotalCount, setHistoryTotalCount] = useState(0);
+  const HISTORY_PER_PAGE = 10;
+  
+  useEffect(() => {
+    setSavingsPage(1);
+    setHistoryPage(1);
+  }, [searchQuery, savingsTypeFilter]);
+
   
   const [loanHistory, setLoanHistory] = useState([]);
 
@@ -71,71 +85,79 @@ export default function LoanAdminPaymentStatus() {
   const [walkinLoading, setWalkinLoading] = useState(false);
 
   const token = localStorage.getItem('adminToken');
+  const fetcherSingle = (url) => fetch(url, { headers: { Authorization: `Bearer ${token}` } }).then(res => res.json());
 
-  const fetchLoans = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`${API}/api/admin/loans`, { headers: { Authorization: `Bearer ${token}` } });
-      const data = await res.json();
-      if (data.success) {
-        setAllLoans(data.loans || []);
-        setLoans((data.loans || []).filter(l => l.status === 'active'));
-      }
-    } catch { /* silent */ }
-    finally { setLoading(false); }
-  }, [token]);
+  // Settings
+  const { data: settingsData } = useSWR(`${API}/api/settings/public`, fetcherSingle, { revalidateOnFocus: false });
+  useEffect(() => {
+    if (settingsData && settingsData.success) {
+      setApprovalMethod(settingsData.paymentApprovalMethod || 'gateway');
+    }
+  }, [settingsData]);
 
+  // Loans
+  const { data: loansData, isValidating: loadingLoans, mutate: fetchLoans } = useSWR(
+    token ? `${API}/api/admin/loans` : null,
+    fetcherSingle,
+    { revalidateOnFocus: false, revalidateIfStale: true }
+  );
+  useEffect(() => {
+    if (loansData && loansData.success) {
+      setAllLoans(loansData.loans || []);
+      setLoans((loansData.loans || []).filter(l => l.status === 'active'));
+    }
+  }, [loansData]);
 
+  // Savings
+  const { data: savingsData, mutate: fetchSavings } = useSWR(
+    token ? `${API}/api/admin/savings/deposits` : null,
+    fetcherSingle,
+    { revalidateOnFocus: false }
+  );
+  useEffect(() => {
+    if (savingsData && savingsData.success) {
+      setAllSavings(savingsData.deposits || []);
+    }
+  }, [savingsData]);
 
-  const fetchSavings = useCallback(async () => {
-    try {
-      const res = await fetch(`${API}/api/admin/savings/deposits`, { headers: { Authorization: `Bearer ${token}` } });
-      const data = await res.json();
-      if (data.success) {
-        setAllSavings(data.deposits || []);
-      }
-    } catch { /* silent */ }
-  }, [token]);
+  // Loan History
+  const debouncedSearchHistory = useDebounce(searchQuery, 400);
+  const { data: loanHistoryData } = useSWR(
+    token ? `${API}/api/admin/loans/payments?status=history&page=${historyPage}&limit=${HISTORY_PER_PAGE}&search=${encodeURIComponent(debouncedSearchHistory)}` : null,
+    fetcherSingle,
+    { revalidateOnFocus: false }
+  );
+  useEffect(() => {
+    if (loanHistoryData && loanHistoryData.success) {
+      setLoanHistory(loanHistoryData.payments || []);
+      setHistoryTotalCount(loanHistoryData.totalCount || 0);
+    }
+  }, [loanHistoryData]);
 
-  const fetchSettings = useCallback(async () => {
-    try {
-      const res = await fetch(`${API}/api/settings/public`);
-      const data = await res.json();
-      if (data.success) setApprovalMethod(data.paymentApprovalMethod || 'gateway');
-    } catch { /* silent */ }
-  }, []);
+  // Pending Approvals
+  const pendingSavUrl = (token && isSavingsRoute && approvalMethod === 'manual') ? `${API}/api/admin/savings/deposits?status=pending&limit=100` : null;
+  const pendingLoanUrl = (token && !isSavingsRoute && approvalMethod === 'manual') ? `${API}/api/admin/loans/payments?status=pending&limit=100` : null;
 
-  const fetchPendingApprovals = useCallback(async () => {
-    setPendingLoading(true);
-    try {
-      if (isSavingsRoute) {
-        const resSav = await fetch(`${API}/api/admin/savings/deposits?status=pending&limit=100`, { headers: { Authorization: `Bearer ${token}` } });
-        const dataSav = await resSav.json();
-        if (dataSav.success) setPendingSavings(dataSav.deposits || []);
-      } else {
-        const resLoan = await fetch(`${API}/api/admin/loans/payments?status=pending&limit=100`, { headers: { Authorization: `Bearer ${token}` } });
-        const dataLoan = await resLoan.json();
-        if (dataLoan.success) setPendingLoanPayments(dataLoan.payments || []);
-      }
-    } catch { /* silent */ }
-    finally { setPendingLoading(false); }
-  }, [token, isSavingsRoute]);
-
-  const fetchLoanHistory = useCallback(async () => {
-    try {
-      const res = await fetch(`${API}/api/admin/loans/payments?limit=200`, { headers: { Authorization: `Bearer ${token}` } });
-      const data = await res.json();
-      if (data.success) {
-        setLoanHistory(data.payments.filter(p => p.status !== 'pending') || []);
-      }
-    } catch { /* silent */ }
-  }, [token]);
-
-  useEffect(() => { fetchLoans(); fetchSavings(); fetchSettings(); fetchLoanHistory(); }, [fetchLoans, fetchSavings, fetchSettings, fetchLoanHistory]);
+  const { data: pendingSavData, isValidating: pendingLoadingSav, mutate: mutateSavPending } = useSWR(pendingSavUrl, fetcherSingle, { revalidateOnFocus: false });
+  const { data: pendingLoanData, isValidating: pendingLoadingLoan, mutate: mutateLoanPending } = useSWR(pendingLoanUrl, fetcherSingle, { revalidateOnFocus: false });
 
   useEffect(() => {
-    if (approvalMethod === 'manual') fetchPendingApprovals();
-  }, [fetchPendingApprovals, approvalMethod]);
+    if (pendingSavData && pendingSavData.success) setPendingSavings(pendingSavData.deposits || []);
+    if (pendingLoanData && pendingLoanData.success) setPendingLoanPayments(pendingLoanData.payments || []);
+  }, [pendingSavData, pendingLoanData]);
+
+  const fetchPendingApprovals = useCallback(() => {
+    if (isSavingsRoute) mutateSavPending();
+    else mutateLoanPending();
+  }, [isSavingsRoute, mutateSavPending, mutateLoanPending]);
+
+  useEffect(() => {
+    setPendingLoading(pendingLoadingSav || pendingLoadingLoan);
+  }, [pendingLoadingSav, pendingLoadingLoan]);
+
+  useEffect(() => {
+    setLoading(loadingLoans && !loansData);
+  }, [loadingLoans, loansData]);
 
   useEffect(() => {
     setActiveTab(isSavingsRoute ? 'savings' : 'loans');
@@ -554,44 +576,70 @@ export default function LoanAdminPaymentStatus() {
               <tbody>
                 {loading ? (
                   <tr><td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>Loading...</td></tr>
-                ) : confirmedSavings.filter(s => {
-                  const matchesSearch = (s.memberName || '').toLowerCase().includes(searchQuery.toLowerCase()) || (s.goalName || s.goalId || '').toLowerCase().includes(searchQuery.toLowerCase());
-                  const matchesType = savingsTypeFilter === 'all' || s.type === savingsTypeFilter;
-                  return matchesSearch && matchesType;
-                }).length === 0 ? (
-                  <tr><td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>No records found</td></tr>
-                ) : (
-                  confirmedSavings.filter(s => {
+                ) : (() => {
+                  const filteredSavingsList = confirmedSavings.filter(s => {
                     const matchesSearch = (s.memberName || '').toLowerCase().includes(searchQuery.toLowerCase()) || (s.goalName || s.goalId || '').toLowerCase().includes(searchQuery.toLowerCase());
                     const matchesType = savingsTypeFilter === 'all' || s.type === savingsTypeFilter;
                     return matchesSearch && matchesType;
-                  }).map(txn => (
-                    <tr key={txn._id} className="loan-admin-mgmt-table-row-hover" onClick={() => setSelectedSavings(txn)} style={{ cursor: 'pointer' }}>
-                      <td>{fmtDate(txn.confirmedAt || txn.date)}</td>
-                      <td>
-                        <div className="loan-admin-mgmt-table-member">
-                          <p className="loan-admin-mgmt-table-member-name">{txn.memberName || txn.email}</p>
-                          <p className="loan-admin-mgmt-table-member-email">{txn.email}</p>
-                        </div>
-                      </td>
-                      <td>
-                        <span className={`savings-type-badge savings-type-${txn.type}`}>
-                          {txn.type}
-                        </span>
-                      </td>
-                      <td style={{ fontSize: '13px', color: '#4B5563' }}>{txn.goalName || 'General Savings'}</td>
-                      <td className={`savings-amount-${txn.type}`}>
-                        {txn.type === 'withdrawal' ? '-' : '+'}{fmt(txn.amount)}
-                      </td>
-                      <td>
-                        <span className="ps-status-badge on-track">Confirmed</span>
-                      </td>
-                    </tr>
-                  ))
-                )}
+                  });
+                  
+                  if (filteredSavingsList.length === 0) {
+                    return <tr><td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>No records found</td></tr>;
+                  }
+                  
+                  const totalSavingsPages = Math.ceil(filteredSavingsList.length / SAVINGS_PER_PAGE);
+                  const paginatedSavings = filteredSavingsList.slice((savingsPage - 1) * SAVINGS_PER_PAGE, savingsPage * SAVINGS_PER_PAGE);
+                  
+                  return (
+                    <>
+                      {paginatedSavings.map(txn => (
+                        <tr key={txn._id} className="loan-admin-mgmt-table-row-hover" onClick={() => setSelectedSavings(txn)} style={{ cursor: 'pointer' }}>
+                          <td>{fmtDate(txn.confirmedAt || txn.date)}</td>
+                          <td>
+                            <div className="loan-admin-mgmt-table-member">
+                              <p className="loan-admin-mgmt-table-member-name">{txn.memberName || txn.email}</p>
+                              <p className="loan-admin-mgmt-table-member-email">{txn.email}</p>
+                            </div>
+                          </td>
+                          <td>
+                            <span className={`savings-type-badge savings-type-${txn.type}`}>
+                              {txn.type}
+                            </span>
+                          </td>
+                          <td style={{ fontSize: '13px', color: '#4B5563' }}>{txn.goalName || 'General Savings'}</td>
+                          <td className={`savings-amount-${txn.type}`}>
+                            {txn.type === 'withdrawal' ? '-' : '+'}{fmt(txn.amount)}
+                          </td>
+                          <td>
+                            <span className="ps-status-badge on-track">Confirmed</span>
+                          </td>
+                        </tr>
+                      ))}
+                    </>
+                  );
+                })()}
               </tbody>
             </table>
             </div>
+
+            {(() => {
+              const filteredSavingsList = confirmedSavings.filter(s => {
+                const matchesSearch = (s.memberName || '').toLowerCase().includes(searchQuery.toLowerCase()) || (s.goalName || s.goalId || '').toLowerCase().includes(searchQuery.toLowerCase());
+                const matchesType = savingsTypeFilter === 'all' || s.type === savingsTypeFilter;
+                return matchesSearch && matchesType;
+              });
+              const totalSavingsPages = Math.ceil(filteredSavingsList.length / SAVINGS_PER_PAGE);
+              if (totalSavingsPages > 1) {
+                return (
+                  <div className="la-pagination">
+                    <button disabled={savingsPage === 1} onClick={() => setSavingsPage(p => p - 1)} className="la-pagination-btn">Prev</button>
+                    <span className="la-pagination-text">Page {savingsPage} of {totalSavingsPages}</span>
+                    <button disabled={savingsPage === totalSavingsPages} onClick={() => setSavingsPage(p => p + 1)} className="la-pagination-btn">Next</button>
+                  </div>
+                );
+              }
+              return null;
+            })()}
           </div>
         )}
 
@@ -724,16 +772,10 @@ export default function LoanAdminPaymentStatus() {
               <tbody>
                 {loading ? (
                   <tr><td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>Loading...</td></tr>
-                ) : loanHistory.filter(txn => {
-                  return (txn.memberName || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         (txn.loanId || '').toLowerCase().includes(searchQuery.toLowerCase());
-                }).length === 0 ? (
+                ) : loanHistory.length === 0 ? (
                   <tr><td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>No payment history found</td></tr>
                 ) : (
-                  loanHistory.filter(txn => {
-                    return (txn.memberName || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
-                           (txn.loanId || '').toLowerCase().includes(searchQuery.toLowerCase());
-                  }).map(txn => (
+                  loanHistory.map(txn => (
                     <tr key={txn._id} className="loan-admin-mgmt-table-row-hover" onClick={() => setPendingDetail(txn)} style={{ cursor: 'pointer' }}>
                       <td>{fmtDate(txn.submittedAt || txn.createdAt || txn.date)}</td>
                       <td>
@@ -761,6 +803,14 @@ export default function LoanAdminPaymentStatus() {
                 )}
               </tbody>
             </table>
+
+            {historyTotalCount > HISTORY_PER_PAGE && (
+              <div className="la-pagination" style={{ margin: '20px 0 0 0' }}>
+                <button disabled={historyPage === 1} onClick={() => setHistoryPage(p => p - 1)} className="la-pagination-btn">Prev</button>
+                <span className="la-pagination-text">Page {historyPage} of {Math.ceil(historyTotalCount / HISTORY_PER_PAGE)}</span>
+                <button disabled={historyPage === Math.ceil(historyTotalCount / HISTORY_PER_PAGE)} onClick={() => setHistoryPage(p => p + 1)} className="la-pagination-btn">Next</button>
+              </div>
+            )}
           </div>
         )}
 

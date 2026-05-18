@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
+import useSWR from 'swr';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { Calendar, Clock, Edit, Globe, MapPin, Megaphone, Trash2 } from 'lucide-react';
@@ -31,36 +32,40 @@ export default function AdminAnnouncements() {
     images: [] // Changed from imageBase64 to images array
   });
 
-  const fetchAnnouncements = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`${API}/api/admin/announcements?admin=true`);
-      const data = await res.json();
-      if (data.success) setItems(data.announcements || []);
-    } catch {
-      toast.error('Failed to load announcements');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const token = localStorage.getItem('adminToken');
+  const fetcherSingle = (url) => fetch(url, { headers: { Authorization: `Bearer ${token}` } }).then(res => res.json());
 
-  const fetchBranches = useCallback(async () => {
-    try {
-      const token = localStorage.getItem('adminToken');
-      const res = await fetch(`${API}/api/admin/branches`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (data.success) setBranches((data.branches || []).map(b => b.name));
-    } catch { /* silent */ }
-  }, []);
+  const { data: announcementsData, isValidating: loadingAnnouncements, mutate: fetchAnnouncements } = useSWR(
+    token ? `${API}/api/admin/announcements?admin=true` : null,
+    fetcherSingle,
+    { revalidateOnFocus: false, revalidateIfStale: true }
+  );
 
   useEffect(() => {
-    const token = localStorage.getItem('adminToken');
-    if (!token) { navigate('/'); return; }
-    fetchAnnouncements();
-    fetchBranches();
-  }, [navigate, fetchAnnouncements, fetchBranches]);
+    if (announcementsData && announcementsData.success) {
+      setItems(announcementsData.announcements || []);
+    }
+  }, [announcementsData]);
+
+  const { data: branchesData } = useSWR(
+    token ? `${API}/api/admin/branches` : null,
+    fetcherSingle,
+    { revalidateOnFocus: false }
+  );
+
+  useEffect(() => {
+    if (branchesData && branchesData.success) {
+      setBranches((branchesData.branches || []).map(b => b.name));
+    }
+  }, [branchesData]);
+
+  useEffect(() => {
+    setLoading(loadingAnnouncements && !announcementsData);
+  }, [loadingAnnouncements, announcementsData]);
+
+  useEffect(() => {
+    if (!token) { navigate('/'); }
+  }, [navigate, token]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

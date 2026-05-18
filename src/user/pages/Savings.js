@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import useSWR from 'swr';
 
 import SavingsModals from '../components/SavingsModal';
 import '../styles/Savings.css';
@@ -47,7 +48,6 @@ export default function Savings() {
         completedGoals: 0,
         maxLoanable: 0,
     });
-    const [dataLoading, setDataLoading] = useState(true);
     const [error, setError] = useState('');
     const [txnPage, setTxnPage] = useState(1);
     const [txnTotal, setTxnTotal] = useState(0);
@@ -61,65 +61,48 @@ export default function Savings() {
     const [showInstruction, setShowInstruction] = useState(false);
     const [hasClosedInstruction, setHasClosedInstruction] = useState(false);
 
-    const fetchAll = useCallback(async (showLoader = true) => {
-        if (showLoader) setDataLoading(true);
-        setError('');
+    const fetcher = async (url) => {
         const token = localStorage.getItem('token');
-        if (!token) { if (showLoader) setDataLoading(false); return; }
-        const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
-        try {
-            if (txnPage === 1) {
-                const res = await fetch(`${API}/api/savings/overview?txnLimit=${TXN_LIMIT}`, { headers });
-                
-                // Safety guard
-                const contentType = res.headers.get("content-type");
-                if (!res.ok || !contentType || !contentType.includes("application/json")) {
-                    setError('Connection issue or backend update pending. Please try again in 1 minute.');
-                    setDataLoading(false);
-                    return;
-                }
-
-                if (res.status === 401) {
-                    localStorage.removeItem('token');
-                    window.location.href = '/';
-                    return;
-                }
-                const data = await res.json();
-                if (data.success) {
-                    setGoals(data.goals || []);
-                    setGoalPage(1); // Reset goal page on full refresh
-                    setTransactions(data.transactions || []);
-                    setTxnTotal(data.txnTotal || 0);
-                    setStats(data.stats || {});
-                    
-                    if ((data.stats?.totalSavings || 0) <= 0 && !hasClosedInstruction) {
-                        setShowInstruction(true);
-                    }
-                }
-            } else {
-                const res = await fetch(`${API}/api/savings/transactions?page=${txnPage}&limit=${TXN_LIMIT}`, { headers });
-                if (res.status === 401) {
-                    localStorage.removeItem('token');
-                    window.location.href = '/';
-                    return;
-                }
-                const data = await res.json();
-                if (data.success) {
-                    setTransactions(data.transactions || []);
-                    setTxnTotal(data.totalCount || 0);
-                }
-            }
-        } catch {
-            setError('Network error. Please try again.');
-        } finally {
-            setDataLoading(false);
+        if (!token) return null;
+        const res = await fetch(url, { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` } });
+        if (res.status === 401) {
+            localStorage.removeItem('token');
+            window.location.href = '/';
+            return null;
         }
-    }, [txnPage, hasClosedInstruction]);
+        return res.json();
+    };
 
-    // Initial data fetch
+    const { data: overviewData, isValidating: overviewValidating, mutate: mutateOverview } = useSWR(
+        txnPage === 1 ? `${API}/api/savings/overview?txnLimit=${TXN_LIMIT}` : null,
+        fetcher,
+        { revalidateOnFocus: false, revalidateIfStale: true }
+    );
+
+    const { data: txnData, isValidating: txnValidating, mutate: mutateTxn } = useSWR(
+        txnPage > 1 ? `${API}/api/savings/transactions?page=${txnPage}&limit=${TXN_LIMIT}` : null,
+        fetcher,
+        { revalidateOnFocus: false, revalidateIfStale: true }
+    );
+
+    const dataLoading = (txnPage === 1 && overviewValidating && !overviewData) || (txnPage > 1 && txnValidating && !txnData);
+
     useEffect(() => {
-        fetchAll();
-    }, [fetchAll]);
+        if (txnPage === 1 && overviewData?.success) {
+            setGoals(overviewData.goals || []);
+            setGoalPage(1);
+            setTransactions(overviewData.transactions || []);
+            setTxnTotal(overviewData.txnTotal || 0);
+            setStats(overviewData.stats || {});
+            
+            if ((overviewData.stats?.totalSavings || 0) <= 0 && !hasClosedInstruction) {
+                setShowInstruction(true);
+            }
+        } else if (txnPage > 1 && txnData?.success) {
+            setTransactions(txnData.transactions || []);
+            setTxnTotal(txnData.totalCount || 0);
+        }
+    }, [overviewData, txnData, txnPage, hasClosedInstruction]);
 
     const fetchMoreGoals = async () => {
         setLoadingMoreGoals(true);
@@ -149,7 +132,7 @@ export default function Savings() {
     const openDeposit = () => setModal('deposit');
     const openWithdraw = () => setModal('withdraw');
     const openNewGoal = () => setModal('newGoal');
-    const closeModal = () => { setModal(null); setModalData(null); fetchAll(false); };
+    const closeModal = () => { setModal(null); setModalData(null); mutateOverview(); mutateTxn(); };
 
     const hasGoals = goals.length > 0;
 
@@ -404,7 +387,7 @@ export default function Savings() {
                         {error && (
                             <div className="sv-error-banner">
                                 <span>{error}</span>
-                                <button onClick={fetchAll} className="sv-retry-btn">Retry</button>
+                                <button onClick={() => { mutateOverview(); mutateTxn(); }} className="sv-retry-btn">Retry</button>
                             </div>
                         )}
 

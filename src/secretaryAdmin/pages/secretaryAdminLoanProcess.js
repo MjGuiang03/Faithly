@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import useSWR from 'swr';
 import { toast } from 'sonner';
 import SecretaryAdminSidebar from '../components/secretaryAdminSidebar';
 import SecApprovedLoanDetailsModal from '../components/secApprovedLoanDetailsModal';
@@ -20,32 +21,34 @@ export default function SecretaryLoanProcess() {
 
     const [loans, setLoans] = useState([]);
 
-    const fetchLoans = async () => {
-        setLoading(true);
-        try {
-            const token = localStorage.getItem('secretaryToken') || localStorage.getItem('adminToken') || localStorage.getItem('token');
-            const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
-            
-            const res = await fetch(`${API}/api/admin/loans`, { headers });
-            if (!res.ok) throw new Error('Failed to fetch loans');
-            const data = await res.json();
-            
-            if (data.success && data.loans) {
-                // Show approved loans awaiting disbursement
-                const awaitingDisbursement = data.loans.filter(l => l.status === 'approved' || (l.status === 'active' && !l.disbursed));
-                setLoans(awaitingDisbursement);
-            }
-        } catch (err) {
-            console.error(err);
-            toast.error('Failed to fetch loans');
-        } finally {
-            setLoading(false);
-        }
-    };
+    const token = localStorage.getItem('secretaryToken') || localStorage.getItem('adminToken') || localStorage.getItem('token');
+    const fetcherSingle = (url) => fetch(url, { headers: { Authorization: `Bearer ${token}` } }).then(async res => {
+        if (!res.ok) throw new Error('Failed to fetch loans');
+        return res.json();
+    });
+
+    const { data: loansData, error: loansError, isValidating: loadingLoans, mutate: fetchLoans } = useSWR(
+        token ? `${API}/api/admin/loans` : null,
+        fetcherSingle,
+        { revalidateOnFocus: false, revalidateIfStale: true }
+    );
 
     useEffect(() => {
-        fetchLoans();
-    }, []);
+        if (loansError) {
+            toast.error('Failed to fetch loans');
+        }
+    }, [loansError]);
+
+    useEffect(() => {
+        if (loansData && loansData.success && loansData.loans) {
+            const awaitingDisbursement = loansData.loans.filter(l => l.status === 'approved' || (l.status === 'active' && !l.disbursed));
+            setLoans(awaitingDisbursement);
+        }
+    }, [loansData]);
+
+    useEffect(() => {
+        setLoading(loadingLoans && !loansData);
+    }, [loadingLoans, loansData]);
 
     const awaitingCount = loans.filter(l => !l.disbursed).length;
     const processedCount = loans.filter(l => l.disbursed).length;

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import useSWR from 'swr';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import '../styles/AdminNotification.css';
@@ -25,36 +26,36 @@ export default function AdminNotifications() {
   const [loading,       setLoading]       = useState(true);
   const [detailModal,   setDetailModal]   = useState(null);
 
-  const fetchNotifications = useCallback(async () => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem('adminToken');
-      const res = await fetch(`${API}/api/admin/notifications`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (data.success) {
-        setNotifications(data.notifications);
-        setReadIds(new Set(data.readIds || []));
-      } else {
-        toast.error('Failed to load notifications');
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error('Failed to load notifications');
-    } finally {
-      setLoading(false);
+  const token = localStorage.getItem('adminToken');
+  const fetcherSingle = (url) => fetch(url, { headers: { Authorization: `Bearer ${token}` } }).then(res => res.json());
+
+  const { data: notifData, isValidating: loadingNotifs, mutate: fetchNotifications } = useSWR(
+    token ? `${API}/api/admin/notifications` : null,
+    fetcherSingle,
+    { revalidateOnFocus: false, revalidateIfStale: true }
+  );
+
+  useEffect(() => {
+    if (notifData) {
+        if (notifData.success) {
+            setNotifications(notifData.notifications || []);
+            setReadIds(new Set(notifData.readIds || []));
+        } else {
+            toast.error('Failed to load notifications');
+        }
     }
-  }, []);
+  }, [notifData]);
+
+  useEffect(() => {
+    setLoading(loadingNotifs && !notifData);
+  }, [loadingNotifs, notifData]);
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
     if (!token) {
       navigate('/');
-      return;
     }
-    fetchNotifications();
-  }, [navigate, fetchNotifications]);
+  }, [navigate]);
 
   // Derive isRead from state set
   const enriched = notifications.map(n => ({ ...n, isRead: readIds.has(n.id) }));

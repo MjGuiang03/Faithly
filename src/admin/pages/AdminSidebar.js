@@ -67,7 +67,7 @@ export default function AdminSidebar() {
 
     const onUpdate = () => { calcUnread(); };
     window.addEventListener('admin-notif-read-update', onUpdate);
-    const intervalId = setInterval(() => { calcUnread(); }, 30000);
+    const intervalId = setInterval(() => { calcUnread(); }, 60000);
     return () => {
       window.removeEventListener('admin-notif-read-update', onUpdate);
       clearInterval(intervalId);

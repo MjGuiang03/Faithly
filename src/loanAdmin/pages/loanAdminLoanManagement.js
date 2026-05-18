@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import useSWR from 'swr';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import LoanAdminSidebar from './loanAdminSidebar';
@@ -119,57 +120,61 @@ export default function LoanAdminLoanManagement() {
     const [ocrResults, setOcrResults] = useState(null);
     const [isOcrLoading, setIsOcrLoading] = useState(false);
 
-    /* ── Fetch loans from API ── */
-    const fetchLoans = useCallback(async () => {
-        setLoading(true);
-        try {
-            const token = localStorage.getItem('adminToken');
-            const params = new URLSearchParams();
-            params.set('page', page);
-            params.set('limit', LIMIT);
-            if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim());
-            if (statusFilter !== 'all') params.set('status', statusFilter);
+    const token = localStorage.getItem('adminToken');
 
-            const res = await fetch(`${API}/api/admin/loans?${params}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            const data = await res.json();
+    const fetcherSingle = (url) => fetch(url, { headers: { Authorization: `Bearer ${token}` } }).then(res => {
+        if (res.status === 401 || res.status === 403) { navigate('/'); return { success: false }; }
+        return res.json();
+    });
 
-            if (!res.ok) {
-                if (res.status === 401 || res.status === 403) { navigate('/'); return; }
-                toast.error(data.message || 'Failed to fetch loans');
-                return;
+    const queryParams = useMemo(() => {
+        const params = new URLSearchParams();
+        params.set('page', page);
+        params.set('limit', LIMIT);
+        if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim());
+        if (statusFilter !== 'all') params.set('status', statusFilter);
+        return params.toString();
+    }, [page, debouncedSearch, statusFilter]);
+
+    const { data: loansData, isValidating: loadingLoans, mutate: fetchLoans } = useSWR(
+        token ? `${API}/api/admin/loans?${queryParams}` : null,
+        fetcherSingle,
+        { revalidateOnFocus: false, revalidateIfStale: true }
+    );
+
+    useEffect(() => {
+        if (loansData && loansData.success !== false) {
+            if (loansData.message && !loansData.loans) {
+                toast.error(loansData.message || 'Failed to fetch loans');
+            } else {
+                setLoans(loansData.loans || []);
+                setStats({
+                    pending: loansData.stats?.pending || 0,
+                    active: loansData.stats?.active || 0,
+                    completed: loansData.stats?.completed || 0,
+                    rejected: loansData.stats?.rejected || 0,
+                });
             }
-
-            setLoans(data.loans || []);
-            setStats({
-                pending: data.stats?.pending || 0,
-                active: data.stats?.active || 0,
-                completed: data.stats?.completed || 0,
-                rejected: data.stats?.rejected || 0,
-            });
-        } catch (err) {
-            toast.error('Network error. Could not load loans.');
-        } finally {
-            setLoading(false);
         }
-    }, [page, debouncedSearch, statusFilter, navigate]);
+    }, [loansData]);
 
-    useEffect(() => { fetchLoans(); }, [fetchLoans]);
+    const { data: allLoansData } = useSWR(
+        token ? `${API}/api/admin/loans?limit=10000` : null,
+        fetcherSingle,
+        { revalidateOnFocus: false }
+    );
+
+    useEffect(() => {
+        if (allLoansData && allLoansData.success !== false && allLoansData.loans) {
+            setAllLoansStats(allLoansData.loans);
+        }
+    }, [allLoansData]);
+
     useEffect(() => { setPage(1); }, [debouncedSearch, statusFilter]);
-
-    const fetchAllLoansStats = useCallback(async () => {
-        try {
-            const token = localStorage.getItem('adminToken');
-            const res = await fetch(`${API}/api/admin/loans?limit=10000`, { headers: { Authorization: `Bearer ${token}` } });
-            const data = await res.json();
-            if (data.success) {
-                setAllLoansStats(data.loans || []);
-            }
-        } catch { /* silent */ }
-    }, []);
-
-    useEffect(() => { fetchAllLoansStats(); }, [fetchAllLoansStats]);
+    
+    useEffect(() => {
+        setLoading(loadingLoans);
+    }, [loadingLoans]);
 
     const totalInterestFiltered = allLoansStats.filter(l => {
         if (l.status === 'rejected' || l.status === 'pending') return false;

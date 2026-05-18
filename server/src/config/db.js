@@ -18,18 +18,29 @@ requiredEnv.forEach(env => {
 });
 
 let client;
-try {
-  client = new MongoClient(process.env.MONGODB_URL, {
-    serverSelectionTimeoutMS: 5000,
-    connectTimeoutMS: 10000,
-    socketTimeoutMS: 45000,
-    maxPoolSize: 10
-  });
-  await client.connect();
-  console.log('✅ Connected to MongoDB');
-} catch (error) {
-  console.error('❌ MongoDB Connection Error:', error.message);
-  process.exit(1);
+const MAX_RETRIES = 3;
+for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+  try {
+    client = new MongoClient(process.env.MONGODB_URL, {
+      serverSelectionTimeoutMS: 30000,
+      connectTimeoutMS: 30000,
+      socketTimeoutMS: 60000,
+      maxPoolSize: 10,
+      retryReads: true,
+      retryWrites: true,
+    });
+    await client.connect();
+    console.log('✅ Connected to MongoDB');
+    break;
+  } catch (error) {
+    console.error(`❌ MongoDB Connection Attempt ${attempt}/${MAX_RETRIES} failed:`, error.message);
+    if (attempt === MAX_RETRIES) {
+      console.error('❌ All connection attempts exhausted. Exiting.');
+      process.exit(1);
+    }
+    console.log(`⏳ Retrying in 3 seconds...`);
+    await new Promise(r => setTimeout(r, 3000));
+  }
 }
 
 const db = client.db(process.env.DB_NAME);
@@ -53,74 +64,87 @@ export const reportCache         = db.collection('reportCache');
 export const branches            = db.collection('branches');
 
 
-/* ================== DATABASE INDEXES ================== */
-await users.createIndex({ email: 1 }, { unique: true });
-await users.createIndex({ fullName: 1 });
-await users.createIndex({ memberId: 1 });
-await users.createIndex({ rfidCardId: 1 }, { sparse: true }); // Sparse index for RFID
-await otps.createIndex({ email: 1 });
-await loans.createIndex({ email: 1 });
-await loans.createIndex({ loanId: 1 });
-await loans.createIndex({ memberName: 1 });
-await attendance.createIndex({ email: 1 });
-await attendance.createIndex({ member: 1 });
-await attendance.createIndex({ recordId: 1 });
-await attendance.createIndex({ service: 1 });
-await attendance.createIndex({ sessionId: 1 }); // Link to session
-await attendanceSessions.createIndex({ branch: 1, status: 1 });
-await verifications.createIndex({ email: 1 });
-await donations.createIndex({ email: 1 });
-await donations.createIndex({ member: 1 });
-await donations.createIndex({ donationId: 1 });
-await donations.createIndex({ category: 1 });
-await otps.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
-
-// TTL index for pending registrations (auto-delete if not verified within 24 hours)
-await pendingRegistrations.createIndex({ createdAt: 1 }, { expireAfterSeconds: 86400 });
-await pendingRegistrations.createIndex({ email: 1 }, { unique: true });
-await announcements.createIndex({ createdAt: -1 });
-await savingsGoals.createIndex({ email: 1 });
-await savingsTransactions.createIndex({ email: 1 });
-await savingsTransactions.createIndex({ date: -1 });
-await savingsTransactions.createIndex({ email: 1, type: 1, status: 1, date: -1 });
-await prayers.createIndex({ createdAt: 1 }, { expireAfterSeconds: 604800 });
-
-
-/* ================== CREATE DEFAULT ADMINS ================== */
-const adminSeeds = [
-  { email: process.env.ADMIN_EMAIL,           password: process.env.ADMIN_PASS,           role: 'admin' },
-  { email: process.env.LOAN_ADMIN_EMAIL,      password: process.env.LOAN_ADMIN_PASS,      role: 'loanAdmin' },
-  { email: process.env.SECRETARY_ADMIN_EMAIL, password: process.env.SECRETARY_ADMIN_PASS, role: 'secretaryAdmin' },
-];
-
-for (const seed of adminSeeds) {
-  if (!seed.email || !seed.password) continue;
-  const exists = await admins.findOne({ email: seed.email });
-  if (!exists) {
-    const hash = await bcrypt.hash(seed.password, 12);
-    await admins.insertOne({
-      email: seed.email,
-      passwordHash: hash,
-      role: seed.role,
-      createdAt: new Date()
-    });
-    console.log(`✅ ${seed.role} admin created (${seed.email})`);
-  } else {
-    // Ensure password matches environment variable
-    const match = await bcrypt.compare(seed.password, exists.passwordHash);
-    if (!match) {
-      const hash = await bcrypt.hash(seed.password, 12);
-      await admins.updateOne(
-        { email: seed.email },
-        { $set: { passwordHash: hash, updatedAt: new Date() } }
-      );
-      console.log(`🔄 ${seed.role} admin password updated to match environment variable`);
-    }
-  }
+/* ================== DATABASE INDEXES (non-fatal) ================== */
+try {
+  await Promise.allSettled([
+    users.createIndex({ email: 1 }, { unique: true }),
+    users.createIndex({ fullName: 1 }),
+    users.createIndex({ memberId: 1 }),
+    users.createIndex({ rfidCardId: 1 }, { sparse: true }),
+    users.createIndex({ createdAt: -1 }),
+    otps.createIndex({ email: 1 }),
+    otps.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 }),
+    loans.createIndex({ email: 1 }),
+    loans.createIndex({ loanId: 1 }),
+    loans.createIndex({ memberName: 1 }),
+    loans.createIndex({ appliedDate: -1 }),
+    attendance.createIndex({ email: 1 }),
+    attendance.createIndex({ member: 1 }),
+    attendance.createIndex({ recordId: 1 }),
+    attendance.createIndex({ service: 1 }),
+    attendance.createIndex({ sessionId: 1 }),
+    attendance.createIndex({ createdAt: -1 }),
+    attendanceSessions.createIndex({ branch: 1, status: 1 }),
+    verifications.createIndex({ email: 1 }),
+    donations.createIndex({ email: 1 }),
+    donations.createIndex({ member: 1 }),
+    donations.createIndex({ donationId: 1 }),
+    donations.createIndex({ category: 1 }),
+    donations.createIndex({ createdAt: -1 }),
+    pendingRegistrations.createIndex({ createdAt: 1 }, { expireAfterSeconds: 86400 }),
+    pendingRegistrations.createIndex({ email: 1 }, { unique: true }),
+    announcements.createIndex({ createdAt: -1 }),
+    savingsGoals.createIndex({ email: 1 }),
+    savingsTransactions.createIndex({ email: 1 }),
+    savingsTransactions.createIndex({ date: -1 }),
+    savingsTransactions.createIndex({ email: 1, type: 1, status: 1, date: -1 }),
+    prayers.createIndex({ createdAt: 1 }, { expireAfterSeconds: 604800 }),
+  ]);
+  console.log('✅ Database indexes ensured');
+} catch (err) {
+  console.warn('⚠️ Some indexes may not have been created:', err.message);
 }
 
-/* ================== INITIALIZE GLOBAL SETTINGS ================== */
-const initializeSettings = async () => {
+
+/* ================== CREATE DEFAULT ADMINS (non-fatal) ================== */
+try {
+  const adminSeeds = [
+    { email: process.env.ADMIN_EMAIL,           password: process.env.ADMIN_PASS,           role: 'admin' },
+    { email: process.env.LOAN_ADMIN_EMAIL,      password: process.env.LOAN_ADMIN_PASS,      role: 'loanAdmin' },
+    { email: process.env.SECRETARY_ADMIN_EMAIL, password: process.env.SECRETARY_ADMIN_PASS, role: 'secretaryAdmin' },
+  ];
+
+  for (const seed of adminSeeds) {
+    if (!seed.email || !seed.password) continue;
+    const exists = await admins.findOne({ email: seed.email });
+    if (!exists) {
+      const hash = await bcrypt.hash(seed.password, 12);
+      await admins.insertOne({
+        email: seed.email,
+        passwordHash: hash,
+        role: seed.role,
+        createdAt: new Date()
+      });
+      console.log(`✅ ${seed.role} admin created (${seed.email})`);
+    } else {
+      // Ensure password matches environment variable
+      const match = await bcrypt.compare(seed.password, exists.passwordHash);
+      if (!match) {
+        const hash = await bcrypt.hash(seed.password, 12);
+        await admins.updateOne(
+          { email: seed.email },
+          { $set: { passwordHash: hash, updatedAt: new Date() } }
+        );
+        console.log(`🔄 ${seed.role} admin password updated to match environment variable`);
+      }
+    }
+  }
+} catch (err) {
+  console.warn('⚠️ Admin seeding encountered an error:', err.message);
+}
+
+/* ================== INITIALIZE GLOBAL SETTINGS (non-fatal) ================== */
+try {
   const existing = await settings.findOne({ _id: 'global' });
   if (!existing) {
     await settings.insertOne({
@@ -131,5 +155,6 @@ const initializeSettings = async () => {
     });
     console.log('✅ Global settings initialized');
   }
-};
-await initializeSettings();
+} catch (err) {
+  console.warn('⚠️ Settings initialization encountered an error:', err.message);
+}
