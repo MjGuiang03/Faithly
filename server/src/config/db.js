@@ -2,7 +2,8 @@ import { MongoClient } from 'mongodb';
 import dns from 'dns';
 
 // Force Google DNS to resolve MongoDB SRV records (fixes Render ETIMEOUT issues)
-// dns.setServers(['8.8.8.8', '8.8.4.4']);
+dns.setServers(['8.8.8.8', '8.8.4.4']);
+dns.setDefaultResultOrder('ipv4first'); // Fixes Node 18+ IPv6 timeout issues
 import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -19,9 +20,10 @@ requiredEnv.forEach(env => {
 let client;
 try {
   client = new MongoClient(process.env.MONGODB_URL, {
-    serverSelectionTimeoutMS: 10000, // Increase to 10 seconds for DNS/SRV resolution
-    socketTimeoutMS: 45000,
+    serverSelectionTimeoutMS: 5000,
     connectTimeoutMS: 10000,
+    socketTimeoutMS: 45000,
+    maxPoolSize: 10
   });
   await client.connect();
   console.log('✅ Connected to MongoDB');

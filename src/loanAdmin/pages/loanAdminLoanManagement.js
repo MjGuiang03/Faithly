@@ -35,7 +35,8 @@ function resolveStatusClass(status) {
     const s = status.toLowerCase();
     if (s === 'pending') return 'pending';
     if (s === 'awaiting_member_approval') return 'awaiting';
-    if (s === 'active' || s === 'completed' || s === 'approved') return 'approved';
+    if (s === 'completed') return 'completed';
+    if (s === 'active' || s === 'approved') return 'approved';
     if (s === 'rejected') return 'rejected';
     return 'pending';
 }
@@ -45,7 +46,8 @@ function resolveStatusLabel(status) {
     const s = status.toLowerCase();
     if (s === 'pending') return 'Pending';
     if (s === 'awaiting_member_approval') return 'Awaiting Member';
-    if (s === 'active' || s === 'completed' || s === 'approved') return 'Approved';
+    if (s === 'completed') return 'Completed';
+    if (s === 'active' || s === 'approved') return 'Approved';
     if (s === 'rejected') return 'Rejected';
     return status.charAt(0).toUpperCase() + status.slice(1);
 }
@@ -55,7 +57,8 @@ function resolveStatusDesc(status) {
     const s = status.toLowerCase();
     if (s === 'pending') return 'Awaiting admin review';
     if (s === 'awaiting_member_approval') return 'Modified terms sent to member';
-    if (s === 'active' || s === 'completed' || s === 'approved') return 'Loan has been approved';
+    if (s === 'completed') return 'Loan has been fully repaid';
+    if (s === 'active' || s === 'approved') return 'Loan has been approved';
     if (s === 'rejected') return 'Loan application rejected';
     return '';
 }
@@ -96,7 +99,7 @@ export default function LoanAdminLoanManagement() {
     const [allLoansStats, setAllLoansStats] = useState([]);
     const [interestFilter, setInterestFilter] = useState('all');
     const [statusFilter, setStatusFilter] = useState('all');
-    const [stats, setStats] = useState({ pending: 0, active: 0, rejected: 0 });
+    const [stats, setStats] = useState({ pending: 0, active: 0, completed: 0, rejected: 0 });
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(null);
     const [page, setPage] = useState(1);
@@ -141,7 +144,8 @@ export default function LoanAdminLoanManagement() {
             setLoans(data.loans || []);
             setStats({
                 pending: data.stats?.pending || 0,
-                active: (data.stats?.active || 0) + (data.stats?.completed || 0),
+                active: data.stats?.active || 0,
+                completed: data.stats?.completed || 0,
                 rejected: data.stats?.rejected || 0,
             });
         } catch (err) {
@@ -297,13 +301,27 @@ export default function LoanAdminLoanManagement() {
 
     /* ── View Details ── */
     const handleViewDetails = async (loan) => {
+        // Optimistically open modal with basic data
         setSelectedLoan(loan);
         setApprovedAmount(String(loan.amount || ''));
         setRepaymentTerm(String(loan.termMonths || ''));
         setShowDetailsModal(true);
 
+        let fullLoan = loan;
         try {
             const token = localStorage.getItem('adminToken');
+            
+            // 1. Fetch full loan details (includes base64 images omitted in list view)
+            const detailRes = await fetch(`${API}/api/admin/loans/${loan.loanId || loan._id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const detailData = await detailRes.json();
+            if (detailData.success && detailData.loan) {
+                fullLoan = detailData.loan;
+                setSelectedLoan(fullLoan);
+            }
+
+            // 2. Fetch member savings
             const res = await fetch(`${API}/api/admin/member-savings?email=${encodeURIComponent(loan.email)}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -312,7 +330,7 @@ export default function LoanAdminLoanManagement() {
         } catch { /* silent */ }
 
         /* ── Fetch DSS Analysis ── */
-        fetchDSSAnalysis(loan);
+        fetchDSSAnalysis(fullLoan);
     };
 
     /* ── Document Verification (OCR) ── */
@@ -327,22 +345,22 @@ export default function LoanAdminLoanManagement() {
 
         try {
             // Process Government ID primarily for name
-            if (selectedLoan.idData) {
-                const result = await performOCRScan(selectedLoan.idData, selectedLoan.memberName);
+            if (loan.idData) {
+                const result = await performOCRScan(loan.idData, loan.memberName);
                 if (result.isMatch) {
                     matchFound = true;
-                    messages.push(`Valid ID: Name match confirmed (${selectedLoan.memberName})`);
+                    messages.push(`Valid ID: Name match confirmed (${loan.memberName})`);
                 } else {
                     messages.push(`Valid ID: Mismatch or low confidence scan. Manual check required.`);
                 }
             }
 
             // Optional: Process Selfie if ID Scan failed to find name
-            if (!matchFound && selectedLoan.selfieData) {
-                const result = await performOCRScan(selectedLoan.selfieData, selectedLoan.memberName);
+            if (!matchFound && loan.selfieData) {
+                const result = await performOCRScan(loan.selfieData, loan.memberName);
                 if (result.isMatch) {
                     matchFound = true;
-                    messages.push(`Selfie w/ ID: Name match confirmed (${selectedLoan.memberName})`);
+                    messages.push(`Selfie w/ ID: Name match confirmed (${loan.memberName})`);
                 }
             }
 
@@ -406,36 +424,42 @@ export default function LoanAdminLoanManagement() {
                 </div>
 
                 {/* Status Cards */}
-                <div className="loan-admin-mgmt-stats" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
+                <div className="loan-admin-mgmt-stats" style={{ gridTemplateColumns: 'repeat(5, 1fr)' }}>
                     <div className="loan-admin-mgmt-stat-card" onClick={() => setStatusFilter(statusFilter === 'pending' ? 'all' : 'pending')} style={{ cursor: 'pointer', border: statusFilter === 'pending' ? '2px solid #3B82F6' : '1px solid #E5E7EB', transform: statusFilter === 'pending' ? 'translateY(-2px)' : 'none', transition: 'all 0.2s' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', minHeight: '24px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '0 0 4px 0', minHeight: '24px' }}>
                             <p className="loan-admin-mgmt-stat-label" style={{ margin: 0 }}>Pending Review</p>
                         </div>
                         <p className="loan-admin-mgmt-stat-value pending">{counts.pending}</p>
                     </div>
                     <div className="loan-admin-mgmt-stat-card" onClick={() => setStatusFilter(statusFilter === 'approved' ? 'all' : 'approved')} style={{ cursor: 'pointer', border: statusFilter === 'approved' ? '2px solid #10B981' : '1px solid #E5E7EB', transform: statusFilter === 'approved' ? 'translateY(-2px)' : 'none', transition: 'all 0.2s' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', minHeight: '24px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '0 0 4px 0', minHeight: '24px' }}>
                             <p className="loan-admin-mgmt-stat-label" style={{ margin: 0 }}>Approved</p>
                         </div>
                         <p className="loan-admin-mgmt-stat-value approved">{counts.active}</p>
                     </div>
+                    <div className="loan-admin-mgmt-stat-card" onClick={() => setStatusFilter(statusFilter === 'completed' ? 'all' : 'completed')} style={{ cursor: 'pointer', border: statusFilter === 'completed' ? '2px solid #8B5CF6' : '1px solid #E5E7EB', transform: statusFilter === 'completed' ? 'translateY(-2px)' : 'none', transition: 'all 0.2s' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '0 0 4px 0', minHeight: '24px' }}>
+                            <p className="loan-admin-mgmt-stat-label" style={{ margin: 0 }}>Completed</p>
+                        </div>
+                        <p className="loan-admin-mgmt-stat-value completed">{counts.completed}</p>
+                    </div>
                     <div className="loan-admin-mgmt-stat-card" onClick={() => setStatusFilter(statusFilter === 'rejected' ? 'all' : 'rejected')} style={{ cursor: 'pointer', border: statusFilter === 'rejected' ? '2px solid #EF4444' : '1px solid #E5E7EB', transform: statusFilter === 'rejected' ? 'translateY(-2px)' : 'none', transition: 'all 0.2s' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', minHeight: '24px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '0 0 4px 0', minHeight: '24px' }}>
                             <p className="loan-admin-mgmt-stat-label" style={{ margin: 0 }}>Rejected</p>
                         </div>
                         <p className="loan-admin-mgmt-stat-value rejected">{counts.rejected}</p>
                     </div>
                     <div className="loan-admin-mgmt-stat-card">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', minHeight: '24px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '0 0 4px 0', minHeight: '24px' }}>
                             <p className="loan-admin-mgmt-stat-label" style={{ margin: 0 }}>Total Income from Interest</p>
-                            <select value={interestFilter} onChange={e => setInterestFilter(e.target.value)} style={{ fontSize: '11px', padding: '2px 4px', borderRadius: '6px', border: '1px solid #D1D5DB' }}>
+                            <select value={interestFilter} onChange={e => setInterestFilter(e.target.value)} style={{ fontSize: '11px', padding: '2px 4px', borderRadius: '6px', border: '1px solid #D1D5DB', marginLeft: '8px' }}>
                                 <option value="all">All</option>
                                 <option value="2x">2x Savings</option>
                                 <option value="1.5x">1.5x Savings</option>
                                 <option value="1x">1x Savings</option>
                             </select>
                         </div>
-                        <p className="loan-admin-mgmt-stat-value" style={{ color: '#ffffff' }}>{fmt(totalInterestFiltered)}</p>
+                        <p className="loan-admin-mgmt-stat-value total-interest" style={{ color: '#ffffff' }} title={fmt(totalInterestFiltered)}>{fmt(totalInterestFiltered)}</p>
                     </div>
                 </div>
 
@@ -452,6 +476,11 @@ export default function LoanAdminLoanManagement() {
 
                 {/* Table */}
                 <div className="loan-admin-mgmt-table-container">
+                    {statusFilter === 'completed' && (
+                        <div style={{ padding: '16px 20px', borderBottom: '1px solid #e5e7eb', background: '#F9FAFB' }}>
+                            <h3 style={{ margin: 0, fontSize: '15px', color: '#111827', fontWeight: '600' }}>Completed Loans History</h3>
+                        </div>
+                    )}
                     <table className="loan-admin-mgmt-table">
                         <thead>
                             <tr>

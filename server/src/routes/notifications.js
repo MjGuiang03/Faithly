@@ -15,7 +15,7 @@ router.get('/notifications', authenticateAdmin, async (req, res) => {
       donations.find({}).sort({ createdAt: -1 }).limit(limit).toArray(),
       users.find({ isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(limit).toArray(),
       attendance.find({}).sort({ createdAt: -1 }).limit(limit).toArray(),
-      loans.find({}).sort({ appliedDate: -1 }).limit(limit).toArray(),
+      loans.find({}).project({ loanId: 1, memberName: 1, amount: 1, purpose: 1, status: 1, statusHistory: 1, appliedDate: 1, approvedDate: 1, updatedAt: 1, rejectedDate: 1 }).sort({ appliedDate: -1 }).limit(limit).toArray(),
       savingsTransactions.find({ type: 'deposit' }).sort({ date: -1 }).limit(limit).toArray(),
     ]);
 

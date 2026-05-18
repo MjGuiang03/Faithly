@@ -88,6 +88,7 @@ router.post('/loans/apply', authenticateUser, async (req, res) => {
       selfieData, idData,
       coeData, coeFileName,
       itrData, itrFileName,
+      payslipData, payslipFileName,
       hasActiveLoan, activeLoanScreenshotData, activeLoanScreenshotFileName
     } = req.body;
 
@@ -123,6 +124,8 @@ router.post('/loans/apply', authenticateUser, async (req, res) => {
       coeFileName: coeFileName || null,
       itrData: itrData || null,
       itrFileName: itrFileName || null,
+      payslipData: payslipData || null,
+      payslipFileName: payslipFileName || null,
       hasActiveLoan: hasActiveLoan || false,
       activeLoanScreenshotData: activeLoanScreenshotData || null,
       activeLoanScreenshotFileName: activeLoanScreenshotFileName || null,
@@ -211,6 +214,14 @@ router.get('/admin/loans', authenticateAdmin, async (req, res) => {
 
     const totalCount = await loans.countDocuments(query);
     const allLoans = await loans.find(query)
+      .project({
+        selfieData: 0,
+        idData: 0,
+        coeData: 0,
+        itrData: 0,
+        payslipData: 0,
+        activeLoanScreenshotData: 0
+      })
       .sort({ appliedDate: -1 })
       .skip(skip)
       .limit(limit)
@@ -220,7 +231,7 @@ router.get('/admin/loans', authenticateAdmin, async (req, res) => {
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     
-    const disbursedLoans = await loans.find({ disbursed: true }).toArray();
+    const disbursedLoans = await loans.find({ disbursed: true }).project({ amount: 1 }).toArray();
     const totalDisbursed = disbursedLoans.reduce((sum, l) => sum + (l.amount || 0), 0);
 
     const stats = {
@@ -244,6 +255,25 @@ router.get('/admin/loans', authenticateAdmin, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Failed to fetch loans' });
+  }
+});
+
+/* ================== ADMIN - GET SINGLE LOAN ================== */
+router.get('/admin/loans/:id', authenticateAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    let query = { loanId: id };
+    if (ObjectId.isValid(id)) {
+      query = { $or: [{ loanId: id }, { _id: new ObjectId(id) }] };
+    }
+
+    const loan = await loans.findOne(query);
+    if (!loan) return res.status(404).json({ success: false, message: 'Loan not found' });
+
+    res.status(200).json({ success: true, loan: enrichLoanWithNextPayment(loan) });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to fetch loan details' });
   }
 });
 
@@ -883,13 +913,13 @@ router.get('/admin/loan-reports', authenticateAdmin, async (req, res) => {
     // All loans that were applied within the selected year
     const allLoansInYear = await loans.find({
       appliedDate: { $gte: yearStart, $lt: yearEnd }
-    }).toArray();
+    }).project({ status: 1, totalInterest: 1 }).toArray();
 
     // Disbursed loans (money released) in the selected year
     const disbursedLoans = await loans.find({
       disbursed: true,
       disbursementDate: { $gte: yearStart, $lt: yearEnd }
-    }).toArray();
+    }).project({ amount: 1, loanType: 1, disbursementDate: 1 }).toArray();
 
     // Active/completed loans (money to be received) in the selected year
     const activeCompletedLoans = allLoansInYear.filter(

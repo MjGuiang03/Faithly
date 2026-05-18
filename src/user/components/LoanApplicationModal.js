@@ -595,7 +595,7 @@ export default function LoanApplicationModal({
 
               {/* Selfie with ID & Date */}
               <div className="user-loan-application-group-half">
-                <label className="user-loan-application-label">Selfie with ID &amp; Current Date</label>
+                <label className="user-loan-application-label">Selfie with ID &amp; Current Date <span style={{ color: '#dc2626' }}>*</span></label>
                 <div
                   className={`user-loan-upload-box ${selfieImage ? 'user-loan-upload-box-done' : ''}`}
                   onClick={() => !selfieImage && openCamera('selfie')}
@@ -623,7 +623,7 @@ export default function LoanApplicationModal({
 
               {/* Valid Government ID */}
               <div className="user-loan-application-group-half">
-                <label className="user-loan-application-label">Valid Government ID</label>
+                <label className="user-loan-application-label">Valid Government ID <span style={{ color: '#dc2626' }}>*</span></label>
                 <div
                   className={`user-loan-upload-box ${idImage ? 'user-loan-upload-box-done' : ''}`}
                   onClick={() => !idImage && openCamera('id')}
@@ -658,7 +658,7 @@ export default function LoanApplicationModal({
             <p className="ula-capture-desc">Please upload your COE and ITR in image or PDF format.</p>
             <div className="user-loan-application-row">
               <div className="user-loan-application-group-half">
-                <label className="user-loan-application-label">Certificate of Employment (COE)</label>
+                <label className="user-loan-application-label">Certificate of Employment (COE) <span style={{ color: '#dc2626' }}>*</span></label>
                 <label className={`user-loan-upload-box ${coeFileName ? 'user-loan-upload-box-done' : ''}`} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                   <input type="file" accept="image/*,application/pdf" onChange={(e) => handleFileUpload(e, setCoeData, setCoeFileName)} style={{ display: 'none' }} />
                   {coeFileName ? (
@@ -679,7 +679,7 @@ export default function LoanApplicationModal({
                 </label>
               </div>
               <div className="user-loan-application-group-half">
-                <label className="user-loan-application-label">Income Tax Return (ITR)</label>
+                <label className="user-loan-application-label">Income Tax Return (ITR) <span style={{ color: '#dc2626' }}>*</span></label>
                 <label className={`user-loan-upload-box ${itrFileName ? 'user-loan-upload-box-done' : ''}`} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                   <input type="file" accept="image/*,application/pdf" onChange={(e) => handleFileUpload(e, setItrData, setItrFileName)} style={{ display: 'none' }} />
                   {itrFileName ? (
@@ -703,7 +703,7 @@ export default function LoanApplicationModal({
 
             <div className="user-loan-application-row" style={{ marginTop: '16px' }}>
               <div className="user-loan-application-group-half">
-                <label className="user-loan-application-label">Payslip</label>
+                <label className="user-loan-application-label">Payslip <span style={{ color: '#dc2626' }}>*</span></label>
                 <label className={`user-loan-upload-box ${payslipFileName ? 'user-loan-upload-box-done' : ''}`} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                   <input type="file" accept="image/*,application/pdf" onChange={(e) => handleFileUpload(e, setPayslipData, setPayslipFileName)} style={{ display: 'none' }} />
                   {payslipFileName ? (
@@ -726,7 +726,7 @@ export default function LoanApplicationModal({
             </div>
 
             <div style={{ marginTop: '20px' }}>
-              <label className="user-loan-application-label">Do you have an existing/active loan with another entity?</label>
+              <label className="user-loan-application-label">Do you have an existing/active loan with another entity? <span style={{ color: '#dc2626' }}>*</span></label>
               <div className="ula-disbursement-options" style={{ marginTop: '10px' }}>
                 <button
                   type="button"
@@ -751,7 +751,7 @@ export default function LoanApplicationModal({
 
             {hasActiveLoan && (
               <div style={{ marginTop: '20px' }}>
-                <label className="user-loan-application-label">Upload Active Loan Screenshot</label>
+                <label className="user-loan-application-label">Upload Active Loan Screenshot <span style={{ color: '#dc2626' }}>*</span></label>
                 <label className={`user-loan-upload-box ${activeLoanScreenshotFileName ? 'user-loan-upload-box-done' : ''}`} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                   <input type="file" accept="image/*,application/pdf" onChange={(e) => handleFileUpload(e, setActiveLoanScreenshotData, setActiveLoanScreenshotFileName)} style={{ display: 'none' }} />
                   {activeLoanScreenshotFileName ? (

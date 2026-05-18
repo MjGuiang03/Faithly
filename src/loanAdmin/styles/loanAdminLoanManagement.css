@@ -46,10 +46,10 @@
     background: #0D1F45;
     border: none;
     border-radius: 12px;
-    padding: 24px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     transition: transform 0.2s ease;
 }
@@ -75,6 +75,13 @@
     color: #ffffff;
 }
 
+.loan-admin-mgmt-stat-value.total-interest {
+    font-size: 24px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .loan-admin-mgmt-stat-value.pending {
     color: #FBBF24;
 }
@@ -85,6 +92,10 @@
 
 .loan-admin-mgmt-stat-value.rejected {
     color: #F87171;
+}
+
+.loan-admin-mgmt-stat-value.completed {
+    color: #8B5CF6;
 }
 
 /* ─────────────────────────────────────────
