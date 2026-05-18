@@ -587,7 +587,6 @@ export default function LoanAdminPaymentStatus() {
                     return <tr><td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>No records found</td></tr>;
                   }
                   
-                  const totalSavingsPages = Math.ceil(filteredSavingsList.length / SAVINGS_PER_PAGE);
                   const paginatedSavings = filteredSavingsList.slice((savingsPage - 1) * SAVINGS_PER_PAGE, savingsPage * SAVINGS_PER_PAGE);
                   
                   return (

@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import useSWR from 'swr';
 import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';

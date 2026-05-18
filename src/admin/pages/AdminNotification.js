@@ -29,7 +29,7 @@ export default function AdminNotifications() {
   const token = localStorage.getItem('adminToken');
   const fetcherSingle = (url) => fetch(url, { headers: { Authorization: `Bearer ${token}` } }).then(res => res.json());
 
-  const { data: notifData, isValidating: loadingNotifs, mutate: fetchNotifications } = useSWR(
+  const { data: notifData, isValidating: loadingNotifs } = useSWR(
     token ? `${API}/api/admin/notifications` : null,
     fetcherSingle,
     { revalidateOnFocus: false, revalidateIfStale: true }
