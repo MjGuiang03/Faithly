@@ -21,6 +21,8 @@ router.post('/donations', authenticateUser, async (req, res) => {
     const user = await users.findOne({ email });
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
+    const resolvedCommunity = community || user.branch || 'General';
+
     const count      = await donations.countDocuments();
     const donationId = `D-${new Date().getFullYear()}-${String(count + 1).padStart(3, '0')}`;
 
@@ -40,7 +42,7 @@ router.post('/donations', authenticateUser, async (req, res) => {
         member: user.fullName,
         amount: Number(amount),
         category,
-        community,
+        community: resolvedCommunity,
         method: paymentMethod || 'Manual',
         subMethod: subMethod || '',
         accountName: accountName || '',
@@ -75,7 +77,7 @@ router.post('/donations', authenticateUser, async (req, res) => {
       member: user.fullName,
       amount: Number(amount),
       category,
-      community,
+      community: resolvedCommunity,
       method: paymentMethod || 'PayMongo', // Store the specific method chosen
       type: isRecurring ? 'Recurring' : 'One-time',
       status: 'pending',
