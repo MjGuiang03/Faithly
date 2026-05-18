@@ -86,6 +86,8 @@ export default function LoanApplicationModal({
   const [coeFileName, setCoeFileName] = useState('');
   const [itrData, setItrData] = useState(null);
   const [itrFileName, setItrFileName] = useState('');
+  const [payslipData, setPayslipData] = useState(null);
+  const [payslipFileName, setPayslipFileName] = useState('');
   const [hasActiveLoan, setHasActiveLoan] = useState(null);
   const [activeLoanScreenshotData, setActiveLoanScreenshotData] = useState(null);
   const [activeLoanScreenshotFileName, setActiveLoanScreenshotFileName] = useState('');
@@ -285,6 +287,7 @@ export default function LoanApplicationModal({
     if (!idImage) { toast.error('Please capture a photo of your government ID.'); return; }
     if (!coeData) { toast.error('Please upload your Certificate of Employment (COE).'); return; }
     if (!itrData) { toast.error('Please upload your Income Tax Return (ITR).'); return; }
+    if (!payslipData) { toast.error('Please upload your Payslip.'); return; }
     if (hasActiveLoan === null) { toast.error('Please specify if you have an active loan with another entity.'); return; }
     if (hasActiveLoan === true && !activeLoanScreenshotData) { toast.error('Please upload a screenshot of your active loan.'); return; }
     if (!disbursementMethod) { toast.error('Please select a disbursement method.'); return; }
@@ -336,6 +339,8 @@ export default function LoanApplicationModal({
           coeFileName,
           itrData,
           itrFileName,
+          payslipData,
+          payslipFileName,
           hasActiveLoan,
           activeLoanScreenshotData: hasActiveLoan ? activeLoanScreenshotData : null,
           activeLoanScreenshotFileName: hasActiveLoan ? activeLoanScreenshotFileName : null
@@ -696,9 +701,33 @@ export default function LoanApplicationModal({
               </div>
             </div>
 
+            <div className="user-loan-application-row" style={{ marginTop: '16px' }}>
+              <div className="user-loan-application-group-half">
+                <label className="user-loan-application-label">Payslip</label>
+                <label className={`user-loan-upload-box ${payslipFileName ? 'user-loan-upload-box-done' : ''}`} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                  <input type="file" accept="image/*,application/pdf" onChange={(e) => handleFileUpload(e, setPayslipData, setPayslipFileName)} style={{ display: 'none' }} />
+                  {payslipFileName ? (
+                    <>
+                      <div className="ula-capture-done-row" style={{ marginTop: 0 }}>
+                        <CheckCircle size={20} color="#16a34a" />
+                        <span className="user-loan-upload-text user-loan-upload-text-done" style={{ fontSize: '14px' }}>File selected</span>
+                      </div>
+                      <span style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{payslipFileName}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="user-loan-upload-icon" size={28} color="#1E3A8A" />
+                      <p className="user-loan-upload-text">Click to upload</p>
+                      <p className="user-loan-upload-subtext">Image or PDF</p>
+                    </>
+                  )}
+                </label>
+              </div>
+            </div>
+
             <div style={{ marginTop: '20px' }}>
               <label className="user-loan-application-label">Do you have an existing/active loan with another entity?</label>
-              <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
+              <div className="ula-disbursement-options" style={{ marginTop: '10px' }}>
                 <button
                   type="button"
                   className={`ula-disbursement-btn ${hasActiveLoan === true ? 'ula-disbursement-btn--active' : ''}`}

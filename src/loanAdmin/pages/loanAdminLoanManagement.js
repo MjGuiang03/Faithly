@@ -814,6 +814,19 @@ export default function LoanAdminLoanManagement() {
                                                 </div>
                                             </div>
 
+                                            {/* Payslip */}
+                                            <div className="dm-doc-card" onClick={() => handleDocClick(selectedLoan.payslipData, setViewingImage)}>
+                                                <div className="dm-doc-placeholder">
+                                                    {renderDocPreview(selectedLoan.payslipData)}
+                                                </div>
+                                                <div className="dm-doc-footer">
+                                                    <span className="dm-doc-name">Payslip</span>
+                                                    <span className={`dm-doc-badge ${selectedLoan.payslipData ? 'ok' : 'missing'}`}>
+                                                        {selectedLoan.payslipData ? 'OK' : 'X'}
+                                                    </span>
+                                                </div>
+                                            </div>
+
                                             {/* Active Loan Screenshot */}
                                             {selectedLoan.hasActiveLoan && (
                                                 <div className="dm-doc-card" onClick={() => handleDocClick(selectedLoan.activeLoanScreenshotData, setViewingImage)}>

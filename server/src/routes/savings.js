@@ -470,11 +470,13 @@ router.post('/savings/transfer', authenticateUser, async (req, res) => {
         email, goalId: new ObjectId(fromGoalId), goalName: fromGoal.name,
         type: 'withdrawal', amount: transferAmount,
         description: desc, source: 'Transfer', date: now,
+        status: 'confirmed', confirmedAt: now
       },
       {
         email, goalId: new ObjectId(toGoalId), goalName: toGoal.name,
         type: 'deposit', amount: transferAmount,
         description: desc, source: 'Transfer', date: now,
+        status: 'confirmed', confirmedAt: now
       },
     ]);
 

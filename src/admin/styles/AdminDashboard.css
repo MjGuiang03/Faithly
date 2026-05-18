@@ -714,6 +714,9 @@
     background: white !important;
   }
 
+}
+
+.adm-ai-refresh-btn {
   height: 28px;
   border-radius: 6px;
   border: 1px solid #e5e7eb;

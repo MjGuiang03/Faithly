@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import API from '../../utils/api';
-import { ArrowLeft, CalendarDays, ChevronDown, Eye, EyeOff, Phone } from 'lucide-react';
+import { ArrowLeft, CalendarDays, ChevronDown, Eye, EyeOff, Phone, User, Briefcase } from 'lucide-react';
 import { toast } from 'sonner';
 
 import imgPuacLogo from "../../assets/puaclogo.png";
@@ -511,13 +511,23 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
           </div>
 
           {/* ROW 3.5: Role Selection */}
-          <div className="user-signup-form-group">
-            <label className="user-signup-form-label">I am a:</label>
+          <div className="user-signup-form-group" style={{ marginTop: '8px' }}>
+            <label className="user-signup-form-label" style={{ fontSize: '14px', fontWeight: 700, textTransform: 'none', color: '#111827', marginBottom: '4px' }}>I am a</label>
             <div className="user-role-radio-group">
               {[
-                { value: 'member', label: 'Member' },
-                { value: 'officer', label: 'Officer' },
-              ].map(({ value, label }) => (
+                { 
+                  value: 'member', 
+                  label: 'Member', 
+                  icon: <User className="user-role-icon" size={26} strokeWidth={2} />,
+                  sub: 'Donations, Attendance\n& Church Events'
+                },
+                { 
+                  value: 'officer', 
+                  label: 'Officer', 
+                  icon: <Briefcase className="user-role-icon" size={26} strokeWidth={2} />,
+                  sub: 'All Member features\n+ Loans, Savings & More'
+                },
+              ].map(({ value, label, icon, sub }) => (
                 <label
                   key={value}
                   className={`user-role-radio-card${formData.role === value ? ' user-role-radio-card--selected' : ''}`}
@@ -530,10 +540,17 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
                     onChange={handleChange}
                     className="user-role-radio-input"
                   />
-                  <span className="user-role-radio-dot" />
-                  <span className="user-role-radio-text">{label}</span>
+                  {icon}
+                  <div className="user-role-radio-text-container">
+                    <span className="user-role-radio-text">{label}</span>
+                    <span className="user-role-radio-subtext">{sub}</span>
+                  </div>
                 </label>
               ))}
+            </div>
+            <div className="user-role-clarification">
+              Officers are church-appointed leaders who manage loans and savings.<br />
+              A valid Church ID is required to register as an Officer.
             </div>
           </div>
 

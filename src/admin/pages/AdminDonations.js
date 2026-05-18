@@ -234,6 +234,7 @@ export default function AdminDonationsNew() {
               <tr>
                 <th>Donation ID</th>
                 <th>Member</th>
+                <th>Community</th>
                 <th>Amount</th>
                 <th>Purpose</th>
                 <th>Date</th>
@@ -245,13 +246,13 @@ export default function AdminDonationsNew() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="admin-don-empty-cell">
+                  <td colSpan={8} className="admin-don-empty-cell">
                     Loading donations…
                   </td>
                 </tr>
               ) : donations.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="admin-don-empty-cell">
+                  <td colSpan={8} className="admin-don-empty-cell">
                     No donations found
                   </td>
                 </tr>
@@ -263,6 +264,9 @@ export default function AdminDonationsNew() {
                     </td>
                     <td>
                       {donation.member || '—'}
+                    </td>
+                    <td className="admin-don-cell-muted">
+                      {donation.community || 'General'}
                     </td>
                     <td className="admin-don-cell-green-bold">
                       {fmt(donation.amount)}
@@ -363,67 +367,94 @@ export default function AdminDonationsNew() {
             </div>
 
             <div className="admin-don-modal-body-enhanced">
-              <div className="admin-don-modal-details-container">
-                <div className="admin-don-modal-detail-row">
-                  <span className="admin-don-modal-detail-label">Status</span>
-                  <div className="admin-don-modal-detail-value-container">
-                    <StatusBadge status={detailModal.status || 'pending'} />
+              <div className="admin-don-modal-split-layout">
+                {/* Left Column: Details */}
+                <div className="admin-don-modal-left-col">
+                  <div className="admin-don-modal-details-container">
+                    <div className="admin-don-modal-detail-row">
+                      <span className="admin-don-modal-detail-label">Status</span>
+                      <div className="admin-don-modal-detail-value-container">
+                        <StatusBadge status={detailModal.status || 'pending'} />
+                      </div>
+                    </div>
+                    <div className="admin-don-modal-detail-row">
+                      <span className="admin-don-modal-detail-label">Member</span>
+                      <span className="admin-don-modal-detail-value">{detailModal.member}</span>
+                    </div>
+                    <div className="admin-don-modal-detail-row">
+                      <span className="admin-don-modal-detail-label">Community</span>
+                      <span className="admin-don-modal-detail-value">{detailModal.community || 'General'}</span>
+                    </div>
+                    <div className="admin-don-modal-detail-row">
+                      <span className="admin-don-modal-detail-label">Amount</span>
+                      <span className="admin-don-modal-detail-value admin-don-modal-amount">{fmt(detailModal.amount)}</span>
+                    </div>
+                    <div className="admin-don-modal-detail-row">
+                      <span className="admin-don-modal-detail-label">Purpose</span>
+                      <span className="admin-don-modal-detail-value">{detailModal.category || 'General Fund'}</span>
+                    </div>
+                    <div className="admin-don-modal-detail-row">
+                      <span className="admin-don-modal-detail-label">Payment Method</span>
+                      <span className="admin-don-modal-detail-value">
+                        {detailModal.method || '—'} 
+                        {detailModal.subMethod ? ` (${detailModal.subMethod})` : ''}
+                      </span>
+                    </div>
+                    {detailModal.referenceNumber && (
+                      <div className="admin-don-modal-detail-row">
+                        <span className="admin-don-modal-detail-label">Reference No.</span>
+                        <span className="admin-don-modal-detail-value">{detailModal.referenceNumber}</span>
+                      </div>
+                    )}
+                    {detailModal.accountName && (
+                      <div className="admin-don-modal-detail-row">
+                        <span className="admin-don-modal-detail-label">Sender Account Name</span>
+                        <span className="admin-don-modal-detail-value">{detailModal.accountName}</span>
+                      </div>
+                    )}
+                    {detailModal.accountNumber && (
+                      <div className="admin-don-modal-detail-row">
+                        <span className="admin-don-modal-detail-label">Sender Account No.</span>
+                        <span className="admin-don-modal-detail-value">{detailModal.accountNumber}</span>
+                      </div>
+                    )}
+                    <div className="admin-don-modal-detail-row">
+                      <span className="admin-don-modal-detail-label">Date Submitted</span>
+                      <span className="admin-don-modal-detail-value">{fmtDate(detailModal.createdAt || detailModal.date)}</span>
+                    </div>
+                    <div className="admin-don-modal-detail-row">
+                      <span className="admin-don-modal-detail-label">Type</span>
+                      <span className="admin-don-modal-detail-value">{detailModal.type || 'One-time'}</span>
+                    </div>
                   </div>
                 </div>
-                <div className="admin-don-modal-detail-row">
-                  <span className="admin-don-modal-detail-label">Member</span>
-                  <span className="admin-don-modal-detail-value">{detailModal.member}</span>
-                </div>
-                <div className="admin-don-modal-detail-row">
-                  <span className="admin-don-modal-detail-label">Amount</span>
-                  <span className="admin-don-modal-detail-value admin-don-modal-amount">{fmt(detailModal.amount)}</span>
-                </div>
-                <div className="admin-don-modal-detail-row">
-                  <span className="admin-don-modal-detail-label">Purpose</span>
-                  <span className="admin-don-modal-detail-value">{detailModal.category || 'General Fund'}</span>
-                </div>
-                <div className="admin-don-modal-detail-row">
-                  <span className="admin-don-modal-detail-label">Payment Method</span>
-                  <span className="admin-don-modal-detail-value">
-                    {detailModal.method || '—'} 
-                    {detailModal.subMethod ? ` (${detailModal.subMethod})` : ''}
-                  </span>
-                </div>
-                {detailModal.accountName && (
-                  <div className="admin-don-modal-detail-row">
-                    <span className="admin-don-modal-detail-label">Sender Account Name</span>
-                    <span className="admin-don-modal-detail-value">{detailModal.accountName}</span>
+
+                {/* Right Column: Proof and Reject Reason */}
+                <div className="admin-don-modal-right-col">
+                  {detailModal.rejectReason && (
+                    <div className="admin-don-modal-reject-reason-enhanced">
+                      <span className="admin-don-modal-reject-label">Reject Reason</span>
+                      <p>{detailModal.rejectReason}</p>
+                    </div>
+                  )}
+
+                  <div className="admin-don-modal-proof-wrapper">
+                    <span className="admin-don-modal-detail-label">Proof of Payment</span>
+                    {(detailModal.proofData || detailModal.proofOfPayment) ? (
+                      <img 
+                        src={detailModal.proofData || detailModal.proofOfPayment} 
+                        alt="Proof" 
+                        className="admin-don-modal-proof-img" 
+                        onClick={(e) => { e.stopPropagation(); const win = window.open(); win.document.write(`<img src="${detailModal.proofData || detailModal.proofOfPayment}" style="max-width:100%;" />`); }}
+                      />
+                    ) : (
+                      <div className="admin-don-modal-no-proof">
+                        No proof provided
+                      </div>
+                    )}
                   </div>
-                )}
-                {detailModal.accountNumber && (
-                  <div className="admin-don-modal-detail-row">
-                    <span className="admin-don-modal-detail-label">Sender Account No.</span>
-                    <span className="admin-don-modal-detail-value">{detailModal.accountNumber}</span>
-                  </div>
-                )}
-                <div className="admin-don-modal-detail-row">
-                  <span className="admin-don-modal-detail-label">Date Submitted</span>
-                  <span className="admin-don-modal-detail-value">{fmtDate(detailModal.createdAt || detailModal.date)}</span>
-                </div>
-                <div className="admin-don-modal-detail-row">
-                  <span className="admin-don-modal-detail-label">Type</span>
-                  <span className="admin-don-modal-detail-value">{detailModal.type || 'One-time'}</span>
                 </div>
               </div>
-
-              {detailModal.rejectReason && (
-                <div className="admin-don-modal-reject-reason-enhanced">
-                  <span className="admin-don-modal-reject-label">Reject Reason</span>
-                  <p>{detailModal.rejectReason}</p>
-                </div>
-              )}
-
-              {(detailModal.proofData || detailModal.proofOfPayment) && (
-                <div style={{ marginTop: '16px' }}>
-                  <span className="admin-don-modal-detail-label">Proof of Payment</span>
-                  <img src={detailModal.proofData || detailModal.proofOfPayment} alt="Proof" style={{ width: '100%', maxHeight: '200px', objectFit: 'contain', marginTop: '8px', borderRadius: '6px', border: '1px solid #E5E7EB' }} />
-                </div>
-              )}
 
               {detailModal.status === 'pending' && (
                 <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '10px' }}>

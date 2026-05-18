@@ -25,12 +25,14 @@ export default function AdminFinancialReport() {
   const [reportMonth, setReportMonth] = useState('');
   const [reportYear, setReportYear] = useState(now.getFullYear());
   const [reportType, setReportType] = useState('all');
-  const [reportCommunity, setReportCommunity] = useState('');
+  const [locationType, setLocationType] = useState('all'); // 'all', 'province', 'specific'
+  const [selectedProvince, setSelectedProvince] = useState('');
+  const [selectedCommunities, setSelectedCommunities] = useState([]);
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [exporting, setExporting] = useState(false);
-  const [communities, setCommunities] = useState([]);
+  const [branchesData, setBranchesData] = useState([]);
   const [showConfirm, setShowConfirm] = useState(false);
 
   const adminRole = localStorage.getItem('adminRole'); // 'admin', 'loanAdmin', 'secretaryAdmin'
@@ -45,6 +47,9 @@ export default function AdminFinancialReport() {
         setReportMonth(parsed.month ?? '');
         setReportYear(parsed.year ?? now.getFullYear());
         setReportType(parsed.type ?? 'all');
+        setLocationType(parsed.locationType ?? 'all');
+        setSelectedProvince(parsed.selectedProvince ?? '');
+        setSelectedCommunities(parsed.selectedCommunities ?? []);
       }
     } catch { /* ignore parse errors */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -56,15 +61,15 @@ export default function AdminFinancialReport() {
     const fetchBranches = async () => {
       try {
         const token = localStorage.getItem('adminToken');
-        const res = await fetch(`${API}/api/admin/branches`, {
+        const res = await fetch(`${API}/api/admin/branches?limit=1000`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
         if (data.branches) {
-          setCommunities(data.branches.map(b => b.name).sort());
+          setBranchesData(data.branches);
         }
       } catch (err) {
-        console.error('Failed to fetch communities:', err);
+        console.error('Failed to fetch branches:', err);
       }
     };
     fetchBranches();
@@ -79,10 +84,13 @@ export default function AdminFinancialReport() {
           month: reportMonth,
           year: reportYear,
           type: reportType,
+          locationType,
+          selectedProvince,
+          selectedCommunities,
         }));
       } catch { /* quota exceeded — ignore */ }
     }
-  }, [report, reportMonth, reportYear, reportType, adminRole]);
+  }, [report, reportMonth, reportYear, reportType, locationType, selectedProvince, selectedCommunities, adminRole]);
 
   const generateReport = useCallback(async () => {
     setLoading(true);
@@ -95,7 +103,12 @@ export default function AdminFinancialReport() {
       params.set('year', reportYear);
       if (reportMonth !== '') params.set('month', reportMonth);
       params.set('type', reportType);
-      if (reportCommunity) params.set('community', reportCommunity);
+      
+      if (locationType === 'specific' && selectedCommunities.length > 0) {
+        params.set('community', selectedCommunities.join(','));
+      } else if (locationType === 'province' && selectedProvince) {
+        params.set('province', selectedProvince);
+      }
 
       const res = await fetch(`${API}/api/admin/financial-report?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -115,7 +128,13 @@ export default function AdminFinancialReport() {
     } finally {
       setLoading(false);
     }
-  }, [reportMonth, reportYear, reportType, reportCommunity, navigate]);
+  }, [reportMonth, reportYear, reportType, locationType, selectedProvince, selectedCommunities, navigate]);
+
+  const toggleCommunity = (c) => {
+    setSelectedCommunities(prev => 
+      prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]
+    );
+  };
 
   const handleGenerateClick = () => {
     setShowConfirm(true);
@@ -222,17 +241,30 @@ export default function AdminFinancialReport() {
             </div>
           )}
 
-          {adminRole === 'admin' && communities.length > 0 && (
-            <div className="fin-report-filter">
-              <MapPin size={14} />
-              <select value={reportCommunity} onChange={e => setReportCommunity(e.target.value)} className="fin-report-select">
-                <option value="">All Communities</option>
-                {communities.map(c => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-              <ChevronDown size={12} className="fin-report-select-arrow" />
-            </div>
+          {adminRole === 'admin' && branchesData.length > 0 && (
+            <>
+              <div className="fin-report-filter">
+                <MapPin size={14} />
+                <select value={locationType} onChange={e => setLocationType(e.target.value)} className="fin-report-select">
+                  <option value="all">All Locations</option>
+                  <option value="province">By Province</option>
+                  <option value="specific">Specific Communities</option>
+                </select>
+                <ChevronDown size={12} className="fin-report-select-arrow" />
+              </div>
+
+              {locationType === 'province' && (
+                <div className="fin-report-filter">
+                  <select value={selectedProvince} onChange={e => setSelectedProvince(e.target.value)} className="fin-report-select">
+                    <option value="">Select Province...</option>
+                    {Array.from(new Set(branchesData.map(b => b.province).filter(Boolean))).sort().map(p => (
+                      <option key={p} value={p}>{p}</option>
+                    ))}
+                  </select>
+                  <ChevronDown size={12} className="fin-report-select-arrow" />
+                </div>
+              )}
+            </>
           )}
 
           <div className="fin-report-filter">
@@ -274,6 +306,26 @@ export default function AdminFinancialReport() {
           )}
         </button>
       </div>
+
+      {/* ── Specific Communities Selector ── */}
+      {adminRole === 'admin' && locationType === 'specific' && branchesData.length > 0 && (
+        <div className="fin-report-specific-communities no-print">
+          <p className="fin-report-specific-label">Select Communities (Multiple allowed):</p>
+          <div className="fin-report-branch-list">
+            {branchesData.map(b => (
+              <label key={b.name} className={`fin-report-branch-chip${selectedCommunities.includes(b.name) ? ' selected' : ''}`}>
+                <input 
+                  type="checkbox" 
+                  checked={selectedCommunities.includes(b.name)} 
+                  onChange={() => toggleCommunity(b.name)} 
+                />
+                <MapPin size={11} />
+                <span>{b.name}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── Loading ── */}
       {loading && (
@@ -652,8 +704,12 @@ export default function AdminFinancialReport() {
               </div>
               {adminRole === 'admin' && (
                 <div className="fin-confirm-row">
-                  <span className="fin-confirm-label">Community</span>
-                  <span className="fin-confirm-value">{reportCommunity || 'All Communities'}</span>
+                  <span className="fin-confirm-label">Location</span>
+                  <span className="fin-confirm-value">
+                    {locationType === 'all' ? 'All Locations' : 
+                     locationType === 'province' ? `Province: ${selectedProvince || 'None'}` : 
+                     `${selectedCommunities.length} Communities Selected`}
+                  </span>
                 </div>
               )}
             </div>

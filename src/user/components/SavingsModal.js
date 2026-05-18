@@ -56,10 +56,10 @@ function DepositModal({ goals, onClose }) {
     useEffect(() => {
         const fetchSettings = async () => {
             try {
-                const res = await fetch(`${API}/api/admin/settings`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+                const res = await fetch(`${API}/api/settings/public`);
                 const data = await res.json();
-                if (data.success && data.settings?.paymentApprovalMethod) {
-                    setApprovalMethod(data.settings.paymentApprovalMethod);
+                if (res.ok && data.success) {
+                    setApprovalMethod(data.paymentApprovalMethod || 'gateway');
                 }
             } catch { /* silent */ }
         };
@@ -229,18 +229,18 @@ function DepositModal({ goals, onClose }) {
                                 <div style={{ marginTop: '16px' }}>
                                     <p style={{ marginBottom: '8px' }}>Please transfer your deposit to our <strong>{paymentMethod}</strong> account and upload the receipt below.</p>
                                     
-                                    <div className="user-donation-manual-info-grid">
-                                      <div className="user-donation-input-group">
-                                        <label className="user-donation-form-label">{paymentMethod} Option</label>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                      <div className="svm-field">
+                                        <label className="svm-label">{paymentMethod} Option</label>
                                         {paymentMethod === 'E-Wallet' ? (
-                                          <select className="user-donation-select" value={subMethod} onChange={(e) => setSubMethod(e.target.value)}>
-                                            <option value="">Select E-Wallet</option>
+                                          <select className="svm-select" value={subMethod} onChange={(e) => setSubMethod(e.target.value)}>
+                                            <option value="" disabled>Select E-Wallet…</option>
                                             <option value="GCash">GCash</option>
                                             <option value="Maya">Maya</option>
                                           </select>
                                         ) : (
-                                          <select className="user-donation-select" value={subMethod} onChange={(e) => setSubMethod(e.target.value)}>
-                                            <option value="">Select Bank</option>
+                                          <select className="svm-select" value={subMethod} onChange={(e) => setSubMethod(e.target.value)}>
+                                            <option value="" disabled>Select Bank…</option>
                                             <optgroup label="Card Payments">
                                               <option value="Master Card">Master Card</option>
                                               <option value="Visa">Visa</option>
@@ -257,22 +257,22 @@ function DepositModal({ goals, onClose }) {
                                           </select>
                                         )}
                                       </div>
-                                      <div className="user-donation-input-group">
-                                        <label className="user-donation-form-label">Sender Account Name</label>
+                                      <div className="svm-field">
+                                        <label className="svm-label">Sender Account Name</label>
                                         <input 
                                           type="text" 
-                                          className="user-donation-input" 
-                                          placeholder="Juan Dela Cruz"
+                                          className="svm-input" 
+                                          placeholder="e.g. Juan Dela Cruz"
                                           value={accountName}
                                           onChange={(e) => setAccountName(e.target.value)}
                                         />
                                       </div>
-                                      <div className="user-donation-input-group">
-                                        <label className="user-donation-form-label">Sender Account Number</label>
+                                      <div className="svm-field">
+                                        <label className="svm-label">Sender Account Number</label>
                                         <input 
                                           type="text" 
-                                          className="user-donation-input" 
-                                          placeholder="09123456789"
+                                          className="svm-input" 
+                                          placeholder="e.g. 09123456789"
                                           maxLength={11}
                                           value={accountNumber}
                                           onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, '').slice(0, 11))}
@@ -503,7 +503,7 @@ function NewGoalModal({ onClose }) {
 function QuickDepositModal({ goal, goals, onClose }) {
     const [amount, setAmount] = useState('');
     const [note, setNote] = useState('');
-    const [paymentMethod, setPaymentMethod] = useState('cash');
+    const [paymentMethod, setPaymentMethod] = useState('E-Wallet');
     const [subMethod, setSubMethod] = useState('');
     const [accountName, setAccountName] = useState('');
     const [accountNumber, setAccountNumber] = useState('');
@@ -687,18 +687,18 @@ function QuickDepositModal({ goal, goals, onClose }) {
                                         <div style={{ marginTop: '12px' }}>
                                             <p style={{ marginBottom: '8px' }}>Please transfer to our <strong>{paymentMethod}</strong> account and upload receipt.</p>
                                             
-                                            <div className="user-donation-manual-info-grid">
-                                              <div className="user-donation-input-group">
-                                                <label className="user-donation-form-label">{paymentMethod} Option</label>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                              <div className="svm-field">
+                                                <label className="svm-label">{paymentMethod} Option</label>
                                                 {paymentMethod === 'E-Wallet' ? (
-                                                  <select className="user-donation-select" value={subMethod} onChange={(e) => setSubMethod(e.target.value)}>
-                                                    <option value="">Select E-Wallet</option>
+                                                  <select className="svm-select" value={subMethod} onChange={(e) => setSubMethod(e.target.value)}>
+                                                    <option value="" disabled>Select E-Wallet…</option>
                                                     <option value="GCash">GCash</option>
                                                     <option value="Maya">Maya</option>
                                                   </select>
                                                 ) : (
-                                                  <select className="user-donation-select" value={subMethod} onChange={(e) => setSubMethod(e.target.value)}>
-                                                    <option value="">Select Bank</option>
+                                                  <select className="svm-select" value={subMethod} onChange={(e) => setSubMethod(e.target.value)}>
+                                                    <option value="" disabled>Select Bank…</option>
                                                     <optgroup label="Card Payments">
                                                       <option value="Master Card">Master Card</option>
                                                       <option value="Visa">Visa</option>
@@ -715,22 +715,22 @@ function QuickDepositModal({ goal, goals, onClose }) {
                                                   </select>
                                                 )}
                                               </div>
-                                              <div className="user-donation-input-group">
-                                                <label className="user-donation-form-label">Sender Account Name</label>
+                                              <div className="svm-field">
+                                                <label className="svm-label">Sender Account Name</label>
                                                 <input 
                                                   type="text" 
-                                                  className="user-donation-input" 
-                                                  placeholder="Juan Dela Cruz"
+                                                  className="svm-input" 
+                                                  placeholder="e.g. Juan Dela Cruz"
                                                   value={accountName}
                                                   onChange={(e) => setAccountName(e.target.value)}
                                                 />
                                               </div>
-                                              <div className="user-donation-input-group">
-                                                <label className="user-donation-form-label">Sender Account Number</label>
+                                              <div className="svm-field">
+                                                <label className="svm-label">Sender Account Number</label>
                                                 <input 
                                                   type="text" 
-                                                  className="user-donation-input" 
-                                                  placeholder="09123456789"
+                                                  className="svm-input" 
+                                                  placeholder="e.g. 09123456789"
                                                   maxLength={11}
                                                   value={accountNumber}
                                                   onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, '').slice(0, 11))}

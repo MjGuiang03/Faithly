@@ -476,6 +476,42 @@
   font-family: 'Inter', sans-serif;
 }
 
+.up-info-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.up-info-item-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.up-info-input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--foreground);
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.2s;
+}
+
+.up-info-input:focus {
+  outline: none;
+  border-color: #155DFC;
+  box-shadow: 0 0 0 3px rgba(21, 93, 252, 0.1);
+}
+
+.up-info-input:disabled {
+  background: var(--accent);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
 
 /* ── Activity List ── */
 .up-activity-list {

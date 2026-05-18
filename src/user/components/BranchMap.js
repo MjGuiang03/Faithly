@@ -38,7 +38,8 @@ export default function BranchMap({ branches, userBranch, onBranchClick, flyToRe
     if (instanceRef.current) return;
     const initialView = (userBranch && autoFocusUser) ? [userBranch.lat, userBranch.lng] : [12.5, 122.0];
     const initialZoom = (userBranch && autoFocusUser) ? 14 : 6;
-    const map = L.map(mapRef.current, { zoomControl: true }).setView(initialView, initialZoom);
+    const map = L.map(mapRef.current, { zoomControl: false }).setView(initialView, initialZoom);
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors', maxZoom: 18,
     }).addTo(map);

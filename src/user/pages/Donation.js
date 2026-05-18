@@ -10,6 +10,7 @@ import iconChildren from '../../assets/icon_children.png';
 import iconBuilding from '../../assets/icon_building.png';
 import iconYouth from '../../assets/icon_youth.png';
 import iconMission from '../../assets/icon_mission.png';
+import { branchData, REGION_ORDER } from '../components/branchData';
 
 import API from '../../utils/api';
 
@@ -53,7 +54,7 @@ export default function Donation() {
   const { user } = useAuth();
   const [donationAmount, setDonationAmount] = useState('');
   const [donationCategory, setDonationCategory] = useState('');
-  const [donationCommunity, setDonationCommunity] = useState('');
+  const [donationCommunity, setDonationCommunity] = useState(user?.branch || '');
   const [paymentMethod, setPaymentMethod] = useState('');
   const [subMethod, setSubMethod] = useState('');
   const [accountName, setAccountName] = useState('');
@@ -127,6 +128,12 @@ export default function Donation() {
     } catch { /* silent */ }
     finally { setModalLoading(false); }
   }, [modalPage, modalCategory, modalPaymentMethod]);
+
+  useEffect(() => {
+    if (user?.branch && !donationCommunity) {
+      setDonationCommunity(user.branch);
+    }
+  }, [user, donationCommunity]);
 
   useEffect(() => {
     if (isHistoryModalOpen) fetchModalHistory();
@@ -330,9 +337,9 @@ export default function Donation() {
                 </div>
               </div>
 
-              {/* Community / Branch */}
+              {/* Community */}
               <div className="user-donation-form-group">
-                <label className="user-donation-form-label">Community / Branch <span style={{ color: '#dc2626' }}>*</span></label>
+                <label className="user-donation-form-label">Community <span style={{ color: '#dc2626' }}>*</span></label>
                 <div className="user-select-wrapper">
                   <select
                     className="user-donation-form-select user-category-select"
@@ -341,53 +348,23 @@ export default function Donation() {
                     disabled={submitting}
                   >
                     <option value="" disabled>Select a community</option>
-                    <optgroup label="CAR – Kalinga">
-                      <option value="Tabuk">Tabuk</option>
-                      <option value="Zapote">Zapote</option>
-                      <option value="Bliss">Bliss</option>
-                      <option value="Libanon">Libanon</option>
-                      <option value="Batong Buhay">Batong Buhay</option>
-                      <option value="Balatoc">Balatoc</option>
-                      <option value="Lat-nog">Lat-nog</option>
-                    </optgroup>
-                    <optgroup label="CAR – Abra">
-                      <option value="Lamao">Lamao</option>
-                      <option value="Lingey">Lingey</option>
-                      <option value="Cabaruyan">Cabaruyan</option>
-                      <option value="Bengued">Bengued</option>
-                      <option value="Sappaac">Sappaac</option>
-                    </optgroup>
-                    <optgroup label="CAR – Benguet">
-                      <option value="Baguio">Baguio</option>
-                    </optgroup>
-                    <optgroup label="Region II – Isabela">
-                      <option value="Santiago City">Santiago City</option>
-                    </optgroup>
-                    <optgroup label="Region I – Pangasinan">
-                      <option value="Dagupan">Dagupan</option>
-                      <option value="Mangatarem">Mangatarem</option>
-                      <option value="San Carlos">San Carlos</option>
-                      <option value="Manaoag">Manaoag</option>
-                      <option value="Binmaley">Binmaley</option>
-                    </optgroup>
-                    <optgroup label="Region III">
-                      <option value="Meycauayan City">Meycauayan City</option>
-                      <option value="San Jose Del Monte">San Jose Del Monte</option>
-                    </optgroup>
-                    <optgroup label="NCR">
-                      <option value="Valenzuela City">Valenzuela City</option>
-                      <option value="Tandang Sora, Quezon City">Tandang Sora, QC</option>
-                    </optgroup>
-                    <optgroup label="Region IV-A – Rizal">
-                      <option value="Montalban">Montalban</option>
-                    </optgroup>
-                    <optgroup label="Region VII – Cebu">
-                      <option value="Mandaue">Mandaue</option>
-                    </optgroup>
-                    <optgroup label="Region XIII – Caraga">
-                      <option value="Butuan City">Butuan City</option>
-                      <option value="Bayugan">Bayugan</option>
-                    </optgroup>
+                    {REGION_ORDER.map(regionKey => {
+                      const regionBranches = branchData.filter(b => b.region === regionKey);
+                      if (regionBranches.length === 0) return null;
+                      
+                      const provinces = [...new Set(regionBranches.map(b => b.province))];
+                      
+                      return provinces.map(province => {
+                        const provinceBranches = regionBranches.filter(b => b.province === province);
+                        return (
+                          <optgroup key={`${regionKey}-${province}`} label={`${regionKey === 'NCR' ? 'NCR' : regionKey + ' – ' + province}`}>
+                            {provinceBranches.map(b => (
+                              <option key={b.name} value={b.name}>{b.name}</option>
+                            ))}
+                          </optgroup>
+                        );
+                      });
+                    })}
                   </select>
                   <ChevronDown className="user-select-icon" size={18} />
                 </div>
@@ -543,9 +520,6 @@ export default function Donation() {
                           </div>
                         </div>
                       ))}
-                      {recentDonations.length === 0 && (
-                        <p className="user-donation-recent-empty">No recent donations yet.</p>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -736,6 +710,10 @@ export default function Donation() {
                 <div className="user-receipt-detail-item">
                   <span className="user-receipt-detail-label">Payment Method</span>
                   <span className="user-receipt-detail-value">{selectedDonation.method || selectedDonation.paymentMethod}</span>
+                </div>
+                <div className="user-receipt-detail-item">
+                  <span className="user-receipt-detail-label">Reference No.</span>
+                  <span className="user-receipt-detail-value">{selectedDonation.referenceNumber || selectedDonation.donationId}</span>
                 </div>
               </div>
 

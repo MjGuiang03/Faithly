@@ -359,7 +359,7 @@
   background: white;
   border-radius: 16px;
   width: 100%;
-  max-width: 520px;
+  max-width: 720px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
   overflow: hidden;
   display: flex;
@@ -368,8 +368,8 @@
 
 .admin-don-modal-header-enhanced {
   display: flex;
-  gap: 16px;
-  padding: 24px 24px 0 24px;
+  gap: 12px;
+  padding: 20px 20px 0 20px;
 }
 
 .admin-don-modal-icon-wrapper {
@@ -433,40 +433,48 @@
 }
 
 .admin-don-modal-body-enhanced {
-  padding: 24px;
+  padding: 16px 20px 20px 20px;
   display: flex;
   flex-direction: column;
+  gap: 16px;
+}
+
+.admin-don-modal-split-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 20px;
 }
 
 .admin-don-modal-details-container {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr;
   border: 1px solid #E5E7EB;
   border-radius: 12px;
   overflow: hidden;
+  background: #FFFFFF;
 }
 
 .admin-don-modal-detail-row {
   display: flex;
+  flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 16px;
+  padding: 10px 14px;
   border-bottom: 1px solid #F3F4F6;
   background: #FFFFFF;
-}
-
-.admin-don-modal-detail-row:last-child {
-  border-bottom: none;
 }
 
 .admin-don-modal-detail-row:nth-child(even) {
   background: #F9FAFB;
 }
 
+.admin-don-modal-detail-row:last-child {
+  border-bottom: none;
+}
+
 .admin-don-modal-detail-label {
   font-family: 'Inter', sans-serif;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 500;
   color: #6B7280;
 }
@@ -478,7 +486,7 @@
 
 .admin-don-modal-detail-value {
   font-family: 'Inter', sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: #111827;
   text-align: right;
@@ -489,9 +497,38 @@
   color: #16A34A; /* changed from pink to green for donations */
 }
 
-.admin-don-modal-proof-section {
-  border-top: 0.8px solid #f1f5f9;
-  padding-top: 16px;
+.admin-don-modal-proof-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+}
+
+.admin-don-modal-proof-img {
+  width: 100%;
+  flex: 1;
+  max-height: 320px;
+  object-fit: contain;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.admin-don-modal-no-proof {
+  background: #f9fafb;
+  border: 0.8px dashed #d1d5db;
+  border-radius: 6px;
+  padding: 24px;
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: #9CA3AF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-height: 150px;
 }
 
 .admin-don-modal-proof-label {

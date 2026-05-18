@@ -4,7 +4,7 @@
   justify-content: space-between;
   align-items: center;
   gap: 16px;
-  margin-bottom: 28px;
+  margin-bottom: 16px;
 }
 
 .user-notif-filters {
@@ -41,6 +41,7 @@
   justify-content: center;
   gap: 8px;
   white-space: nowrap;
+  flex-shrink: 0;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
@@ -193,14 +194,14 @@
 .user-notif-list {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  padding-bottom: env(safe-area-inset-bottom, 32px);
+  gap: 12px;
+  padding-bottom: env(safe-area-inset-bottom, 24px);
 }
 
 .user-notif-section {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .user-notif-section-label {
@@ -258,9 +259,9 @@
   z-index: 2;
   display: flex;
   align-items: flex-start;
-  gap: 16px;
-  padding: 20px;
-  background: #EFF6FF;
+  gap: 12px;
+  padding: 14px 16px;
+  background: #F0F4FF;
   /* Default unread background: Light Blue */
   border: 1px solid #E5E7EB;
   border-radius: 2px;
@@ -443,11 +444,19 @@
 }
 
 .quick-read-dot {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   background: var(--sidebar);
   border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(13,31,69,0.1);
   transition: all 0.2s;
+  animation: pulse-ring 2s infinite cubic-bezier(0.66, 0, 0, 1);
+}
+
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(13, 31, 69, 0.4); }
+  70% { box-shadow: 0 0 0 4px rgba(13, 31, 69, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(13, 31, 69, 0); }
 }
 
 .quick-read-icon {
@@ -991,6 +1000,16 @@
   color: #16A34A;
 }
 
+.user-notif-badge-payment {
+  background: #DCFCE7;
+  color: #15803D;
+}
+
+.user-notif-badge-savings {
+  background: #FEF9C3;
+  color: #A16207;
+}
+
 .user-notif-summary-icon-stack {
   width: 36px;
   height: 36px;
@@ -1013,4 +1032,24 @@
   justify-content: center;
   min-width: 24px;
   height: 24px;
+}
+
+/* ── Mobile Layout Adjustments ── */
+@media (max-width: 768px) {
+  .user-notifications-page-header {
+    margin-top: 48px;
+  }
+
+  .user-notif-controls-row {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .user-notif-filters {
+    flex: 1 1 100%;
+  }
+
+  .user-notifications-mark-all-btn {
+    margin-left: auto;
+  }
 }

@@ -481,6 +481,7 @@ router.get('/branches', authenticateAdmin, async (req, res) => {
       const attData = attendanceStatsMap[b.name] || [];
       return {
         ...b,
+        province: b.province || (b.address ? b.address.split(',')[0].trim() : 'Unknown'),
         members,
         totalDonations: donStats.totalAmount,
         sameCommunityAmount: donStats.sameCommunityAmount,

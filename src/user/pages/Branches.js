@@ -6,6 +6,8 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { MapPin, Search, X, ChevronDown } from 'lucide-react';
 import BranchMap from '../components/BranchMap';
 import { branchData, REGION_ORDER, REGION_LABELS, DAY_COLORS, COMMUNITY_MAP } from '../components/branchData';
+import API from '../../utils/api';
+import { Calendar } from 'lucide-react';
 
 
 export default function Branches() {
@@ -18,6 +20,42 @@ export default function Branches() {
   const [openRegions, setOpenRegions] = useState(new Set(['CAR']));
   const [activeBranch, setActiveBranch] = useState(null);
   const flyToRef = useRef(null);
+
+  const [branchStats, setBranchStats] = useState({});
+  const [events, setEvents] = useState([]);
+
+  useEffect(() => {
+    fetch(`${API}/api/public/branches`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          const stats = {};
+          data.branches.forEach(b => {
+            stats[b.name] = { members: Number(b.members) || 0, officers: Number(b.officers) || 0 };
+          });
+          setBranchStats(stats);
+        }
+      })
+      .catch(err => console.error("Error fetching branch stats:", err));
+
+    fetch(`${API}/api/admin/announcements`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && Array.isArray(data.announcements)) {
+          setEvents(data.announcements);
+        }
+      })
+      .catch(err => console.error("Error fetching events:", err));
+  }, []);
+
+  const branchEvents = useMemo(() => {
+    if (!drawerBranch || !events) return [];
+    return events.filter(ev => {
+      if (!ev.targetBranches || ev.targetBranches.length === 0 || ev.targetBranches === 'all') return true;
+      if (Array.isArray(ev.targetBranches)) return ev.targetBranches.includes(drawerBranch.name);
+      return ev.targetBranches === drawerBranch.name;
+    });
+  }, [drawerBranch, events]);
 
   const toggleRegion = (key) => {
     setOpenRegions(prev => {
@@ -129,97 +167,132 @@ export default function Branches() {
           </div>
         </div>
 
-        {/* Map */}
-        <div className="ubr-map-area">
+        <div className="ubr-map-area" style={{ position: 'relative', overflow: 'hidden' }}>
           <BranchMap
             branches={branchData}
             userBranch={userBranch}
             onBranchClick={(branch) => { openDrawer(branch); }}
             flyToRef={flyToRef}
           />
+          
+          {/* ── Drawer ─────────────────────────────────────────────── */}
+          {drawerMounted && (
+            <>
+              <div className={`user-drawer-overlay${drawerVisible ? ' user-visible' : ''}`} onClick={closeDrawer} />
+              <div className={`user-branch-drawer${drawerVisible ? ' user-visible' : ''}`}>
+                <div className="user-drawer-header">
+                  <div className={`user-drawer-header-icon${userBranchName && drawerBranch?.name === userBranchName ? ' user-my-branch-icon' : ''}`}>
+                    <MapPin size={20} />
+                  </div>
+                  <div className="user-drawer-header-text">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <h2 className="user-drawer-branch-name">{drawerBranch?.name}</h2>
+                      {userBranchName && drawerBranch?.name === userBranchName && (
+                        <span className="user-drawer-my-badge">My Community</span>
+                      )}
+                    </div>
+                    <div className="user-drawer-branch-meta">
+                      <span className="user-detail-region-badge">{drawerBranch?.region}</span>
+                      {drawerBranch?.province !== drawerBranch?.region && (
+                        <span className="user-drawer-province">{drawerBranch?.province}</span>
+                      )}
+                    </div>
+                  </div>
+                  <button className="user-drawer-close" onClick={closeDrawer}>
+                    <X size={18} color="#6b7280" />
+                  </button>
+                </div>
+
+                <div className="user-drawer-body">
+                  <div className="user-drawer-section">
+                    <p className="user-drawer-section-label">Contact Information</p>
+                    <div className="user-drawer-contact-list">
+                      {[
+                        { icon: '📍', val: `${drawerBranch?.name}, ${drawerBranch?.province}` },
+                        { icon: '📞', val: '+63 90 000 0000' },
+                        { icon: '✉️', val: 'puac@gmail.com' },
+                      ].map(({ icon, val }) => (
+                        <div key={val} className="user-drawer-contact-row">
+                          <span className="user-drawer-contact-emoji">{icon}</span>
+                          <span className="user-drawer-contact-val">{val}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="user-drawer-section">
+                    <p className="user-drawer-section-label">Service Times</p>
+                    <div className="user-drawer-service-list">
+                      {drawerBranch?.serviceTimes.map((s, i) => (
+                        <div key={i} className="user-drawer-service-row">
+                          <span className="user-drawer-day-pill" style={DAY_COLORS[s.day] || {}}>{s.day}</span>
+                          <span className="user-drawer-time">{s.time}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="user-drawer-section">
+                    <p className="user-drawer-section-label">Community Statistics</p>
+                    <div className="user-drawer-stats-grid">
+                      <div className="user-drawer-stat-card">
+                        <div className="user-drawer-stat-val">
+                          {branchStats[drawerBranch?.name]?.members || 0}
+                        </div>
+                        <div className="user-drawer-stat-label">MEMBERS</div>
+                      </div>
+                      <div className="user-drawer-stat-card">
+                        <div className="user-drawer-stat-val">
+                          {branchStats[drawerBranch?.name]?.officers || 0}
+                        </div>
+                        <div className="user-drawer-stat-label">OFFICERS</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="user-drawer-section">
+                    <p className="user-drawer-section-label">Upcoming Events</p>
+                    {branchEvents.length > 0 ? (
+                      <div className="user-drawer-events-list">
+                        {branchEvents.slice(0, 3).map((ev, idx) => (
+                          <div key={idx} className="user-drawer-event-card">
+                            <div className="user-drawer-event-icon">
+                              <Calendar size={18} color="#1E3A8A" />
+                            </div>
+                            <div className="user-drawer-event-info">
+                              <div className="user-drawer-event-title">
+                                {ev.title}
+                              </div>
+                              <div className="user-drawer-event-meta">
+                                <span>{new Date(ev.createdAt).toLocaleDateString()}</span>
+                                {ev.category && (
+                                  <>
+                                    <span>•</span>
+                                    <span className="user-drawer-event-cat">{ev.category}</span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div style={{ padding: '16px', textAlign: 'center', background: '#f8fafc', borderRadius: '8px', border: '0.8px solid var(--border)', marginTop: '4px' }}>
+                        <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '500' }}>No upcoming events scheduled.</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="user-drawer-footer">
+                  <button className="user-get-directions-btn">Get Directions</button>
+                </div>
+              </div>
+            </>
+          )}
+
         </div>
       </div>
-
-      {/* ── Drawer ─────────────────────────────────────────────── */}
-      {drawerMounted && (
-        <>
-          <div className={`user-drawer-overlay${drawerVisible ? ' user-visible' : ''}`} onClick={closeDrawer} />
-          <div className={`user-branch-drawer${drawerVisible ? ' user-visible' : ''}`}>
-            <div className="user-drawer-header">
-              <div className={`user-drawer-header-icon${userBranchName && drawerBranch?.name === userBranchName ? ' user-my-branch-icon' : ''}`}>
-                <MapPin size={20} />
-              </div>
-              <div className="user-drawer-header-text">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <h2 className="user-drawer-branch-name">{drawerBranch?.name}</h2>
-                  {userBranchName && drawerBranch?.name === userBranchName && (
-                    <span className="user-drawer-my-badge">My Community</span>
-                  )}
-                </div>
-                <div className="user-drawer-branch-meta">
-                  <span className="user-detail-region-badge">{drawerBranch?.region}</span>
-                  {drawerBranch?.province !== drawerBranch?.region && (
-                    <span className="user-drawer-province">{drawerBranch?.province}</span>
-                  )}
-                </div>
-              </div>
-              <button className="user-drawer-close" onClick={closeDrawer}>
-                <X size={18} color="#6b7280" />
-              </button>
-            </div>
-
-            <div className="user-drawer-body">
-              <div className="user-drawer-section">
-                <p className="user-drawer-section-label">Contact Information</p>
-                <div className="user-drawer-contact-list">
-                  {[
-                    { icon: '📍', val: `${drawerBranch?.name}, ${drawerBranch?.province}` },
-                    { icon: '📞', val: '+63 90 000 0000' },
-                    { icon: '✉️', val: 'puac@gmail.com' },
-                  ].map(({ icon, val }) => (
-                    <div key={val} className="user-drawer-contact-row">
-                      <span className="user-drawer-contact-emoji">{icon}</span>
-                      <span className="user-drawer-contact-val">{val}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="user-drawer-section">
-                <p className="user-drawer-section-label">Service Times</p>
-                <div className="user-drawer-service-list">
-                  {drawerBranch?.serviceTimes.map((s, i) => (
-                    <div key={i} className="user-drawer-service-row">
-                      <span className="user-drawer-day-pill" style={DAY_COLORS[s.day] || {}}>{s.day}</span>
-                      <span className="user-drawer-time">{s.time}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="user-drawer-section">
-                <p className="user-drawer-section-label">Location</p>
-                <div className="user-drawer-map-container" style={{ width: '100%', height: '180px', borderRadius: '12px', overflow: 'hidden', background: '#f8fafc' }}>
-                  <iframe
-                    title={`${drawerBranch?.name} Map`}
-                    width="100%"
-                    height="100%"
-                    style={{ border: 0 }}
-                    loading="lazy"
-                    allowFullScreen
-                    src={`https://maps.google.com/maps?q=${encodeURIComponent(drawerBranch?.name + ', ' + drawerBranch?.province)},Philippines&t=&z=14&ie=UTF8&iwloc=&output=embed`}
-                  ></iframe>
-                </div>
-              </div>
-            </div>
-
-            <div className="user-drawer-footer">
-              <button className="user-get-directions-btn">Get Directions</button>
-              <button className="user-contact-btn">Contact Branch</button>
-            </div>
-          </div>
-        </>
-      )}
     </>
   );
 }

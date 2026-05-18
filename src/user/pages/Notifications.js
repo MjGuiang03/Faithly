@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import '../styles/Notifications.css';
 import API from '../../utils/api';
-import { Banknote, Bell, CalendarDays, Circle, Heart, ChevronDown, ChevronUp, Check, Building2, CircleCheck, AlertCircle, PiggyBank } from 'lucide-react';
+import { Banknote, Bell, CalendarDays, Circle, Heart, ChevronDown, ChevronUp, Check, Building2, CircleCheck, AlertCircle, PiggyBank, BadgeCheck, Landmark } from 'lucide-react';
 
 
 const fmt = (n) =>
@@ -24,11 +24,18 @@ const fmtTime = (date, isReminder) => {
   const mins = Math.floor(diffAgo / 60000);
   const hours = Math.floor(diffAgo / 3600000);
   const daysAgo = Math.floor(diffAgo / 86400000);
+
+  const dateStrFull = target.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
+  const dateStrShort = target.toLocaleDateString('en-PH', { month: 'short', day: 'numeric' });
+  const timeStr = target.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' });
+
   if (mins < 1) return 'just now';
   if (mins < 60) return `${mins} minute${mins > 1 ? 's' : ''} ago`;
-  if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-  if (daysAgo < 7) return `${daysAgo} day${daysAgo > 1 ? 's' : ''} ago`;
-  return target.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
+  
+  if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago · ${dateStrShort}, ${timeStr}`;
+  if (daysAgo < 7) return `${daysAgo} day${daysAgo > 1 ? 's' : ''} ago · ${dateStrShort}, ${timeStr}`;
+  
+  return `${dateStrFull} · ${timeStr}`;
 };
 
 // Persisted read access via db
@@ -118,7 +125,7 @@ export default function Notifications() {
               items.push({
                 ...hBase, id: `loan-approved-${l._id}`,
                 title: 'Loan Application Approved',
-                message: `Your loan application ${l.loanId ? `#${l.loanId}` : ''} has been approved by the loan officer.`,
+                message: `₱${Number(l.amount).toLocaleString()} approved — disbursement incoming`,
               });
             } else if (history.status === 'rejected') {
               items.push({
@@ -130,7 +137,7 @@ export default function Notifications() {
               items.push({
                 ...hBase, id: `loan-processed-${l._id}`,
                 title: 'Loan Disbursed',
-                message: `Your loan ${l.loanId ? `#${l.loanId}` : ''} for ₱${Number(l.amount).toLocaleString()} has been disbursed via ${(l.paymentMethod || 'cash').toUpperCase()}.`,
+                message: `Your loan ${l.loanId ? `#${l.loanId}` : ''} for ₱${Number(l.amount).toLocaleString()} has been disbursed via ${(l.paymentMethod || 'cash').toUpperCase()}. Funds should reflect within 1–2 banking days.`,
                 proofData: l.proofData || null,
               });
             }
@@ -141,7 +148,7 @@ export default function Notifications() {
             items.push({
               ...base, id: `loan-approved-${l._id}`,
               title: 'Loan Application Approved',
-              message: `Your loan application ${l.loanId ? `#${l.loanId}` : ''} for ₱${Number(l.amount).toLocaleString()} has been approved and is ready for release.`,
+              message: `₱${Number(l.amount).toLocaleString()} approved — disbursement incoming`,
             });
           } else if (l.status === 'pending') {
             items.push({
@@ -187,9 +194,9 @@ export default function Notifications() {
           timestamp: p.submittedAt || p.confirmedAt || p.createdAt,
           title: p.status === 'pending' ? 'Payment Submitted — Awaiting Confirmation' : (p.status === 'confirmed' ? 'Payment Confirmed' : 'Payment Rejected'),
           message: p.status === 'pending'
-            ? `Your Month #${p.monthNumber || ''} payment of ₱${Number(p.amount).toLocaleString()} via ${(p.paymentMethod || 'cash').toUpperCase()} has been submitted and is pending admin confirmation.`
+            ? `Month #${p.monthNumber || ''} payment of ₱${Number(p.amount).toLocaleString()} via ${(p.paymentMethod || 'cash').toUpperCase()} is awaiting confirmation.`
             : (p.status === 'confirmed'
-               ? `Your Month #${p.monthNumber || ''} payment of ₱${Number(p.amount).toLocaleString()} via ${(p.paymentMethod || 'cash').toUpperCase()} has been confirmed by the loan admin.`
+               ? `Month #${p.monthNumber || ''} · ₱${Number(p.amount).toLocaleString()} via ${(p.paymentMethod || 'cash').toUpperCase()} · Confirmed`
                : `Your Month #${p.monthNumber || ''} payment of ₱${Number(p.amount).toLocaleString()} via ${(p.paymentMethod || 'cash').toUpperCase()} was rejected.`),
           paymentData: p,
           isUrgent: p.status === 'rejected',
@@ -326,8 +333,8 @@ export default function Notifications() {
     );
 
     if (type === 'loan') {
-      if (title.includes('Disbursed'))  return wrap('var(--secondary)', 'var(--sidebar)', Building2);
-      if (title.includes('Approved'))   return wrap('var(--secondary)', 'var(--sidebar)', CircleCheck);
+      if (title.includes('Disbursed'))  return wrap('var(--secondary)', 'var(--sidebar)', Landmark);
+      if (title.includes('Approved'))   return wrap('var(--secondary)', 'var(--sidebar)', BadgeCheck);
       if (title.includes('Reminder'))   return wrap('#FEE2E2', '#B91C1C', AlertCircle);
       return wrap('var(--secondary)', 'var(--sidebar)', Banknote);
     }
@@ -341,8 +348,8 @@ export default function Notifications() {
   const badgeClass = (type) =>
     type === 'loan' ? 'user-notif-badge-loan'
       : type === 'donation' ? 'user-notif-badge-donation'
-        : type === 'savings' ? 'user-notif-badge-attendance'
-          : type === 'payment_pending' ? 'user-notif-badge-loan'
+        : type === 'savings' ? 'user-notif-badge-savings'
+          : type === 'payment_pending' ? 'user-notif-badge-payment'
             : 'user-notif-badge-attendance';
 
   const cardClass = (n) => {
@@ -521,6 +528,38 @@ export default function Notifications() {
       setTimeout(() => setIsSwiping(false), 50);
     };
 
+    const renderCTA = (n) => {
+      let text = '';
+      let link = '';
+      if (n.type === 'payment_pending') {
+        text = 'View Receipt →';
+        link = '/loans';
+      } else if (n.type === 'loan' && (n.title.includes('Approved') || n.title.includes('Disbursed'))) {
+        text = 'View Loan →';
+        link = '/loans';
+      } else if (n.type === 'loan' && (n.title.includes('Reminder') || n.isUrgent)) {
+        text = 'Pay Now →';
+        link = '/loans';
+      } else if (n.type === 'savings') {
+        text = 'View Savings →';
+        link = '/savings';
+      } else if (n.type === 'donation') {
+        text = 'View Donations →';
+        link = '/donations';
+      }
+      
+      if (!text) return null;
+      
+      return (
+        <span 
+          onClick={(e) => { e.stopPropagation(); window.location.href = link; }}
+          style={{ fontSize: '12px', fontWeight: '700', color: 'var(--sidebar)', cursor: 'pointer', marginTop: '4px' }}
+        >
+          {text}
+        </span>
+      );
+    };
+
     return (
       <div className={`user-notif-card-outer ${isExpanded ? 'expanded' : ''}`}>
         <div className="user-notif-swipe-reveal">
@@ -589,6 +628,7 @@ export default function Notifications() {
                     <span style={{ fontSize: '10px', color: 'var(--sidebar)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.02em' }}>Read</span>
                   </div>
                 )}
+                {renderCTA(n)}
                 {n.actionRequired && (
                   <span className="user-notif-review-hint" style={{ fontSize: '11px' }}>Tap to review →</span>
                 )}

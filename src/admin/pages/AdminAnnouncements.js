@@ -51,7 +51,7 @@ export default function AdminAnnouncements() {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
-      if (data.success) setBranches(data.branches || []);
+      if (data.success) setBranches((data.branches || []).map(b => b.name));
     } catch { /* silent */ }
   }, []);
 

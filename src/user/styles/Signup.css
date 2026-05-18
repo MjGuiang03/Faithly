@@ -416,33 +416,34 @@ input[type="date"].user-signup-form-input {
 /* ── Role selector ── */
 .user-role-radio-group {
   display: flex;
-  gap: 8px;
-  height: 40px;
+  gap: 12px;
 }
 
 .user-role-radio-card {
   flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  height: 100%;
+  gap: 8px;
+  padding: 16px 8px;
   background: var(--su-surface);
   border: 1.5px solid var(--su-border);
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
   transition: border-color 0.2s, background 0.2s;
   position: relative;
   user-select: none;
+  text-align: center;
 }
 
 .user-role-radio-card:hover {
-  border-color: var(--su-navy);
+  border-color: #3b82f6; /* Blue border on hover */
 }
 
 .user-role-radio-card--selected {
-  border-color: var(--su-navy);
-  background: var(--su-navy-pale);
+  border-color: #2563eb; /* Stronger blue border */
+  background: #eff6ff; /* Light blue background */
 }
 
 .user-role-radio-input {
@@ -453,46 +454,50 @@ input[type="date"].user-signup-form-input {
   pointer-events: none;
 }
 
-.user-role-radio-dot {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  border: 1.5px solid var(--su-border);
-  background: var(--su-surface);
-  flex-shrink: 0;
+.user-role-icon {
+  color: #64748b;
+  transition: color 0.2s;
+}
+
+.user-role-radio-card--selected .user-role-icon {
+  color: #2563eb;
+}
+
+.user-role-radio-text-container {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  transition: border-color 0.2s;
-}
-
-.user-role-radio-dot::after {
-  content: '';
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: transparent;
-  transition: background 0.2s;
-}
-
-.user-role-radio-card--selected .user-role-radio-dot {
-  border-color: var(--su-navy);
-}
-
-.user-role-radio-card--selected .user-role-radio-dot::after {
-  background: var(--su-navy);
+  gap: 4px;
 }
 
 .user-role-radio-text {
   font-family: 'DM Sans', sans-serif;
-  font-size: 0.80rem;
-  color: var(--su-muted);
+  font-size: 16px;
+  font-weight: 600;
+  color: #475569;
   transition: color 0.2s;
 }
 
 .user-role-radio-card--selected .user-role-radio-text {
-  color: var(--su-navy);
-  font-weight: 600;
+  color: #2563eb;
+  font-weight: 700;
+}
+
+.user-role-radio-subtext {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.4;
+  white-space: pre-line;
+}
+
+.user-role-clarification {
+  text-align: center;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.5;
+  margin-top: 12px;
 }
 
 /* ── Officer fields reveal ── */

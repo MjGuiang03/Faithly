@@ -154,8 +154,19 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
     const dateFilter = { $gte: startDate, $lte: endDate };
 
     const type = req.query.type || 'all';
-    const community = req.query.community || '';
-    const report = { period: periodLabel, startDate, endDate, generatedAt: new Date(), generatedBy: req.admin.email, reportType: type, community: community || 'All Communities' };
+    const communityQuery = req.query.community || '';
+    const communities = communityQuery ? communityQuery.split(',').filter(Boolean) : [];
+    const province = req.query.province || '';
+    
+    let branchToProvince = {};
+    if (province) {
+      const allBranches = await branches.find({}).toArray();
+      allBranches.forEach(b => {
+        branchToProvince[b.name] = b.province || (b.address ? b.address.split(',')[0].trim() : 'Unknown');
+      });
+    }
+
+    const report = { period: periodLabel, startDate, endDate, generatedAt: new Date(), generatedBy: req.admin.email, reportType: type, community: communities.length > 0 ? (communities.length === 1 ? communities[0] : `${communities.length} Selected Communities`) : (province ? `Province: ${province}` : 'All Communities') };
 
     // === Donations (Super Admin) ===
     if (role === 'admin') {
@@ -185,7 +196,8 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
 
         const member = allMembersMap[d.email];
         const targetBranch = d.community || member?.branch || 'Unknown';
-        if (community && targetBranch !== community) return; // skip if community filter active
+        if (communities.length > 0 && !communities.includes(targetBranch)) return; // skip if community filter active
+        if (province && branchToProvince[targetBranch] !== province) return; // skip if province filter active
         donByBranch[targetBranch] = (donByBranch[targetBranch] || 0) + amt;
       });
 
@@ -211,7 +223,8 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
       const attByBranch = {};
       periodAttendance.forEach(a => {
         const b = a.community || a.branch || a.userBranch || 'Unknown';
-        if (community && b !== community) return; // skip if community filter active
+        if (communities.length > 0 && !communities.includes(b)) return; // skip if community filter active
+        if (province && branchToProvince[b] !== province) return; // skip if province filter active
         attByBranch[b] = (attByBranch[b] || 0) + 1;
       });
         report.attendance = {
@@ -297,7 +310,7 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
     }
 
     // === AI Executive Summary with Caching ===
-    const cacheKey = `report_v2_${role}_${req.query.type || 'all'}_${reportMonth !== null ? reportMonth : 'full'}_${reportYear}_${community || 'all'}`;
+    const cacheKey = `report_v2_${role}_${req.query.type || 'all'}_${reportMonth !== null ? reportMonth : 'full'}_${reportYear}_${communities.join('-') || 'all'}_${province || 'all'}`;
     
     const cached = await reportCache.findOne({ cacheKey });
     const isOld = cached && (new Date() - new Date(cached.updatedAt) > 24 * 60 * 60 * 1000); 

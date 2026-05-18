@@ -465,240 +465,57 @@
   background: var(--muted);
 }
 
-/* ============================================================
-   PERSONAL INFORMATION SECTION - REVISED
-   ============================================================ */
-
-/* Override gap for the PI section — card sits closer to header */
-.user-pi-section {
-  gap: 16px;
+/* Shared Form Elements (used by Password section) */
+.user-pi-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 24px;
 }
 
-/* Section header — no divider, icon in light blue box */
-.user-pi-section-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.user-pi-icon-box {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  background: #dbeafe;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-/* ── Blue Profile Card with Upload ─────────────────────────────────── */
-.user-pi-card {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  background: linear-gradient(135deg, #1E3A8A 0%, #1246d1 100%);
-  border: none;
-  border-radius: 12px;
-  padding: 18px 20px;
-  box-shadow: 0 4px 15px rgba(30, 58, 138, 0.25);
-}
-
-/* Icon box inside the blue card */
-.user-pi-card-icon-box {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  border: 2px solid rgba(255, 255, 255, 0.35);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-/* Avatar wrapper with upload functionality */
-.user-pi-card-avatar-wrapper {
-  position: relative;
-  flex-shrink: 0;
-}
-
-/* Avatar circle */
-.user-pi-card-avatar {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  border: 2px solid rgba(255, 255, 255, 0.35);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: all 0.2s ease;
-}
-
-.user-pi-card-avatar-wrapper:hover .user-pi-card-avatar {
-  transform: scale(1.05);
-}
-
-/* Camera badge - only visible when editing */
-.user-pi-card-avatar-badge {
-  position: absolute;
-  bottom: -2px;
-  right: -2px;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: #10b981;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2.5px solid #fff;
-  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.4);
-  z-index: 1;
-  transition: all 0.2s ease;
-}
-
-.user-pi-card-avatar-wrapper:hover .user-pi-card-avatar-badge {
-  transform: scale(1.1);
-  background: #059669;
-}
-
-/* Name / email / badges column */
-.user-pi-card-info {
-  flex: 1;
+.user-pi-form-field {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.user-pi-card-name {
-  font-size: 16px;
-  font-weight: 700;
-  color: #ffffff;
-  font-family: 'Inter', sans-serif;
-  line-height: 1.3;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.user-pi-card-email {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.85);
-  font-family: 'Inter', sans-serif;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.user-pi-card-badges {
-  display: flex;
   gap: 6px;
-  margin-top: 6px;
-  flex-wrap: wrap;
 }
 
-.user-pi-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 12px;
-  border-radius: 20px;
+.user-pi-form-field-full {
+  grid-column: 1 / -1;
+}
+
+.user-pi-form-label {
   font-size: 11px;
-  font-weight: 700;
-  font-family: 'Inter', sans-serif;
-  letter-spacing: 0.02em;
-}
-
-.user-pi-badge-level {
-  background: #E0E7FF;
-  color: #3730A3;
-}
-
-.user-pi-badge-member {
-  background: #DBEAFE;
-  color: #1E40AF;
-}
-
-/* Action buttons (right side of card) */
-.user-pi-card-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-/* Edit Profile button — white pill */
-.user-pi-btn-edit {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 14px;
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 8px;
-  color: #ffffff;
-  font-size: 13px;
   font-weight: 600;
+  letter-spacing: 0.06em;
+  color: #6B7280;
   font-family: 'Inter', sans-serif;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
-  white-space: nowrap;
+  text-transform: uppercase;
+  margin-bottom: 6px;
 }
 
-.user-pi-btn-edit:hover {
-  background: rgba(255, 255, 255, 0.25);
-  transform: translateY(-1px);
-}
-
-/* Cancel button */
-.user-pi-btn-cancel {
-  padding: 7px 14px;
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.4);
+.user-pi-form-input {
+  width: 100%;
+  padding: 9px 12px;
+  background: var(--input-background);
+  border: 1px solid var(--border);
   border-radius: 8px;
-  color: #ffffff;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 14px;
+  color: var(--foreground);
   font-family: 'Inter', sans-serif;
-  cursor: pointer;
-  transition: background 0.2s;
-  white-space: nowrap;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
 }
 
-.user-pi-btn-cancel:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.25);
+.user-pi-form-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(21, 93, 252, 0.1);
 }
 
-.user-pi-btn-cancel:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Save Changes button */
-.user-pi-btn-save {
-  padding: 7px 16px;
-  background: #ffffff;
-  border: none;
-  border-radius: 8px;
-  color: #1d4ed8;
-  font-size: 13px;
-  font-weight: 700;
-  font-family: 'Inter', sans-serif;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
-  white-space: nowrap;
-}
-
-.user-pi-btn-save:hover:not(:disabled) {
-  background: #eff6ff;
-  transform: translateY(-1px);
-}
-
-.user-pi-btn-save:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.user-pi-form-input:disabled {
+  background: #F9FAFB;
+  color: #6B7280;
+  border-color: #E5E7EB;
+  cursor: default;
 }
 
 .user-pi-btn-cancel-bottom {
@@ -766,217 +583,6 @@
 
 .dark .user-pi-btn-edit-bottom:hover {
   background: var(--muted);
-}
-
-/* ── Expand / Collapse Button (in blue card) ──────────────────────────────────────── */
-.user-pi-card-chevron-btn {
-  margin-left: auto;
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 8px;
-  width: 34px;
-  height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: white;
-  transition: all 0.2s;
-  flex-shrink: 0;
-}
-
-.user-pi-card-chevron-btn:hover {
-  background: rgba(255, 255, 255, 0.28);
-}
-
-/* ── Collapsible Wrapper ──────────────────────────────────────────── */
-.user-pi-collapsible {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
-  opacity: 0;
-}
-
-.user-pi-collapsible--open {
-  max-height: 800px;
-  opacity: 1;
-}
-
-/* ── Edit Form ─────────────────────────────────────────── */
-.user-pi-edit-form {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  animation: user-pi-form-in 0.2s ease;
-  padding-top: 4px;
-}
-
-@keyframes user-pi-form-in {
-  from {
-    opacity: 0;
-    transform: translateY(-6px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* "Editing your profile" notice */
-.user-pi-edit-notice {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0;
-  font-size: 13px;
-  color: var(--primary);
-  font-family: 'Inter', sans-serif;
-  font-style: italic;
-}
-
-/* 2-column grid */
-.user-pi-form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px 24px;
-}
-
-.user-pi-form-field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-/* Full-width field */
-.user-pi-form-field-full {
-  grid-column: 1 / -1;
-}
-
-/* Uppercase small label (like in the image) */
-.user-pi-form-label {
-  font-size: 11px;
-  font-weight: 600;
-  /* Softer weight */
-  letter-spacing: 0.06em;
-  color: #6B7280;
-  /* Softer color */
-  font-family: 'Inter', sans-serif;
-  text-transform: uppercase;
-  margin-bottom: 6px;
-  /* Increased breathing room */
-}
-
-/* Standard input */
-.user-pi-form-input {
-  width: 100%;
-  padding: 9px 12px;
-  background: var(--input-background);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 14px;
-  color: var(--foreground);
-  font-family: 'Inter', sans-serif;
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  box-sizing: border-box;
-}
-
-.user-pi-form-input:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(21, 93, 252, 0.1);
-}
-
-.user-pi-form-input:disabled {
-  background: #F9FAFB;
-  color: #6B7280;
-  border-color: #E5E7EB;
-  cursor: default;
-}
-
-/* Select variant of the input */
-.user-pi-form-select {
-  appearance: none;
-  cursor: pointer;
-  background-image: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 6L8 10L12 6' stroke='%236b7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  padding-right: 32px;
-}
-
-/* Read-only text display (no border, looks like plain text) - REVISED */
-.user-pi-readonly-text {
-  padding: 8px 0;
-  color: #374151;
-  font-size: 14px;
-  font-family: 'Inter', sans-serif;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: transparent;
-  min-height: 36px;
-}
-
-.user-pi-readonly-text svg {
-  flex-shrink: 0;
-}
-
-.user-pi-readonly-text span {
-  line-height: 1.5;
-}
-
-/* Readonly note - now appears once below both fields - REVISED */
-.user-pi-readonly-note {
-  font-size: 11px;
-  color: #9ca3af;
-  font-family: 'Inter', sans-serif;
-  font-style: italic;
-  text-align: center;
-  margin-top: -8px;
-}
-
-/* Profile photo field */
-.user-pi-photo-field {
-  display: flex;
-  align-items: center;
-  gap: 0;
-}
-
-/* Blue "select" button attached to left of input */
-.user-pi-photo-select-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 9px 12px;
-  background: #1E3A8A;
-  color: white;
-  font-size: 13px;
-  font-weight: 600;
-  font-family: 'Inter', sans-serif;
-  border-radius: 8px 0 0 8px;
-  cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: background 0.2s;
-}
-
-.user-pi-photo-select-btn:hover {
-  background: #1246d1;
-}
-
-.user-pi-photo-input-hidden {
-  display: none;
-}
-
-/* Filename input — attached right */
-.user-pi-photo-filename {
-  border-radius: 0 8px 8px 0;
-  border-left: none;
-  flex: 1;
-}
-
-.user-pi-photo-filename:focus {
-  border-left: none;
 }
 
 /* Floating Chat Button */

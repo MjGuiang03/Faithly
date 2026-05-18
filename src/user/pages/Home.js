@@ -42,6 +42,7 @@ export default function Home() {
   const [showPrayerModal, setShowPrayerModal] = useState(false);
   const [prayers, setPrayers] = useState([]);
   const [newPrayer, setNewPrayer] = useState("");
+  const [calendarDate, setCalendarDate] = useState(new Date());
 
   const token = localStorage.getItem('token');
 
@@ -463,6 +464,9 @@ export default function Home() {
                 {!loading && (
                   <span className="uh-stat-sub uh-stat-sub--positive">+{formatCurrency(savingsStats.thisMonth)} this month</span>
                 )}
+                {loading && (
+                  <div className="user-skeleton" style={{ width: '60%', height: 10, borderRadius: 4, marginTop: 4 }} />
+                )}
               </div>
             </div>
             {/* Hover tooltip */}
@@ -500,6 +504,9 @@ export default function Home() {
                   <span className={`uh-stat-sub ${lateLoansCount > 0 ? 'uh-stat-sub--negative' : rejectedLoansCount > 0 ? 'uh-stat-sub--negative' : ''}`}>
                     {lateLoansCount > 0 ? `${lateLoansCount} late payment${lateLoansCount > 1 ? 's' : ''}` : rejectedLoansCount > 0 ? `${rejectedLoansCount} rejected` : 'No rejected'}
                   </span>
+                )}
+                {loading && (
+                  <div className="user-skeleton" style={{ width: '60%', height: 10, borderRadius: 4, marginTop: 4 }} />
                 )}
               </div>
             </div>
@@ -540,6 +547,9 @@ export default function Home() {
               {!loading && (
                 <span className="uh-stat-sub">{monthlyDonationCount} contribution{monthlyDonationCount !== 1 ? 's' : ''} this month</span>
               )}
+              {loading && (
+                <div className="user-skeleton" style={{ width: '60%', height: 10, borderRadius: 4, marginTop: 4 }} />
+              )}
             </div>
           </div>
         </div>
@@ -566,16 +576,28 @@ export default function Home() {
         <div className="uh-card uh-card--quick-actions">
           <h2 className="uh-card__heading">Quick Actions</h2>
           <div className={`uh-actions ${isOfficer ? 'uh-actions--grid' : ''}`}>
-            {quickActions.map((action, i) => (
-              <button key={i} onClick={action.action} className={`uh-action ${action.className}`}>
-                <div className="uh-action__icon">{action.icon}</div>
-                <div className="uh-action__text">
-                  <span className="uh-action__title">{action.title}</span>
-                  <span className="uh-action__desc">{action.description}</span>
-                </div>
-                <ChevronRight size={16} className="uh-action__arrow" />
-              </button>
-            ))}
+            {loading ? (
+              [1, 2, 3, 4].slice(0, isOfficer ? 4 : 3).map(i => (
+                <button key={i} className={`uh-action ${i % 2 === 0 ? 'uh-action--blue' : 'uh-action--purple'}`} style={{ pointerEvents: 'none', backgroundColor: 'rgba(0,0,0,0.03)' }}>
+                  <div className="user-skeleton" style={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0 }} />
+                  <div className="uh-action__text" style={{ flex: 1, width: '100%', alignItems: 'flex-start' }}>
+                    <div className="user-skeleton" style={{ height: 12, width: '50%', marginBottom: 6, borderRadius: 4 }} />
+                    <div className="user-skeleton" style={{ height: 10, width: '70%', borderRadius: 4 }} />
+                  </div>
+                </button>
+              ))
+            ) : (
+              quickActions.map((action, i) => (
+                <button key={i} onClick={action.action} className={`uh-action ${action.className} user-fade-in`}>
+                  <div className="uh-action__icon">{action.icon}</div>
+                  <div className="uh-action__text">
+                    <span className="uh-action__title">{action.title}</span>
+                    <span className="uh-action__desc">{action.description}</span>
+                  </div>
+                  <ChevronRight size={16} className="uh-action__arrow" />
+                </button>
+              ))
+            )}
           </div>
         </div>
 
@@ -586,17 +608,30 @@ export default function Home() {
           </div>
 
           {/* Savings Goal Progress */}
-          <div className="uh-insight-block">
+          <div className="uh-insight-block" style={{ flex: 1 }}>
             <div className="uh-insight-header">
               <div className="uh-insight-icon uh-insight-icon--savings"><Target size={16} /></div>
               <h3 className="uh-insight-title">Savings Goal</h3>
             </div>
-            {topSavingsGoal ? (() => {
+            {loading ? (
+              <div className="uh-savings-goal">
+                <div className="uh-savings-goal__info">
+                  <div className="user-skeleton" style={{ height: 13, width: '55%', borderRadius: 4 }} />
+                </div>
+                <div className="uh-progress-bar">
+                  <div className="user-skeleton" style={{ height: 10, width: '100%', borderRadius: 100 }} />
+                </div>
+                <div className="uh-savings-goal__amounts">
+                  <div className="user-skeleton" style={{ height: 12, width: 60, borderRadius: 4 }} />
+                  <div className="user-skeleton" style={{ height: 12, width: 80, borderRadius: 4 }} />
+                </div>
+              </div>
+            ) : topSavingsGoal ? (() => {
               const pct = topSavingsGoal.targetAmount > 0
                 ? Math.min(100, Math.round((topSavingsGoal.savedAmount / topSavingsGoal.targetAmount) * 100))
                 : 0;
               return (
-                <div className="uh-savings-goal">
+                <div className="uh-savings-goal user-fade-in">
                   <div className="uh-savings-goal__info">
                     <span className="uh-savings-goal__name">{topSavingsGoal.name}</span>
                     <span className="uh-savings-goal__pct">{pct}%</span>
@@ -611,78 +646,109 @@ export default function Home() {
                 </div>
               );
             })() : (
-              <div className="uh-insight-empty">
-                <p>No active savings goals.</p>
-                <button className="uh-insight-cta" onClick={() => navigate('/savings')}>
-                  Create Goal <ArrowRight size={12} />
+              <div className="uh-insight-empty uh-insight-empty--savings">
+                <div className="uh-insight-empty__icon">
+                  <Target size={22} />
+                </div>
+                <div className="uh-insight-empty__text">
+                  <h4>No Active Goals</h4>
+                  <p>Start saving for your future.</p>
+                </div>
+                <button className="uh-insight-empty__btn" onClick={() => navigate('/savings')}>
+                  Create a Goal
                 </button>
               </div>
             )}
           </div>
 
-          <div className="uh-insight-divider" />
-
-          {/* Upcoming Payment Reminder */}
-          <div className="uh-insight-block">
-            <div className="uh-insight-header">
-              <div className={`uh-insight-icon ${nextPaymentInfo?.isLate ? 'uh-insight-icon--late' : 'uh-insight-icon--loan'}`}>
-                {nextPaymentInfo?.isLate ? <AlertCircle size={16} /> : <Banknote size={16} />}
-              </div>
-              <h3 className="uh-insight-title">Next Payment</h3>
-            </div>
-            {nextPaymentInfo ? (() => {
-              const now = new Date();
-              const due = new Date(nextPaymentInfo.dueDate);
-              const diffDays = Math.ceil((due - now) / 86400000);
-              const isOverdue = diffDays < 0;
-              return (
-                <div className={`uh-payment-reminder ${isOverdue ? 'uh-payment-reminder--overdue' : ''}`}>
-                  <div className="uh-payment-reminder__row">
-                    <span className="uh-payment-reminder__label">Amount Due</span>
-                    <span className="uh-payment-reminder__value">{formatCurrency(nextPaymentInfo.monthlyPayment)}</span>
+          {isOfficer && (
+            <>
+              {/* Upcoming Payment Reminder */}
+              <div className="uh-insight-block">
+                <div className="uh-insight-header">
+                  <div className={`uh-insight-icon ${nextPaymentInfo?.isLate ? 'uh-insight-icon--late' : 'uh-insight-icon--loan'}`}>
+                    {nextPaymentInfo?.isLate ? <AlertCircle size={16} /> : <Banknote size={16} />}
                   </div>
-                  <div className="uh-payment-reminder__row">
-                    <span className="uh-payment-reminder__label">Due Date</span>
-                    <span className={`uh-payment-reminder__value ${isOverdue ? 'uh-payment-reminder__value--late' : ''}`}>
-                      {due.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                    </span>
-                  </div>
-                  <div className="uh-payment-reminder__badge-row">
-                    <span className={`uh-payment-reminder__badge ${isOverdue ? 'uh-payment-reminder__badge--late' : 'uh-payment-reminder__badge--ok'}`}>
-                      {isOverdue ? `${Math.abs(diffDays)} day${Math.abs(diffDays) > 1 ? 's' : ''} overdue` : `${diffDays} day${diffDays > 1 ? 's' : ''} left`}
-                    </span>
-                  </div>
-                  <button className="uh-insight-cta" onClick={() => navigate('/loans')}>
-                    View Loan <ArrowRight size={12} />
-                  </button>
+                  <h3 className="uh-insight-title">Next Payment</h3>
                 </div>
-              );
-            })() : (
-              <div className="uh-insight-empty">
-                <p>{isOfficer ? 'No upcoming payments.' : 'Loan services are for officers.'}</p>
+                {loading ? (
+                  <div className="uh-payment-reminder">
+                    <div className="uh-payment-reminder__row">
+                      <div className="user-skeleton" style={{ height: 12, width: 80, borderRadius: 4 }} />
+                      <div className="user-skeleton" style={{ height: 12, width: 60, borderRadius: 4 }} />
+                    </div>
+                    <div className="uh-payment-reminder__row">
+                      <div className="user-skeleton" style={{ height: 12, width: 70, borderRadius: 4 }} />
+                      <div className="user-skeleton" style={{ height: 12, width: 90, borderRadius: 4 }} />
+                    </div>
+                    <div className="uh-payment-reminder__row">
+                      <div className="user-skeleton" style={{ height: 12, width: 50, borderRadius: 4 }} />
+                      <div className="user-skeleton" style={{ height: 12, width: 40, borderRadius: 4 }} />
+                    </div>
+                  </div>
+                ) : nextPaymentInfo ? (() => {
+                  const now = new Date();
+                  const due = new Date(nextPaymentInfo.dueDate);
+                  const diffDays = Math.ceil((due - now) / 86400000);
+                  const isOverdue = diffDays < 0;
+                  return (
+                    <div className={`uh-payment-reminder user-fade-in ${isOverdue ? 'uh-payment-reminder--overdue' : ''}`}>
+                      <div className="uh-payment-reminder__row">
+                        <span className="uh-payment-reminder__label">Amount Due</span>
+                        <span className="uh-payment-reminder__value">{formatCurrency(nextPaymentInfo.monthlyPayment)}</span>
+                      </div>
+                      <div className="uh-payment-reminder__row">
+                        <span className="uh-payment-reminder__label">Due Date</span>
+                        <span className={`uh-payment-reminder__value ${isOverdue ? 'uh-payment-reminder__value--late' : ''}`}>
+                          {due.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </span>
+                      </div>
+                      <div className="uh-payment-reminder__badge-row">
+                        <span className={`uh-payment-reminder__badge ${isOverdue ? 'uh-payment-reminder__badge--late' : 'uh-payment-reminder__badge--ok'}`}>
+                          {isOverdue ? `${Math.abs(diffDays)} day${Math.abs(diffDays) > 1 ? 's' : ''} overdue` : `${diffDays} day${diffDays > 1 ? 's' : ''} left`}
+                        </span>
+                      </div>
+                      <button className="uh-insight-cta" onClick={() => navigate('/loans')}>
+                        View Loan <ArrowRight size={12} />
+                      </button>
+                    </div>
+                  );
+                })() : (
+                  <div className="uh-insight-empty uh-insight-empty--savings uh-insight-empty--loan user-fade-in">
+                    <div className="uh-insight-empty__icon uh-insight-empty__icon--loan">
+                      <CheckCircle size={18} />
+                    </div>
+                    <div className="uh-insight-empty__text">
+                      <h4>All Caught Up</h4>
+                      <p>You have no upcoming payments.</p>
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-
-          <div className="uh-insight-divider" />
+            </>
+          )}
 
           {/* Prayer Wall mini trigger */}
-          <button className="uh-prayer-trigger" onClick={() => setShowPrayerModal(true)}>
-            <Heart size={16} />
-            <div className="uh-prayer-trigger__text">
-              <span className="uh-prayer-trigger__title">Prayer Wall</span>
-              <span className="uh-prayer-trigger__count">{prayers.length} prayer{prayers.length !== 1 ? 's' : ''}</span>
-            </div>
-            <ChevronRight size={14} className="uh-prayer-trigger__arrow" />
-          </button>
+          <div style={{ padding: '0 20px 16px', marginTop: 'auto' }}>
+            <button className="uh-prayer-trigger" onClick={() => setShowPrayerModal(true)}>
+              <Heart size={16} />
+              <div className="uh-prayer-trigger__text">
+                <span className="uh-prayer-trigger__title">Prayer Wall</span>
+                <span className="uh-prayer-trigger__count">{prayers.length} prayer{prayers.length !== 1 ? 's' : ''}</span>
+              </div>
+              <ChevronRight size={14} className="uh-prayer-trigger__arrow" />
+            </button>
+          </div>
         </div>
 
         {/* Events Carousel */}
         <div className="uh-card uh-card--events">
 
           <div className="uh-carousel-viewport">
-            {upcomingEvents.length === 0 ? (
-              <div className="uh-empty">
+            {loading ? (
+              <div className="user-skeleton" style={{ height: '100%', width: '100%', borderRadius: 0 }} />
+            ) : upcomingEvents.length === 0 ? (
+              <div className="uh-empty user-fade-in">
                 <CalendarDays size={28} strokeWidth={1.5} />
                 <p>No announcements yet.</p>
               </div>
@@ -760,10 +826,11 @@ export default function Home() {
             <div className="uh-activity-scroll">
               {[1, 2, 3].map(i => (
                 <div key={i} className="uh-activity-card uh-activity-card--skel">
-                  <div className="user-skeleton" style={{ width: 30, height: 30, borderRadius: 8 }} />
+                  <div className="user-skeleton" style={{ width: 30, height: 30, borderRadius: 7 }} />
                   <div style={{ flex: 1 }}>
                     <div className="user-skeleton" style={{ height: 12, width: '70%', marginBottom: 6, borderRadius: 4 }} />
-                    <div className="user-skeleton" style={{ height: 10, width: '50%', borderRadius: 4 }} />
+                    <div className="user-skeleton" style={{ height: 10, width: '50%', marginBottom: 6, borderRadius: 4 }} />
+                    <div className="user-skeleton" style={{ height: 11, width: '35%', borderRadius: 4 }} />
                   </div>
                 </div>
               ))}
@@ -794,14 +861,16 @@ export default function Home() {
 
         {/* Monthly Calendar */}
         {(() => {
-          const now = new Date();
-          const year = now.getFullYear();
-          const month = now.getMonth();
+          const year = calendarDate.getFullYear();
+          const month = calendarDate.getMonth();
           const firstDay = new Date(year, month, 1);
           const lastDay = new Date(year, month + 1, 0);
           const startWeekday = (firstDay.getDay() + 6) % 7; // Monday = 0
           const daysInMonth = lastDay.getDate();
-          const today = now.getDate();
+          
+          const now = new Date();
+          const isCurrentMonth = now.getFullYear() === year && now.getMonth() === month;
+          const today = isCurrentMonth ? now.getDate() : -1;
 
           // Get event days this month
           const eventDays = {};
@@ -823,32 +892,54 @@ export default function Home() {
           return (
             <div className="uh-card uh-card--calendar">
               <div className="uh-cal-header">
-                <h2 className="uh-cal-title">
+                <h2 className="uh-cal-title" style={{ margin: 0, textAlign: 'left' }}>
                   {firstDay.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                 </h2>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <button 
+                    className="uh-cal-nav" 
+                    onClick={() => setCalendarDate(new Date(year, month - 1, 1))}
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+                  <button 
+                    className="uh-cal-nav" 
+                    onClick={() => setCalendarDate(new Date(year, month + 1, 1))}
+                  >
+                    <ChevronRight size={18} />
+                  </button>
+                </div>
               </div>
               <div className="uh-cal-body">
                 <div className="uh-cal-grid">
                   {['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'].map(d => (
                     <div key={d} className="uh-cal-weekday">{d}</div>
                   ))}
-                  {cells.map((day, i) => (
-                    <div
-                      key={i}
-                      className={`uh-cal-cell ${!day ? 'uh-cal-cell--empty' : ''} ${day === today ? 'uh-cal-cell--today' : ''} ${day && eventDays[day] ? 'uh-cal-cell--event' : ''}`}
-                      onClick={() => {
-                        if (day && eventDays[day]) {
-                          setSelectedEvent(eventDays[day][0]);
-                          setModalImageIndex(0);
-                          setIsModalExpanded(false);
-                        }
-                      }}
-                      title={day && eventDays[day] ? eventDays[day].map(e => e.title).join(', ') : ''}
-                    >
-                      {day && <span>{day}</span>}
-                      {day && eventDays[day] && <div className="uh-cal-cell__dot" />}
-                    </div>
-                  ))}
+                  {loading ? (
+                    Array(35).fill(0).map((_, i) => (
+                      <div key={`skel-${i}`} className="uh-cal-cell uh-cal-cell--empty">
+                        <div className="user-skeleton" style={{ width: 28, height: 28, borderRadius: 8, margin: 'auto' }} />
+                      </div>
+                    ))
+                  ) : (
+                    cells.map((day, i) => (
+                      <div
+                        key={i}
+                        className={`uh-cal-cell ${!day ? 'uh-cal-cell--empty' : ''} ${day === today ? 'uh-cal-cell--today' : ''} ${day && eventDays[day] ? 'uh-cal-cell--event user-fade-in' : ''} ${day && !eventDays[day] ? 'user-fade-in' : ''}`}
+                        onClick={() => {
+                          if (day && eventDays[day]) {
+                            setSelectedEvent(eventDays[day][0]);
+                            setModalImageIndex(0);
+                            setIsModalExpanded(false);
+                          }
+                        }}
+                        title={day && eventDays[day] ? eventDays[day].map(e => e.title).join(', ') : ''}
+                      >
+                        {day && <span>{day}</span>}
+                        {day && eventDays[day] && <div className="uh-cal-cell__dot" />}
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </div>

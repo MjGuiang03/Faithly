@@ -8,7 +8,6 @@ import { useTheme } from '../../context/ThemeContext';
 
 import API from '../../utils/api';
 import { CalendarDays, Edit, Mail, User, XCircle, ChevronDown, ChevronUp, Check, Bell, Lock, Clock, Eye, EyeOff, AlertTriangle, LogOut } from 'lucide-react';
-import { isOfficerPosition } from '../../utils/officerPositions';
 import { subscribeToPushNotifications, unsubscribeFromPushNotifications } from '../../utils/desktopNotify';
 
 /* ─── Community options removed in favor of dynamic fetching ─── */
@@ -69,57 +68,12 @@ const NOTIF_GROUPS = [
 const ALL_NOTIF_KEYS = NOTIF_GROUPS.flatMap(g => g.items.map(i => i.key));
 
 export default function Settings() {
-  const { user, profile, updateProfile, requestEmailChange, verifyEmailChange, signOut } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
-  const [dynamicBranches, setDynamicBranches] = useState([]);
-  useEffect(() => {
-    const loadBranches = async () => {
-      try {
-        const res = await fetch(`${API}/api/public/branches`);
-        const data = await res.json();
-        if (data.success) setDynamicBranches(data.branches || []);
-      } catch (e) { console.error('Failed to load branches', e); }
-    };
-    loadBranches();
-  }, []);
-
-  const groupedBranches = dynamicBranches.reduce((acc, b) => {
-    let province = b.province;
-    if (!province && b.address) {
-      const parts = b.address.split(', ');
-      if (parts.length > 0) province = parts[0];
-    }
-    province = province || 'Other Provinces';
-    if (!acc[province]) acc[province] = [];
-    acc[province].push(b.name);
-    return acc;
-  }, {});
-
-  const provinceOrder = Object.keys(groupedBranches).sort();
-
-  /* ── Toast ───────────────────────────────────────────────────────────── */
   const [toast, setToast] = useState(null);
   const showToast = (message, type = 'success') => setToast({ message, type });
-
-  /* ── Personal Info ───────────────────────────────────────────────────── */
-  const [isEditing, setIsEditing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [formError, setFormError] = useState('');
-  const [photoPreview, setPhotoPreview] = useState(null);
-
-  const [editForm, setEditForm] = useState({
-    fullName: profile?.fullName || '',
-    email: user?.email || '',
-    phone: profile?.phone || '',
-    community: profile?.branch || profile?.community || '',
-    photoFile: null,
-  });
-
-  /* ── Email OTP ───────────────────────────────────────────────────────── */
-  const [showEmailOtp, setShowEmailOtp] = useState(false);
-  const [pendingEmail, setPendingEmail] = useState('');
 
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(false);
@@ -233,91 +187,6 @@ export default function Settings() {
     }
   };
 
-  /* ── Collapsible info ────────────────────────────────────────────────── */
-  const [infoExpanded, setInfoExpanded] = useState(false);
-
-  /* ── Derived role from profile ───────────────────────────────────────── */
-  const isOfficer = isOfficerPosition(profile?.position);
-
-  /* ── Handlers ────────────────────────────────────────────────────────── */
-  const handleEditChange = (field, value) => {
-    setEditForm(prev => ({ ...prev, [field]: value }));
-    if (formError) setFormError('');
-  };
-
-  const handlePhotoSelect = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setEditForm(prev => ({ ...prev, photoFile: file }));
-    const reader = new FileReader();
-    reader.onload = ev => setPhotoPreview(ev.target.result);
-    reader.readAsDataURL(file);
-  };
-
-  const handleSaveChanges = async () => {
-    setFormError('');
-    if (!editForm.fullName.trim()) { setFormError('Full name is required.'); return; }
-    setIsSaving(true);
-    try {
-      let uploadedPhotoUrl = null;
-      if (editForm.photoFile && photoPreview) {
-        const token = localStorage.getItem('token');
-        const photoRes = await fetch(`${API}/api/upload-photo`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ photoBase64: photoPreview })
-        });
-        const photoData = await photoRes.json();
-        if (!photoRes.ok) throw new Error(photoData.message || 'Failed to upload photo');
-        uploadedPhotoUrl = photoData.photoUrl;
-      }
-
-      const emailChanged = editForm.email.trim().toLowerCase() !== (user?.email || '').trim().toLowerCase();
-      if (emailChanged) {
-        if (!editForm.email.includes('@') || !editForm.email.includes('.')) {
-          setFormError('Please enter a valid email address.'); return;
-        }
-        const reqResult = await requestEmailChange(editForm.email.trim());
-        if (!reqResult.success) { setFormError(reqResult.message || 'Failed to send verification email.'); return; }
-        setPendingEmail(editForm.email.trim());
-        setShowEmailOtp(true);
-        return;
-      }
-      const result = await updateProfile({
-        fullName: editForm.fullName.trim(),
-        phone: editForm.phone.trim(),
-        branch: editForm.community,
-        photoUrl: uploadedPhotoUrl || profile?.photoUrl,
-      });
-      if (!result.success) { setFormError(result.message || 'Failed to update profile.'); return; }
-      setIsEditing(false);
-      showToast('Profile updated successfully');
-    } catch (err) {
-      setFormError(err.message || 'Something went wrong.');
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleVerifyEmailOtp = async (otp) => {
-    const verifyResult = await verifyEmailChange(pendingEmail, otp);
-    if (!verifyResult.success) return { success: false, message: verifyResult.message };
-    await updateProfile({ fullName: editForm.fullName.trim(), phone: editForm.phone.trim(), branch: editForm.community });
-    setShowEmailOtp(false);
-    setIsEditing(false);
-    return { success: true };
-  };
-
-  const handleResendEmailOtp = async () => await requestEmailChange(pendingEmail);
-  const handleCancelEmailOtp = () => { setShowEmailOtp(false); setPendingEmail(''); setIsSaving(false); };
-
-  const handleCancelEdit = () => {
-    setEditForm({ fullName: profile?.fullName || '', email: user?.email || '', phone: profile?.phone || '', community: profile?.branch || profile?.community || '', photoFile: null });
-    setPhotoPreview(null);
-    setFormError('');
-    setIsEditing(false);
-  };
-
   const handleUpdatePassword = async (e) => {
     if (e) e.preventDefault();
     setPassError('');
@@ -370,20 +239,6 @@ export default function Settings() {
   };
 
 
-  /* ── Derived display values ──────────────────────────────────────────── */
-  const displayName = profile?.fullName || 'Member';
-  const avatarSrc = photoPreview || profile?.photoUrl || null;
-
-  const accountCreatedRaw = user?.created_at || user?.createdAt;
-  const accountCreated = accountCreatedRaw
-    ? new Date(accountCreatedRaw).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-    : 'Not set';
-
-  const dateOfBirthRaw = profile?.birthday || profile?.dateOfBirth;
-  const dateOfBirth = dateOfBirthRaw
-    ? (() => { try { return new Date(dateOfBirthRaw).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }); } catch { return dateOfBirthRaw; } })()
-    : 'Not set';
-
   /* ── Password strength ───────────────────────────────────────────────── */
   const strength = getPasswordStrength(passForm.new);
   const passwordsMatch = passForm.confirm.length > 0 && passForm.new === passForm.confirm;
@@ -395,17 +250,6 @@ export default function Settings() {
   ════════════════════════════════════════════════════════════════════ */
   return (
     <>
-      {/* Email OTP Modal */}
-      {showEmailOtp && (
-        <VerifyEmailModal
-          isOpen={showEmailOtp}
-          onClose={handleCancelEmailOtp}
-          email={pendingEmail}
-          onVerify={handleVerifyEmailOtp}
-          onResend={handleResendEmailOtp}
-        />
-      )}
-
       {/* Toast */}
       {toast && (
         <Toast
@@ -423,162 +267,6 @@ export default function Settings() {
         </div>
 
         <div className="user-settings-container">
-
-          {/* ── Personal Information ──────────────────────────────────── */}
-          <div className="user-settings-section user-pi-section">
-            <div className="user-settings-section-header">
-              <div className="user-settings-icon-box" style={{ background: '#E6EFFF' }}>
-                <User className="user-settings-section-icon" size={20} color="#155DFC" />
-              </div>
-              <div className="user-settings-header-text">
-                <h2 className="user-settings-section-title">Personal Information</h2>
-                <p className="user-settings-section-subtitle">View and manage your profile details</p>
-              </div>
-            </div>
-
-            {/* Blue profile card */}
-            <div className="user-pi-card">
-              {/* Avatar */}
-              <div
-                className="user-pi-card-avatar-wrapper"
-                onClick={() => isEditing && document.getElementById('user-pi-photo-input-header').click()}
-                style={{ cursor: isEditing ? 'pointer' : 'default', position: 'relative' }}
-              >
-                <div className="user-pi-card-avatar">
-                  {avatarSrc ? (
-                    <img src={avatarSrc} alt="Profile" style={{ width: 52, height: 52, borderRadius: '50%', objectFit: 'cover' }} />
-                  ) : (
-                    <span style={{ fontSize: 20, fontWeight: 700, color: 'white' }}>
-                      {displayName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
-                    </span>
-                  )}
-                </div>
-                {isEditing && (
-                  <div className="user-pi-card-avatar-badge">
-                    <Edit size={13} color="#ffffff" />
-                  </div>
-                )}
-                <input id="user-pi-photo-input-header" type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhotoSelect} />
-              </div>
-
-              {/* Name / badges */}
-              <div className="user-pi-card-info">
-                <span className="user-pi-card-name">{displayName}</span>
-                <div className="user-pi-card-badges">
-                  <span className="user-pi-badge user-pi-badge-member">
-                    {isOfficer ? 'Officer' : 'Member'}
-                  </span>
-                </div>
-              </div>
-
-              {/* Expand/Collapse chevron — right side of blue card */}
-              <button
-                className="user-pi-card-chevron-btn"
-                onClick={() => setInfoExpanded(prev => !prev)}
-                title={infoExpanded ? 'Collapse' : 'Expand'}
-              >
-                {infoExpanded ? <ChevronUp size={18} color="#ffffff" /> : <ChevronDown size={18} color="#ffffff" />}
-              </button>
-
-            </div>
-
-            {/* ── Edit Form ─────────────────────────────────────────── */}
-            <div className={`user-pi-collapsible ${infoExpanded ? 'user-pi-collapsible--open' : ''}`}>
-              <div className="user-pi-edit-form">
-                {isEditing && (
-                  <p className="user-pi-edit-notice">
-                    <Edit size={14} color="#155DFC" />
-                    Editing your profile — changes won't be saved until you click Save
-                  </p>
-                )}
-
-                {formError && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 10, padding: '10px 14px', marginBottom: 16 }}>
-                    <XCircle size={16} color="#F04438" />
-                    <span style={{ fontSize: 13, color: '#B91C1C' }}>{formError}</span>
-                  </div>
-                )}
-
-                <div className="user-pi-form-grid">
-                  {/* Full Name */}
-                  <div className="user-pi-form-field">
-                    <label className="user-pi-form-label">Full name</label>
-                    <input type="text" className="user-pi-form-input" value={editForm.fullName} onChange={e => handleEditChange('fullName', e.target.value)} placeholder="Enter full name" disabled={true} />
-                  </div>
-
-                  {/* Email */}
-                  <div className="user-pi-form-field">
-                    <label className="user-pi-form-label">Email address</label>
-                    <input type="email" className="user-pi-form-input" value={editForm.email} onChange={e => handleEditChange('email', e.target.value)} placeholder="Enter email" disabled={!isEditing} />
-                    {editForm.email.trim().toLowerCase() !== (user?.email || '').trim().toLowerCase() && editForm.email ? (
-                      <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: '#D97706', marginTop: 5 }}>
-                        <Edit size={12} color="#D97706" />
-                        Changing email requires OTP verification · You can only change your email once per day
-                      </span>
-                    ) : (
-                      <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: '#9CA3AF', marginTop: 5 }}>
-                        <Mail size={12} color="#9CA3AF" />
-                        You can only change your email once per day
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Phone */}
-                  <div className="user-pi-form-field">
-                    <label className="user-pi-form-label">Phone number</label>
-                    <input type="tel" className="user-pi-form-input" value={editForm.phone} onChange={e => handleEditChange('phone', e.target.value)} placeholder="+63 90 000 0000" disabled={!isEditing} />
-                  </div>
-
-                  {/* Community */}
-                  <div className="user-pi-form-field">
-                    <label className="user-pi-form-label">Community</label>
-                    <select className="user-pi-form-input user-pi-form-select" value={editForm.community} onChange={e => handleEditChange('community', e.target.value)} disabled={!isEditing}>
-                      <option value="">— Select Community —</option>
-                      {provinceOrder.map(prov => (
-                        <optgroup key={prov} label={prov}>
-                          {groupedBranches[prov].map(p => <option key={p}>{p}</option>)}
-                        </optgroup>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Date of Birth — readonly */}
-                  <div className="user-pi-form-field">
-                    <label className="user-pi-form-label">Date of birth</label>
-                    <div className="user-pi-readonly-text">
-                      <CalendarDays size={15} color="#9CA3AF" />
-                      <span>{dateOfBirth}</span>
-                    </div>
-                  </div>
-
-                  {/* Account Created — readonly */}
-                  <div className="user-pi-form-field">
-                    <label className="user-pi-form-label">Account created</label>
-                    <div className="user-pi-readonly-text">
-                      <Clock size={15} color="#9CA3AF" />
-                      <span>{accountCreated}</span>
-                    </div>
-                  </div>
-
-                  <div className="user-pi-form-field-full" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: '8px' }}>
-                    {isEditing ? (
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <button className="user-pi-btn-cancel-bottom" onClick={handleCancelEdit} disabled={isSaving}>Cancel</button>
-                        <button className="user-pi-btn-save-bottom" onClick={handleSaveChanges} disabled={isSaving}>
-                          {isSaving ? <span className="btn-spinner" /> : 'Save'}
-                        </button>
-                      </div>
-                    ) : (
-                      <button className="user-pi-btn-edit-bottom" onClick={() => setIsEditing(true)}>
-                        <Edit size={14} />
-                        Edit Profile
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
 
           {/* ── Appearance ─────────────────────────────────────────── */}
           <div className="user-settings-section">

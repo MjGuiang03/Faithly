@@ -1021,6 +1021,12 @@ export default function LoanDetail() {
                                         )}
                                     </div>
                                 </div>
+                                <div style={{ gridColumn: 'span 2' }}>
+                                    <div className="ld-pay-section-label" style={{ marginBottom: '2px' }}>Reference No.</div>
+                                    <div style={{ fontFamily: 'Inter', fontSize: '14px', fontWeight: 600, color: '#111827', fontVariantNumeric: 'tabular-nums' }}>
+                                        {historyDetail.referenceNumber || 'N/A'}
+                                    </div>
+                                </div>
                             </div>
                             {historyDetail.proofData && (
                                 <div style={{ marginTop: '16px' }}>

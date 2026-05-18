@@ -6,8 +6,9 @@ import '../styles/Profile.css';
 import {
   Heart, CalendarDays, PiggyBank, Banknote, FileText, Award,
   MapPin, Mail, Phone, Clock, Shield, TrendingUp,
-  CheckCircle, Star, Flame, Target, Edit2
+  CheckCircle, Star, Flame, Target, Edit2, XCircle, Edit
 } from 'lucide-react';
+import VerifyEmailModal from '../components/VerifyEmail';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { isOfficerPosition } from '../../utils/officerPositions';
 
@@ -15,9 +16,127 @@ const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'S
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { profile, user } = useAuth();
+  const { profile, user, updateProfile, requestEmailChange, verifyEmailChange } = useAuth();
   const token = localStorage.getItem('token');
 
+  /* ── Personal Info State ── */
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [formError, setFormError] = useState('');
+  const [photoPreview, setPhotoPreview] = useState(null);
+
+  const [editForm, setEditForm] = useState({
+    fullName: profile?.fullName || '',
+    email: user?.email || '',
+    phone: profile?.phone || '',
+    community: profile?.branch || profile?.community || '',
+    photoFile: null,
+  });
+
+  const [showEmailOtp, setShowEmailOtp] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState('');
+
+  const [dynamicBranches, setDynamicBranches] = useState([]);
+  useEffect(() => {
+    const loadBranches = async () => {
+      try {
+        const res = await fetch(`${API}/api/public/branches`);
+        const data = await res.json();
+        if (data.success) setDynamicBranches(data.branches || []);
+      } catch (e) { console.error('Failed to load branches', e); }
+    };
+    loadBranches();
+  }, []);
+
+  const groupedBranches = dynamicBranches.reduce((acc, b) => {
+    let province = b.province;
+    if (!province && b.address) {
+      const parts = b.address.split(', ');
+      if (parts.length > 0) province = parts[0];
+    }
+    province = province || 'Other Provinces';
+    if (!acc[province]) acc[province] = [];
+    acc[province].push(b.name);
+    return acc;
+  }, {});
+  const provinceOrder = Object.keys(groupedBranches).sort();
+
+  const handleEditChange = (field, value) => {
+    setEditForm(prev => ({ ...prev, [field]: value }));
+    if (formError) setFormError('');
+  };
+
+  const handlePhotoSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setEditForm(prev => ({ ...prev, photoFile: file }));
+    const reader = new FileReader();
+    reader.onload = ev => setPhotoPreview(ev.target.result);
+    reader.readAsDataURL(file);
+  };
+
+  const handleSaveChanges = async () => {
+    setFormError('');
+    if (!editForm.fullName.trim()) { setFormError('Full name is required.'); return; }
+    setIsSaving(true);
+    try {
+      let uploadedPhotoUrl = null;
+      if (editForm.photoFile && photoPreview) {
+        const token = localStorage.getItem('token');
+        const photoRes = await fetch(`${API}/api/upload-photo`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ photoBase64: photoPreview })
+        });
+        const photoData = await photoRes.json();
+        if (!photoRes.ok) throw new Error(photoData.message || 'Failed to upload photo');
+        uploadedPhotoUrl = photoData.photoUrl;
+      }
+
+      const emailChanged = editForm.email.trim().toLowerCase() !== (user?.email || '').trim().toLowerCase();
+      if (emailChanged) {
+        if (!editForm.email.includes('@') || !editForm.email.includes('.')) {
+          setFormError('Please enter a valid email address.'); return;
+        }
+        const reqResult = await requestEmailChange(editForm.email.trim());
+        if (!reqResult.success) { setFormError(reqResult.message || 'Failed to send verification email.'); return; }
+        setPendingEmail(editForm.email.trim());
+        setShowEmailOtp(true);
+        return;
+      }
+      const result = await updateProfile({
+        fullName: editForm.fullName.trim(),
+        phone: editForm.phone.trim(),
+        branch: editForm.community,
+        photoUrl: uploadedPhotoUrl || profile?.photoUrl,
+      });
+      if (!result.success) { setFormError(result.message || 'Failed to update profile.'); return; }
+      setIsEditing(false);
+    } catch (err) {
+      setFormError(err.message || 'Something went wrong.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleVerifyEmailOtp = async (otp) => {
+    const verifyResult = await verifyEmailChange(pendingEmail, otp);
+    if (!verifyResult.success) return { success: false, message: verifyResult.message };
+    await updateProfile({ fullName: editForm.fullName.trim(), phone: editForm.phone.trim(), branch: editForm.community });
+    setShowEmailOtp(false);
+    setIsEditing(false);
+    return { success: true };
+  };
+
+  const handleResendEmailOtp = async () => await requestEmailChange(pendingEmail);
+  const handleCancelEmailOtp = () => { setShowEmailOtp(false); setPendingEmail(''); setIsSaving(false); };
+
+  const handleCancelEdit = () => {
+    setEditForm({ fullName: profile?.fullName || '', email: user?.email || '', phone: profile?.phone || '', community: profile?.branch || profile?.community || '', photoFile: null });
+    setPhotoPreview(null);
+    setFormError('');
+    setIsEditing(false);
+  };
   const [loading, setLoading] = useState(true);
   const [donations, setDonations] = useState([]);
   const [attendance, setAttendance] = useState([]);
@@ -200,7 +319,7 @@ export default function Profile() {
   };
 
   const displayName = profile?.fullName || 'Member';
-  const avatarSrc = profile?.photoUrl || null;
+  const avatarSrc = photoPreview || profile?.photoUrl || null;
   const memberSince = user?.created_at || user?.createdAt
     ? new Date(user.created_at || user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
     : '';
@@ -218,11 +337,20 @@ export default function Profile() {
 
   return (
     <div className="up-page">
+      {showEmailOtp && (
+        <VerifyEmailModal
+          isOpen={showEmailOtp}
+          onClose={handleCancelEmailOtp}
+          email={pendingEmail}
+          onVerify={handleVerifyEmailOtp}
+          onResend={handleResendEmailOtp}
+        />
+      )}
       {/* ── Hero Header ── */}
       <div className="up-hero">
         <div className="up-hero__bg" />
         <div className="up-hero__content">
-          <div className="up-hero__avatar">
+          <div className="up-hero__avatar" onClick={() => isEditing && document.getElementById('up-hero-photo-input').click()} style={{ cursor: isEditing ? 'pointer' : 'default' }}>
             {avatarSrc ? (
               <img src={avatarSrc} alt="Profile" />
             ) : (
@@ -230,9 +358,16 @@ export default function Profile() {
                 {displayName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
               </span>
             )}
-            <button className="up-hero__avatar-edit" onClick={() => navigate('/settings')} title="Edit Profile">
-              <Edit2 size={14} />
-            </button>
+            {isEditing ? (
+              <div className="up-hero__avatar-edit" title="Change Photo">
+                <Edit size={14} />
+              </div>
+            ) : (
+              <button className="up-hero__avatar-edit" onClick={() => setIsEditing(true)} title="Edit Profile">
+                <Edit2 size={14} />
+              </button>
+            )}
+            <input id="up-hero-photo-input" type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhotoSelect} />
           </div>
           <div className="up-hero__info">
             <h1 className="up-hero__name">{displayName}</h1>
@@ -399,45 +534,89 @@ export default function Profile() {
                 <Shield size={16} />
                 Personal Information
               </h2>
-              <button className="up-card__edit-btn" onClick={() => navigate('/settings')}>
-                <Edit2 size={13} />
-                Edit
-              </button>
+              {!isEditing && (
+                <button className="up-card__edit-btn" onClick={() => setIsEditing(true)}>
+                  <Edit2 size={13} />
+                  Edit
+                </button>
+              )}
             </div>
-            <div className="up-info-list">
-              <div className="up-info-item">
-                <Mail size={15} />
-                <div>
-                  <span className="up-info-label">Email</span>
-                  <span className="up-info-value">{user?.email || '—'}</span>
+            
+            {formError && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 10, padding: '10px 14px', marginBottom: 16 }}>
+                <XCircle size={16} color="#F04438" />
+                <span style={{ fontSize: 13, color: '#B91C1C' }}>{formError}</span>
+              </div>
+            )}
+
+            {isEditing ? (
+              <div className="up-info-form">
+                <div className="up-info-item-edit">
+                  <label className="up-info-label">Full Name</label>
+                  <input type="text" className="up-info-input" value={editForm.fullName} disabled={true} />
+                </div>
+                <div className="up-info-item-edit">
+                  <label className="up-info-label">Email address</label>
+                  <input type="email" className="up-info-input" value={editForm.email} onChange={e => handleEditChange('email', e.target.value)} />
+                </div>
+                <div className="up-info-item-edit">
+                  <label className="up-info-label">Phone number</label>
+                  <input type="tel" className="up-info-input" value={editForm.phone} onChange={e => handleEditChange('phone', e.target.value)} />
+                </div>
+                <div className="up-info-item-edit">
+                  <label className="up-info-label">Community</label>
+                  <select className="up-info-input" value={editForm.community} onChange={e => handleEditChange('community', e.target.value)}>
+                    <option value="">— Select Community —</option>
+                    {provinceOrder.map(prov => (
+                      <optgroup key={prov} label={prov}>
+                        {groupedBranches[prov].map(p => <option key={p}>{p}</option>)}
+                      </optgroup>
+                    ))}
+                  </select>
+                </div>
+                <div className="up-info-form-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '16px' }}>
+                  <button onClick={handleCancelEdit} disabled={isSaving} style={{ padding: '8px 16px', background: '#F3F4F6', color: '#374151', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 500, fontSize: '13px' }}>Cancel</button>
+                  <button onClick={handleSaveChanges} disabled={isSaving} style={{ padding: '8px 16px', background: '#155DFC', color: 'white', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 500, fontSize: '13px' }}>
+                    {isSaving ? 'Saving...' : 'Save Changes'}
+                  </button>
                 </div>
               </div>
-              <div className="up-info-item">
-                <Phone size={15} />
-                <div>
-                  <span className="up-info-label">Phone</span>
-                  <span className="up-info-value">{profile?.phone || 'Not set'}</span>
+            ) : (
+              <div className="up-info-list">
+                <div className="up-info-item">
+                  <Mail size={15} />
+                  <div>
+                    <span className="up-info-label">Email</span>
+                    <span className="up-info-value">{user?.email || '—'}</span>
+                  </div>
+                </div>
+                <div className="up-info-item">
+                  <Phone size={15} />
+                  <div>
+                    <span className="up-info-label">Phone</span>
+                    <span className="up-info-value">{profile?.phone || 'Not set'}</span>
+                  </div>
+                </div>
+                <div className="up-info-item">
+                  <MapPin size={15} />
+                  <div>
+                    <span className="up-info-label">Community</span>
+                    <span className="up-info-value">{profile?.branch || 'Not assigned'}</span>
+                  </div>
+                </div>
+                <div className="up-info-item">
+                  <CalendarDays size={15} />
+                  <div>
+                    <span className="up-info-label">Birthday</span>
+                    <span className="up-info-value">
+                      {profile?.birthday || profile?.dateOfBirth
+                        ? new Date(profile.birthday || profile.dateOfBirth).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+                        : 'Not set'}
+                    </span>
+                  </div>
                 </div>
               </div>
-              <div className="up-info-item">
-                <MapPin size={15} />
-                <div>
-                  <span className="up-info-label">Community</span>
-                  <span className="up-info-value">{profile?.branch || 'Not assigned'}</span>
-                </div>
-              </div>
-              <div className="up-info-item">
-                <CalendarDays size={15} />
-                <div>
-                  <span className="up-info-label">Birthday</span>
-                  <span className="up-info-value">
-                    {profile?.birthday || profile?.dateOfBirth
-                      ? new Date(profile.birthday || profile.dateOfBirth).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-                      : 'Not set'}
-                  </span>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
 
           {/* Recent Activity */}

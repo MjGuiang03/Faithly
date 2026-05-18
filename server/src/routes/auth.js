@@ -17,7 +17,29 @@ const router = Router();
 router.get('/public/branches', async (req, res) => {
   try {
     const list = await branches.find({ status: { $ne: 'Inactive' } }).sort({ name: 1 }).toArray();
-    res.json({ success: true, branches: list });
+    
+    // Get member counts
+    const userStats = await users.aggregate([
+      { $group: { _id: "$branch", count: { $sum: 1 } } }
+    ]).toArray();
+    const statsMap = {};
+    userStats.forEach(s => { if (s._id) statsMap[s._id] = s.count; });
+
+    // Get officer counts
+    const officerStats = await users.aggregate([
+      { $match: { position: { $regex: /^(?!member$)/i } } },
+      { $group: { _id: "$branch", count: { $sum: 1 } } }
+    ]).toArray();
+    const officerMap = {};
+    officerStats.forEach(s => { if (s._id) officerMap[s._id] = s.count; });
+
+    const enrichedList = list.map(b => ({
+      ...b,
+      members: statsMap[b.name] || 0,
+      officers: officerMap[b.name] || 0
+    }));
+
+    res.json({ success: true, branches: enrichedList });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Failed to fetch branch list' });
   }

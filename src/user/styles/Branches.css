@@ -1433,19 +1433,20 @@
 /* ── Responsive for map shell ── */
 @media (max-width: 768px) {
   .ubr-map-shell {
-    flex-direction: column;
-    height: auto;
+    flex-direction: column-reverse;
+    height: calc(100vh - 90px);
   }
 
   .ubr-map-sidebar {
     width: 100%;
-    max-height: 260px;
+    flex: 1;
+    max-height: 55%;
     border-right: none;
-    border-bottom: 0.8px solid var(--border);
+    border-top: 0.8px solid var(--border);
   }
 
   .ubr-map-area {
-    height: 50vh;
-    min-height: 300px;
+    flex: 1;
+    min-height: 0;
   }
 }
