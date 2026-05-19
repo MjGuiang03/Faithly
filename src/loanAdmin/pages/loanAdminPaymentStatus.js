@@ -123,7 +123,7 @@ export default function LoanAdminPaymentStatus() {
   // Loan History
   const debouncedSearchHistory = useDebounce(searchQuery, 400);
   const { data: loanHistoryData } = useSWR(
-    token ? `${API}/api/admin/loans/payments?status=history&page=${historyPage}&limit=${HISTORY_PER_PAGE}&search=${encodeURIComponent(debouncedSearchHistory)}` : null,
+    token ? `${API}/api/admin/loan-payments?status=history&page=${historyPage}&limit=${HISTORY_PER_PAGE}&search=${encodeURIComponent(debouncedSearchHistory)}` : null,
     fetcherSingle,
     { revalidateOnFocus: false }
   );

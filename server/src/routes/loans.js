@@ -798,14 +798,41 @@ router.post('/loans/:id/pay', authenticateUser, async (req, res) => {
     }
 });
 
-/* ================== ADMIN - GET PENDING PAYMENTS ================== */
+/* ================== ADMIN - GET LOAN PAYMENTS ================== */
 router.get('/admin/loan-payments', authenticateAdmin, async (req, res) => {
     try {
-        const { status: qStatus } = req.query;
+        const { status: qStatus, page: qPage, limit: qLimit, search } = req.query;
+        const page = parseInt(qPage) || 1;
+        const limit = parseInt(qLimit) || 100;
+        const skip = (page - 1) * limit;
+
         const filter = {};
-        if (qStatus && qStatus !== 'all') filter.status = qStatus;
-        const payments = await loanPayments.find(filter).sort({ submittedAt: -1 }).toArray();
-        res.json({ success: true, payments });
+        if (qStatus && qStatus !== 'all') {
+            if (qStatus === 'history') {
+                filter.status = { $ne: 'pending' };
+            } else {
+                filter.status = qStatus;
+            }
+        }
+
+        if (search) {
+            filter.$or = [
+                { memberName: { $regex: search, $options: 'i' } },
+                { email: { $regex: search, $options: 'i' } },
+                { loanId: { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        const totalCount = await loanPayments.countDocuments(filter);
+        const payments = await loanPayments.find(filter).sort({ submittedAt: -1 }).skip(skip).limit(limit).toArray();
+        
+        res.json({ 
+            success: true, 
+            payments,
+            totalCount,
+            totalPages: Math.ceil(totalCount / limit),
+            currentPage: page
+        });
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, message: 'Failed to fetch payments' });

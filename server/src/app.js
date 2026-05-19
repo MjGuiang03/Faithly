@@ -54,7 +54,7 @@ app.use((req, res, next) => {
 // Temporarily disabled Helmet to rule out low-level header stripping
 // app.use(helmet({ ... }));
 app.use(mongoSanitize());
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '50mb' }));
 
 /* ================== ROUTES ================== */
 app.use('/api', authRoutes);
