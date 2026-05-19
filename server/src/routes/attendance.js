@@ -103,6 +103,8 @@ router.post('/admin/attendance/sessions/:id/end', authenticateAdmin, async (req,
     const absentees = branchMembers.filter(m => !checkedInEmails.has(m.email));
     
     const now = new Date();
+    // Use the session's configured date for the attendance record
+    const sessionDate = session.startDateTime || new Date(`${session.date}T${session.time || '00:00'}:00`);
     const count = await attendance.countDocuments();
     let absRecords = [];
     
@@ -116,9 +118,9 @@ router.post('/admin/attendance/sessions/:id/end', authenticateAdmin, async (req,
             branch: session.branch,
             method: 'None',
             status: 'Absent',
-            date: now.toLocaleDateString('en-US'),
+            date: sessionDate.toLocaleDateString('en-US'),
             time: '--:--',
-            createdAt: now,
+            createdAt: sessionDate,
             rfidCardId: m.rfidCardId || null
         });
     });
@@ -225,31 +227,33 @@ router.post('/admin/attendance/log-tap', authenticateAdmin, async (req, res) => 
      }
 
      const now = new Date();
-     
-     // Determine Present vs Late
-     // If the check-in is past the start time + grace period
-     const startPlusGrace = new Date(session.startDateTime.getTime() + (session.gracePeriodMinutes * 60000));
-     const isLate = now > startPlusGrace;
-     const status = isLate ? 'Late' : 'Present';
+      // Use the session's configured date for the attendance record
+      const sessionDate = session.startDateTime || new Date(`${session.date}T${session.time || '00:00'}:00`);
+      
+      // Determine Present vs Late
+      // If the check-in is past the start time + grace period
+      const startPlusGrace = new Date(session.startDateTime.getTime() + (session.gracePeriodMinutes * 60000));
+      const isLate = now > startPlusGrace;
+      const status = isLate ? 'Late' : 'Present';
 
      const count = await attendance.countDocuments();
-     const recordId = `A-${now.getFullYear()}-${String(count + 1).padStart(5, '0')}`;
+      const recordId = `A-${now.getFullYear()}-${String(count + 1).padStart(5, '0')}`;
 
      const newRecord = {
-         recordId, 
-         sessionId: session.sessionId,
-         email: user.email, 
-         member: user.fullName || user.name, 
-         service: session.serviceType, 
-         branch: session.branch, // record the session's branch, even if user is from another
-         userBranch: user.branch,
-         method: method || 'RFID',
-         rfidCardId: user.rfidCardId || cardId || null,
-         status,
-         date: now.toLocaleDateString('en-US'),
-         time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-         createdAt: now
-     };
+          recordId, 
+          sessionId: session.sessionId,
+          email: user.email, 
+          member: user.fullName || user.name, 
+          service: session.serviceType, 
+          branch: session.branch, // record the session's branch, even if user is from another
+          userBranch: user.branch,
+          method: method || 'RFID',
+          rfidCardId: user.rfidCardId || cardId || null,
+          status,
+          date: sessionDate.toLocaleDateString('en-US'),
+          time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+          createdAt: sessionDate
+      };
 
      await attendance.insertOne(newRecord);
 
@@ -391,31 +395,33 @@ router.post('/attendance/scan-qr', authenticateUser, async (req, res) => {
          return res.status(200).json({ success: true, alreadyLogged: true, message: 'You have already checked in for this session.' });
      }
 
-     const now = new Date();
-     
-     // Determine Present vs Late
-     const startPlusGrace = new Date(session.startDateTime.getTime() + (session.gracePeriodMinutes * 60000));
-     const isLate = now > startPlusGrace;
-     const status = isLate ? 'Late' : 'Present';
+      const now = new Date();
+      // Use the session's configured date for the attendance record
+      const sessionDate = session.startDateTime || new Date(`${session.date}T${session.time || '00:00'}:00`);
+      
+      // Determine Present vs Late
+      const startPlusGrace = new Date(session.startDateTime.getTime() + (session.gracePeriodMinutes * 60000));
+      const isLate = now > startPlusGrace;
+      const status = isLate ? 'Late' : 'Present';
 
      const count = await attendance.countDocuments();
-     const recordId = `A-${now.getFullYear()}-${String(count + 1).padStart(5, '0')}`;
+      const recordId = `A-${now.getFullYear()}-${String(count + 1).padStart(5, '0')}`;
 
      const newRecord = {
-         recordId, 
-         sessionId: session.sessionId,
-         email: user.email, 
-         member: user.fullName || user.name, 
-         service: session.serviceType, 
-         branch: session.branch,
-         userBranch: user.branch,
-         method: 'QR Scan',
-         rfidCardId: user.rfidCardId || null,
-         status,
-         date: now.toLocaleDateString('en-US'),
-         time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-         createdAt: now
-     };
+          recordId, 
+          sessionId: session.sessionId,
+          email: user.email, 
+          member: user.fullName || user.name, 
+          service: session.serviceType, 
+          branch: session.branch,
+          userBranch: user.branch,
+          method: 'QR Scan',
+          rfidCardId: user.rfidCardId || null,
+          status,
+          date: sessionDate.toLocaleDateString('en-US'),
+          time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+          createdAt: sessionDate
+      };
 
      await attendance.insertOne(newRecord);
 

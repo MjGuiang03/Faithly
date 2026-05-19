@@ -195,6 +195,9 @@ export default function AdminRFIDPreview() {
   }, [fetchActiveSessions]);
 
   // Global RFID Listener
+  const lastTapTime = useRef(0);
+  const isProcessing = useRef(false);
+
   useEffect(() => {
     const handleKeyDown = async (e) => {
       if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
@@ -206,6 +209,11 @@ export default function AdminRFIDPreview() {
             toast.error('No active service session. Start a service first to log attendance.');
             return;
           }
+          // Prevent overlapping API calls from rapid taps
+          if (isProcessing.current) return;
+          isProcessing.current = true;
+          lastTapTime.current = Date.now();
+
           try {
             const token = localStorage.getItem('adminToken');
             const res = await fetch(`${API}/api/admin/attendance/log-tap`, {
@@ -220,12 +228,16 @@ export default function AdminRFIDPreview() {
             const data = await res.json();
             if (data.success) {
               toast.success(data.message);
+              // Mark the tap time again after response to protect the display
+              lastTapTime.current = Date.now();
               setLastTappedUser({ ...data.user, recordId: data.record?.recordId, status: data.user?.status || 'Present', alreadyLogged: data.alreadyLogged });
             } else {
               toast.error(data.message);
             }
           } catch (err) {
             toast.error('RFID processing error');
+          } finally {
+            isProcessing.current = false;
           }
         }
       } else {
@@ -239,37 +251,44 @@ export default function AdminRFIDPreview() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedSession]);
 
-  // Poll for remote QR scans
+  // Poll for remote QR scans (won't overwrite recent RFID taps)
   useEffect(() => {
     let interval;
     if (selectedSession) {
       interval = setInterval(async () => {
+        // Skip poll if an RFID tap happened in the last 4 seconds
+        if (Date.now() - lastTapTime.current < 4000) return;
+
         try {
           const token = localStorage.getItem('adminToken');
           const cacheBuster = `_t=${Date.now()}`;
-          const res = await fetch(`${API}/api/admin/attendance?session=${selectedSession.sessionId}&limit=1&${cacheBuster}`, {
+          const res = await fetch(`${API}/api/admin/attendance?session=${selectedSession.sessionId}&limit=5&${cacheBuster}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           const data = await res.json();
           if (data.success && data.attendance && data.attendance.length > 0) {
-            const latest = data.attendance[0];
-            setLastTappedUser(prev => {
-              if (!prev || prev.recordId !== latest.recordId) {
-                return {
-                  recordId: latest.recordId,
-                  name: latest.member,
-                  branch: latest.userBranch || latest.branch,
-                  status: latest.status,
-                  alreadyLogged: false
-                };
-              }
-              return prev;
-            });
+            // Only show actual check-ins, not auto-generated absent records
+            const checkedIn = data.attendance.find(a => a.status === 'Present' || a.status === 'Late');
+            if (checkedIn) {
+              const latest = checkedIn;
+              setLastTappedUser(prev => {
+                if (!prev || prev.recordId !== latest.recordId) {
+                  return {
+                    recordId: latest.recordId,
+                    name: latest.member,
+                    branch: latest.userBranch || latest.branch,
+                    status: latest.status,
+                    alreadyLogged: false
+                  };
+                }
+                return prev;
+              });
+            }
           }
         } catch (e) {
           // silent error
         }
-      }, 2000);
+      }, 3000);
     }
     return () => clearInterval(interval);
   }, [selectedSession]);
