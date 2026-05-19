@@ -23,10 +23,15 @@ router.post('/admin/attendance/sessions/start', authenticateAdmin, async (req, r
        return res.status(400).json({ success: false, message: 'There is already an active session for this branch and service type.' });
     }
 
-    const { ObjectId } = await import('mongodb');
-    
-    const count = await attendanceSessions.countDocuments();
-    const sessionId = `SESS-${new Date().getFullYear()}-${String(count + 1).padStart(4, '0')}`;
+    // Generate a unique session ID using timestamp (avoids slow countDocuments on cold connections)
+    const now = new Date();
+    const ts = now.getFullYear().toString() +
+      String(now.getMonth() + 1).padStart(2, '0') +
+      String(now.getDate()).padStart(2, '0') +
+      String(now.getHours()).padStart(2, '0') +
+      String(now.getMinutes()).padStart(2, '0') +
+      String(now.getSeconds()).padStart(2, '0');
+    const sessionId = `SESS-${now.getFullYear()}-${ts.slice(4)}`;
     
     // Parse the start time properly to compute grace period exactly.
     // Assuming date is YYYY-MM-DD and time is HH:mm
@@ -48,7 +53,7 @@ router.post('/admin/attendance/sessions/start', authenticateAdmin, async (req, r
       startDateTime,
       gracePeriodMinutes: grace,
       status: 'active',
-      startedAt: new Date(),
+      startedAt: now,
       startedBy: req.admin.email,
       endedAt: null,
       stats: { total: 0, present: 0, late: 0, absent: 0 }
@@ -58,8 +63,8 @@ router.post('/admin/attendance/sessions/start', authenticateAdmin, async (req, r
 
     res.status(201).json({ success: true, message: 'Session started successfully', session: { ...newSession, _id: run.insertedId } });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: 'Failed to start session' });
+    console.error('[Session Start Error]:', err.name, err.message, err.stack);
+    res.status(500).json({ success: false, message: 'Failed to start session: ' + (err.message || 'Unknown error') });
   }
 });
 
