@@ -135,8 +135,8 @@ export default function LoanAdminPaymentStatus() {
   }, [loanHistoryData]);
 
   // Pending Approvals
-  const pendingSavUrl = (token && isSavingsRoute && approvalMethod === 'manual') ? `${API}/api/admin/savings/deposits?status=pending&limit=100` : null;
-  const pendingLoanUrl = (token && !isSavingsRoute && approvalMethod === 'manual') ? `${API}/api/admin/loans/payments?status=pending&limit=100` : null;
+  const pendingSavUrl = (token && isSavingsRoute) ? `${API}/api/admin/savings/deposits?status=pending&limit=100` : null;
+  const pendingLoanUrl = (token && !isSavingsRoute) ? `${API}/api/admin/loan-payments?status=pending&limit=100` : null;
 
   const { data: pendingSavData, isValidating: pendingLoadingSav, mutate: mutateSavPending } = useSWR(pendingSavUrl, fetcherSingle, { revalidateOnFocus: false });
   const { data: pendingLoanData, isValidating: pendingLoadingLoan, mutate: mutateLoanPending } = useSWR(pendingLoanUrl, fetcherSingle, { revalidateOnFocus: false });
