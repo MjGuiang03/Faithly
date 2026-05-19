@@ -67,10 +67,10 @@ export default function SecretaryLoanProcess() {
 
         try {
             // Run all three API calls simultaneously instead of sequentially to drastically reduce wait time
-            const [histRes, donRes, verRes] = await Promise.allSettled([
+            const [histRes, donRes, memberRes] = await Promise.allSettled([
                 fetch(`${API}/api/admin/loans?search=${encodeURIComponent(loan.email)}&limit=100`, { headers }),
                 fetch(`${API}/api/admin/donations?search=${encodeURIComponent(loan.email)}`, { headers }),
-                fetch(`${API}/api/admin/verifications`, { headers })
+                fetch(`${API}/api/admin/members?search=${encodeURIComponent(loan.email)}&limit=1`, { headers })
             ]);
 
             // Process Loan History
@@ -89,14 +89,14 @@ export default function SecretaryLoanProcess() {
                 }
             }
 
-            // Process Verifications
-            if (verRes.status === 'fulfilled' && verRes.value.ok) {
-                const verData = await verRes.value.json();
-                if (verData.success && verData.verifications) {
-                    const userVer = verData.verifications.find(v => v.email === loan.email && v.status === 'approved');
-                    if (userVer) {
-                        userChurchId = userVer.churchId || 'N/A';
-                        userPosition = userVer.position || 'Member';
+            // Process Member Info (churchId, position)
+            if (memberRes.status === 'fulfilled' && memberRes.value.ok) {
+                const memberData = await memberRes.value.json();
+                if (memberData.success && memberData.members && memberData.members.length > 0) {
+                    const member = memberData.members.find(m => m.email === loan.email);
+                    if (member) {
+                        userChurchId = member.churchId || member.memberId || 'N/A';
+                        userPosition = member.position || member.officerPosition || 'Member';
                     }
                 }
             }
