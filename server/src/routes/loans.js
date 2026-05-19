@@ -118,8 +118,9 @@ router.post('/loans/apply', authenticateUser, async (req, res) => {
     const user = await users.findOne({ email });
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
-    const count  = await loans.countDocuments();
-    const loanId = `LN-${new Date().getFullYear()}-${String(count + 1).padStart(3, '0')}`;
+    const now = new Date();
+    const seq = String(now.getTime()).slice(-6);
+    const loanId = `LN-${now.getFullYear()}-${seq}`;
 
     const newLoan = {
       loanId, email, memberName: user.fullName, amount: Number(amount),

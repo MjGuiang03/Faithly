@@ -317,7 +317,7 @@ export default function LoanAdminLoanManagement() {
             const token = localStorage.getItem('adminToken');
             
             // 1. Fetch full loan details (includes base64 images omitted in list view)
-            const detailRes = await fetch(`${API}/api/admin/loans/${loan.loanId || loan._id}`, {
+            const detailRes = await fetch(`${API}/api/admin/loans/${loan._id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             const detailData = await detailRes.json();
