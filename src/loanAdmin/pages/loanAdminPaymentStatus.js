@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import useSWR from 'swr';
-import useDebounce from '../../hooks/useDebounce';
 import { useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import LoanAdminSidebar from './loanAdminSidebar';
