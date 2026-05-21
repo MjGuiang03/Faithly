@@ -29,7 +29,9 @@ for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       socketTimeoutMS: 120000,
       maxPoolSize: 20,
       minPoolSize: 2,
-      maxIdleTimeMS: 60000,
+      maxIdleTimeMS: 30000,
+      heartbeatFrequencyMS: 10000,
+      family: 4,
       retryReads: true,
       retryWrites: true,
     } : {};
