@@ -852,7 +852,7 @@ router.put('/admin/loan-payments/:id/confirm', authenticateAdmin, async (req, re
 
         const paymentAmount = payment.amount || loan.monthlyPayment || 0;
         const pType = payment.paymentType || 'regular';
-        const pMonths = payment.monthsCovered || 1;
+        const pMonths = payment.monthsCovered != null ? payment.monthsCovered : (pType === 'regular' ? 1 : 0);
 
         let newPaidMonths;
         let newBalance;
@@ -870,7 +870,8 @@ router.put('/admin/loan-payments/:id/confirm', authenticateAdmin, async (req, re
             newBalance = Math.max(0, (loan.remainingBalance || loan.totalRepayment || loan.amount) - paymentAmount);
         }
 
-        const isComplete = newPaidMonths >= (loan.termMonths || 12) || newBalance <= 0;
+        // Only complete if balance is actually 0, OR if all months are paid AND balance is also 0
+        const isComplete = newBalance <= 0;
         if (isComplete) { newPaidMonths = loan.termMonths || 12; newBalance = 0; }
 
         const startDate = new Date(loan.disbursementDate || loan.approvedDate || loan.appliedDate);
@@ -1050,6 +1051,69 @@ router.get('/admin/loan-reports', authenticateAdmin, async (req, res) => {
         .reduce((s, l) => s + (l.amount || 0), 0),
     }));
 
+    // ── NEW: Loan Status Distribution (Donut Chart) ──
+    const allLoansEver = await loans.find({}).project({ status: 1 }).toArray();
+    const statusCounts = {};
+    allLoansEver.forEach(l => {
+      const s = l.status || 'pending';
+      statusCounts[s] = (statusCounts[s] || 0) + 1;
+    });
+    const STATUS_LABELS = {
+      pending: 'Pending', approved: 'Approved', active: 'Active',
+      completed: 'Completed', rejected: 'Rejected', cancelled: 'Cancelled',
+      awaiting_member_approval: 'Awaiting Approval'
+    };
+    const statusDistribution = Object.entries(statusCounts).map(([key, value]) => ({
+      name: STATUS_LABELS[key] || key.charAt(0).toUpperCase() + key.slice(1),
+      value,
+      key,
+    })).sort((a, b) => b.value - a.value);
+
+    // ── NEW: Repayment Performance (On-Time vs Late) ──
+    const allConfirmedPayments = await loanPayments.find({
+      status: 'confirmed',
+      confirmedAt: { $gte: yearStart, $lt: yearEnd }
+    }).toArray();
+    const onTimePayments = allConfirmedPayments.filter(p => !p.isLate).length;
+    const latePayments = allConfirmedPayments.filter(p => p.isLate).length;
+    const repaymentPerformance = [
+      { name: 'On-Time', value: onTimePayments },
+      { name: 'Late', value: latePayments },
+    ];
+
+    // ── NEW: Monthly Loan Applications Trend ──
+    const allApplicationsInYear = await loans.find({
+      appliedDate: { $gte: yearStart, $lt: yearEnd }
+    }).project({ appliedDate: 1, status: 1 }).toArray();
+    const monthlyApplications = months.map((month, idx) => {
+      const monthApps = allApplicationsInYear.filter(l => {
+        const d = new Date(l.appliedDate);
+        return d.getMonth() === idx;
+      });
+      return {
+        month,
+        applications: monthApps.length,
+        approved: monthApps.filter(l => ['approved', 'active', 'completed'].includes(l.status)).length,
+        rejected: monthApps.filter(l => l.status === 'rejected').length,
+      };
+    });
+
+    // ── NEW: Delinquency Rate (monthly) ──
+    const delinquencyRate = months.map((month, idx) => {
+      const monthPayments = allConfirmedPayments.filter(p => {
+        const d = new Date(p.confirmedAt || p.submittedAt);
+        return d.getMonth() === idx;
+      });
+      const total = monthPayments.length;
+      const late = monthPayments.filter(p => p.isLate).length;
+      return {
+        month,
+        rate: total > 0 ? Math.round((late / total) * 100) : 0,
+        total,
+        late,
+      };
+    });
+
     // ── Available years (for the dropdown) ──
     const oldestLoan = await loans.find().sort({ appliedDate: 1 }).limit(1).toArray();
     const startYear = oldestLoan.length > 0 ? new Date(oldestLoan[0].appliedDate).getFullYear() : year;
@@ -1065,6 +1129,10 @@ router.get('/admin/loan-reports', authenticateAdmin, async (req, res) => {
       monthlyData,
       byType,
       disbursementByType,
+      statusDistribution,
+      repaymentPerformance,
+      monthlyApplications,
+      delinquencyRate,
     });
   } catch (err) {
     console.error(err);

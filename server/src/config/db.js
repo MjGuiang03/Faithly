@@ -1,12 +1,14 @@
 import { MongoClient } from 'mongodb';
 import dns from 'dns';
-
-// Force Google DNS to resolve MongoDB SRV records (fixes Render ETIMEOUT issues)
-dns.setServers(['8.8.8.8', '8.8.4.4']);
-dns.setDefaultResultOrder('ipv4first'); // Fixes Node 18+ IPv6 timeout issues
 import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 dotenv.config();
+
+// Force Google DNS to resolve MongoDB SRV records (fixes Render ETIMEOUT issues)
+if (process.env.RENDER) {
+  dns.setServers(['8.8.8.8', '8.8.4.4']);
+}
+dns.setDefaultResultOrder('ipv4first'); // Fixes Node 18+ IPv6 timeout issues
 
 // Validate environment variables
 const requiredEnv = ['MONGODB_URL', 'DB_NAME', 'JWT_SECRET'];
@@ -21,14 +23,15 @@ let client;
 const MAX_RETRIES = 3;
 for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
   try {
-    client = new MongoClient(process.env.MONGODB_URL, {
+    const options = process.env.RENDER ? {
       serverSelectionTimeoutMS: 30000,
       connectTimeoutMS: 30000,
       socketTimeoutMS: 60000,
       maxPoolSize: 10,
       retryReads: true,
       retryWrites: true,
-    });
+    } : {};
+    client = new MongoClient(process.env.MONGODB_URL, options);
     await client.connect();
     console.log('✅ Connected to MongoDB');
     break;

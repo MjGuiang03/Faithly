@@ -178,9 +178,14 @@ export default function UserHeader({ toggleSidebar, collapsed }) {
 
   const formatTimeAgo = (date) => {
     const diff = Date.now() - new Date(date).getTime();
+    if (diff < 0) {
+      if (diff > -60000) return 'Just now';
+      return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
     const mins = Math.floor(diff / 60000);
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
+    if (mins < 1) return 'Just now';
     if (mins < 60) return `${mins}m ago`;
     if (hours < 24) return `${hours}h ago`;
     if (days < 7) return `${days}d ago`;

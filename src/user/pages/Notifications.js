@@ -251,8 +251,9 @@ export default function Notifications() {
           type: 'attendance',
           timestamp: a.createdAt || a.date,
           title: 'Attendance Recorded',
-          message: `Your attendance for ${a.service || 'Sunday Service'}${a.date ? ` on ${new Date(a.date || a.createdAt).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' })}` : ''} has been successfully recorded.`,
+          message: `Your attendance for ${a.service || 'Sunday Service'} at ${a.branch || 'Unknown Community'}${a.date ? ` on ${new Date(a.date || a.createdAt).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' })}` : ''} has been successfully recorded.`,
           service: a.service,
+          branch: a.branch,
           recordedBy: a.recordedBy // if available
         });
       });
@@ -641,6 +642,7 @@ export default function Notifications() {
                   {n.type === 'attendance' && (
                     <div className="user-notif-detail-grid small">
                       <div><label>Service</label><span>{n.service || 'Sunday Service'}</span></div>
+                      <div><label>Community</label><span>{n.branch || 'Unknown Community'}</span></div>
                       <div><label>Recorded On</label><span>{new Date(n.timestamp).toLocaleDateString()}</span></div>
                     </div>
                   )}

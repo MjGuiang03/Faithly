@@ -4,8 +4,9 @@ import { useAuth } from '../../context/AuthContext';
 import '../styles/Branches.css';
 import { useState, useMemo, useEffect, useRef, Suspense, lazy } from 'react';
 import useSWR from 'swr';
-import { MapPin, Search, X, ChevronDown } from 'lucide-react';
+import { MapPin, Search, X, ChevronDown, Check } from 'lucide-react';
 import { branchData, REGION_ORDER, REGION_LABELS, DAY_COLORS, COMMUNITY_MAP } from '../components/branchData';
+import { useNavigate } from 'react-router-dom';
 import API from '../../utils/api';
 import { Calendar } from 'lucide-react';
 
@@ -14,6 +15,7 @@ const BranchMap = lazy(() => import('../components/BranchMap'));
 
 export default function Branches() {
   const { profile } = useAuth();
+  const navigate = useNavigate();
 
   const [search, setSearch] = useState('');
   const [drawerBranch, setDrawerBranch] = useState(null);
@@ -23,10 +25,23 @@ export default function Branches() {
   const [activeBranch, setActiveBranch] = useState(null);
   const flyToRef = useRef(null);
 
+
+  const token = localStorage.getItem('token');
   const fetcher = (url) => fetch(url).then(res => res.json());
+  const authFetcher = async (url) => {
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return res.json();
+  };
 
   const { data: branchesData } = useSWR(`${API}/api/public/branches`, fetcher, { revalidateOnFocus: false });
   const { data: eventsData } = useSWR(`${API}/api/admin/announcements`, fetcher, { revalidateOnFocus: false });
+  const { data: visitedData } = useSWR(token ? `${API}/api/attendance/visited-stats` : null, authFetcher, { revalidateOnFocus: false });
+
+  const visitedStats = useMemo(() => {
+    return visitedData?.success ? visitedData.visited : {};
+  }, [visitedData]);
 
   const branchStats = useMemo(() => {
     const stats = {};
@@ -144,15 +159,19 @@ export default function Branches() {
                   </button>
                   {isOpen && (
                     <div className="ubr-map-branch-list">
-                      {filtered.map((branch, i) => (
-                        <button key={i}
-                          className={`ubr-map-branch-item ${activeBranch?.name === branch.name ? 'active' : ''} ${userBranch?.name === branch.name ? 'mine' : ''}`}
-                          onClick={() => { flyToRef.current?.(branch); setActiveBranch(branch); }}>
-                          <MapPin size={12} />
-                          <span>{branch.name}</span>
-                          {userBranch?.name === branch.name && <span className="ubr-my-tag">Mine</span>}
-                        </button>
-                      ))}
+                      {filtered.map((branch, i) => {
+                        const isVisited = visitedStats[branch.name]?.count > 0;
+                        return (
+                          <button key={i}
+                            className={`ubr-map-branch-item ${activeBranch?.name === branch.name ? 'active' : ''} ${userBranch?.name === branch.name ? 'mine' : ''}`}
+                            onClick={() => { flyToRef.current?.(branch); setActiveBranch(branch); }}>
+                            <MapPin size={12} />
+                            <span>{branch.name}</span>
+                            {userBranch?.name === branch.name && <span className="ubr-my-tag">Mine</span>}
+                            {isVisited && <span className="ubr-visited-tag">✓ Visited</span>}
+                          </button>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -245,6 +264,35 @@ export default function Branches() {
                       </div>
                     </div>
                   </div>
+
+                  {visitedStats[drawerBranch?.name] && (
+                    <div className="user-drawer-section">
+                      <p className="user-drawer-section-label">Your Visit History</p>
+                      <div className="user-drawer-visit-card">
+                        <div className="user-drawer-visit-header">
+                          <span className="user-drawer-visit-badge">
+                            <Check size={10} style={{ marginRight: '3px', strokeWidth: 3 }} />
+                            Visited
+                          </span>
+                          <span className="user-drawer-visit-count">
+                            {visitedStats[drawerBranch.name].count} {visitedStats[drawerBranch.name].count === 1 ? 'visit' : 'visits'}
+                          </span>
+                        </div>
+                        <div className="user-drawer-visit-meta">
+                          Last visited on <strong>{visitedStats[drawerBranch.name].lastVisited}</strong>
+                        </div>
+
+                        <div className="user-drawer-visit-toggle-wrap">
+                          <button 
+                            className="user-drawer-visit-toggle-btn"
+                            onClick={() => navigate('/attendance', { state: { highlightBranch: drawerBranch.name } })}
+                          >
+                            View Visit History
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="user-drawer-section">
                     <p className="user-drawer-section-label">Upcoming Events</p>

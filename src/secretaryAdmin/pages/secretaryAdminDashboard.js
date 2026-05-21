@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import useSWR from 'swr';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Label } from 'recharts';
 import SecretaryAdminSidebar from '../components/secretaryAdminSidebar';
@@ -19,28 +19,13 @@ const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Se
 const YEAR_OPTIONS = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() + i);
 
 export default function SecretaryAdminDashboard() {
-  const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({ awaiting: 0, today: 0, month: 0, disbursed: 0 });
-  const [rawLoans, setRawLoans] = useState([]);
   const [chartYear, setChartYear] = useState(new Date().getFullYear());
-
-  const [reportStats, setReportStats] = useState({ totalReceived: 0, totalReleased: 0, totalProcessed: 0, processingRate: 0 });
-  const [paymentMethodData, setPaymentMethodData] = useState([
-    { name: 'E-Wallet', value: 0, percentage: 0 },
-    { name: 'Bank Transfer', value: 0, percentage: 0 },
-    { name: 'Cash', value: 0, percentage: 0 }
-  ]);
-  const [moneyFlowData, setMoneyFlowData] = useState([]);
 
   // Modal states
   const [showAwaitingModal, setShowAwaitingModal] = useState(false);
   const [showTodayModal, setShowTodayModal] = useState(false);
   const [showMonthModal, setShowMonthModal] = useState(false);
   const [showDisbursedModal, setShowDisbursedModal] = useState(false);
-  const [awaitingLoans, setAwaitingLoans] = useState([]);
-  const [todayLoans, setTodayLoans] = useState([]);
-  const [monthLoans, setMonthLoans] = useState([]);
-  const [disbursedLoans, setDisbursedLoans] = useState([]);
 
   // Modal filter states
   const [monthModalMonth, setMonthModalMonth] = useState(new Date().getMonth().toString());
@@ -58,22 +43,18 @@ export default function SecretaryAdminDashboard() {
   const { data, isValidating } = useSWR(
     token ? `${API}/api/admin/loans` : null,
     fetcherSingle,
-    { revalidateOnFocus: false }
+    { 
+      revalidateOnFocus: false,
+      dedupingInterval: 30000,
+      keepPreviousData: true
+    }
   );
 
-  useEffect(() => {
-    if (data && data.success && data.loans) {
-      setRawLoans(data.loans);
-    }
-  }, [data]);
-
-  useEffect(() => {
-    setLoading(isValidating && !data);
-  }, [isValidating, data]);
+  const rawLoans = useMemo(() => data?.loans || [], [data]);
+  const loading = isValidating && !data;
 
   // Derived stats — always uses current month/year
-  useEffect(() => {
-    if (!rawLoans.length) return;
+  const derivedStats = useMemo(() => {
     const activeLoans = rawLoans.filter(l => ['active', 'approved', 'completed'].includes((l.status || '').toLowerCase()) || l.disbursed);
     const now = new Date();
     const currentMonth = now.getMonth();
@@ -83,38 +64,37 @@ export default function SecretaryAdminDashboard() {
     let processedToday = 0;
     let processedMonth = 0;
     let totalDisbursedAmount = 0;
-    const thisAwaitingLoans = [];
-    const thisTodayLoans = [];
-    const thisMonthLoans = [];
-    const allDisbursedLoans = [];
-
+    const awaitingLoans = [];
+    const todayLoans = [];
+    const monthLoans = [];
+    const disbursedLoans = [];
     let thisMonthAmount = 0;
 
     activeLoans.forEach(l => {
       if (!l.disbursed) {
-        thisAwaitingLoans.push(l);
+        awaitingLoans.push(l);
       } else if (l.disbursementDate) {
         const disbDate = new Date(l.disbursementDate);
         if (disbDate.toLocaleDateString('en-US') === todayStr) {
           processedToday++;
-          thisTodayLoans.push(l);
+          todayLoans.push(l);
         }
 
         if (disbDate.getFullYear() === currentYear && disbDate.getMonth() === currentMonth) {
           processedMonth++;
-          thisMonthLoans.push(l);
+          monthLoans.push(l);
           thisMonthAmount += Number(l.amount) || 0;
         }
 
         totalDisbursedAmount += Number(l.amount) || 0;
-        allDisbursedLoans.push(l);
+        disbursedLoans.push(l);
       }
     });
 
     let prevMonthDisbursed = 0;
     const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
     const prevMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-    allDisbursedLoans.forEach(l => {
+    disbursedLoans.forEach(l => {
       if (!l.disbursementDate) return;
       const d = new Date(l.disbursementDate);
       if (d.getMonth() === prevMonth && d.getFullYear() === prevMonthYear) {
@@ -122,23 +102,26 @@ export default function SecretaryAdminDashboard() {
       }
     });
 
-    setStats({
-      awaiting: thisAwaitingLoans.length,
-      today: processedToday,
-      month: processedMonth,
-      disbursed: totalDisbursedAmount,
-      thisMonthAmount,
-      prevMonthDisbursed
-    });
-    setAwaitingLoans(thisAwaitingLoans);
-    setTodayLoans(thisTodayLoans);
-    setMonthLoans(thisMonthLoans);
-    setDisbursedLoans(allDisbursedLoans);
+    return {
+      stats: {
+        awaiting: awaitingLoans.length,
+        today: processedToday,
+        month: processedMonth,
+        disbursed: totalDisbursedAmount,
+        thisMonthAmount,
+        prevMonthDisbursed
+      },
+      awaitingLoans,
+      todayLoans,
+      monthLoans,
+      disbursedLoans
+    };
   }, [rawLoans]);
 
+  const { stats, awaitingLoans, todayLoans, monthLoans, disbursedLoans } = derivedStats;
+
   // Derived stats for Reports and Chart
-  useEffect(() => {
-    if (!rawLoans.length) return;
+  const reportsAndCharts = useMemo(() => {
     const disbursedL = rawLoans.filter(l => l.disbursed);
     const approvedLoans = rawLoans.filter(l => ['active', 'approved', 'completed'].includes((l.status || '').toLowerCase()) || l.disbursed);
 
@@ -146,7 +129,7 @@ export default function SecretaryAdminDashboard() {
     const totalProcessedAmt = approvedLoans.reduce((sum, l) => sum + Number(l.amount || 0), 0);
     const totalReleasedAmt = disbursedL.reduce((sum, l) => sum + Number(l.amount || 0), 0);
     const processingRate = approvedLoans.length > 0 ? Math.round((disbursedL.length / approvedLoans.length) * 100) : 0;
-    setReportStats({ totalReceived: totalReceivedAmt, totalReleased: totalReleasedAmt, totalProcessed: totalProcessedAmt, processingRate });
+    const reportStats = { totalReceived: totalReceivedAmt, totalReleased: totalReleasedAmt, totalProcessed: totalProcessedAmt, processingRate };
 
     // Filter payment method pie chart based on selected chart year too, or keep all time? Let's use chartYear for pie chart as well
     const yearlyDisbursed = disbursedL.filter(l => l.disbursementDate && new Date(l.disbursementDate).getFullYear() === chartYear);
@@ -156,23 +139,26 @@ export default function SecretaryAdminDashboard() {
     const bankAmt = pieDataSrc.filter(l => l.paymentMethod && l.paymentMethod.toLowerCase().includes('bank')).reduce((sum, l) => sum + Number(l.amount || 0), 0);
     const cashAmt = pieDataSrc.filter(l => !l.paymentMethod || l.paymentMethod.toLowerCase() === 'cash').reduce((sum, l) => sum + Number(l.amount || 0), 0);
     const totalAmt = gcashAmt + bankAmt + cashAmt;
-    setPaymentMethodData([
+    const paymentMethodData = [
       { name: 'E-Wallet', value: gcashAmt, percentage: totalAmt > 0 ? Math.round((gcashAmt / totalAmt) * 100) : 0 },
       { name: 'Bank Transfer', value: bankAmt, percentage: totalAmt > 0 ? Math.round((bankAmt / totalAmt) * 100) : 0 },
       { name: 'Cash', value: cashAmt, percentage: totalAmt > 0 ? Math.round((cashAmt / totalAmt) * 100) : 0 }
-    ]);
+    ];
 
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const flowData = months.map(m => ({ month: m, released: 0 }));
+    const moneyFlowData = months.map(m => ({ month: m, released: 0 }));
     disbursedL.forEach(l => {
       if (!l.disbursementDate) return;
       const d = new Date(l.disbursementDate);
       if (d.getFullYear() === chartYear) {
-        flowData[d.getMonth()].released += Number(l.amount) || 0;
+        moneyFlowData[d.getMonth()].released += Number(l.amount) || 0;
       }
     });
-    setMoneyFlowData(flowData);
+
+    return { reportStats, paymentMethodData, moneyFlowData };
   }, [rawLoans, chartYear]);
+
+  const { reportStats, paymentMethodData, moneyFlowData } = reportsAndCharts;
 
   const dash = (v) => loading ? '—' : v;
 
@@ -180,20 +166,24 @@ export default function SecretaryAdminDashboard() {
   const currentMonthLabel = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
   // Filtered loans for This Month modal
-  const filteredMonthLoans = disbursedLoans.filter(l => {
-    if (!l.disbursementDate) return false;
-    const d = new Date(l.disbursementDate);
-    return d.getMonth() === parseInt(monthModalMonth) && d.getFullYear() === monthModalYear;
-  });
+  const filteredMonthLoans = useMemo(() => {
+    return disbursedLoans.filter(l => {
+      if (!l.disbursementDate) return false;
+      const d = new Date(l.disbursementDate);
+      return d.getMonth() === parseInt(monthModalMonth) && d.getFullYear() === monthModalYear;
+    });
+  }, [disbursedLoans, monthModalMonth, monthModalYear]);
 
   // Filtered loans for All Disbursements modal
-  const filteredDisbLoans = disbursedLoans.filter(l => {
-    if (!l.disbursementDate) return false;
-    const d = new Date(l.disbursementDate);
-    if (disbModalYear !== 'all' && d.getFullYear() !== parseInt(disbModalYear)) return false;
-    if (disbModalMonth !== 'all' && d.getMonth() !== parseInt(disbModalMonth)) return false;
-    return true;
-  });
+  const filteredDisbLoans = useMemo(() => {
+    return disbursedLoans.filter(l => {
+      if (!l.disbursementDate) return false;
+      const d = new Date(l.disbursementDate);
+      if (disbModalYear !== 'all' && d.getFullYear() !== parseInt(disbModalYear)) return false;
+      if (disbModalMonth !== 'all' && d.getMonth() !== parseInt(disbModalMonth)) return false;
+      return true;
+    });
+  }, [disbursedLoans, disbModalYear, disbModalMonth]);
 
   const getMonthModalLabel = () => `${MONTH_NAMES[parseInt(monthModalMonth)]} ${monthModalYear}`;
   const getDisbModalLabel = () => {

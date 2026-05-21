@@ -483,4 +483,62 @@ router.get('/attendance/my-attendance', authenticateUser, async (req, res) => {
   }
 });
 
+/* ================== USER - GET VISITED BRANCHES STATS ================== */
+router.get('/attendance/visited-stats', authenticateUser, async (req, res) => {
+  try {
+    const email = req.user.email;
+    const records = await attendance.find({
+      email,
+      status: { $in: ['Present', 'Late'] }
+    }).toArray();
+
+    const visited = {};
+    records.forEach(r => {
+      const bName = r.branch;
+      if (!bName) return;
+      if (!visited[bName]) {
+        visited[bName] = {
+          count: 0,
+          lastVisited: null,
+          lastVisitedRaw: null,
+          history: []
+        };
+      }
+      visited[bName].count += 1;
+      
+      const recordDate = r.createdAt ? new Date(r.createdAt) : new Date(r.date);
+      if (!visited[bName].lastVisitedRaw || recordDate > visited[bName].lastVisitedRaw) {
+        visited[bName].lastVisitedRaw = recordDate;
+        visited[bName].lastVisited = r.date || recordDate.toLocaleDateString('en-US');
+      }
+
+      visited[bName].history.push({
+        date: r.date,
+        time: r.time || '--:--',
+        service: r.service || 'Service',
+        method: r.method || 'None',
+        status: r.status,
+        timestamp: recordDate.getTime()
+      });
+    });
+
+    // Sort history by date/timestamp descending and clean up
+    Object.keys(visited).forEach(bName => {
+      delete visited[bName].lastVisitedRaw;
+      visited[bName].history.sort((a, b) => b.timestamp - a.timestamp);
+      visited[bName].history.forEach(item => {
+        delete item.timestamp;
+      });
+    });
+
+    res.status(200).json({
+      success: true,
+      visited
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to fetch visited stats' });
+  }
+});
+
 export default router;

@@ -5,6 +5,17 @@ import { callGemini } from '../utils/gemini.js';
 
 const router = Router();
 
+const categoryMap = {
+  'Children Ministry': "Children's Department",
+  "Children's Department": "Children's Department",
+  'Youth Ministry': 'Youth Department',
+  'Youth Department': 'Youth Department',
+  'General Fund': 'General Fund',
+  "Men's Department": "Men's Department",
+  "Women's Department": "Women's Department",
+  'Mission Fund': 'Mission Fund'
+};
+
 /* ================== AI INSIGHTS — ADMIN DASHBOARD ================== */
 router.get('/ai-insights', authenticateAdmin, async (req, res) => {
   try {
@@ -56,7 +67,8 @@ router.get('/ai-insights', authenticateAdmin, async (req, res) => {
     // Category breakdown
     const catTotals = {};
     allDonations.forEach(d => {
-      const cat = d.category || 'General Fund';
+      const rawCat = d.category || 'General Fund';
+      const cat = categoryMap[rawCat] || rawCat;
       catTotals[cat] = (catTotals[cat] || 0) + (Number(d.amount) || 0);
     });
 
@@ -176,30 +188,40 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
 
       if (type === 'all' || type === 'donations') {
         let donationFilter = { status: 'confirmed', $or: [{ createdAt: dateFilter }, { date: dateFilter }] };
-        const periodDonations = await donations.find(donationFilter).toArray();
+        let periodDonations = await donations.find(donationFilter).toArray();
 
-      const donByCategory = {};
-      const donByMonth = {};
-      const donByBranch = {};
+        // Apply community/province filter BEFORE computing any aggregates
+        if (communities.length > 0 || province) {
+          periodDonations = periodDonations.filter(d => {
+            const member = allMembersMap[d.email];
+            const targetBranch = d.community || member?.branch || 'Unknown';
+            if (communities.length > 0) return communities.includes(targetBranch);
+            if (province) return branchToProvince[targetBranch] === province;
+            return true;
+          });
+        }
+
+        const donByCategory = {};
+        const donByMonth = {};
+        const donByBranch = {};
         let donTotal = 0;
 
         periodDonations.forEach(d => {
           const amt = Number(d.amount) || 0;
           donTotal += amt;
 
-        const cat = d.category || 'General Fund';
-        donByCategory[cat] = (donByCategory[cat] || 0) + amt;
+          const rawCat = d.category || 'General Fund';
+          const cat = categoryMap[rawCat] || rawCat;
+          donByCategory[cat] = (donByCategory[cat] || 0) + amt;
 
-        const dt = new Date(d.createdAt || d.date);
-        const mKey = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
-        donByMonth[mKey] = (donByMonth[mKey] || 0) + amt;
+          const dt = new Date(d.createdAt || d.date);
+          const mKey = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
+          donByMonth[mKey] = (donByMonth[mKey] || 0) + amt;
 
-        const member = allMembersMap[d.email];
-        const targetBranch = d.community || member?.branch || 'Unknown';
-        if (communities.length > 0 && !communities.includes(targetBranch)) return; // skip if community filter active
-        if (province && branchToProvince[targetBranch] !== province) return; // skip if province filter active
-        donByBranch[targetBranch] = (donByBranch[targetBranch] || 0) + amt;
-      });
+          const member = allMembersMap[d.email];
+          const targetBranch = d.community || member?.branch || 'Unknown';
+          donByBranch[targetBranch] = (donByBranch[targetBranch] || 0) + amt;
+        });
 
       report.donations = {
         total: donTotal,
@@ -210,34 +232,106 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
         };
 
         // Member growth for period
-        const periodMembers = allMembers.filter(m => {
+        let periodMembers = allMembers.filter(m => {
           const dt = new Date(m.createdAt);
           return dt >= startDate && dt <= endDate;
         });
-        report.memberGrowth = { newMembers: periodMembers.length, totalMembers: allMembers.length };
+        // Filter member growth by community/province too
+        if (communities.length > 0) {
+          periodMembers = periodMembers.filter(m => communities.includes(m.branch));
+        } else if (province) {
+          periodMembers = periodMembers.filter(m => branchToProvince[m.branch] === province);
+        }
+        const totalFiltered = communities.length > 0
+          ? allMembers.filter(m => communities.includes(m.branch)).length
+          : province
+            ? allMembers.filter(m => branchToProvince[m.branch] === province).length
+            : allMembers.length;
+        report.memberGrowth = { newMembers: periodMembers.length, totalMembers: totalFiltered };
       }
 
       if (type === 'all' || type === 'attendance') {
-        // Attendance (Moved from Secretary)
-        const periodAttendance = await attendance.find({ $or: [{ date: dateFilter }, { createdAt: dateFilter }] }).toArray();
-      const attByBranch = {};
-      periodAttendance.forEach(a => {
-        const b = a.community || a.branch || a.userBranch || 'Unknown';
-        if (communities.length > 0 && !communities.includes(b)) return; // skip if community filter active
-        if (province && branchToProvince[b] !== province) return; // skip if province filter active
-        attByBranch[b] = (attByBranch[b] || 0) + 1;
-      });
+        // Attendance
+        let periodAttendance = await attendance.find({ $or: [{ date: dateFilter }, { createdAt: dateFilter }] }).toArray();
+
+        // Exclude absent records
+        periodAttendance = periodAttendance.filter(a => (a.status || 'Present').toLowerCase() !== 'absent');
+
+        // Apply community/province filter BEFORE computing aggregates
+        if (communities.length > 0 || province) {
+          periodAttendance = periodAttendance.filter(a => {
+            const b = a.community || a.branch || a.userBranch || 'Unknown';
+            if (communities.length > 0) return communities.includes(b);
+            if (province) return branchToProvince[b] === province;
+            return true;
+          });
+        }
+
+        const attByBranch = {};
+        periodAttendance.forEach(a => {
+          const b = a.community || a.branch || a.userBranch || 'Unknown';
+          attByBranch[b] = (attByBranch[b] || 0) + 1;
+        });
+
+        // Build attendee names list (for community/province filtered reports)
+        const attendees = periodAttendance.map(a => ({
+          name: a.member || a.fullName || a.email || 'Unknown',
+          branch: a.community || a.branch || a.userBranch || 'Unknown',
+          rawDate: a.date ? new Date(a.date) : new Date(0),
+          date: a.date ? new Date(a.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A',
+          time: a.time || 'N/A',
+          status: a.status || 'Present',
+          service: a.serviceType || a.service || 'N/A',
+        }));
+
+        attendees.sort((a, b) => {
+          const compBranch = a.branch.localeCompare(b.branch);
+          if (compBranch !== 0) return compBranch;
+
+          const compService = a.service.localeCompare(b.service);
+          if (compService !== 0) return compService;
+
+          const compDate = a.rawDate - b.rawDate;
+          if (compDate !== 0) return compDate;
+
+          return a.name.localeCompare(b.name);
+        });
+
         report.attendance = {
           totalRecords: periodAttendance.length,
           byBranch: Object.entries(attByBranch).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value),
+          attendees,
         };
       }
     }
 
     // === Loans & Savings (Loan Admin ONLY) ===
     if (role === 'loanAdmin') {
-      const periodLoans = await loans.find({ appliedDate: dateFilter, status: { $ne: 'cancelled' } }).toArray();
-      const periodPayments = await loanPayments.find({ status: 'confirmed', confirmedAt: dateFilter }).toArray();
+      const allMembersMap = {};
+      const allMembers = await users.find({}).toArray();
+      allMembers.forEach(m => { allMembersMap[m.email] = m; });
+
+      let periodLoans = await loans.find({ appliedDate: dateFilter, status: { $ne: 'cancelled' } }).toArray();
+      let periodPayments = await loanPayments.find({ status: 'confirmed', confirmedAt: dateFilter }).toArray();
+
+      // Apply community/province filter
+      if (communities.length > 0 || province) {
+        periodLoans = periodLoans.filter(l => {
+          const member = allMembersMap[l.email || l.memberEmail];
+          const targetBranch = l.branch || member?.branch || 'Unknown';
+          if (communities.length > 0) return communities.includes(targetBranch);
+          if (province) return branchToProvince[targetBranch] === province;
+          return true;
+        });
+
+        periodPayments = periodPayments.filter(p => {
+          const member = allMembersMap[p.email || p.memberEmail];
+          const targetBranch = p.branch || member?.branch || 'Unknown';
+          if (communities.length > 0) return communities.includes(targetBranch);
+          if (province) return branchToProvince[targetBranch] === province;
+          return true;
+        });
+      }
 
       const loansByStatus = {};
       let totalApplied = 0;
@@ -269,8 +363,28 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
       };
 
       // Savings
-      const periodSavingsTxns = await savingsTransactions.find({ type: 'deposit', status: 'confirmed', date: dateFilter }).toArray();
-      const allGoals = await savingsGoals.find({}).toArray();
+      let periodSavingsTxns = await savingsTransactions.find({ type: 'deposit', status: 'confirmed', date: dateFilter }).toArray();
+      let allGoals = await savingsGoals.find({}).toArray();
+
+      // Apply community/province filter
+      if (communities.length > 0 || province) {
+        periodSavingsTxns = periodSavingsTxns.filter(t => {
+          const member = allMembersMap[t.email || t.memberEmail];
+          const targetBranch = t.branch || member?.branch || 'Unknown';
+          if (communities.length > 0) return communities.includes(targetBranch);
+          if (province) return branchToProvince[targetBranch] === province;
+          return true;
+        });
+
+        allGoals = allGoals.filter(g => {
+          const member = allMembersMap[g.email || g.memberEmail];
+          const targetBranch = g.branch || member?.branch || 'Unknown';
+          if (communities.length > 0) return communities.includes(targetBranch);
+          if (province) return branchToProvince[targetBranch] === province;
+          return true;
+        });
+      }
+
       const totalSaved = allGoals.reduce((s, g) => s + (g.savedAmount || 0), 0);
       const totalTargets = allGoals.reduce((s, g) => s + (g.targetAmount || 0), 0);
       const completedGoals = allGoals.filter(g => g.status === 'completed').length;
@@ -289,10 +403,26 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
 
     // === Disbursements Report (Secretary Admin ONLY) ===
     if (role === 'secretaryAdmin') {
-      const disbursedLoans = await loans.find({ 
+      const allMembersMap = {};
+      const allMembers = await users.find({}).toArray();
+      allMembers.forEach(m => { allMembersMap[m.email] = m; });
+
+      let disbursedLoans = await loans.find({ 
         disbursed: true, 
         disbursementDate: dateFilter 
       }).toArray();
+
+      // Apply community/province filter
+      if (communities.length > 0 || province) {
+        disbursedLoans = disbursedLoans.filter(l => {
+          const member = allMembersMap[l.email || l.memberEmail];
+          const targetBranch = l.branch || member?.branch || 'Unknown';
+          if (communities.length > 0) return communities.includes(targetBranch);
+          if (province) return branchToProvince[targetBranch] === province;
+          return true;
+        });
+      }
+
       const totalDisbursed = disbursedLoans.reduce((s, l) => s + (l.amount || 0), 0);
       
       report.secretary = {

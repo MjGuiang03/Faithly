@@ -8,7 +8,7 @@ import API from '../../utils/api';
 import { 
   CalendarDays, MapPin, Search, UserCheck, Clock, ShieldAlert,
   Play, Square, Plus, CheckCircle2, AlertCircle, XCircle, Download,
-  ArrowLeft, ChevronLeft, ChevronRight, CreditCard
+  ArrowLeft, ChevronLeft, ChevronRight, CreditCard, FileText
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -174,21 +174,12 @@ function SessionLogsModal({ session, onClose }) {
 
 export default function AdminAttendance() {
   const navigate = useNavigate();
-  const [stats, setStats] = useState({ totalToday: 0, servicesThisWeek: 0, avgAttendance: 0, lateToday: 0 });
-  const [logs, setLogs] = useState([]);
   
-  // Active Sessions
-  const [activeSessions, setActiveSessions] = useState([]);
-  const selectedSession = activeSessions.length > 0 ? activeSessions[0] : null;
-
   // Tabs
   const [activeTab, setActiveTab] = useState('active'); // 'active' or 'history'
 
-  // History Sessions
-  const [historySessions, setHistorySessions] = useState([]);
+  // History Sessions Page
   const [historyPage, setHistoryPage] = useState(1);
-  const [historyTotalPages, setHistoryTotalPages] = useState(1);
-  const [historyTotalCount, setHistoryTotalCount] = useState(0);
 
   const [loading, setLoading] = useState(true);
   const [showStartModal, setShowStartModal] = useState(false);
@@ -196,9 +187,7 @@ export default function AdminAttendance() {
 
   // Drilldown: viewing a specific session's logs
   const [viewingSession, setViewingSession] = useState(null);
-  const [sessionLogs, setSessionLogs] = useState([]);
   const [logsPage, setLogsPage] = useState(1);
-  const [logsTotalCount, setLogsTotalCount] = useState(0);
 
   // Pagination for sessions table (client-side)
   const [sessionsPage, setSessionsPage] = useState(1);
@@ -210,7 +199,6 @@ export default function AdminAttendance() {
   const [filterStatus, setFilterStatus] = useState('all');
   const debouncedSearch = useDebounce(search, 400);
   const [page, setPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
   const LIMIT = 15;
 
   const rfidBuffer = useRef('');
@@ -224,26 +212,23 @@ export default function AdminAttendance() {
     { revalidateOnFocus: false, refreshInterval: 5000 }
   );
 
-  useEffect(() => {
-    if (activeSessionsData && activeSessionsData.success) {
-       setActiveSessions(activeSessionsData.sessions || []);
-    }
-  }, [activeSessionsData]);
+  const activeSessions = useMemo(() => activeSessionsData?.sessions || [], [activeSessionsData]);
+  const selectedSession = activeSessions.length > 0 ? activeSessions[0] : null;
 
   // 2. Fetch History Sessions
   const { data: historySessionsData, isValidating: historyLoading } = useSWR(
     activeTab === 'history' ? `${API}/api/admin/attendance/sessions/history?page=${historyPage}&limit=${PER_PAGE}` : null,
     fetcherSingle,
-    { revalidateOnFocus: false }
+    { 
+      revalidateOnFocus: false,
+      dedupingInterval: 30000,
+      keepPreviousData: true
+    }
   );
 
-  useEffect(() => {
-    if (historySessionsData && historySessionsData.success) {
-      setHistorySessions(historySessionsData.sessions || []);
-      setHistoryTotalPages(historySessionsData.totalPages || 1);
-      setHistoryTotalCount(historySessionsData.totalCount || 0);
-    }
-  }, [historySessionsData]);
+  const historySessions = useMemo(() => historySessionsData?.sessions || [], [historySessionsData]);
+  const historyTotalPages = useMemo(() => historySessionsData?.totalPages || 1, [historySessionsData]);
+  const historyTotalCount = useMemo(() => historySessionsData?.totalCount || 0, [historySessionsData]);
 
   // 3. Fetch Logs & Stats
   const attendanceQueryParams = useMemo(() => {
@@ -257,21 +242,21 @@ export default function AdminAttendance() {
   const { data: attendanceData, isValidating: attendanceLoading, mutate: fetchAttendance } = useSWR(
     `${API}/api/admin/attendance?${attendanceQueryParams}`,
     fetcherSingle,
-    { revalidateOnFocus: false }
+    { 
+      revalidateOnFocus: false,
+      dedupingInterval: 30000,
+      keepPreviousData: true
+    }
   );
 
-  useEffect(() => {
-    if (attendanceData && attendanceData.success) {
-      setLogs(attendanceData.attendance || []);
-      setTotalCount(attendanceData.totalCount || 0);
-      setStats({
-          totalToday: attendanceData.stats?.totalToday || 0,
-          servicesThisWeek: attendanceData.stats?.servicesThisWeek || 0,
-          avgAttendance: attendanceData.stats?.avgAttendance || 0,
-          lateToday: attendanceData.stats?.lateToday || 0,
-      });
-    }
-  }, [attendanceData]);
+  const logs = useMemo(() => attendanceData?.attendance || [], [attendanceData]);
+  const totalCount = useMemo(() => attendanceData?.totalCount || 0, [attendanceData]);
+  const stats = useMemo(() => ({
+      totalToday: attendanceData?.stats?.totalToday || 0,
+      servicesThisWeek: attendanceData?.stats?.servicesThisWeek || 0,
+      avgAttendance: attendanceData?.stats?.avgAttendance || 0,
+      lateToday: attendanceData?.stats?.lateToday || 0,
+  }), [attendanceData]);
 
   useEffect(() => { setLoading(attendanceLoading && !attendanceData); }, [attendanceLoading, attendanceData]);
 
@@ -281,15 +266,16 @@ export default function AdminAttendance() {
   const { data: sessionLogsData, isValidating: sessionLogsLoading } = useSWR(
     viewingSession ? `${API}/api/admin/attendance?session=${viewingSession.sessionId}&page=${logsPage}&limit=${PER_PAGE}` : null,
     fetcherSingle,
-    { revalidateOnFocus: false, refreshInterval: viewingSession && logsPage === 1 ? 3000 : 0 }
+    { 
+      revalidateOnFocus: false, 
+      refreshInterval: viewingSession && logsPage === 1 ? 3000 : 0,
+      dedupingInterval: 10000,
+      keepPreviousData: true
+    }
   );
 
-  useEffect(() => {
-    if (sessionLogsData && sessionLogsData.success) {
-      setSessionLogs(sessionLogsData.attendance || []);
-      setLogsTotalCount(sessionLogsData.totalCount || sessionLogsData.attendance?.length || 0);
-    }
-  }, [sessionLogsData]);
+  const sessionLogs = useMemo(() => sessionLogsData?.attendance || [], [sessionLogsData]);
+  const logsTotalCount = useMemo(() => sessionLogsData?.totalCount || sessionLogsData?.attendance?.length || 0, [sessionLogsData]);
 
   const handleSessionClick = (session) => {
     setViewingSession(session);
@@ -302,9 +288,7 @@ export default function AdminAttendance() {
 
   const handleBackToSessions = () => {
     setViewingSession(null);
-    setSessionLogs([]);
     setLogsPage(1);
-    setLogsTotalCount(0);
   };
 
   // Derived: paginated sessions (client-side)
@@ -337,6 +321,120 @@ export default function AdminAttendance() {
     link.setAttribute("download", `FaithLy_Attendance_${new Date().toLocaleDateString()}.csv`);
     document.body.appendChild(link);
     link.click();
+  };
+
+  /* ── Export session attendance to PDF ── */
+  const [pdfExporting, setPdfExporting] = useState(false);
+
+  const exportSessionPDF = async () => {
+    if (!viewingSession) return toast.info('No session selected');
+    setPdfExporting(true);
+
+    try {
+      // Fetch ALL logs for this session (not just the paginated page)
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch(`${API}/api/admin/attendance?session=${viewingSession.sessionId}&limit=1000`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      const allLogs = (data.success && data.attendance) ? data.attendance : sessionLogs;
+
+      if (allLogs.length === 0) { toast.info('No attendance data to export'); setPdfExporting(false); return; }
+
+      const sessionDate = new Date(viewingSession.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+      const presentCount = allLogs.filter(l => l.status === 'Present').length;
+      const lateCount = allLogs.filter(l => l.status === 'Late').length;
+
+      const tableRows = allLogs.map((log, i) => `
+        <tr style="border-bottom: 1px solid #E5E7EB;">
+          <td style="padding: 10px 12px; font-size: 12px; color: #374151;">${i + 1}</td>
+          <td style="padding: 10px 12px; font-size: 12px; font-weight: 600; color: #111827;">${log.member}</td>
+          <td style="padding: 10px 12px; font-size: 12px; color: #374151;">${log.time || 'N/A'}</td>
+          <td style="padding: 10px 12px; font-size: 12px;">
+            <span style="display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600;
+              background: ${log.status === 'Present' ? '#D1FAE5' : '#FEF3C7'};
+              color: ${log.status === 'Present' ? '#065F46' : '#92400E'};">
+              ${log.status}
+            </span>
+          </td>
+          <td style="padding: 10px 12px; font-size: 11px; color: #6B7280; font-family: monospace;">${log.rfidCardId || log.method || 'Manual'}</td>
+        </tr>
+      `).join('');
+
+      const htmlContent = `
+        <div style="font-family: 'Inter', 'Segoe UI', Arial, sans-serif; padding: 32px; max-width: 800px; margin: 0 auto;">
+          <div style="text-align: center; margin-bottom: 24px;">
+            <h1 style="margin: 0; font-size: 20px; font-weight: 700; color: #1E3A8A;">Philippine United Apostolic Church</h1>
+            <p style="margin: 4px 0 0; font-size: 13px; color: #6B7280;">Attendance Report</p>
+          </div>
+
+          <div style="background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="padding: 4px 0; font-size: 12px; color: #6B7280; width: 120px;">Branch</td>
+                <td style="padding: 4px 0; font-size: 12px; font-weight: 600; color: #111827;">${viewingSession.branch}</td>
+              </tr>
+              <tr>
+                <td style="padding: 4px 0; font-size: 12px; color: #6B7280;">Service Type</td>
+                <td style="padding: 4px 0; font-size: 12px; font-weight: 600; color: #111827;">${viewingSession.serviceType}</td>
+              </tr>
+              <tr>
+                <td style="padding: 4px 0; font-size: 12px; color: #6B7280;">Date</td>
+                <td style="padding: 4px 0; font-size: 12px; font-weight: 600; color: #111827;">${sessionDate}</td>
+              </tr>
+              <tr>
+                <td style="padding: 4px 0; font-size: 12px; color: #6B7280;">Start Time</td>
+                <td style="padding: 4px 0; font-size: 12px; font-weight: 600; color: #111827;">${viewingSession.time}</td>
+              </tr>
+              <tr>
+                <td style="padding: 4px 0; font-size: 12px; color: #6B7280;">Total Attendees</td>
+                <td style="padding: 4px 0; font-size: 12px; font-weight: 600; color: #111827;">${allLogs.length} (Present: ${presentCount}, Late: ${lateCount})</td>
+              </tr>
+            </table>
+          </div>
+
+          <table style="width: 100%; border-collapse: collapse; border: 1px solid #E5E7EB; border-radius: 8px; overflow: hidden;">
+            <thead>
+              <tr style="background: #1E3A8A;">
+                <th style="padding: 10px 12px; text-align: left; font-size: 11px; font-weight: 600; color: #fff; text-transform: uppercase;">#</th>
+                <th style="padding: 10px 12px; text-align: left; font-size: 11px; font-weight: 600; color: #fff; text-transform: uppercase;">Member</th>
+                <th style="padding: 10px 12px; text-align: left; font-size: 11px; font-weight: 600; color: #fff; text-transform: uppercase;">Time In</th>
+                <th style="padding: 10px 12px; text-align: left; font-size: 11px; font-weight: 600; color: #fff; text-transform: uppercase;">Status</th>
+                <th style="padding: 10px 12px; text-align: left; font-size: 11px; font-weight: 600; color: #fff; text-transform: uppercase;">Method</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tableRows}
+            </tbody>
+          </table>
+
+          <p style="text-align: center; font-size: 10px; color: #9CA3AF; margin-top: 24px;">
+            Generated by PUAC Portal · ${new Date().toLocaleString()}
+          </p>
+        </div>
+      `;
+
+      const container = document.createElement('div');
+      container.innerHTML = htmlContent;
+      document.body.appendChild(container);
+
+      const html2pdf = (await import('html2pdf.js')).default;
+      await html2pdf().set({
+        margin: [10, 10, 10, 10],
+        filename: `Attendance_${viewingSession.branch}_${viewingSession.serviceType}_${sessionDate}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      }).from(container).save();
+
+      document.body.removeChild(container);
+      toast.success('PDF exported successfully');
+    } catch (err) {
+      console.error('PDF Export Error:', err);
+      toast.error('Failed to export PDF');
+    } finally {
+      setPdfExporting(false);
+    }
   };
 
   return (
@@ -401,10 +499,19 @@ export default function AdminAttendance() {
                   <ArrowLeft size={16} />
                   Back
                 </button>
-                <div>
+                <div style={{ flex: 1 }}>
                   <h2>{viewingSession.branch} — {viewingSession.serviceType}</h2>
                   <p className="admin-att-section-sub">{new Date(viewingSession.date).toLocaleDateString()} · Started at {viewingSession.time}</p>
                 </div>
+                <button
+                  className="admin-att-btn-primary"
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', padding: '8px 16px' }}
+                  onClick={exportSessionPDF}
+                  disabled={pdfExporting || sessionLogs.length === 0}
+                >
+                  {pdfExporting ? <span className="btn-spinner" /> : <FileText size={16} />}
+                  Export PDF
+                </button>
               </div>
             </div>
             <div className="admin-att-table-wrapper">

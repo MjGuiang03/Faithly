@@ -1,15 +1,16 @@
 import { useState, useEffect, useMemo } from 'react';
 import useSWR from 'swr';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 import '../styles/Attendance.css';
 import API from '../../utils/api';
-import { CalendarDays, CheckCircle, Activity, CreditCard, Camera, XCircle } from 'lucide-react';
+import { CalendarDays, CheckCircle, Activity, CreditCard, Camera, XCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { Scanner } from '@yudiel/react-qr-scanner';
 import { toast } from 'sonner';
+import { branchData } from '../components/branchData';
 
-const PAGE_SIZE = 5;
+
 
 const CountUp = ({ end, duration = 1000, suffix = '' }) => {
   const [count, setCount] = useState(0);
@@ -41,13 +42,33 @@ const CountUp = ({ end, duration = 1000, suffix = '' }) => {
   return <>{count}{suffix}</>;
 };
 
+const branchToProvinceMap = {};
+branchData.forEach(b => {
+  branchToProvinceMap[b.name.toLowerCase().trim()] = b.province;
+});
+
+const getBranchProvince = (bName) => {
+  if (!bName) return 'Other';
+  const normalized = bName.toLowerCase().replace(/\s*city\s*/gi, '').trim();
+  if (branchToProvinceMap[normalized]) {
+    return branchToProvinceMap[normalized];
+  }
+  const match = branchData.find(b => {
+    const bNorm = b.name.toLowerCase().replace(/\s*city\s*/gi, '').trim();
+    return bNorm.includes(normalized) || normalized.includes(bNorm);
+  });
+  return match ? match.province : 'Other';
+};
+
 export default function Attendance() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [attendanceData, setAttendanceData] = useState([]);
   const [stats,          setStats]          = useState({ total: 0, thisMonth: 0 });
   const [loading,        setLoading]        = useState(true);
-  const [page]           = useState(1);
+
+  const [expandedProvinces, setExpandedProvinces] = useState({});
 
 
   const [isScannerOpen, setIsScannerOpen] = useState(false);
@@ -55,13 +76,50 @@ export default function Attendance() {
 
   const token = localStorage.getItem('token');
 
+  const groupedAttendance = useMemo(() => {
+    const groups = {};
+    attendanceData.forEach(record => {
+      const branchName = record.branch || 'Unknown Community';
+      const province = getBranchProvince(branchName);
+
+      if (!groups[province]) {
+        groups[province] = {};
+      }
+      if (!groups[province][branchName]) {
+        groups[province][branchName] = [];
+      }
+      groups[province][branchName].push(record);
+    });
+    return groups;
+  }, [attendanceData]);
+
+  const highlightBranch = location.state?.highlightBranch || null;
+
+  useEffect(() => {
+    if (highlightBranch && attendanceData.length > 0) {
+      const province = getBranchProvince(highlightBranch);
+      setExpandedProvinces(prev => ({
+        ...prev,
+        [province]: true
+      }));
+
+      // Scroll to recent attendance card
+      setTimeout(() => {
+        const el = document.getElementById('recent-attendance-section');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 200);
+    }
+  }, [highlightBranch, attendanceData]);
+
   const fetcher = async (url) => {
     const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
     return res.json();
   };
 
   const { data, isValidating, mutate } = useSWR(
-    token ? `${API}/api/attendance/my-attendance?page=${page}&limit=${PAGE_SIZE}` : null,
+    token ? `${API}/api/attendance/my-attendance?page=1&limit=100` : null,
     fetcher,
     { revalidateOnFocus: false, revalidateIfStale: true }
   );
@@ -218,13 +276,13 @@ export default function Attendance() {
           </div>
 
           {/* Attendance History (Moved from bottom) */}
-          <div className="user-attendance-history-card">
+          <div id="recent-attendance-section" className="user-attendance-history-card">
             <div className="user-history-header-row">
               <h2 className="user-attendance-section-title">Recent Attendance</h2>
               <button className="user-view-history-btn" onClick={handleOpenHistory}>View History</button>
             </div>
 
-            <div className="user-attendance-table-wrapper user-preview-table">
+            <div className="user-attendance-table-wrapper user-preview-table" style={{ border: 'none', background: 'transparent' }}>
               {loading ? (
                 <div style={{ padding: '16px' }}>
                   {[1, 2, 3, 4, 5].map(i => (
@@ -235,7 +293,7 @@ export default function Attendance() {
                     </div>
                   ))}
                 </div>
-              ) : attendanceData.length === 0 ? (
+              ) : Object.keys(groupedAttendance).length === 0 ? (
                 <div className="user-history-empty-state">
                   <div className="user-history-empty-icon">
                     <Activity size={40} color="#cbd5e1" />
@@ -246,29 +304,76 @@ export default function Attendance() {
                   </p>
                 </div>
               ) : (
-                <div className="user-fade-in">
-                  <table className="user-attendance-table">
-                    <thead>
-                      <tr>
-                        <th>Service</th>
-                        <th>Date</th>
-                        <th>Method</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {attendanceData.slice(0, 5).map((record, index) => (
-                        <tr key={index}>
-                          <td style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{record.service}</td>
-                          <td>{record.date}</td>
-                          <td>
-                            <span className={`user-method-badge user-method-${record.method?.toLowerCase()}`}>
-                              {record.method}
+                <div className="user-attendance-grouped-list user-fade-in">
+                  {Object.keys(groupedAttendance).map((province) => {
+                    const isExpanded = !!expandedProvinces[province];
+                    const communities = groupedAttendance[province];
+                    const totalProvinceVisits = Object.values(communities).reduce((sum, list) => sum + list.length, 0);
+
+                    return (
+                      <div key={province} className="user-attendance-province-group">
+                        <button 
+                          className={`user-attendance-province-header ${isExpanded ? 'active' : ''}`}
+                          onClick={() => {
+                            setExpandedProvinces(prev => ({
+                              ...prev,
+                              [province]: !prev[province]
+                            }));
+                          }}
+                        >
+                          <span className="user-attendance-province-name">{province}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span className="user-attendance-province-count">
+                              {totalProvinceVisits} {totalProvinceVisits === 1 ? 'visit' : 'visits'}
                             </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                            {isExpanded ? <ChevronUp size={16} color="var(--text-secondary)" /> : <ChevronDown size={16} color="var(--text-secondary)" />}
+                          </div>
+                        </button>
+
+                        <div className={`user-attendance-province-content-wrapper ${isExpanded ? 'expanded' : ''}`}>
+                          <div className="user-attendance-province-content">
+                            {Object.keys(communities).map((communityName) => {
+                              const visits = communities[communityName];
+                              const isHighlighted = highlightBranch?.toLowerCase().replace(/\s*city\s*/gi, '').trim() === communityName.toLowerCase().replace(/\s*city\s*/gi, '').trim();
+
+                              return (
+                                <div key={communityName} className={`user-attendance-community-group ${isHighlighted ? 'highlighted-community' : ''}`}>
+                                  <h4 className="user-attendance-community-title">
+                                    {communityName}
+                                    {isHighlighted && <span className="user-community-highlight-badge">Selected</span>}
+                                  </h4>
+                                  <div className="user-attendance-table-wrapper">
+                                    <table className="user-attendance-table user-community-table">
+                                      <thead>
+                                        <tr>
+                                          <th>Service</th>
+                                          <th>Date</th>
+                                          <th>Method</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {visits.map((record, index) => (
+                                          <tr key={index}>
+                                            <td style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{record.service}</td>
+                                            <td>{record.date}</td>
+                                            <td>
+                                              <span className={`user-method-badge user-method-${record.method?.toLowerCase()}`}>
+                                                {record.method}
+                                              </span>
+                                            </td>
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>

@@ -11,12 +11,24 @@ import {
   ReferenceLine, ReferenceDot, LabelList, Label, ReferenceArea
 } from 'recharts';
 import '../styles/AdminDashboard.css';
-
 import API from '../../utils/api';
 import { 
   Banknote, Heart, Printer, Users, MapPin, Expand, X, Sparkles, RefreshCw, 
   TrendingUp, TrendingDown, AlertCircle, CheckCircle, DollarSign, Calendar, Activity 
 } from 'lucide-react';
+
+const renderSliceLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+  if (percent < 0.05) return null;
+  const RADIAN = Math.PI / 180;
+  const radius = innerRadius + (outerRadius - innerRadius) * 0.55;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+  return (
+    <text x={x} y={y} fill="#fff" textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight={700}>
+      {`${(percent * 100).toFixed(0)}%`}
+    </text>
+  );
+};
 
 const InsightIcon = ({ name }) => {
   const icons = {
@@ -47,20 +59,6 @@ const INITIAL_DONATION_CATEGORIES = [
 export default function AdminDashboard() {
   const navigate = useNavigate();
 
-  const [memberStats,   setMemberStats]   = useState({ total: 0, active: 0, inactive: 0, newThisMonth: 0 });
-  const [loanStats,     setLoanStats]     = useState({ active: 0, pending: 0, totalDisbursed: 0 });
-  const [donationStats, setDonationStats] = useState({ thisMonth: 0, total: 0 });
-
-  const [membersByBranch, setMembersByBranch] = useState([]);
-  const [pieData, setPieData] = useState(INITIAL_DONATION_CATEGORIES);
-  const [donationsByBranch, setDonationsByBranch] = useState([]);
-  const [growthData, setGrowthData] = useState([]);
-  const [attendVsDonData, setAttendVsDonData] = useState([]);
-  const [growthByBranch, setGrowthByBranch] = useState([]);
-  const [attendanceByBranch, setAttendanceByBranch] = useState([]);
-  const [rawMembers, setRawMembers] = useState([]);
-  const [rawAttendance, setRawAttendance] = useState([]);
-  
   const [growthYear, setGrowthYear] = useState(new Date().getFullYear());
   const [growthMonth, setGrowthMonth] = useState('all');
   const [growthView, setGrowthView] = useState('both'); // 'both', 'total', 'new'
@@ -76,98 +74,121 @@ export default function AdminDashboard() {
   const [aiInsightsExpanded, setAiInsightsExpanded] = useState(true);
   const [aiInsightsTime, setAiInsightsTime] = useState(null);
 
-
   const fetcherSingle = (url) => 
     fetch(url, { headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` } })
       .then(res => res.ok ? res.json() : { success: false });
 
-  const { data: membersData, isValidating: membersValidating } = useSWR(`${API}/api/admin/members?limit=100`, fetcherSingle, { revalidateOnFocus: false });
-  const { data: loansData } = useSWR(`${API}/api/admin/loans?limit=1`, fetcherSingle, { revalidateOnFocus: false });
-  const { data: donationsData, isValidating: donationsValidating } = useSWR(`${API}/api/admin/donations?limit=1`, fetcherSingle, { revalidateOnFocus: false });
-  const { data: attendData, isValidating: attendValidating } = useSWR(`${API}/api/admin/attendance?limit=500`, fetcherSingle, { revalidateOnFocus: false });
+  const { data: membersData, isValidating: membersValidating } = useSWR(
+    `${API}/api/admin/members?limit=100`, 
+    fetcherSingle, 
+    { 
+      revalidateOnFocus: false,
+      dedupingInterval: 30000,
+      keepPreviousData: true
+    }
+  );
+  
+  const { data: loansData } = useSWR(
+    `${API}/api/admin/loans?limit=1`, 
+    fetcherSingle, 
+    { 
+      revalidateOnFocus: false,
+      dedupingInterval: 30000,
+      keepPreviousData: true
+    }
+  );
+  
+  const { data: donationsData, isValidating: donationsValidating } = useSWR(
+    `${API}/api/admin/donations?limit=1`, 
+    fetcherSingle, 
+    { 
+      revalidateOnFocus: false,
+      dedupingInterval: 30000,
+      keepPreviousData: true
+    }
+  );
+  
+  const { data: attendData, isValidating: attendValidating } = useSWR(
+    `${API}/api/admin/attendance?limit=500`, 
+    fetcherSingle, 
+    { 
+      revalidateOnFocus: false,
+      dedupingInterval: 30000,
+      keepPreviousData: true
+    }
+  );
 
   // Progressive loading states
   const membersLoading = !membersData && membersValidating;
   const donationsLoading = !donationsData && donationsValidating;
   const attendanceLoading = !attendData && attendValidating;
 
-  // 1. Process Attendance Data
-  useEffect(() => {
-    if (attendData && attendData.success && attendData.attendance) {
-      setRawAttendance(attendData.attendance);
-    }
-  }, [attendData]);
+  const rawAttendance = useMemo(() => attendData?.attendance || [], [attendData]);
+  const rawMembers = useMemo(() => membersData?.members || [], [membersData]);
 
-  // 2. Process Members & Loans Data
-  useEffect(() => {
-    if (membersData && membersData.success && membersData.stats) {
-      setRawMembers(membersData.members || []);
-      setMemberStats({
-        total: membersData.stats.total || 0,
-        active: membersData.stats.active || 0,
-        inactive: membersData.stats.inactive || 0,
-        newThisMonth: membersData.stats.newThisMonth || 0
-      });
-      
-      const branchMap = {};
-      (membersData.members || []).forEach(m => {
-        const b = m.branch || m.community;
-        if (b && b !== 'Unknown') {
-          branchMap[b] = (branchMap[b] || 0) + 1;
-        }
-      });
-      setMembersByBranch(Object.entries(branchMap).map(([branch, count]) => ({ branch, count })));
-    }
-    
-    if (loansData && loansData.success && loansData.stats) {
-      setLoanStats({ active: loansData.stats.active || 0, pending: loansData.stats.pending || 0, totalDisbursed: loansData.stats.totalDisbursed || 0 });
-    }
-  }, [membersData, loansData]);
+  const memberStats = useMemo(() => ({
+    total: membersData?.stats?.total || 0,
+    active: membersData?.stats?.active || 0,
+    inactive: membersData?.stats?.inactive || 0,
+    newThisMonth: membersData?.stats?.newThisMonth || 0
+  }), [membersData]);
 
-  // 3. Process Donations Data (Depends on membersData for legacy mapping)
-  useEffect(() => {
-    if (donationsData && donationsData.success && donationsData.stats) {
-      setDonationStats({
-        thisMonth: donationsData.stats.thisMonth || 0,
-        total: donationsData.stats.total || 0
-      });
-
-      const catStats = donationsData.stats.categoryBreakdown || {};
-      setPieData(INITIAL_DONATION_CATEGORIES.map(cat => ({
-        ...cat,
-        value: catStats[cat.name] || 0
-      })));
-
-      const commStats = donationsData.stats.communityBreakdown || {};
-      const branchDonMap = { ...commStats };
-      
-      const confirmedDonations = (donationsData.donations || []).filter(d => (d.status || '').toLowerCase() === 'confirmed');
-      const emailToBranch = {};
-      
-      if (membersData && membersData.success && membersData.members) {
-        membersData.members.forEach(m => { 
-          const b = m.branch || m.community;
-          if (b && b !== 'Unknown') emailToBranch[m.email] = b; 
-        });
+  const membersByBranch = useMemo(() => {
+    const branchMap = {};
+    rawMembers.forEach(m => {
+      const b = m.branch || m.community;
+      if (b && b !== 'Unknown') {
+        branchMap[b] = (branchMap[b] || 0) + 1;
       }
-      
-      confirmedDonations.forEach(d => {
-        if (!d.community) {
-          const branch = emailToBranch[d.email];
-          if (branch) {
-            branchDonMap[branch] = (branchDonMap[branch] || 0) + (Number(d.amount) || 0);
-          }
+    });
+    return Object.entries(branchMap).map(([branch, count]) => ({ branch, count }));
+  }, [rawMembers]);
+
+  const loanStats = useMemo(() => ({
+    active: loansData?.stats?.active || 0,
+    pending: loansData?.stats?.pending || 0,
+    totalDisbursed: loansData?.stats?.totalDisbursed || 0
+  }), [loansData]);
+
+  const donationStats = useMemo(() => ({
+    thisMonth: donationsData?.stats?.thisMonth || 0,
+    total: donationsData?.stats?.total || 0
+  }), [donationsData]);
+
+  const pieData = useMemo(() => {
+    const catStats = donationsData?.stats?.categoryBreakdown || {};
+    return INITIAL_DONATION_CATEGORIES.map(cat => ({
+      ...cat,
+      value: catStats[cat.name] || 0
+    }));
+  }, [donationsData]);
+
+  const donationsByBranch = useMemo(() => {
+    if (!donationsData || !donationsData.success) return [];
+    const commStats = donationsData.stats?.communityBreakdown || {};
+    const branchDonMap = { ...commStats };
+    
+    const confirmedDonations = (donationsData.donations || []).filter(d => (d.status || '').toLowerCase() === 'confirmed');
+    const emailToBranch = {};
+    
+    rawMembers.forEach(m => { 
+      const b = m.branch || m.community;
+      if (b && b !== 'Unknown') emailToBranch[m.email] = b; 
+    });
+    
+    confirmedDonations.forEach(d => {
+      if (!d.community) {
+        const branch = emailToBranch[d.email];
+        if (branch) {
+          branchDonMap[branch] = (branchDonMap[branch] || 0) + (Number(d.amount) || 0);
         }
-      });
+      }
+    });
 
-      setDonationsByBranch(
-        Object.entries(branchDonMap)
-          .map(([branch, total]) => ({ branch, total }))
-          .sort((a, b) => b.total - a.total)
-      );
-    }
-  }, [donationsData, membersData]);
-
+    return Object.entries(branchDonMap)
+      .map(([branch, total]) => ({ branch, total }))
+      .sort((a, b) => b.total - a.total);
+  }, [donationsData, rawMembers]);
 
   /* ── Fetch AI Insights ── */
   const fetchAiInsights = useCallback(async (refresh = false) => {
@@ -194,11 +215,8 @@ export default function AdminDashboard() {
     fetchAiInsights();
   }, [navigate, fetchAiInsights]);
 
-
   // --- Derived Growth Data ---
-  useEffect(() => {
-    if (!rawMembers.length) return;
-    
+  const growthInfo = useMemo(() => {
     const validMembers = rawMembers.filter(m => {
       const s = (m.status || '').toLowerCase();
       return s === 'active' || s === 'verified';
@@ -228,7 +246,6 @@ export default function AdminDashboard() {
         g.newMembers = newThisMonth;
       });
     } else {
-      // Days in month
       const daysInMonth = new Date(growthYear, parseInt(growthMonth) + 1, 0).getDate();
       growth = Array.from({length: daysInMonth}, (_, i) => ({ label: `${i+1}`, totalMembers: 0, newMembers: 0, sortKey: i+1 }));
       
@@ -251,7 +268,6 @@ export default function AdminDashboard() {
         g.newMembers = newThisDay;
       });
     }
-    setGrowthData(growth);
 
     const branchCounts = {};
     validMembers.forEach(m => {
@@ -269,16 +285,19 @@ export default function AdminDashboard() {
         }
       }
     });
-    setGrowthByBranch(
-      Object.entries(branchCounts)
-        .map(([branch, count]) => ({ branch, count }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 5)
-    );
+
+    const growthByBranch = Object.entries(branchCounts)
+      .map(([branch, count]) => ({ branch, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    return { growthData: growth, growthByBranch };
   }, [rawMembers, growthYear, growthMonth]);
 
+  const { growthData, growthByBranch } = growthInfo;
+
   // --- Derived Attendance Data ---
-  useEffect(() => {
+  const attendanceInfo = useMemo(() => {
     let att = [];
     let filteredAtt = rawAttendance;
     if (attBranch !== 'all') {
@@ -313,8 +332,8 @@ export default function AdminDashboard() {
         }
       });
     }
-    setAttendVsDonData(att);
 
+    let attendanceByBranch = [];
     if (attBranch === 'all') {
       const branchAtt = {};
       const branchSessions = {};
@@ -339,18 +358,19 @@ export default function AdminDashboard() {
           }
         }
       });
-      const avgByBranch = Object.entries(branchAtt).map(([branch, total]) => {
+      attendanceByBranch = Object.entries(branchAtt).map(([branch, total]) => {
         const sessionCount = branchSessions[branch] ? branchSessions[branch].size : 1;
         return {
           branch,
           avg: Math.round(total / (sessionCount || 1))
         };
       }).sort((a,b) => b.avg - a.avg).slice(0, 5);
-      setAttendanceByBranch(avgByBranch);
-    } else {
-      setAttendanceByBranch([]);
     }
+
+    return { attendVsDonData: att, attendanceByBranch };
   }, [rawAttendance, attYear, attMonth, attBranch]);
+
+  const { attendVsDonData, attendanceByBranch } = attendanceInfo;
 
 
   const pieTotal = pieData.reduce((sum, item) => sum + (item.value || 0), 0);
@@ -903,7 +923,7 @@ export default function AdminDashboard() {
                                   <Pie data={[
                                     { name: 'Active', value: memberStats.active, fill: '#0D1F45' },
                                     { name: 'Inactive', value: memberStats.inactive, fill: '#155DFC' }
-                                  ]} cx="50%" cy="50%" innerRadius={45} outerRadius={65} paddingAngle={2} dataKey="value">
+                                  ]} cx="50%" cy="45%" innerRadius={35} outerRadius={65} paddingAngle={2} dataKey="value" label={renderSliceLabel} labelLine={false}>
                                     <Cell fill="#0D1F45" />
                                     <Cell fill="#155DFC" />
                                   </Pie>
@@ -911,6 +931,8 @@ export default function AdminDashboard() {
                                   <Legend 
                                     verticalAlign="bottom" 
                                     height={36}
+                                    iconType="circle"
+                                    iconSize={8}
                                     formatter={(value, entry) => {
                                       const pct = value === 'Active' ? activePct : inactivePct;
                                       return <span style={{ color: '#4B5563', fontSize: '12px', fontWeight: 500 }}>{value}: {entry.payload.value} ({pct.toFixed(1)}%)</span>;

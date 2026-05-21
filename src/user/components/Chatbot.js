@@ -8,24 +8,81 @@ import API from '../../utils/api';
 /* ─────────────────────────────────────────────
    Fallback Knowledge Base (used when AI is unavailable)
 ───────────────────────────────────────────── */
-const KB = [
-  { patterns: ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening', 'kumusta', 'magandang umaga'], responses: ["Hello! 👋 I'm PUAC Chatbot, your PUAC assistant. How can I help you today?"], quickReplies: ['Loans', 'Donations', 'Attendance'] },
-  { patterns: ['officer', 'verify', 'verification', 'verified', 'get verified'], responses: ["🛡️ **Officer Verification** unlocks access to the **Loans** and **Savings** modules.\n\n**How to get verified:**\n1. From the Home page, look for the **\"Are you an officer?\"** card\n2. Click **\"Yes, verify me\"**\n3. Enter your **Church ID Number** and select your **Church Position**\n4. Submit — administrators will review it within **3–5 business days**"], quickReplies: ['What positions qualify?', 'Loans', 'Savings'] },
-  { patterns: ['loan', 'loans', 'borrow', 'apply loan', 'utang', 'hulugan'], responses: ["💳 **Loans** are available exclusively for **verified church officers**.\n\nGo to **Loans** > **Apply for a Loan** > choose type, amount, and term > submit for admin review."], quickReplies: ['Loan requirements', 'Interest rates'] },
-  { patterns: ['savings', 'save', 'ipon'], responses: ["🏦 **Savings** is for **verified church officers**. Set personalized goals, track progress, and deposit funds."], quickReplies: ['How to deposit?'] },
-  { patterns: ['donat', 'donation', 'donate', 'giving', 'tithe', 'offering', 'handog'], responses: ["❤️ Go to **Donations** > choose a category > enter amount > upload proof. Methods: E-Wallet, Bank, Cash."], quickReplies: ['Donation categories', 'E-Wallet details'] },
-  { patterns: ['attendance', 'attend', 'check in'], responses: ["📅 Attendance is recorded by administrators. View your history in the **Attendance** page."], quickReplies: ['Branches', 'Home'] },
-  { patterns: ['branch', 'location', 'address', 'simbahan'], responses: ["🏛️ Visit the **Branches** page to find locations, contact info, and service schedules."], quickReplies: ['My branch', 'Attendance'] },
-  { patterns: ['settings', 'profile', 'password', 'account'], responses: ["⚙️ Go to **Settings** to update profile, change password, or manage notifications."], quickReplies: ['Change password', 'Home'] },
-  { patterns: ['notification', 'alert', 'updates'], responses: ["🔔 Check **Notifications** for loan updates, donation confirmations, and more."], quickReplies: ['Loans', 'Donations'] },
-  { patterns: ['what is faithly', 'about faithly', 'puac', 'ano ang faithly', 'what is puac'], responses: ["🙏 **PUAC Member Portal** is the official church portal of the **Philippine United Apostolic Church (PUAC)**. It lets members manage loans, savings, donations, attendance, and more — all in one platform."], quickReplies: ['Loans', 'Donations'] },
+const KB_SHARED = [
+  {
+    patterns: ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening', 'kumusta', 'magandang umaga', 'magandang hapon'],
+    responses: ["Hello! 👋 I'm PUAC Chatbot, your Faithly assistant. How can I help you today?"],
+    quickReplies: ['Donations', 'Savings', 'Attendance', 'Branches']
+  },
+  {
+    patterns: ['savings', 'save', 'ipon', 'savings goal'],
+    responses: ["🏦 **Savings:**\n\nYou can set personal savings goals, track progress, and deposit via Gateway or Manual.\n\nGo to **Savings** to manage your goals."],
+    quickReplies: ['Donations', 'Attendance']
+  },
+  {
+    patterns: ['donat', 'donation', 'donate', 'giving', 'tithe', 'offering', 'handog', 'ikapu'],
+    responses: ["❤️ **Donations** are open to all members!\n\n**Categories:** General Fund, Children's Dept, Men's Dept, Women's Dept, Youth Dept, Mission Fund\n\n**Methods:**\n- **Gateway:** GCash, Maya, Card, Bank (auto-confirmed)\n- **Manual:** Cash or Bank Transfer — upload proof; admin confirms\n\nGo to **Donations** → choose category → enter amount → select payment method."],
+    quickReplies: ['Attendance', 'Branches']
+  },
+  {
+    patterns: ['attendance', 'attend', 'check in', 'presensya'],
+    responses: ["📅 Attendance is recorded by administrators via **manual entry** or **RFID tap**.\n\nYou cannot log your own attendance. View your history on the **Attendance** page or your Home dashboard."],
+    quickReplies: ['Branches', 'Donations']
+  },
+  {
+    patterns: ['branch', 'location', 'address', 'simbahan', 'church', 'community'],
+    responses: ["🏛️ PUAC has multiple branches across the Philippines. Visit the **Branches** page to find locations, contact info, and service schedules."],
+    quickReplies: ['Attendance', 'Donations']
+  },
+  {
+    patterns: ['settings', 'profile', 'password', 'account', 'update profile'],
+    responses: ["👤 To view or update your profile, click your **name or avatar on the sidebar** — it will take you to your profile page where you can edit your info and change your password."],
+    quickReplies: ['Donations', 'Savings', 'Attendance']
+  },
+  {
+    patterns: ['notification', 'alert', 'updates', 'abiso'],
+    responses: ["🔔 **Notifications** keep you updated on:\n- Donation confirmations/rejections\n- Savings updates\n- Attendance records\n\nCheck the **Notifications** page for all updates."],
+    quickReplies: ['Donations', 'Savings', 'Attendance']
+  },
+  {
+    patterns: ['what is faithly', 'about faithly', 'puac', 'ano ang faithly', 'what is puac', 'portal'],
+    responses: ["🙏 **Faithly** is the official digital portal of the **Philippine United Apostolic Church (PUAC)**.\n\nAll members can manage donations, savings, attendance, and branches. **Church officers** also get access to loans."],
+    quickReplies: ['Donations', 'Savings', 'Attendance']
+  },
 ];
 
-const FALLBACK_REPLIES = ['Loans', 'Donations', 'Attendance', 'Branches'];
+const KB_OFFICER_ONLY = [
+  {
+    patterns: ['loan', 'loans', 'borrow', 'apply loan', 'utang', 'hulugan', 'pautang'],
+    responses: ["💳 **Loan Application:**\n\nGo to **Loans** → **Apply for a Loan** → fill in loan type, amount, and term → upload required documents → submit for admin review."],
+    quickReplies: ['Loan statuses', 'Late payment', 'Donations']
+  },
+  {
+    patterns: ['late', 'penalty', 'overdue', 'missed payment', 'late payment'],
+    responses: ["⚠️ **Late Payment Penalty:**\nIf a loan payment is not made within **3 days** of the due date, a **3% flat interest penalty** replaces the regular interest for that month.\n\nCheck your due date in the Loan Detail page."],
+    quickReplies: ['Loans', 'Loan statuses']
+  },
+];
 
-function getLocalResponse(input) {
+const KB_MEMBER_BLOCK = [
+  {
+    patterns: ['loan', 'loans', 'borrow', 'apply loan', 'utang', 'hulugan', 'pautang',
+               'late', 'penalty', 'overdue', 'missed payment', 'late payment'],
+    responses: ["🚫 **Loans are only available to church officers.**\n\nAs a regular member, you do not have access to this feature."],
+    quickReplies: ['Savings', 'Donations', 'Attendance']
+  },
+];
+
+function getLocalResponse(input, isOfficer) {
   const normalized = input.toLowerCase().trim();
-  for (const entry of KB) {
+  // Check role-specific KB first
+  const roleKB = isOfficer ? KB_OFFICER_ONLY : KB_MEMBER_BLOCK;
+  for (const entry of roleKB) {
+    if (entry.patterns.some(p => normalized.includes(p))) {
+      return { text: entry.responses[0], quickReplies: entry.quickReplies };
+    }
+  }
+  for (const entry of KB_SHARED) {
     if (entry.patterns.some(p => normalized.includes(p))) {
       return { text: entry.responses[0], quickReplies: entry.quickReplies };
     }
@@ -38,7 +95,7 @@ const INITIAL_MESSAGE = {
   sender: 'bot',
   text: null,
   greeting: true,
-  quickReplies: ['Loans', 'Donations', 'Attendance', 'Branches'],
+  quickReplies: ['Donations', 'Savings', 'Attendance', 'Branches'],
   timestamp: new Date(),
 };
 
@@ -50,8 +107,9 @@ export default function Chatbot({ isOpen, onClose }) {
   const [messages, setMessages] = useState([INITIAL_MESSAGE]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [isOfficer, setIsOfficer] = useState(false);
   // eslint-disable-next-line no-unused-vars
-  const [isAI, setIsAI] = useState(true); // Track if last response was AI
+  const [isAI, setIsAI] = useState(true);
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -104,11 +162,12 @@ export default function Chatbot({ isOpen, onClose }) {
 
       if (data.success) {
         setIsAI(data.source === 'ai');
+        if (data.isOfficer !== undefined) setIsOfficer(data.isOfficer);
         const botMsg = {
           id: Date.now() + 1,
           sender: 'bot',
           text: data.reply,
-          quickReplies: data.quickReplies || FALLBACK_REPLIES,
+          quickReplies: data.quickReplies || ['Donations', 'Savings', 'Attendance', 'Branches'],
           isAI: data.source === 'ai',
           timestamp: new Date(),
         };
@@ -120,13 +179,16 @@ export default function Chatbot({ isOpen, onClose }) {
     } catch (err) {
       // Fallback to local keyword matching
       console.warn('[Chatbot] AI unavailable, using fallback:', err.message);
-      const fallback = getLocalResponse(userText);
+      const fallback = getLocalResponse(userText, isOfficer);
+      const defaultReplies = isOfficer
+        ? ['Loans', 'Donations', 'Savings', 'Attendance']
+        : ['Donations', 'Savings', 'Attendance', 'Branches'];
 
       const botMsg = {
         id: Date.now() + 1,
         sender: 'bot',
         text: fallback?.text || "I'm not sure I understand that. Could you try rephrasing?\n\nHere are some things I can help with:",
-        quickReplies: fallback?.quickReplies || FALLBACK_REPLIES,
+        quickReplies: fallback?.quickReplies || defaultReplies,
         isAI: false,
         timestamp: new Date(),
       };
@@ -147,15 +209,71 @@ export default function Chatbot({ isOpen, onClose }) {
     return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
   };
 
-  // Convert markdown-like bold (**text**) to JSX
-  const renderText = (text) => {
+  // Render a single text segment: handles **bold** inline
+  const renderInline = (text, keyPrefix) => {
     const parts = text.split(/(\*\*[^*]+\*\*)/g);
     return parts.map((part, i) => {
       if (part.startsWith('**') && part.endsWith('**')) {
-        return <strong key={i}>{part.slice(2, -2)}</strong>;
+        return <strong key={`${keyPrefix}-b${i}`}>{part.slice(2, -2)}</strong>;
       }
-      return <span key={i}>{part}</span>;
+      return <span key={`${keyPrefix}-s${i}`}>{part}</span>;
     });
+  };
+
+  // Full markdown renderer: bullet lists, numbered lists, bold, plain text
+  const renderText = (text) => {
+    const lines = text.split('\n');
+    const elements = [];
+    let listItems = [];
+    let listType = null; // 'ul' or 'ol'
+
+    const flushList = () => {
+      if (listItems.length === 0) return;
+      if (listType === 'ol') {
+        elements.push(
+          <ol key={`ol-${elements.length}`} style={{ margin: '4px 0 4px 16px', paddingLeft: '4px' }}>
+            {listItems.map((item, i) => <li key={i}>{item}</li>)}
+          </ol>
+        );
+      } else {
+        elements.push(
+          <ul key={`ul-${elements.length}`} style={{ margin: '4px 0 4px 16px', paddingLeft: '4px', listStyleType: 'disc' }}>
+            {listItems.map((item, i) => <li key={i}>{item}</li>)}
+          </ul>
+        );
+      }
+      listItems = [];
+      listType = null;
+    };
+
+    lines.forEach((line, idx) => {
+      const bulletMatch = line.match(/^[-*]\s+(.+)/);
+      const numberedMatch = line.match(/^(\d+)\.\s+(.+)/);
+
+      if (bulletMatch) {
+        if (listType === 'ol') flushList();
+        listType = 'ul';
+        listItems.push(renderInline(bulletMatch[1], `ul-item-${idx}`));
+      } else if (numberedMatch) {
+        if (listType === 'ul') flushList();
+        listType = 'ol';
+        listItems.push(renderInline(numberedMatch[2], `ol-item-${idx}`));
+      } else {
+        flushList();
+        if (line.trim() === '') {
+          elements.push(<br key={`br-${idx}`} />);
+        } else {
+          elements.push(
+            <span key={`line-${idx}`} style={{ display: 'block' }}>
+              {renderInline(line, `line-${idx}`)}
+            </span>
+          );
+        }
+      }
+    });
+
+    flushList();
+    return elements;
   };
 
   if (!isOpen) return null;
@@ -198,19 +316,14 @@ export default function Chatbot({ isOpen, onClose }) {
               <div className={`cb-bubble cb-bubble--${msg.sender}`}>
                 {msg.greeting ? (
                   <p className="cb-bubble-text">
-                    👋 Hi <strong>{firstName}</strong>! I'm <strong>PUAC Chatbot</strong>, your AI-powered PUAC assistant.
-                    I can help you with loans, donations, attendance, and more.
-                    I also understand Tagalog! What would you like to know?
+                    👋 Hi <strong>{firstName}</strong>! I'm <strong>PUAC Chatbot</strong>, your AI-powered Faithly assistant.
+                    I can help with <strong>donations</strong>, <strong>savings</strong>, <strong>attendance</strong>, and more.
+                    {' '}Type anything to get started!
                   </p>
                 ) : (
-                  <p className="cb-bubble-text">
-                    {msg.text?.split('\n').map((line, i) => (
-                      <span key={i}>
-                        {renderText(line)}
-                        {i < msg.text.split('\n').length - 1 && <br />}
-                      </span>
-                    ))}
-                  </p>
+                  <div className="cb-bubble-text">
+                    {msg.text ? renderText(msg.text) : null}
+                  </div>
                 )}
                 <div className="cb-bubble-meta">
                   {msg.sender === 'bot' && msg.isAI && (

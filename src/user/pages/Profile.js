@@ -5,9 +5,9 @@ import { useAuth } from '../../context/AuthContext';
 import API from '../../utils/api';
 import '../styles/Profile.css';
 import {
-  Heart, CalendarDays, PiggyBank, Banknote, FileText, Award,
+  Heart, CalendarDays, PiggyBank, FileText, Award,
   MapPin, Mail, Phone, Clock, Shield, TrendingUp,
-  CheckCircle, Star, Flame, Target, Edit2, XCircle, Edit
+  Star, Flame, Target, Edit2, XCircle, Edit
 } from 'lucide-react';
 import VerifyEmailModal from '../components/VerifyEmail';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -38,10 +38,7 @@ export default function Profile() {
   const [showEmailOtp, setShowEmailOtp] = useState(false);
   const [pendingEmail, setPendingEmail] = useState('');
   
-  const [activityPage, setActivityPage] = useState(1);
-  const [activityList, setActivityList] = useState([]);
-  const [hasMoreActivity, setHasMoreActivity] = useState(true);
-  const [activityLoading, setActivityLoading] = useState(false);
+
 
   const [dynamicBranches, setDynamicBranches] = useState([]);
   useEffect(() => {
@@ -152,7 +149,7 @@ export default function Profile() {
   const { data: savData, isValidating: savValidating } = useSWR(token ? `${API}/api/savings/stats` : null, fetcherSingle, { revalidateOnFocus: false });
   const { data: savGoalsData, isValidating: savGoalsValidating } = useSWR(token ? `${API}/api/savings/goals` : null, fetcherSingle, { revalidateOnFocus: false });
 
-  const loading = (!dData && dValidating) || (!attData && attValidating) || (!loanData && loanValidating) || (!savData && savValidating) || (!savGoalsData && savGoalsValidating) || activityLoading;
+  const loading = (!dData && dValidating) || (!attData && attValidating) || (!loanData && loanValidating) || (!savData && savValidating) || (!savGoalsData && savGoalsValidating);
 
   const donations = useMemo(() => dData?.donations?.filter(d => d.status === 'confirmed') || [], [dData]);
   const attendance = useMemo(() => attData?.attendance || [], [attData]);
@@ -173,30 +170,7 @@ export default function Profile() {
     };
   }, [savData, savGoalsData]);
   
-  useEffect(() => {
-    const fetchActivity = async () => {
-      setActivityLoading(true);
-      try {
-        const res = await fetch(`${API}/api/profile/activity?page=${activityPage}&limit=5`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        });
-        const data = await res.json();
-        if (data.success) {
-          if (activityPage === 1) {
-            setActivityList(data.activities);
-          } else {
-            setActivityList(prev => [...prev, ...data.activities]);
-          }
-          setHasMoreActivity(data.hasMore);
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setActivityLoading(false);
-      }
-    };
-    if (token) fetchActivity();
-  }, [activityPage, token]);
+
 
   // 12-month donation trend
   const donationTrend = useMemo(() => {
@@ -275,30 +249,11 @@ export default function Profile() {
 
   const fmt = (val) => `₱${Number(val || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-  const formatTimeAgo = (date) => {
-    const diff = Date.now() - new Date(date).getTime();
-    const mins = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
-    if (mins < 60) return `${mins}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    if (days < 7) return `${days}d ago`;
-    return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  };
-
   const displayName = profile?.fullName || 'Member';
   const avatarSrc = photoPreview || profile?.photoUrl || null;
   const memberSince = user?.created_at || user?.createdAt
     ? new Date(user.created_at || user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
     : '';
-
-  const activityIcon = (type) => {
-    if (type === 'donation') return <Heart size={14} />;
-    if (type === 'attendance') return <CalendarDays size={14} />;
-    if (type === 'loan') return <Banknote size={14} />;
-    if (type === 'savings') return <PiggyBank size={14} />;
-    return <CheckCircle size={14} />;
-  };
 
   const getMaxHeatmap = () => Math.max(1, ...attendanceByMonth.map(m => m.count));
   const maxAtt = getMaxHeatmap();
@@ -587,65 +542,7 @@ export default function Profile() {
             )}
           </div>
 
-          {/* Recent Activity */}
-          <div className="up-card">
-            <div className="up-card__header">
-              <h2 className="up-card__title">
-                <Clock size={16} />
-                Recent Activity
-              </h2>
-            </div>
-            {activityLoading && activityPage === 1 ? (
-              <div className="up-activity-skel">
-                {[1, 2, 3].map(i => <div key={i} className="up-skel-row" />)}
-              </div>
-            ) : activityList.length === 0 ? (
-              <div className="up-empty">
-                <Clock size={28} strokeWidth={1.5} />
-                <p>No recent activity yet.</p>
-              </div>
-            ) : (
-              <div className="up-activity-list">
-                {activityList.map((a, i) => (
-                  <div key={i} className={`up-activity up-activity--${a.type}`}>
-                    <div className="up-activity__icon">{activityIcon(a.type)}</div>
-                    <div className="up-activity__body">
-                      <span className="up-activity__title">{a.title}</span>
-                      <span className="up-activity__sub">{a.sub}</span>
-                    </div>
-                    <div className="up-activity__right">
-                      {a.amount && <span className="up-activity__amount">{fmt(a.amount)}</span>}
-                      <span className="up-activity__time">{formatTimeAgo(a.date)}</span>
-                    </div>
-                  </div>
-                ))}
-                {hasMoreActivity && (
-                  <button 
-                    className="up-view-more-btn" 
-                    onClick={() => setActivityPage(prev => prev + 1)}
-                    disabled={activityLoading}
-                    style={{
-                      width: '100%',
-                      padding: '10px',
-                      background: 'transparent',
-                      border: '1px dashed var(--border)',
-                      borderRadius: '8px',
-                      color: 'var(--text-muted)',
-                      cursor: activityLoading ? 'not-allowed' : 'pointer',
-                      fontSize: '13px',
-                      marginTop: '8px',
-                      transition: 'all 0.2s',
-                      opacity: activityLoading ? 0.5 : 1
-                    }}
-                    onMouseOver={(e) => { if (!activityLoading) { e.target.style.background = 'var(--bg)'; e.target.style.borderColor = 'var(--primary)'; e.target.style.color = 'var(--primary)'; } }}
-                    onMouseOut={(e) => { if (!activityLoading) { e.target.style.background = 'transparent'; e.target.style.borderColor = 'var(--border)'; e.target.style.color = 'var(--text-muted)'; } }}
-                  >
-                    {activityLoading ? 'Loading...' : 'View More'}
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
+
         </div>
       </div>
     </div>

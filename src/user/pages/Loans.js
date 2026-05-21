@@ -496,12 +496,14 @@ export default function Loans() {
                       let iconBg = "rgba(13, 31, 69, 0.1)";
                       let Icon = CheckCircle2;
 
-                      if (loan.status === 'active') {
-                        Icon = Banknote;
-                      } else if (loan.status === 'pending' || loan.status === 'approved' || loan.status === 'overdue' || loan.status === 'awaiting_member_approval') {
-                        Icon = Clock;
+                      if (loan.status === 'completed') {
+                        Icon = CheckCircle2;
+                        iconColor = "#10B981"; // emerald-500
+                        iconBg = "rgba(16, 185, 129, 0.12)";
                       } else if (loan.status === 'rejected' || loan.status === 'cancelled') {
                         Icon = X;
+                        iconColor = "#EF4444"; // red-500
+                        iconBg = "rgba(239, 68, 68, 0.12)";
                       }
 
                       return (

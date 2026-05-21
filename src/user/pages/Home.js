@@ -39,7 +39,7 @@ export default function Home() {
   const [showAllEvents, setShowAllEvents] = useState(false);
   const [currentEventIndex, setCurrentEventIndex] = useState(0);
   const [modalImageIndex, setModalImageIndex] = useState(0);
-  const [isModalExpanded, setIsModalExpanded] = useState(false);
+  const [lightboxImageIndex, setLightboxImageIndex] = useState(null);
   const [showPrayerModal, setShowPrayerModal] = useState(false);
   const [prayers, setPrayers] = useState([]);
   const [newPrayer, setNewPrayer] = useState("");
@@ -277,9 +277,14 @@ export default function Home() {
 
   const formatTimeAgo = (date) => {
     const diff = Date.now() - new Date(date).getTime();
+    if (diff < 0) {
+      if (diff > -60000) return 'Just now';
+      return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
     const mins = Math.floor(diff / 60000);
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
+    if (mins < 1) return 'Just now';
     if (mins < 60) return `${mins}m ago`;
     if (hours < 24) return `${hours}h ago`;
     if (days < 7) return `${days}d ago`;
@@ -383,6 +388,7 @@ export default function Home() {
           loanId: l.loanId,
           dueDate: nextDue,
           monthlyPayment: l.monthlyPayment || (l.amount / (l.termMonths || 12)),
+          remainingBalance: l.remainingBalance != null ? l.remainingBalance : l.amount,
           isLate: l.isLate,
         };
       }
@@ -520,7 +526,7 @@ export default function Home() {
                       {loan.loanId}
                       {loan.isLate && <span style={{ backgroundColor: '#EF4444', color: 'white', padding: '2px 6px', borderRadius: '4px', marginLeft: '6px', fontSize: '10px', fontWeight: 'bold' }}>LATE</span>}
                     </span>
-                    <span className="uh-tooltip__value" style={loan.isLate ? { color: '#991B1B', fontWeight: '600' } : {}}>{formatCurrency(loan.amount)}</span>
+                    <span className="uh-tooltip__value" style={loan.isLate ? { color: '#991B1B', fontWeight: '600' } : {}}>{formatCurrency(loan.remainingBalance ?? loan.amount)}</span>
                   </div>
                 ))}
                 {processedLoans.length > 3 && (
@@ -693,8 +699,8 @@ export default function Home() {
                   return (
                     <div className={`uh-payment-reminder user-fade-in ${isOverdue ? 'uh-payment-reminder--overdue' : ''}`}>
                       <div className="uh-payment-reminder__row">
-                        <span className="uh-payment-reminder__label">Amount Due</span>
-                        <span className="uh-payment-reminder__value">{formatCurrency(nextPaymentInfo.monthlyPayment)}</span>
+                        <span className="uh-payment-reminder__label">{nextPaymentInfo.remainingBalance < nextPaymentInfo.monthlyPayment ? 'Remaining Balance' : 'Amount Due'}</span>
+                        <span className="uh-payment-reminder__value">{formatCurrency(nextPaymentInfo.remainingBalance < nextPaymentInfo.monthlyPayment ? nextPaymentInfo.remainingBalance : nextPaymentInfo.monthlyPayment)}</span>
                       </div>
                       <div className="uh-payment-reminder__row">
                         <span className="uh-payment-reminder__label">Due Date</span>
@@ -763,7 +769,7 @@ export default function Home() {
                     <div
                       key={i}
                       className="uh-carousel-slide"
-                      onClick={() => { setSelectedEvent(evt); setModalImageIndex(0); setIsModalExpanded(false); }}
+                      onClick={() => { setSelectedEvent(evt); setModalImageIndex(0); }}
                     >
                       <div className="uh-slide-hero">
                         {hasImage && (
@@ -929,7 +935,6 @@ export default function Home() {
                           if (day && eventDays[day]) {
                             setSelectedEvent(eventDays[day][0]);
                             setModalImageIndex(0);
-                            setIsModalExpanded(false);
                           }
                         }}
                         title={day && eventDays[day] ? eventDays[day].map(e => e.title).join(', ') : ''}
@@ -995,17 +1000,17 @@ export default function Home() {
                     </div>
                   ))
                 )}
-              </div>
             </div>
           </div>
         </div>
-      )}
+      </div>
+    )}
 
       {/* Event Detail Modal */}
       {selectedEvent && (
         <div className="uh-overlay" onClick={() => setSelectedEvent(null)}>
           <div className="uh-edm" onClick={e => e.stopPropagation()}>
-            {/* Hero Image Zone */}
+            {/* Left side: Hero Image Zone */}
             <div className="uh-edm__hero">
               {selectedEvent.images && selectedEvent.images.length > 0 ? (
                 <>
@@ -1013,8 +1018,8 @@ export default function Home() {
                     src={selectedEvent.images[modalImageIndex]}
                     alt=""
                     className="uh-edm__hero-img"
-                    onClick={() => window.open(selectedEvent.images[modalImageIndex], '_blank')}
-                    title="Click to view full image"
+                    onClick={() => setLightboxImageIndex(modalImageIndex)}
+                    title="Click to view full screen"
                   />
                   {selectedEvent.images.length > 1 && (
                     <>
@@ -1030,28 +1035,10 @@ export default function Home() {
                   )}
                 </>
               ) : selectedEvent.image ? (
-                <img src={selectedEvent.image} alt="" className="uh-edm__hero-img" onClick={() => window.open(selectedEvent.image, '_blank')} title="Click to view full image" />
+                <img src={selectedEvent.image} alt="" className="uh-edm__hero-img" onClick={() => setLightboxImageIndex(0)} title="Click to view full screen" />
               ) : (
                 <div className="uh-edm__hero-empty"><Megaphone size={36} /></div>
               )}
-              <div className="uh-edm__hero-gradient" />
-
-              {/* Top bar */}
-              <div className="uh-edm__topbar">
-                <span className="uh-edm__cat-pill">{selectedEvent.category}</span>
-                <button className="uh-edm__close" onClick={() => setSelectedEvent(null)}>
-                  <X size={16} />
-                </button>
-              </div>
-
-              {/* Bottom content over image */}
-              <div className="uh-edm__hero-content">
-                <h2 className="uh-edm__title">{selectedEvent.title}</h2>
-                <div className="uh-edm__hero-meta">
-                  <span><CalendarDays size={13} /> {selectedEvent.dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' })}</span>
-                  {selectedEvent.time && <span><Clock size={13} /> {selectedEvent.time}</span>}
-                </div>
-              </div>
 
               {/* Image dots */}
               {selectedEvent.images?.length > 1 && (
@@ -1067,51 +1054,78 @@ export default function Home() {
               )}
             </div>
 
-            {/* Body */}
-            <div className="uh-edm__body">
-              {selectedEvent.fullBody && (
-                <div className="uh-edm__desc">
-                  <p>
-                    {selectedEvent.fullBody.length > 300 && !isModalExpanded
-                      ? selectedEvent.fullBody.substring(0, 300) + '...'
-                      : selectedEvent.fullBody}
-                  </p>
-                  {selectedEvent.fullBody.length > 300 && (
-                    <button
-                      className="uh-edm__toggle"
-                      onClick={(e) => { e.stopPropagation(); setIsModalExpanded(!isModalExpanded); }}
-                    >
-                      {isModalExpanded ? 'Show less' : 'Read more'}
-                    </button>
-                  )}
-                </div>
-              )}
+            {/* Right side: Content Details */}
+            <div className="uh-edm__content-side">
+              {/* Top row */}
+              <div className="uh-edm__header-row">
+                <span className="uh-edm__cat-pill">{selectedEvent.category}</span>
+                <button className="uh-edm__close" onClick={() => setSelectedEvent(null)}>
+                  <X size={16} />
+                </button>
+              </div>
 
-              <div className="uh-edm__divider" />
+              {/* Title */}
+              <h2 className="uh-edm__title">{selectedEvent.title}</h2>
+              <div className="uh-edm__meta-row">
+                <span><CalendarDays size={13} /> {selectedEvent.dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' })}</span>
+                {selectedEvent.time && <span><Clock size={13} /> {selectedEvent.time}</span>}
+                <span><MapPin size={13} /> {selectedEvent.branch}</span>
+              </div>
 
-              <div className="uh-edm__info-row">
-                <div className="uh-edm__info-chip">
-                  <CalendarDays size={14} />
-                  <div>
-                    <span className="uh-edm__info-label">Date & Time</span>
-                    <span className="uh-edm__info-value">
-                      {selectedEvent.dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                      {selectedEvent.time && ` · ${selectedEvent.time}`}
-                    </span>
+              {/* Scrollable Body */}
+              <div className="uh-edm__body-scroll">
+                {selectedEvent.fullBody && (
+                  <div className="uh-edm__desc">
+                    <p>{selectedEvent.fullBody}</p>
                   </div>
-                </div>
-                <div className="uh-edm__info-chip">
-                  <MapPin size={14} />
-                  <div>
-                    <span className="uh-edm__info-label">Location</span>
-                    <span className="uh-edm__info-value">{selectedEvent.branch}</span>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* Lightbox / Fullscreen Image Viewer */}
+      {selectedEvent && lightboxImageIndex !== null && (() => {
+        const imagesList = selectedEvent.images && selectedEvent.images.length > 0
+          ? selectedEvent.images
+          : (selectedEvent.image ? [selectedEvent.image] : []);
+        const currentImg = imagesList[lightboxImageIndex] || selectedEvent.image;
+
+        return (
+          <div className="uh-lightbox-overlay" onClick={() => setLightboxImageIndex(null)}>
+            <div className="uh-lightbox-content" onClick={e => e.stopPropagation()}>
+              <img src={currentImg} alt="" className="uh-lightbox-img" />
+              
+              {/* Close Button */}
+              <button className="uh-lightbox-close" onClick={() => setLightboxImageIndex(null)}>
+                <X size={24} />
+              </button>
+
+              {/* Navigation Arrows for Lightbox */}
+              {imagesList.length > 1 && (
+                <>
+                  <button
+                    className="uh-lightbox-nav uh-lightbox-nav--prev"
+                    onClick={() => setLightboxImageIndex(prev => prev === 0 ? imagesList.length - 1 : prev - 1)}
+                  >
+                    <ChevronLeft size={30} />
+                  </button>
+                  <button
+                    className="uh-lightbox-nav uh-lightbox-nav--next"
+                    onClick={() => setLightboxImageIndex(prev => (prev + 1) % imagesList.length)}
+                  >
+                    <ChevronRight size={30} />
+                  </button>
+                  <div className="uh-lightbox-counter">
+                    {lightboxImageIndex + 1} / {imagesList.length}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* All Events Modal */}
       {showAllEvents && (
@@ -1128,7 +1142,7 @@ export default function Home() {
                 allAnnouncements.map((evt, i) => {
                   const catStyle = CAT_COLORS[evt.category] || CAT_COLORS.General;
                   return (
-                    <div key={i} className="uh-event" onClick={() => { setShowAllEvents(false); setSelectedEvent(evt); setModalImageIndex(0); setIsModalExpanded(false); }}>
+                    <div key={i} className="uh-event" onClick={() => { setShowAllEvents(false); setSelectedEvent(evt); setModalImageIndex(0); }}>
                       <div className="uh-event__date">
                         <span className="uh-event__day">{evt.day}</span>
                         <span className="uh-event__month">{evt.month}</span>

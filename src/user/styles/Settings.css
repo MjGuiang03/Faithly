@@ -198,272 +198,9 @@
   line-height: 1.5;
 }
 
-.user-notif-prefs-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 12px;
-  margin-bottom: 8px;
-}
 
-.user-notif-pref-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  padding: 12px 14px;
-  border-radius: 10px;
-  transition: all 0.15s;
-  background: var(--secondary);
-  border: 1px solid var(--border);
-}
 
-.user-notif-pref-item:hover {
-  background: var(--muted);
-}
 
-.user-notif-pref-item input {
-  display: none;
-}
-
-.user-notif-checkbox-box {
-  width: 20px;
-  height: 20px;
-  border: 2px solid #D1D5DB;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-  background: #fff;
-}
-
-.user-notif-pref-item input:checked+.user-notif-checkbox-box {
-  background: #2563EB;
-  border-color: #2563EB;
-}
-
-.check-icon {
-  color: #fff;
-  opacity: 0;
-  transform: scale(0.5);
-  transition: all 0.2s;
-}
-
-.user-notif-pref-item input:checked+.user-notif-checkbox-box .check-icon {
-  opacity: 1;
-  transform: scale(1);
-}
-
-.user-notif-pref-item span {
-  font-family: 'Inter', sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  color: #4B5563;
-}
-
-/* Setting Item */
-.user-setting-item {
-  background: var(--secondary);
-  border-radius: 10px;
-  padding: 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.user-setting-item-icon {
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
-}
-
-.user-setting-item-icon svg {
-  width: 100%;
-  height: 100%;
-}
-
-.user-setting-item-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.user-setting-item-title {
-  font-size: 16px;
-  font-weight: normal;
-  color: var(--foreground);
-  margin: 0;
-  line-height: 24px;
-  font-family: 'Inter', sans-serif;
-}
-
-.user-setting-item-description {
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin: 0;
-  line-height: 20px;
-  font-family: 'Inter', sans-serif;
-}
-
-.user-link-button {
-  background: transparent;
-  border: none;
-  color: var(--primary);
-  font-size: 14px;
-  font-family: 'Inter', sans-serif;
-  cursor: pointer;
-  padding: 4px 8px;
-  transition: opacity 0.2s;
-}
-
-.user-link-button:hover {
-  opacity: 0.8;
-}
-
-.user-link-button.danger {
-  color: var(--destructive);
-}
-
-/* Form Group */
-.user-form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.user-form-label {
-  font-size: 14px;
-  color: var(--foreground);
-  margin: 0;
-  line-height: 20px;
-  font-family: 'Inter', sans-serif;
-}
-
-.user-form-select {
-  height: 40px;
-  padding: 8px 16px;
-  border-radius: 10px;
-  border: 0.8px solid var(--border-strong);
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  color: var(--foreground);
-  outline: none;
-  transition: border-color 0.3s ease, background 0.3s;
-  background: var(--input-background);
-  cursor: pointer;
-}
-
-.user-form-select:focus {
-  border-color: var(--primary);
-}
-
-/* Payment Card Item */
-.user-payment-card-item {
-  background: var(--secondary);
-  border-radius: 10px;
-  padding: 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.user-payment-card-icon {
-  width: 32px;
-  height: 24px;
-  flex-shrink: 0;
-}
-
-.user-payment-card-icon svg {
-  width: 100%;
-  height: 100%;
-}
-
-.user-payment-card-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.user-payment-card-number {
-  font-size: 16px;
-  font-weight: normal;
-  color: var(--foreground);
-  margin: 0;
-  line-height: 24px;
-  font-family: 'Inter', sans-serif;
-}
-
-.user-payment-card-expiry {
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin: 0;
-  line-height: 20px;
-  font-family: 'Inter', sans-serif;
-}
-
-.user-add-payment-btn {
-  width: 100%;
-  height: 40px;
-  background: var(--secondary);
-  border: 0.8px solid var(--border);
-  border-radius: 10px;
-  color: var(--foreground);
-  font-size: 14px;
-  font-family: 'Inter', sans-serif;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.user-add-payment-btn:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-}
-
-/* Settings Actions */
-.user-settings-actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 8px;
-}
-
-.user-save-settings-btn {
-  flex: 1;
-  height: 48px;
-  background: var(--sidebar);
-  border: none;
-  border-radius: 10px;
-  color: white;
-  font-size: 16px;
-  font-family: 'Inter', sans-serif;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.user-save-settings-btn:hover {
-  background: var(--blue-hover);
-}
-
-.user-reset-btn {
-  flex: 1;
-  /* Reset to match Save button */
-  height: 48px;
-  background: var(--secondary);
-  border: 0.8px solid var(--border);
-  border-radius: 10px;
-  color: var(--foreground);
-  font-size: 16px;
-  font-family: 'Inter', sans-serif;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.user-reset-btn:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-  background: var(--muted);
-}
 
 /* Shared Form Elements (used by Password section) */
 .user-pi-form-grid {
@@ -585,34 +322,7 @@
   background: var(--muted);
 }
 
-/* Floating Chat Button */
-.user-chat-button {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #1E3A8A 0%, #1246d1 100%);
-  border: none;
-  box-shadow: 0 4px 12px rgba(21, 93, 252, 0.3);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  z-index: 1000;
-}
 
-.user-chat-button:hover {
-  transform: scale(1.1);
-  box-shadow: 0 6px 20px rgba(21, 93, 252, 0.4);
-}
-
-.user-chat-button svg {
-  width: 24px;
-  height: 24px;
-}
 
 /* Settings Header */
 .user-settings-page-header {
@@ -639,13 +349,7 @@
   line-height: 20px;
 }
 
-/* Main Content Layout */
 
-
-.user-home-layout {
-  display: flex;
-  height: 100vh;
-}
 
 /* ── Responsive ────────────────────────────────────────── */
 @media (max-width: 768px) {
@@ -653,8 +357,7 @@
     max-width: 100%;
   }
 
-  .user-toggle-setting,
-  .user-setting-item {
+  .user-toggle-setting {
     flex-direction: column;
     align-items: flex-start;
   }
@@ -663,26 +366,8 @@
     align-self: flex-start;
   }
 
-  .user-settings-actions {
-    flex-direction: column;
-  }
-
-  .user-reset-btn {
-    width: 100%;
-  }
-
   .user-pi-form-grid {
     grid-template-columns: 1fr;
-  }
-
-  .user-pi-card {
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-
-  .user-pi-card-actions {
-    width: 100%;
-    justify-content: flex-end;
   }
 
   .user-main-content {
@@ -691,44 +376,6 @@
 }
 
 @media (max-width: 480px) {
-  .user-pi-card {
-    padding: 14px 16px;
-  }
-
-  .user-pi-btn-edit,
-  .user-pi-btn-cancel,
-  .user-pi-btn-save {
-    font-size: 12px;
-    padding: 6px 12px;
-  }
-
-  .user-pi-card-avatar {
-    width: 48px;
-    height: 48px;
-  }
-
-  .user-pi-card-avatar img {
-    width: 48px !important;
-    height: 48px !important;
-  }
-
-  .user-pi-card-avatar-badge {
-    width: 22px;
-    height: 22px;
-  }
-
-  .user-chat-button {
-    width: 50px;
-    height: 50px;
-    bottom: 20px;
-    right: 20px;
-  }
-
-  .user-chat-button svg {
-    width: 20px;
-    height: 20px;
-  }
-
   .user-main-content {
     padding: 16px;
   }
@@ -783,48 +430,24 @@
 }
 
 /* Toggles & Items */
-.dark .user-toggle-setting,
-.dark .user-setting-item,
-.dark .user-payment-card-item {
+.dark .user-toggle-setting {
   background: var(--input-background);
   border-color: var(--border);
 }
 
-.dark .user-toggle-title,
-.dark .user-setting-item-title,
-.dark .user-payment-card-number {
+.dark .user-toggle-title {
   color: var(--foreground);
 }
 
-.dark .user-toggle-description,
-.dark .user-setting-item-description,
-.dark .user-payment-card-expiry {
+.dark .user-toggle-description {
   color: var(--text-secondary);
-}
-
-.dark .user-preferences-title {
-  color: var(--foreground);
-}
-
-.dark .user-checkbox-item {
-  color: var(--text-secondary);
-}
-
-.dark .user-link-button {
-  color: var(--primary);
-}
-
-.dark .user-link-button.danger {
-  color: var(--destructive);
 }
 
 /* Form Inputs */
-.dark .user-form-label,
 .dark .user-pi-form-label {
   color: var(--foreground);
 }
 
-.dark .user-form-select,
 .dark .user-pi-form-input,
 .dark .user-pi-form-select {
   background: var(--input-background);
@@ -832,7 +455,6 @@
   color: var(--foreground);
 }
 
-.dark .user-form-select:focus,
 .dark .user-pi-form-input:focus,
 .dark .user-pi-form-select:focus {
   border-color: var(--primary);
@@ -840,41 +462,6 @@
 
 .dark .user-pi-readonly-text {
   color: var(--foreground);
-}
-
-/* Buttons */
-.dark .user-add-payment-btn,
-.dark .user-reset-btn {
-  background: var(--input-background);
-  border-color: var(--border);
-  color: var(--foreground);
-}
-
-.dark .user-add-payment-btn:hover,
-.dark .user-reset-btn:hover {
-  background: var(--muted);
-  border-color: var(--primary);
-  color: var(--primary);
-}
-
-.dark .user-save-settings-btn {
-  background: var(--primary);
-  color: var(--primary-foreground);
-}
-
-.dark .user-save-settings-btn:hover {
-  background: var(--primary);
-  opacity: 0.9;
-}
-
-.dark .user-pi-btn-edit {
-  background: var(--input-background);
-  color: var(--foreground);
-  border: 1px solid var(--border);
-}
-
-.dark .user-pi-btn-edit:hover {
-  background: var(--muted);
 }
 
 /* ============================================================

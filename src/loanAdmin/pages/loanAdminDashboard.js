@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import useSWR from 'swr';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
@@ -26,6 +26,25 @@ const formatYAxis = (num) => {
 };
 
 const CHART_TICKS = [0, 100000, 200000, 300000, 400000, 500000];
+const PIE_COLORS = ['#0D1F45', '#1E3A8A', '#2563EB', '#3B82F6', '#60A5FA', '#93C5FD', '#BFDBFE'];
+const STATUS_COLORS = {
+  Active: '#0D1F45', Completed: '#1E3A8A', Pending: '#2563EB',
+  Rejected: '#3B82F6', Cancelled: '#93C5FD', Approved: '#60A5FA',
+  'Awaiting Approval': '#BFDBFE'
+};
+
+const renderSliceLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+  if (percent < 0.05) return null;
+  const RADIAN = Math.PI / 180;
+  const radius = innerRadius + (outerRadius - innerRadius) * 0.55;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+  return (
+    <text x={x} y={y} fill="#fff" textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight={700}>
+      {`${(percent * 100).toFixed(0)}%`}
+    </text>
+  );
+};
 
 const fmtDate = (d) => {
   if (!d) return 'N/A';
@@ -46,6 +65,10 @@ export default function LoanAdminDashboard() {
   const [disbursementByType, setDisbursementByType] = useState([]);
   const [totalSavings, setTotalSavings] = useState(0);
   const [savingsMonthly, setSavingsMonthly] = useState([]);
+  const [statusDistribution, setStatusDistribution] = useState([]);
+  const [repaymentPerformance, setRepaymentPerformance] = useState([]);
+  const [monthlyApplications, setMonthlyApplications] = useState([]);
+  const [delinquencyRate, setDelinquencyRate] = useState([]);
 
 
   // Modal states
@@ -68,19 +91,31 @@ export default function LoanAdminDashboard() {
   const { data: loansData, isValidating: loadingLoans } = useSWR(
     token ? `${API}/api/admin/loans` : null,
     fetcherSingle,
-    { revalidateOnFocus: false }
+    { 
+      revalidateOnFocus: false,
+      dedupingInterval: 30000,
+      keepPreviousData: true
+    }
   );
 
   const { data: reportsData, isValidating: loadingReports } = useSWR(
     token ? `${API}/api/admin/loan-reports?year=${currentYear}` : null,
     fetcherSingle,
-    { revalidateOnFocus: false }
+    { 
+      revalidateOnFocus: false,
+      dedupingInterval: 30000,
+      keepPreviousData: true
+    }
   );
 
   const { data: savingsData, isValidating: loadingSavings } = useSWR(
     token ? `${API}/api/admin/member-savings` : null,
     fetcherSingle,
-    { revalidateOnFocus: false }
+    { 
+      revalidateOnFocus: false,
+      dedupingInterval: 30000,
+      keepPreviousData: true
+    }
   );
 
   useEffect(() => {
@@ -110,6 +145,10 @@ export default function LoanAdminDashboard() {
     if (reportsData && reportsData.success) {
       setMonthlyData(reportsData.monthlyData || []);
       setDisbursementByType(reportsData.disbursementByType || []);
+      setStatusDistribution(reportsData.statusDistribution || []);
+      setRepaymentPerformance(reportsData.repaymentPerformance || []);
+      setMonthlyApplications(reportsData.monthlyApplications || []);
+      setDelinquencyRate(reportsData.delinquencyRate || []);
     }
   }, [reportsData]);
 
@@ -139,43 +178,101 @@ export default function LoanAdminDashboard() {
   // For UI rendering, loading is active only when data is missing and it's fetching
   const isLoading = (!loansData && loadingLoans) || (!reportsData && loadingReports) || (!savingsData && loadingSavings);
 
-  const dash = (v) => isLoading ? '—' : v;
+  const dash = useCallback((v) => isLoading ? '—' : v, [isLoading]);
 
   // Derived: all disbursed loans
-  const allDisbursedLoans = allLoans.filter(l => l.disbursed && l.disbursementDate);
+  const allDisbursedLoans = useMemo(() => {
+    return allLoans.filter(l => l.disbursed && l.disbursementDate);
+  }, [allLoans]);
 
   // Filtered loans for This Month modal
-  const filteredMonthLoans = allDisbursedLoans.filter(l => {
-    const d = new Date(l.disbursementDate);
-    return d.getMonth() === parseInt(monthModalMonth) && d.getFullYear() === monthModalYear;
-  });
+  const filteredMonthLoans = useMemo(() => {
+    return allDisbursedLoans.filter(l => {
+      const d = new Date(l.disbursementDate);
+      return d.getMonth() === parseInt(monthModalMonth) && d.getFullYear() === monthModalYear;
+    });
+  }, [allDisbursedLoans, monthModalMonth, monthModalYear]);
 
   // Filtered loans for All Disbursements modal
-  const filteredDisbLoans = allDisbursedLoans.filter(l => {
-    const d = new Date(l.disbursementDate);
-    if (disbModalYear !== 'all' && d.getFullYear() !== parseInt(disbModalYear)) return false;
-    if (disbModalMonth !== 'all' && d.getMonth() !== parseInt(disbModalMonth)) return false;
-    return true;
-  });
+  const filteredDisbLoans = useMemo(() => {
+    return allDisbursedLoans.filter(l => {
+      const d = new Date(l.disbursementDate);
+      if (disbModalYear !== 'all' && d.getFullYear() !== parseInt(disbModalYear)) return false;
+      if (disbModalMonth !== 'all' && d.getMonth() !== parseInt(disbModalMonth)) return false;
+      return true;
+    });
+  }, [allDisbursedLoans, disbModalMonth, disbModalYear]);
 
-  const getMonthModalLabel = () => `${MONTH_NAMES[parseInt(monthModalMonth)]} ${monthModalYear}`;
-  const getDisbModalLabel = () => {
+  const getMonthModalLabel = useCallback(() => `${MONTH_NAMES[parseInt(monthModalMonth)]} ${monthModalYear}`, [monthModalMonth, monthModalYear]);
+  const getDisbModalLabel = useCallback(() => {
     if (disbModalYear === 'all' && disbModalMonth === 'all') return 'All Time';
     if (disbModalYear !== 'all' && disbModalMonth === 'all') return `Year ${disbModalYear}`;
     if (disbModalYear === 'all' && disbModalMonth !== 'all') return `${MONTH_NAMES[parseInt(disbModalMonth)]} (All Years)`;
     return `${MONTH_NAMES[parseInt(disbModalMonth)]} ${disbModalYear}`;
-  };
+  }, [disbModalMonth, disbModalYear]);
 
-  const openMonthModal = () => {
+  const openMonthModal = useCallback(() => {
     setMonthModalMonth(new Date().getMonth().toString());
     setMonthModalYear(new Date().getFullYear());
     setShowMonthModal(true);
-  };
-  const openDisbModal = () => {
+  }, []);
+  const openDisbModal = useCallback(() => {
     setDisbModalMonth('all');
     setDisbModalYear('all');
     setShowDisbursedModal(true);
-  };
+  }, []);
+
+  const moneyInVsOutSummary = useMemo(() => {
+    const totalIn = monthlyData.reduce((sum, d) => sum + (d.received || 0), 0);
+    const totalOut = monthlyData.reduce((sum, d) => sum + (d.disbursed || 0), 0);
+    const net = totalIn - totalOut;
+    return { totalIn, totalOut, net };
+  }, [monthlyData]);
+
+  const disbursementSummary = useMemo(() => {
+    const total = disbursementByType.reduce((s, d) => s + (d.amount || 0), 0);
+    const activeDisbursements = disbursementByType.filter(d => d.amount > 0);
+    const zeroDisbursements = disbursementByType.filter(d => d.amount === 0);
+    return { total, activeDisbursements, zeroDisbursements };
+  }, [disbursementByType]);
+
+  const enhancedSavingsData = useMemo(() => {
+    const enhancedSavings = savingsMonthly.map(d => ({
+      ...d,
+      actualSavings: d.savings > 0 ? d.savings : null,
+      zeroSavings: d.savings === 0 ? 0 : null
+    }));
+    let firstDataIdx = enhancedSavings.findIndex(d => d.actualSavings !== null);
+    if (firstDataIdx > 0) enhancedSavings[firstDataIdx].zeroSavings = enhancedSavings[firstDataIdx].actualSavings;
+    return enhancedSavings;
+  }, [savingsMonthly]);
+
+  const statusDistributionSummary = useMemo(() => {
+    const total = statusDistribution.reduce((s, d) => s + (d.value || 0), 0);
+    return { total };
+  }, [statusDistribution]);
+
+  const repaymentPerformanceSummary = useMemo(() => {
+    const total = repaymentPerformance.reduce((s, d) => s + (d.value || 0), 0);
+    const onTime = repaymentPerformance.find(d => d.name === 'On-Time')?.value || 0;
+    const pct = total > 0 ? ((onTime / total) * 100).toFixed(1) : 0;
+    return { total, onTime, pct };
+  }, [repaymentPerformance]);
+
+  const delinquencyRateSummary = useMemo(() => {
+    const totalPayments = delinquencyRate.reduce((s, d) => s + (d.total || 0), 0);
+    const totalLate = delinquencyRate.reduce((s, d) => s + (d.late || 0), 0);
+    const avgRate = totalPayments > 0 ? ((totalLate / totalPayments) * 100).toFixed(1) : 0;
+    return { totalPayments, totalLate, avgRate };
+  }, [delinquencyRate]);
+
+  const monthModalTotal = useMemo(() => {
+    return filteredMonthLoans.reduce((s, l) => s + (Number(l.amount) || 0), 0);
+  }, [filteredMonthLoans]);
+
+  const disbModalTotal = useMemo(() => {
+    return filteredDisbLoans.reduce((s, l) => s + (Number(l.amount) || 0), 0);
+  }, [filteredDisbLoans]);
 
   return (
     <div className="loan-admin-dashboard-page">
@@ -245,22 +342,15 @@ export default function LoanAdminDashboard() {
               <div>
                 <h3 className="adm-card-title">Money In vs Money Out</h3>
                 <span className="adm-card-sub">Monthly comparison of received funds and loan disbursements</span>
-                {(() => {
-                  const totalIn = monthlyData.reduce((sum, d) => sum + d.received, 0);
-                  const totalOut = monthlyData.reduce((sum, d) => sum + d.disbursed, 0);
-                  const net = totalIn - totalOut;
-                  return (
-                    <div className="la-cashflow-header">
-                      <div className="la-cashflow-badges">
-                        <span className="la-cashflow-badge-in">Total In: ₱{(totalIn/1000).toFixed(1)}k</span>
-                        <span className="la-cashflow-badge-out">Total Out: ₱{(totalOut/1000).toFixed(1)}k</span>
-                        <span className={`la-cashflow-badge-net ${net >= 0 ? 'net-pos' : 'net-neg'}`}>
-                          Net Balance: {net < 0 ? '-' : ''}₱{(Math.abs(net)/1000).toFixed(1)}k
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })()}
+                <div className="la-cashflow-header">
+                  <div className="la-cashflow-badges">
+                    <span className="la-cashflow-badge-in">Total In: ₱{(moneyInVsOutSummary.totalIn/1000).toFixed(1)}k</span>
+                    <span className="la-cashflow-badge-out">Total Out: ₱{(moneyInVsOutSummary.totalOut/1000).toFixed(1)}k</span>
+                    <span className={`la-cashflow-badge-net ${moneyInVsOutSummary.net >= 0 ? 'net-pos' : 'net-neg'}`}>
+                      Net Balance: {moneyInVsOutSummary.net < 0 ? '-' : ''}₱{(Math.abs(moneyInVsOutSummary.net)/1000).toFixed(1)}k
+                    </span>
+                  </div>
+                </div>
               </div>
               <button className="la-chart-expand-btn" onClick={() => setExpandedChart('moneyIn')} title="Expand Chart">
                 <Expand size={18} color="#4B5563" strokeWidth={2.5} />
@@ -285,47 +375,37 @@ export default function LoanAdminDashboard() {
               <div>
                 <h3 className="adm-card-title">Disbursements by Type</h3>
                 <span className="adm-card-sub">Funds allocated by loan type</span>
-                {(() => {
-                  const total = disbursementByType.reduce((s,d) => s + d.amount, 0);
-                  return <div className="la-card-total">Total: ₱{total.toLocaleString()}</div>;
-                })()}
+                <div className="la-card-total">Total: ₱{disbursementSummary.total.toLocaleString()}</div>
               </div>
               <button className="la-chart-expand-btn" onClick={() => setExpandedChart('disbursements')} title="Expand Chart">
                 <Expand size={18} color="#4B5563" strokeWidth={2.5} />
               </button>
             </div>
             <div style={{ width: '100%', height: '240px' }}>
-              {(() => {
-                const activeDisbursements = disbursementByType.filter(d => d.amount > 0);
-                const zeroDisbursements = disbursementByType.filter(d => d.amount === 0);
-                const total = disbursementByType.reduce((s,d) => s + d.amount, 0);
-                return (
-                  <div className="la-chart-wrapper" style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
-                    <div className="la-chart-inner" style={{ flex: 1, minHeight: 0 }}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={activeDisbursements} layout="vertical" margin={{ top: 10, right: 30, left: -20, bottom: 0 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" horizontal={true} vertical={false} />
-                          <XAxis type="number" stroke="#9CA3AF" fontSize={12} tickFormatter={formatYAxis} domain={[0, 'dataMax']} hide />
-                          <YAxis dataKey="type" type="category" stroke="#9CA3AF" fontSize={11} width={100} />
-                          <Tooltip cursor={{ fill: '#F9FAFB' }} contentStyle={{ borderRadius: '8px', border: '1px solid #E5E7EB' }} formatter={(v) => '₱' + v.toLocaleString()} />
-                          <Bar dataKey="amount" radius={[0, 4, 4, 0]} barSize={20}>
-                            <LabelList dataKey="amount" position="right" formatter={val => val > 0 ? `${Math.round((val/total)*100)}%` : ''} fontSize={11} fill="#6B7280" />
-                            {activeDisbursements.map((entry, index) => {
-                              const CHART_COLORS = ['#1E3A8A', '#3B82F6', '#60A5FA', '#F59E0B', '#10B981'];
-                              return <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />;
-                            })}
-                          </Bar>
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-                    {zeroDisbursements.length > 0 && (
-                      <div className="la-chart-footer" style={{ fontSize: '12px', color: '#6B7280', paddingTop: '8px' }}>
-                        ({zeroDisbursements.map(d => d.type).join(', ')}: ₱0)
-                      </div>
-                    )}
+              <div className="la-chart-wrapper" style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <div className="la-chart-inner" style={{ flex: 1, minHeight: 0 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={disbursementSummary.activeDisbursements} layout="vertical" margin={{ top: 10, right: 30, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" horizontal={true} vertical={false} />
+                      <XAxis type="number" stroke="#9CA3AF" fontSize={12} tickFormatter={formatYAxis} domain={[0, 'dataMax']} hide />
+                      <YAxis dataKey="type" type="category" stroke="#9CA3AF" fontSize={11} width={100} />
+                      <Tooltip cursor={{ fill: '#F9FAFB' }} contentStyle={{ borderRadius: '8px', border: '1px solid #E5E7EB' }} formatter={(v) => '₱' + v.toLocaleString()} />
+                      <Bar dataKey="amount" radius={[0, 4, 4, 0]} barSize={20}>
+                        <LabelList dataKey="amount" position="right" formatter={val => val > 0 ? `${Math.round((val/disbursementSummary.total)*100)}%` : ''} fontSize={11} fill="#6B7280" />
+                        {disbursementSummary.activeDisbursements.map((entry, index) => {
+                          const CHART_COLORS = ['#0D1F45', '#1E3A8A', '#2563EB', '#3B82F6', '#60A5FA'];
+                          return <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />;
+                        })}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+                {disbursementSummary.zeroDisbursements.length > 0 && (
+                  <div className="la-chart-footer" style={{ fontSize: '12px', color: '#6B7280', paddingTop: '8px' }}>
+                    ({disbursementSummary.zeroDisbursements.map(d => d.type).join(', ')}: ₱0)
                   </div>
-                );
-              })()}
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -342,30 +422,132 @@ export default function LoanAdminDashboard() {
             </button>
           </div>
           <ResponsiveContainer width="100%" height={220}>
-            {(() => {
-              const enhancedSavings = savingsMonthly.map(d => ({
-                ...d,
-                actualSavings: d.savings > 0 ? d.savings : null,
-                zeroSavings: d.savings === 0 ? 0 : null
-              }));
-              let firstDataIdx = enhancedSavings.findIndex(d => d.actualSavings !== null);
-              if (firstDataIdx > 0) enhancedSavings[firstDataIdx].zeroSavings = enhancedSavings[firstDataIdx].actualSavings;
-
-              return (
-                <LineChart data={enhancedSavings} margin={{ top: 10, right: 8, left: -10, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-                  <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
-                  <YAxis stroke="#9CA3AF" fontSize={12} tickFormatter={formatYAxis} width={45} ticks={CHART_TICKS} domain={[0, 500000]} />
-                  <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #E5E7EB' }} formatter={(v) => '₱' + v.toLocaleString()} />
-                  <Line type="monotone" dataKey="zeroSavings" stroke="#D1D5DB" strokeDasharray="5 5" strokeWidth={2} dot={false} name="No Data" connectNulls />
-                  <Line type="monotone" dataKey="actualSavings" stroke="#0D1F45" strokeWidth={2} dot={{ r: 3, fill: '#0D1F45' }} name="Savings" connectNulls />
-                </LineChart>
-              );
-            })()}
+            <LineChart data={enhancedSavingsData} margin={{ top: 10, right: 8, left: -10, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+              <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
+              <YAxis stroke="#9CA3AF" fontSize={12} tickFormatter={formatYAxis} width={45} ticks={CHART_TICKS} domain={[0, 500000]} />
+              <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #E5E7EB' }} formatter={(v) => '₱' + v.toLocaleString()} />
+              <Line type="monotone" dataKey="zeroSavings" stroke="#D1D5DB" strokeDasharray="5 5" strokeWidth={2} dot={false} name="No Data" connectNulls />
+              <Line type="monotone" dataKey="actualSavings" stroke="#0D1F45" strokeWidth={2} dot={{ r: 3, fill: '#0D1F45' }} name="Savings" connectNulls />
+            </LineChart>
           </ResponsiveContainer>
         </div>
 
-        {/* Row 3 — Recent Loan Applications */}
+        {/* Row 3 — New Analytics Charts */}
+        <div className="adm-analytics-row adm-analytics-row-loan">
+          {/* Loan Status Distribution (Donut) */}
+          <div className="adm-card">
+            <div className="adm-card-header">
+              <div>
+                <h3 className="adm-card-title">Loan Status Distribution</h3>
+                <span className="adm-card-sub">Portfolio breakdown by current loan status</span>
+              </div>
+              <button className="la-chart-expand-btn" onClick={() => setExpandedChart('statusDist')} title="Expand Chart">
+                <Expand size={18} color="#4B5563" strokeWidth={2.5} />
+              </button>
+            </div>
+            <ResponsiveContainer width="100%" height={240}>
+              <PieChart>
+                <Pie data={statusDistribution} cx="50%" cy="42%" innerRadius={35} outerRadius={75} paddingAngle={2} dataKey="value" label={renderSliceLabel} labelLine={false}>
+                  {statusDistribution.map((entry, i) => (
+                    <Cell key={i} fill={STATUS_COLORS[entry.name] || PIE_COLORS[i % PIE_COLORS.length]} />
+                  ))}
+                  <Label value={statusDistributionSummary.total} position="center" fill="#1e3a5f" style={{ fontSize: '18px', fontWeight: 'bold' }} />
+                  <Label value="Total" position="center" dy={16} fill="#6B7280" style={{ fontSize: '10px' }} />
+                </Pie>
+                <Tooltip formatter={(v, name) => [v + ' loans', name]} />
+                <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '11px', paddingTop: '0px' }} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Repayment Performance */}
+          <div className="adm-card">
+            <div className="adm-card-header">
+              <div>
+                <h3 className="adm-card-title">Repayment Performance</h3>
+                <span className="adm-card-sub">On-time vs late payment ratio this year</span>
+                <div className={`la-card-total ${repaymentPerformanceSummary.pct >= 80 ? 'la-rate-good' : 'la-rate-warn'}`}>{repaymentPerformanceSummary.pct}% On-Time Rate</div>
+              </div>
+              <button className="la-chart-expand-btn" onClick={() => setExpandedChart('repayment')} title="Expand Chart">
+                <Expand size={18} color="#4B5563" strokeWidth={2.5} />
+              </button>
+            </div>
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart data={repaymentPerformance} margin={{ top: 20, right: 30, left: 0, bottom: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
+                <XAxis dataKey="name" stroke="#9CA3AF" fontSize={13} />
+                <YAxis stroke="#9CA3AF" fontSize={12} allowDecimals={false} />
+                <Tooltip formatter={(v) => v + ' payments'} />
+                <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={60}>
+                  <LabelList dataKey="value" position="top" fontSize={13} fontWeight={600} fill="#374151" />
+                  <Cell fill="#10B981" />
+                  <Cell fill="#EF4444" />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Row 4 — Applications Trend + Delinquency */}
+        <div className="adm-analytics-row adm-analytics-row-loan">
+          {/* Monthly Loan Applications Trend */}
+          <div className="adm-card">
+            <div className="adm-card-header">
+              <div>
+                <h3 className="adm-card-title">Loan Applications Trend</h3>
+                <span className="adm-card-sub">Monthly applications with approval/rejection breakdown</span>
+              </div>
+              <button className="la-chart-expand-btn" onClick={() => setExpandedChart('appTrend')} title="Expand Chart">
+                <Expand size={18} color="#4B5563" strokeWidth={2.5} />
+              </button>
+            </div>
+            <ResponsiveContainer width="100%" height={240}>
+              <AreaChart data={monthlyApplications} margin={{ top: 10, right: 8, left: -10, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorApps" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+                <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
+                <YAxis stroke="#9CA3AF" fontSize={12} allowDecimals={false} />
+                <Tooltip />
+                <Legend iconType="circle" wrapperStyle={{ paddingTop: '8px' }} />
+                <Area type="monotone" dataKey="applications" stroke="#3B82F6" strokeWidth={2.5} fillOpacity={1} fill="url(#colorApps)" name="Applications" />
+                <Line type="monotone" dataKey="approved" stroke="#10B981" strokeWidth={2} dot={{ r: 3 }} name="Approved" />
+                <Line type="monotone" dataKey="rejected" stroke="#EF4444" strokeWidth={2} dot={{ r: 3 }} name="Rejected" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Delinquency Rate */}
+          <div className="adm-card">
+            <div className="adm-card-header">
+              <div>
+                <h3 className="adm-card-title">Delinquency Rate</h3>
+                <span className="adm-card-sub">Percentage of late payments per month</span>
+                <div className={`la-card-total ${delinquencyRateSummary.avgRate <= 10 ? 'la-rate-good' : delinquencyRateSummary.avgRate <= 25 ? 'la-rate-warn' : 'la-rate-bad'}`}>Avg: {delinquencyRateSummary.avgRate}%</div>
+              </div>
+              <button className="la-chart-expand-btn" onClick={() => setExpandedChart('delinquency')} title="Expand Chart">
+                <Expand size={18} color="#4B5563" strokeWidth={2.5} />
+              </button>
+            </div>
+            <ResponsiveContainer width="100%" height={240}>
+              <LineChart data={delinquencyRate} margin={{ top: 10, right: 8, left: -10, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+                <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
+                <YAxis stroke="#9CA3AF" fontSize={12} domain={[0, 100]} tickFormatter={v => v + '%'} />
+                <Tooltip formatter={(v) => v + '%'} />
+                <ReferenceLine y={15} stroke="#EF4444" strokeDasharray="5 5" label={{ value: 'Threshold (15%)', position: 'right', fill: '#EF4444', fontSize: 10 }} />
+                <Line type="monotone" dataKey="rate" stroke="#0D1F45" strokeWidth={2.5} dot={{ r: 4, fill: '#0D1F45' }} name="Delinquency %" />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Row 5 — Recent Loan Applications */}
         <div className="adm-card">
           <div className="adm-card-header">
             <h3 className="adm-card-title">Recent Loan Applications</h3>
@@ -453,7 +635,7 @@ export default function LoanAdminDashboard() {
               )}
               <div className="la-modal-summary">
                 <span>Total for {getMonthModalLabel()}</span>
-                <span className="la-modal-summary-value">{fmt(filteredMonthLoans.reduce((s, l) => s + (Number(l.amount) || 0), 0))}</span>
+                <span className="la-modal-summary-value">{fmt(monthModalTotal)}</span>
               </div>
             </div>
           </div>
@@ -467,7 +649,7 @@ export default function LoanAdminDashboard() {
             <div className="la-modal-header">
               <div>
                 <h2 className="la-modal-title">All Disbursements</h2>
-                <p className="la-modal-subtitle">{getDisbModalLabel()} — {filteredDisbLoans.length} loan(s) — {fmt(filteredDisbLoans.reduce((s, l) => s + (Number(l.amount) || 0), 0))}</p>
+                <p className="la-modal-subtitle">{getDisbModalLabel()} — {filteredDisbLoans.length} loan(s) — {fmt(disbModalTotal)}</p>
               </div>
               <button className="la-modal-close" onClick={() => setShowDisbursedModal(false)}>
                 <X size={20} />
@@ -515,7 +697,7 @@ export default function LoanAdminDashboard() {
               )}
               <div className="la-modal-summary">
                 <span>Total ({getDisbModalLabel()})</span>
-                <span className="la-modal-summary-value">{fmt(filteredDisbLoans.reduce((s, l) => s + (Number(l.amount) || 0), 0))}</span>
+                <span className="la-modal-summary-value">{fmt(disbModalTotal)}</span>
               </div>
             </div>
           </div>
@@ -531,6 +713,10 @@ export default function LoanAdminDashboard() {
                 {expandedChart === 'moneyIn' && 'Money In vs Money Out — Detailed View'}
                 {expandedChart === 'disbursements' && 'Disbursements by Type — Detailed View'}
                 {expandedChart === 'savings' && 'Savings Trend — Detailed View'}
+                {expandedChart === 'statusDist' && 'Loan Status Distribution — Detailed View'}
+                {expandedChart === 'repayment' && 'Repayment Performance — Detailed View'}
+                {expandedChart === 'appTrend' && 'Loan Applications Trend — Detailed View'}
+                {expandedChart === 'delinquency' && 'Delinquency Rate — Detailed View'}
               </h2>
               <button className="adm-expand-close" onClick={() => setExpandedChart(null)}><X size={20} /></button>
             </div>
@@ -604,7 +790,7 @@ export default function LoanAdminDashboard() {
                             <Tooltip formatter={(v) => '₱' + v.toLocaleString()} />
                             <Bar dataKey="amount" radius={[0, 4, 4, 0]}>
                               {disbursementByType.map((_, index) => {
-                                const CHART_COLORS = ['#1E3A8A', '#3B82F6', '#60A5FA', '#F59E0B', '#10B981'];
+                                const CHART_COLORS = ['#0D1F45', '#1E3A8A', '#2563EB', '#3B82F6', '#60A5FA'];
                                 return <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />;
                               })}
                             </Bar>
@@ -620,16 +806,16 @@ export default function LoanAdminDashboard() {
                             const total = disbursementByType.reduce((s,d) => s + d.amount, 0);
                             return (
                               <PieChart>
-                                <Pie data={disbursementByType.map(d => ({ name: d.type, value: d.amount }))} cx="50%" cy="50%" innerRadius={50} outerRadius={100} paddingAngle={2} dataKey="value" label={({ name, percent }) => percent > 0 ? `${(percent * 100).toFixed(0)}%` : ''}>
+                                <Pie data={disbursementByType.map(d => ({ name: d.type, value: d.amount }))} cx="50%" cy="45%" innerRadius={40} outerRadius={90} paddingAngle={2} dataKey="value" label={renderSliceLabel} labelLine={false}>
                                   {disbursementByType.map((_, index) => {
-                                    const CHART_COLORS = ['#1E3A8A', '#3B82F6', '#60A5FA', '#F59E0B', '#10B981'];
+                                    const CHART_COLORS = ['#0D1F45', '#1E3A8A', '#2563EB', '#3B82F6', '#60A5FA'];
                                     return <Cell key={`pie-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />;
                                   })}
-                                  <Label value={`₱${total >= 1000 ? (total/1000).toFixed(1).replace(/\\.0$/, '') + 'k' : total}`} position="center" fill="#1e3a5f" style={{ fontSize: '16px', fontWeight: 'bold' }} />
+                                  <Label value={`₱${total >= 1000 ? (total/1000).toFixed(1).replace(/\.0$/, '') + 'k' : total}`} position="center" fill="#1e3a5f" style={{ fontSize: '16px', fontWeight: 'bold' }} />
                                   <Label value="Total" position="center" dy={16} fill="#6B7280" style={{ fontSize: '11px' }} />
                                 </Pie>
                                 <Tooltip formatter={(v) => '₱' + v.toLocaleString()} />
-                                <Legend />
+                                <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '11px' }} />
                               </PieChart>
                             );
                           })()}
@@ -692,6 +878,219 @@ export default function LoanAdminDashboard() {
                   </div>
                   <div className="adm-expand-interpretation">
                     <strong>Interpretation:</strong> The left panel shows the savings deposit trend over time as a line chart. The right panel visualizes the same monthly data as a bar chart for easier period-to-period comparison. An upward trend indicates growing participation in the savings program.
+                  </div>
+                </>
+              )}
+
+              {expandedChart === 'statusDist' && (
+                <>
+                  <div className="adm-expand-grid">
+                    <div className="adm-expand-panel">
+                      <h4 className="adm-expand-panel-title">Status Distribution (Donut)</h4>
+                      <div className="adm-expand-panel-chart">
+                        <ResponsiveContainer width="100%" height="100%">
+                          {(() => {
+                            const STATUS_COLORS = {
+                              Active: '#0D1F45', Completed: '#1E3A8A', Pending: '#2563EB',
+                              Rejected: '#3B82F6', Cancelled: '#93C5FD', Approved: '#60A5FA',
+                              'Awaiting Approval': '#BFDBFE'
+                            };
+                            const total = statusDistribution.reduce((s, d) => s + d.value, 0);
+                            return (
+                              <PieChart>
+                                <Pie data={statusDistribution} cx="50%" cy="45%" innerRadius={45} outerRadius={100} paddingAngle={2} dataKey="value" label={renderSliceLabel} labelLine={false}>
+                                  {statusDistribution.map((entry, i) => (
+                                    <Cell key={i} fill={STATUS_COLORS[entry.name] || PIE_COLORS[i % PIE_COLORS.length]} />
+                                  ))}
+                                  <Label value={total} position="center" fill="#1e3a5f" style={{ fontSize: '22px', fontWeight: 'bold' }} />
+                                  <Label value="Total Loans" position="center" dy={20} fill="#6B7280" style={{ fontSize: '11px' }} />
+                                </Pie>
+                                <Tooltip formatter={(v) => v + ' loans'} />
+                                <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '11px' }} />
+                              </PieChart>
+                            );
+                          })()}
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                    <div className="adm-expand-panel">
+                      <h4 className="adm-expand-panel-title">Status Breakdown (Table)</h4>
+                      <div className="adm-expand-panel-chart la-status-table-wrap">
+                        {(() => {
+                          const STATUS_COLORS = {
+                            Active: '#0D1F45', Completed: '#1E3A8A', Pending: '#2563EB',
+                            Rejected: '#3B82F6', Cancelled: '#93C5FD', Approved: '#60A5FA',
+                            'Awaiting Approval': '#BFDBFE'
+                          };
+                          const total = statusDistribution.reduce((s, d) => s + d.value, 0);
+                          return statusDistribution.map((item, i) => (
+                            <div key={i} className="la-status-row">
+                              <div className="la-status-row-left">
+                                <span className="la-status-dot" style={{ background: STATUS_COLORS[item.name] || PIE_COLORS[i % PIE_COLORS.length] }} />
+                                <span className="la-status-name">{item.name}</span>
+                              </div>
+                              <div className="la-status-row-right">
+                                <span className="la-status-count">{item.value}</span>
+                                <span className="la-status-pct">{total > 0 ? ((item.value / total) * 100).toFixed(1) : 0}%</span>
+                              </div>
+                            </div>
+                          ));
+                        })()}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="adm-expand-interpretation">
+                    <strong>Interpretation:</strong> The donut chart shows the portfolio health at a glance. A healthy portfolio should have more Active/Completed loans than Pending/Rejected. High rejection rates may indicate stricter approval criteria or poor applicant eligibility.
+                  </div>
+                </>
+              )}
+
+              {expandedChart === 'repayment' && (
+                <>
+                  <div className="adm-expand-grid">
+                    <div className="adm-expand-panel">
+                      <h4 className="adm-expand-panel-title">On-Time vs Late Payments</h4>
+                      <div className="adm-expand-panel-chart">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={repaymentPerformance} margin={{ top: 20, right: 30, left: 0, bottom: 10 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
+                            <XAxis dataKey="name" stroke="#9CA3AF" fontSize={14} />
+                            <YAxis stroke="#9CA3AF" fontSize={12} allowDecimals={false} />
+                            <Tooltip formatter={(v) => v + ' payments'} />
+                            <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={80}>
+                              <LabelList dataKey="value" position="top" fontSize={16} fontWeight={700} fill="#374151" />
+                              <Cell fill="#10B981" />
+                              <Cell fill="#EF4444" />
+                            </Bar>
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                    <div className="adm-expand-panel">
+                      <h4 className="adm-expand-panel-title">Performance Ratio</h4>
+                      <div className="adm-expand-panel-chart">
+                        <ResponsiveContainer width="100%" height="100%">
+                          {(() => {
+                            const total = repaymentPerformance.reduce((s, d) => s + d.value, 0);
+                            return (
+                              <PieChart>
+                                <Pie data={repaymentPerformance} cx="50%" cy="45%" innerRadius={40} outerRadius={90} paddingAngle={3} dataKey="value" label={renderSliceLabel} labelLine={false}>
+                                  <Cell fill="#10B981" />
+                                  <Cell fill="#EF4444" />
+                                  <Label value={total} position="center" fill="#1e3a5f" style={{ fontSize: '18px', fontWeight: 'bold' }} />
+                                  <Label value="Total" position="center" dy={18} fill="#6B7280" style={{ fontSize: '11px' }} />
+                                </Pie>
+                                <Tooltip formatter={(v) => v + ' payments'} />
+                                <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '11px' }} />
+                              </PieChart>
+                            );
+                          })()}
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="adm-expand-interpretation">
+                    <strong>Interpretation:</strong> The left bar chart shows absolute counts of on-time vs late payments. The right pie chart visualizes the ratio. An on-time rate above 80% indicates strong repayment discipline. Late payments incur a 3% penalty, so a high late rate impacts both borrowers and the organization's risk exposure.
+                  </div>
+                </>
+              )}
+
+              {expandedChart === 'appTrend' && (
+                <>
+                  <div className="adm-expand-grid">
+                    <div className="adm-expand-panel">
+                      <h4 className="adm-expand-panel-title">Applications Volume (Area)</h4>
+                      <div className="adm-expand-panel-chart">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={monthlyApplications} margin={{ top: 10, right: 10, left: -10, bottom: 10 }}>
+                            <defs>
+                              <linearGradient id="colorAppsExpand" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
+                                <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+                            <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
+                            <YAxis stroke="#9CA3AF" fontSize={12} allowDecimals={false} />
+                            <Tooltip />
+                            <Legend iconType="circle" />
+                            <Area type="monotone" dataKey="applications" stroke="#3B82F6" strokeWidth={2.5} fillOpacity={1} fill="url(#colorAppsExpand)" name="Total Applications" />
+                            <Line type="monotone" dataKey="approved" stroke="#10B981" strokeWidth={2} dot={{ r: 3 }} name="Approved" />
+                            <Line type="monotone" dataKey="rejected" stroke="#EF4444" strokeWidth={2} dot={{ r: 3 }} name="Rejected" />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                    <div className="adm-expand-panel">
+                      <h4 className="adm-expand-panel-title">Approval Rate per Month (%)</h4>
+                      <div className="adm-expand-panel-chart">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={monthlyApplications.map(d => ({
+                            month: d.month,
+                            approvalRate: d.applications > 0 ? Math.round((d.approved / d.applications) * 100) : 0,
+                            rejectionRate: d.applications > 0 ? Math.round((d.rejected / d.applications) * 100) : 0,
+                          }))} margin={{ top: 10, right: 10, left: -10, bottom: 10 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
+                            <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
+                            <YAxis stroke="#9CA3AF" fontSize={12} domain={[0, 100]} tickFormatter={v => v + '%'} />
+                            <Tooltip formatter={v => v + '%'} />
+                            <Legend iconType="circle" />
+                            <Bar dataKey="approvalRate" fill="#10B981" name="Approval %" radius={[4, 4, 0, 0]} stackId="a" />
+                            <Bar dataKey="rejectionRate" fill="#EF4444" name="Rejection %" radius={[4, 4, 0, 0]} stackId="a" />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="adm-expand-interpretation">
+                    <strong>Interpretation:</strong> The left panel shows total loan applications over time with overlay lines for approved and rejected counts. The right panel shows the approval and rejection rates as stacked bars. Rising applications indicate growing demand; declining approval rates may suggest stricter policies or declining applicant quality.
+                  </div>
+                </>
+              )}
+
+              {expandedChart === 'delinquency' && (
+                <>
+                  <div className="adm-expand-grid">
+                    <div className="adm-expand-panel">
+                      <h4 className="adm-expand-panel-title">Delinquency % Trend</h4>
+                      <div className="adm-expand-panel-chart">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={delinquencyRate} margin={{ top: 10, right: 10, left: -10, bottom: 10 }}>
+                            <defs>
+                              <linearGradient id="colorDelinquency" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#EF4444" stopOpacity={0.2} />
+                                <stop offset="95%" stopColor="#EF4444" stopOpacity={0} />
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+                            <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
+                            <YAxis stroke="#9CA3AF" fontSize={12} domain={[0, 100]} tickFormatter={v => v + '%'} />
+                            <Tooltip formatter={v => v + '%'} />
+                            <ReferenceLine y={15} stroke="#EF4444" strokeDasharray="5 5" label={{ value: 'Risk Threshold (15%)', position: 'insideTopRight', fill: '#EF4444', fontSize: 11 }} />
+                            <Area type="monotone" dataKey="rate" stroke="#0D1F45" strokeWidth={2.5} fillOpacity={1} fill="url(#colorDelinquency)" name="Delinquency %" dot={{ r: 4, fill: '#0D1F45' }} />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                    <div className="adm-expand-panel">
+                      <h4 className="adm-expand-panel-title">Late vs Total Payments</h4>
+                      <div className="adm-expand-panel-chart">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={delinquencyRate} margin={{ top: 10, right: 10, left: -10, bottom: 10 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
+                            <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
+                            <YAxis stroke="#9CA3AF" fontSize={12} allowDecimals={false} />
+                            <Tooltip />
+                            <Legend iconType="circle" />
+                            <Bar dataKey="total" fill="#1E3A8A" name="Total Payments" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="late" fill="#EF4444" name="Late Payments" radius={[4, 4, 0, 0]} />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="adm-expand-interpretation">
+                    <strong>Interpretation:</strong> The left panel shows the delinquency rate trend as an area chart with a 15% risk threshold line. Rates consistently above the threshold indicate systemic repayment issues. The right panel shows absolute numbers of total vs late payments per month, helping identify if delinquency spikes are due to more late payments or fewer total payments.
                   </div>
                 </>
               )}

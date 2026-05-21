@@ -78,7 +78,7 @@ function PayNowModal({ loan, onClose, onSuccess }) {
     const remainingMonths = (loan?.termMonths || 0) - (loan?.paidMonths || 0);
 
     const computedAmount = (() => {
-        if (paymentType === 'regular') return monthlyAmt;
+        if (paymentType === 'regular') return Math.min(monthlyAmt, remaining);
         if (paymentType === 'full') return remaining;
         if (paymentType === 'advance') {
             const val = Number(String(customAmount).replace(/,/g, '')) || 0;
@@ -239,7 +239,7 @@ function PayNowModal({ loan, onClose, onSuccess }) {
                 {submitted ? (
                     <div className="ld-pay-success">
                         <div className="ld-pay-success-icon">
-                            <X size={28} color="#22c55e" />
+                            <CheckCircle size={28} color="#22c55e" />
                         </div>
                         <div className="ld-pay-success-title">Payment submitted!</div>
                         <div className="ld-pay-success-sub">Your payment is being processed. You'll be notified once confirmed.</div>
@@ -768,7 +768,7 @@ export default function LoanDetail() {
                                     : (loan.status === 'pending' || loan.status === 'approved') ? 'Pending disbursement' : '—'}
                             </div>
                             <div className="ld-stat-sub">
-                                {loan.nextPaymentDate ? `${fmt(loan.upcomingPaymentAmount || loan.monthlyPayment)} due` : (loan.status === 'pending' || loan.status === 'approved') ? 'Starts after disbursement' : 'No upcoming payment'}
+                                {loan.nextPaymentDate ? `${fmt(Math.min(loan.upcomingPaymentAmount || loan.monthlyPayment, loan.remainingBalance || Infinity))} due` : (loan.status === 'pending' || loan.status === 'approved') ? 'Starts after disbursement' : 'No upcoming payment'}
                             </div>
                         </div>
                     </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import useSWR from 'swr';
 import useDebounce from '../../hooks/useDebounce';
 import { useLocation } from 'react-router-dom';
@@ -9,6 +9,20 @@ import '../styles/loanAdminPaymentStatus.css';
 import API from '../../utils/api';
 import { PiggyBank, Search, X } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, Label } from 'recharts';
+
+const renderSliceLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+  if (percent < 0.05) return null;
+  const RADIAN = Math.PI / 180;
+  const radius = innerRadius + (outerRadius - innerRadius) * 0.55;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+  return (
+    <text x={x} y={y} fill="#fff" textAnchor="middle" dominantBaseline="central" fontSize={12} fontWeight={700}>
+      {`${(percent * 100).toFixed(0)}%`}
+    </text>
+  );
+};
+
 const fmt = (n) => n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : '₱0.00';
 const fmtDate = (d) => { if (!d) return 'N/A'; return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); };
 
@@ -31,38 +45,26 @@ export default function LoanAdminPaymentStatus() {
   const location = useLocation();
   const isSavingsRoute = location.pathname.includes('/savings');
 
-  const [loans, setLoans] = useState([]);
-
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(isSavingsRoute ? 'savings' : 'loans');
   const [selectedLoan, setSelectedLoan] = useState(null);
+  const [selectedLoanPayments, setSelectedLoanPayments] = useState([]);
+  const [selectedLoanPaymentsLoading, setSelectedLoanPaymentsLoading] = useState(false);
 
-  
-  const [allLoans, setAllLoans] = useState([]);
-  const [allSavings, setAllSavings] = useState([]);
   const [savingsFilter, setSavingsFilter] = useState('all');
   const [savingsTypeFilter, setSavingsTypeFilter] = useState('all'); // 'all', 'deposit', 'withdrawal'
   const [selectedSavings, setSelectedSavings] = useState(null);
   const [savingsPage, setSavingsPage] = useState(1);
   const SAVINGS_PER_PAGE = 10;
-  
   const [historyPage, setHistoryPage] = useState(1);
-  const [historyTotalCount, setHistoryTotalCount] = useState(0);
   const HISTORY_PER_PAGE = 10;
-  
   useEffect(() => {
     setSavingsPage(1);
     setHistoryPage(1);
   }, [searchQuery, savingsTypeFilter]);
 
-  
-  const [loanHistory, setLoanHistory] = useState([]);
-
   // Manual Approval State
-  const [approvalMethod, setApprovalMethod] = useState('gateway');
-  const [pendingSavings, setPendingSavings] = useState([]);
-  const [pendingLoanPayments, setPendingLoanPayments] = useState([]);
   const [pendingLoading, setPendingLoading] = useState(false);
   const [pendingDetail, setPendingDetail] = useState(null);
   const [rejectReason, setRejectReason] = useState('');
@@ -87,52 +89,45 @@ export default function LoanAdminPaymentStatus() {
   const token = localStorage.getItem('adminToken');
   const fetcherSingle = (url) => fetch(url, { headers: { Authorization: `Bearer ${token}` } }).then(res => res.json());
 
-  // Settings
-  const { data: settingsData } = useSWR(`${API}/api/settings/public`, fetcherSingle, { revalidateOnFocus: false });
-  useEffect(() => {
-    if (settingsData && settingsData.success) {
-      setApprovalMethod(settingsData.paymentApprovalMethod || 'gateway');
+  // Public Settings (to check approval method)
+  const { data: settingsData } = useSWR(
+    `${API}/api/settings/public`,
+    fetcherSingle,
+    { 
+      revalidateOnFocus: false, 
+      dedupingInterval: 60000 
     }
-  }, [settingsData]);
+  );
+
+  const approvalMethod = useMemo(() => settingsData?.paymentApprovalMethod || 'gateway', [settingsData]);
 
   // Loans
   const { data: loansData, isValidating: loadingLoans, mutate: fetchLoans } = useSWR(
     token ? `${API}/api/admin/loans` : null,
     fetcherSingle,
-    { revalidateOnFocus: false, revalidateIfStale: true }
-  );
-  useEffect(() => {
-    if (loansData && loansData.success) {
-      setAllLoans(loansData.loans || []);
-      setLoans((loansData.loans || []).filter(l => l.status === 'active'));
+    { 
+      revalidateOnFocus: false, 
+      revalidateIfStale: true,
+      dedupingInterval: 30000,
+      keepPreviousData: true
     }
-  }, [loansData]);
+  );
+
+  const allLoans = useMemo(() => loansData?.loans || [], [loansData]);
+  const loans = useMemo(() => allLoans.filter(l => l.status === 'active'), [allLoans]);
 
   // Savings
   const { data: savingsData, mutate: fetchSavings } = useSWR(
     token ? `${API}/api/admin/savings/deposits` : null,
     fetcherSingle,
-    { revalidateOnFocus: false }
-  );
-  useEffect(() => {
-    if (savingsData && savingsData.success) {
-      setAllSavings(savingsData.deposits || []);
+    { 
+      revalidateOnFocus: false,
+      dedupingInterval: 30000,
+      keepPreviousData: true
     }
-  }, [savingsData]);
+  );
 
-  // Loan History
-  const debouncedSearchHistory = useDebounce(searchQuery, 400);
-  const { data: loanHistoryData } = useSWR(
-    token ? `${API}/api/admin/loan-payments?status=history&page=${historyPage}&limit=${HISTORY_PER_PAGE}&search=${encodeURIComponent(debouncedSearchHistory)}` : null,
-    fetcherSingle,
-    { revalidateOnFocus: false }
-  );
-  useEffect(() => {
-    if (loanHistoryData && loanHistoryData.success) {
-      setLoanHistory(loanHistoryData.payments || []);
-      setHistoryTotalCount(loanHistoryData.totalCount || 0);
-    }
-  }, [loanHistoryData]);
+  const allSavings = useMemo(() => savingsData?.deposits || [], [savingsData]);
 
   // Pending Approvals
   const pendingSavUrl = (token && isSavingsRoute) ? `${API}/api/admin/savings/deposits?status=pending&limit=100` : null;
@@ -141,10 +136,22 @@ export default function LoanAdminPaymentStatus() {
   const { data: pendingSavData, isValidating: pendingLoadingSav, mutate: mutateSavPending } = useSWR(pendingSavUrl, fetcherSingle, { revalidateOnFocus: false });
   const { data: pendingLoanData, isValidating: pendingLoadingLoan, mutate: mutateLoanPending } = useSWR(pendingLoanUrl, fetcherSingle, { revalidateOnFocus: false });
 
-  useEffect(() => {
-    if (pendingSavData && pendingSavData.success) setPendingSavings(pendingSavData.deposits || []);
-    if (pendingLoanData && pendingLoanData.success) setPendingLoanPayments(pendingLoanData.payments || []);
-  }, [pendingSavData, pendingLoanData]);
+  const pendingSavings = useMemo(() => pendingSavData?.deposits || [], [pendingSavData]);
+  const pendingLoanPayments = useMemo(() => pendingLoanData?.payments || [], [pendingLoanData]);
+
+  // Payment History
+  const { data: loanHistoryData } = useSWR(
+    (token && activeTab === 'history') ? `${API}/api/admin/loan-payments?status=confirmed&page=${historyPage}&limit=${HISTORY_PER_PAGE}` : null,
+    fetcherSingle,
+    { 
+      revalidateOnFocus: false,
+      dedupingInterval: 30000,
+      keepPreviousData: true
+    }
+  );
+
+  const loanHistory = useMemo(() => loanHistoryData?.payments || [], [loanHistoryData]);
+  const historyTotalCount = useMemo(() => loanHistoryData?.totalCount || 0, [loanHistoryData]);
 
   const fetchPendingApprovals = useCallback(() => {
     if (isSavingsRoute) mutateSavPending();
@@ -163,11 +170,6 @@ export default function LoanAdminPaymentStatus() {
     setActiveTab(isSavingsRoute ? 'savings' : 'loans');
     setSearchQuery('');
   }, [isSavingsRoute]);
-
-
-
-
-
 
 
   const handleApprovePending = async () => {
@@ -306,50 +308,73 @@ export default function LoanAdminPaymentStatus() {
     setWalkinLoading(false);
   };
 
-  const enriched = loans.map(l => {
-    const effectiveDueDate = l.nextPaymentDate || l.nextDueDate || l.approvedDate;
-    const daysLate = getDaysLate(effectiveDueDate);
-    const status = getPaymentStatus(daysLate);
-    return { ...l, daysLate, paymentStatus: status, effectiveDueDate };
-  });
+  const enriched = useMemo(() => {
+    return loans.map(l => {
+      const effectiveDueDate = l.nextPaymentDate || l.nextDueDate || l.approvedDate;
+      const daysLate = getDaysLate(effectiveDueDate);
+      const status = getPaymentStatus(daysLate);
+      return { ...l, daysLate, paymentStatus: status, effectiveDueDate };
+    });
+  }, [loans]);
 
-  const filtered = enriched.filter(l =>
-    (l.memberName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (l.loanId || '').toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filtered = useMemo(() => {
+    return enriched.filter(l =>
+      (l.memberName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (l.loanId || '').toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [enriched, searchQuery]);
 
+  const counts = useMemo(() => {
+    return {
+      onTrack: enriched.filter(l => l.paymentStatus.cls === 'on-track').length,
+      overdue: enriched.filter(l => ['reminder', 'delinquent'].includes(l.paymentStatus.cls)).length,
+      highRisk: enriched.filter(l => l.paymentStatus.cls === 'high-risk').length,
+      defaulted: enriched.filter(l => l.paymentStatus.cls === 'default').length,
+    };
+  }, [enriched]);
 
+  const confirmedSavings = useMemo(() => {
+    return allSavings.filter(s => {
+      if (s.status !== 'confirmed') return false;
+      const sDate = new Date(s.confirmedAt || s.date);
+      const now = new Date();
+      if (savingsFilter === 'this_month') {
+        return sDate.getMonth() === now.getMonth() && sDate.getFullYear() === now.getFullYear();
+      }
+      if (savingsFilter === 'this_year') {
+        return sDate.getFullYear() === now.getFullYear();
+      }
+      return true; // 'all'
+    });
+  }, [allSavings, savingsFilter]);
 
-  const counts = {
-    onTrack: enriched.filter(l => l.paymentStatus.cls === 'on-track').length,
-    overdue: enriched.filter(l => ['reminder', 'delinquent'].includes(l.paymentStatus.cls)).length,
-    highRisk: enriched.filter(l => l.paymentStatus.cls === 'high-risk').length,
-    defaulted: enriched.filter(l => l.paymentStatus.cls === 'default').length,
-  };
+  const totalSavingsFiltered = useMemo(() => {
+    return confirmedSavings.reduce((sum, s) => {
+      const amt = Number(s.amount) || 0;
+      return s.type === 'withdrawal' ? sum - amt : sum + amt;
+    }, 0);
+  }, [confirmedSavings]);
 
+  const totalWithdrawalsFiltered = useMemo(() => {
+    return confirmedSavings
+      .filter(s => s.type === 'withdrawal')
+      .reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
+  }, [confirmedSavings]);
 
-
-  const confirmedSavings = allSavings.filter(s => {
-    if (s.status !== 'confirmed') return false;
-    const sDate = new Date(s.confirmedAt || s.date);
-    const now = new Date();
-    if (savingsFilter === 'this_month') {
-      return sDate.getMonth() === now.getMonth() && sDate.getFullYear() === now.getFullYear();
-    }
-    if (savingsFilter === 'this_year') {
-      return sDate.getFullYear() === now.getFullYear();
-    }
-    return true; // 'all'
-  });
-
-  const totalSavingsFiltered = confirmedSavings.reduce((sum, s) => {
-    const amt = Number(s.amount) || 0;
-    return s.type === 'withdrawal' ? sum - amt : sum + amt;
-  }, 0);
-
-  const totalWithdrawalsFiltered = confirmedSavings
-    .filter(s => s.type === 'withdrawal')
-    .reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
+  const savingsChartData = useMemo(() => {
+    const memberVal = confirmedSavings
+      .filter(s => s.type === 'deposit' && ((s.position || '').toLowerCase() === 'member' || !s.position))
+      .reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+    const officerVal = confirmedSavings
+      .filter(s => s.type === 'deposit' && ((s.position || '').toLowerCase() !== 'member' && s.position))
+      .reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+    const pieTotal = memberVal + officerVal;
+    const pieData = [
+      { name: 'Members', value: memberVal, color: '#0D1F45' },
+      { name: 'Officers', value: officerVal, color: '#60A5FA' }
+    ];
+    return { pieTotal, pieData };
+  }, [confirmedSavings]);
 
 
 
@@ -405,66 +430,56 @@ export default function LoanAdminPaymentStatus() {
             <div className="loan-admin-mgmt-table-container la-savings-chart-card">
               <h3 className="la-savings-chart-title">Savings by Role</h3>
               <div className="la-savings-chart-content">
-                {(() => {
-                  const memberVal = confirmedSavings.filter(s => s.type === 'deposit' && ((s.position || '').toLowerCase() === 'member' || !s.position)).reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
-                  const officerVal = confirmedSavings.filter(s => s.type === 'deposit' && ((s.position || '').toLowerCase() !== 'member' && s.position)).reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
-                  const pieTotal = memberVal + officerVal;
-                  const pieData = [
-                    { name: 'Members', value: memberVal, color: '#0D1F45' },
-                    { name: 'Officers', value: officerVal, color: '#60A5FA' }
-                  ];
-
-                  if (pieTotal === 0) {
-                    return <p style={{ color: '#9CA3AF', fontSize: '14px' }}>No savings deposits available yet.</p>;
-                  }
-
-                  return (
-                    <div className="la-savings-chart-wrapper">
-                      <ResponsiveContainer width="100%" height={240}>
-                        <PieChart>
-                          <Pie
-                            data={pieData}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={70}
-                            outerRadius={110}
-                            paddingAngle={2}
-                            dataKey="value"
-                          >
-                            {pieData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                            <Label 
-                              value={`₱${pieTotal >= 1000 ? (pieTotal/1000).toFixed(1).replace(/\.0$/, '') + 'k' : pieTotal}`} 
-                              position="center" 
-                              fill="#1e3a5f" 
-                              style={{ fontSize: '18px', fontWeight: 'bold', fontFamily: 'Inter' }} 
-                            />
-                            <Label 
-                              value="Total" 
-                              position="center" 
-                              dy={16} 
-                              fill="#6B7280" 
-                              style={{ fontSize: '12px', fontFamily: 'Inter' }} 
-                            />
-                          </Pie>
-                          <RechartsTooltip formatter={(value, name, props) => [`₱${(value || 0).toLocaleString()} (${Math.round((value/pieTotal)*100)}%)`, props.payload.name]} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
-                        </PieChart>
-                      </ResponsiveContainer>
-                      <div className="la-savings-pie-legend">
-                        {pieData.map((cat, i) => (
-                          <div key={i} className="la-savings-pie-legend-item">
-                            <div className="la-savings-pie-legend-label">
-                              <div className="la-savings-pie-legend-dot" style={{ background: cat.color }} />
-                              <span className="la-savings-pie-legend-name">{cat.name}</span>
-                            </div>
-                            <span className="la-savings-pie-legend-val">₱{cat.value.toLocaleString()} — {Math.round((cat.value/pieTotal)*100)}%</span>
+                {savingsChartData.pieTotal === 0 ? (
+                  <p style={{ color: '#9CA3AF', fontSize: '14px' }}>No savings deposits available yet.</p>
+                ) : (
+                  <div className="la-savings-chart-wrapper">
+                    <ResponsiveContainer width="100%" height={240}>
+                      <PieChart>
+                        <Pie
+                          data={savingsChartData.pieData}
+                          cx="50%"
+                          cy="45%"
+                          innerRadius={50}
+                          outerRadius={100}
+                          paddingAngle={2}
+                          dataKey="value"
+                          label={renderSliceLabel}
+                          labelLine={false}
+                        >
+                          {savingsChartData.pieData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                          <Label 
+                            value={`₱${savingsChartData.pieTotal >= 1000 ? (savingsChartData.pieTotal/1000).toFixed(1).replace(/\.0$/, '') + 'k' : savingsChartData.pieTotal}`} 
+                            position="center" 
+                            fill="#1e3a5f" 
+                            style={{ fontSize: '18px', fontWeight: 'bold', fontFamily: 'Inter' }} 
+                          />
+                          <Label 
+                            value="Total" 
+                            position="center" 
+                            dy={16} 
+                            fill="#6B7280" 
+                            style={{ fontSize: '12px', fontFamily: 'Inter' }} 
+                          />
+                        </Pie>
+                        <RechartsTooltip formatter={(value, name, props) => [`₱${(value || 0).toLocaleString()} (${Math.round((value/savingsChartData.pieTotal)*100)}%)`, props.payload.name]} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className="la-savings-pie-legend">
+                      {savingsChartData.pieData.map((cat, i) => (
+                        <div key={i} className="la-savings-pie-legend-item">
+                          <div className="la-savings-pie-legend-label">
+                            <div className="la-savings-pie-legend-dot" style={{ background: cat.color }} />
+                            <span className="la-savings-pie-legend-name">{cat.name}</span>
                           </div>
-                        ))}
-                      </div>
+                          <span className="la-savings-pie-legend-val">₱{cat.value.toLocaleString()} — {Math.round((cat.value/savingsChartData.pieTotal)*100)}%</span>
+                        </div>
+                      ))}
                     </div>
-                  );
-                })()}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -814,7 +829,6 @@ export default function LoanAdminPaymentStatus() {
         )}
 
 
-
         <div className="loan-admin-mgmt-pagination">
           <p className="loan-admin-mgmt-pagination-info">
             {activeTab === 'loans' ? `Showing ${filtered.length} active loans` : ''}
@@ -824,11 +838,11 @@ export default function LoanAdminPaymentStatus() {
 
       {/* ── Loan Detail Modal ── */}
       {selectedLoan && (
-        <div className="loan-admin-mgmt-modal-overlay" onClick={() => setSelectedLoan(null)}>
+        <div className="loan-admin-mgmt-modal-overlay" onClick={() => { setSelectedLoan(null); setSelectedLoanPayments([]); }}>
           <div className="loan-admin-mgmt-modal-container" style={{ maxWidth: '520px' }} onClick={(e) => e.stopPropagation()}>
             <div className="loan-admin-mgmt-modal-header">
               <h2 className="loan-admin-mgmt-modal-title">Loan Payment Progress</h2>
-              <button className="loan-admin-mgmt-modal-close" onClick={() => setSelectedLoan(null)}>
+              <button className="loan-admin-mgmt-modal-close" onClick={() => { setSelectedLoan(null); setSelectedLoanPayments([]); }}>
                 <X size={16} />
               </button>
             </div>
@@ -899,9 +913,64 @@ export default function LoanAdminPaymentStatus() {
                   <p style={{ margin: 0, fontSize: '15px', fontWeight: 600, fontFamily: 'Inter', color: '#374151' }}>{fmtDate(selectedLoan.effectiveDueDate)}</p>
                 </div>
               </div>
+
+              {/* Payment History */}
+              <div style={{ marginTop: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                  <p style={{ margin: 0, fontSize: '14px', fontWeight: 700, fontFamily: 'Inter', color: '#1E3A8A' }}>Payment History</p>
+                  {selectedLoanPayments.length === 0 && !selectedLoanPaymentsLoading && (
+                    <button
+                      onClick={async () => {
+                        setSelectedLoanPaymentsLoading(true);
+                        try {
+                          const res = await fetch(`${API}/api/admin/loan-payments?status=all&limit=50&search=${encodeURIComponent(selectedLoan.loanId)}`, { headers: { Authorization: `Bearer ${token}` } });
+                          const data = await res.json();
+                          if (data.success) setSelectedLoanPayments((data.payments || []).filter(p => p.status === 'confirmed'));
+                        } catch { /* silent */ }
+                        finally { setSelectedLoanPaymentsLoading(false); }
+                      }}
+                      style={{ background: '#EEF2FF', color: '#1E3A8A', border: '1px solid #C7D2FE', padding: '4px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}
+                    >Load History</button>
+                  )}
+                </div>
+                {selectedLoanPaymentsLoading && (
+                  <p style={{ fontSize: '13px', color: '#9CA3AF', fontFamily: 'Inter', textAlign: 'center', padding: '12px 0' }}>Loading...</p>
+                )}
+                {selectedLoanPayments.length > 0 && (
+                  <div style={{ maxHeight: '180px', overflowY: 'auto', borderRadius: '8px', border: '1px solid #E5E7EB' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', fontFamily: 'Inter' }}>
+                      <thead>
+                        <tr style={{ background: '#F9FAFB' }}>
+                          <th style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 600, color: '#6B7280', borderBottom: '1px solid #E5E7EB' }}>Date</th>
+                          <th style={{ padding: '8px 10px', textAlign: 'right', fontWeight: 600, color: '#6B7280', borderBottom: '1px solid #E5E7EB' }}>Amount</th>
+                          <th style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 600, color: '#6B7280', borderBottom: '1px solid #E5E7EB' }}>Method</th>
+                          <th style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 600, color: '#6B7280', borderBottom: '1px solid #E5E7EB' }}>Type</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {selectedLoanPayments.map((p, i) => (
+                          <tr key={p._id || i} style={{ borderBottom: '1px solid #F3F4F6' }}>
+                            <td style={{ padding: '7px 10px', color: '#374151' }}>{fmtDate(p.confirmedAt || p.submittedAt)}</td>
+                            <td style={{ padding: '7px 10px', textAlign: 'right', fontWeight: 700, color: '#16A34A' }}>{fmt(p.amount)}</td>
+                            <td style={{ padding: '7px 10px', color: '#374151', textTransform: 'capitalize' }}>{p.paymentMethod || 'cash'}</td>
+                            <td style={{ padding: '7px 10px' }}>
+                              <span style={{ display: 'inline-block', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, textTransform: 'capitalize', background: p.paymentType === 'full' ? '#DCFCE7' : p.paymentType === 'advance' ? '#DBEAFE' : '#F3F4F6', color: p.paymentType === 'full' ? '#166534' : p.paymentType === 'advance' ? '#1E3A8A' : '#374151' }}>
+                                {p.paymentType || 'regular'}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+                {!selectedLoanPaymentsLoading && selectedLoanPayments.length === 0 && (
+                  <p style={{ fontSize: '12px', color: '#9CA3AF', fontFamily: 'Inter', textAlign: 'center', padding: '8px 0', margin: 0 }}>Click "Load History" to view payment records</p>
+                )}
+              </div>
             </div>
             <div style={{ padding: '0 24px 16px', display: 'flex', justifyContent: 'flex-end' }}>
-              <button onClick={() => setSelectedLoan(null)} style={{ background: '#155DFC', color: '#fff', border: 'none', padding: '8px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}>Close</button>
+              <button onClick={() => { setSelectedLoan(null); setSelectedLoanPayments([]); }} style={{ background: '#155DFC', color: '#fff', border: 'none', padding: '8px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter' }}>Close</button>
             </div>
           </div>
         </div>
@@ -950,12 +1019,31 @@ export default function LoanAdminPaymentStatus() {
                 )}
               </div>
 
-              {(pendingDetail.proofData || pendingDetail.proofOfPayment) && (
-                <div style={{ marginTop: '16px', marginBottom: '16px' }}>
-                  <p style={{ margin: 0, fontSize: '12px', color: '#6B7280', marginBottom: '8px' }}>Proof of Payment</p>
-                  <img src={pendingDetail.proofData || pendingDetail.proofOfPayment} alt="Proof" style={{ width: '100%', maxHeight: '200px', objectFit: 'contain', borderRadius: '8px', border: '1px solid #E5E7EB' }} />
-                </div>
-              )}
+              {(pendingDetail.proofData || pendingDetail.proofOfPayment) && (() => {
+                const proof = pendingDetail.proofData || pendingDetail.proofOfPayment;
+                const isPdf = proof.startsWith('data:application/pdf');
+                return (
+                  <div style={{ marginTop: '16px', marginBottom: '16px' }}>
+                    <p style={{ margin: 0, fontSize: '12px', color: '#6B7280', marginBottom: '8px' }}>Proof of Payment</p>
+                    {isPdf ? (
+                      <div style={{ background: '#F9FAFB', borderRadius: '8px', border: '1px solid #E5E7EB', padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '13px', color: '#374151', fontWeight: 600 }}>📄 {pendingDetail.proofFileName || 'proof.pdf'}</span>
+                        <button
+                          onClick={() => { const win = window.open(); win.document.write(`<iframe src="${proof}" style="width:100%;height:100%;border:none;" />`); }}
+                          style={{ background: '#155DFC', color: 'white', border: 'none', padding: '6px 16px', borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}
+                        >View PDF</button>
+                      </div>
+                    ) : (
+                      <img
+                        src={proof}
+                        alt="Proof"
+                        style={{ width: '100%', maxHeight: '200px', objectFit: 'contain', borderRadius: '8px', border: '1px solid #E5E7EB', cursor: 'pointer' }}
+                        onClick={() => { const win = window.open(); win.document.write(`<img src="${proof}" style="max-width:100%;" />`); }}
+                      />
+                    )}
+                  </div>
+                );
+              })()}
 
               <div style={{ borderTop: '1px solid #E5E7EB', paddingTop: '16px' }}>
                 {pendingDetail.status !== 'pending' ? (

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Fragment } from 'react';
 import useSWR from 'swr';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
@@ -96,15 +96,17 @@ export default function LoanAdminLoanManagement() {
     const [showDetailsModal, setShowDetailsModal] = useState(false);
     const [selectedLoan, setSelectedLoan] = useState(null);
     const [rejectReason, setRejectReason] = useState('');
-    const [loans, setLoans] = useState([]);
-    const [allLoansStats, setAllLoansStats] = useState([]);
     const [interestFilter, setInterestFilter] = useState('all');
     const [statusFilter, setStatusFilter] = useState('all');
-    const [stats, setStats] = useState({ pending: 0, active: 0, completed: 0, rejected: 0 });
-    const [loading, setLoading] = useState(true);
+    const [activeView, setActiveView] = useState('all');
     const [actionLoading, setActionLoading] = useState(null);
     const [page, setPage] = useState(1);
     const LIMIT = 10;
+
+    /* ── Completed History expandable row state ── */
+    const [expandedLoanId, setExpandedLoanId] = useState(null);
+    const [expandedPayments, setExpandedPayments] = useState([]);
+    const [expandedLoading, setExpandedLoading] = useState(false);
 
     /* ── Details modal extra state ── */
     const [memberSavings, setMemberSavings] = useState(0);
@@ -139,62 +141,65 @@ export default function LoanAdminLoanManagement() {
     const { data: loansData, isValidating: loadingLoans, mutate: fetchLoans } = useSWR(
         token ? `${API}/api/admin/loans?${queryParams}` : null,
         fetcherSingle,
-        { revalidateOnFocus: false, revalidateIfStale: true }
+        { 
+            revalidateOnFocus: false, 
+            revalidateIfStale: true,
+            dedupingInterval: 30000,
+            keepPreviousData: true
+        }
     );
 
+    const loans = useMemo(() => loansData?.loans || [], [loansData]);
+    const stats = useMemo(() => ({
+        pending: loansData?.stats?.pending || 0,
+        active: loansData?.stats?.active || 0,
+        completed: loansData?.stats?.completed || 0,
+        rejected: loansData?.stats?.rejected || 0,
+    }), [loansData]);
+
+    const loading = loadingLoans;
+
     useEffect(() => {
-        if (loansData && loansData.success !== false) {
-            if (loansData.message && !loansData.loans) {
-                toast.error(loansData.message || 'Failed to fetch loans');
-            } else {
-                setLoans(loansData.loans || []);
-                setStats({
-                    pending: loansData.stats?.pending || 0,
-                    active: loansData.stats?.active || 0,
-                    completed: loansData.stats?.completed || 0,
-                    rejected: loansData.stats?.rejected || 0,
-                });
-            }
+        if (loansData && loansData.success === false && loansData.message) {
+            toast.error(loansData.message);
         }
     }, [loansData]);
 
     const { data: allLoansData } = useSWR(
         token ? `${API}/api/admin/loans?limit=10000` : null,
         fetcherSingle,
-        { revalidateOnFocus: false }
+        { 
+            revalidateOnFocus: false,
+            dedupingInterval: 30000,
+            keepPreviousData: true
+        }
     );
 
-    useEffect(() => {
-        if (allLoansData && allLoansData.success !== false && allLoansData.loans) {
-            setAllLoansStats(allLoansData.loans);
-        }
-    }, [allLoansData]);
+    const allLoansStats = useMemo(() => allLoansData?.loans || [], [allLoansData]);
+
+    const totalInterestFiltered = useMemo(() => {
+        return allLoansStats.filter(l => {
+            if (l.status === 'rejected' || l.status === 'pending') return false;
+            const lType = (l.loanType || '').toLowerCase();
+            
+            let mult = '2x';
+            if (lType.includes('emergency')) mult = '1.5x';
+            if (lType.includes('short')) mult = '1x';
+            if (l.multiplier) mult = `${l.multiplier}x`;
+
+            if (interestFilter === '2x' && mult !== '2x') return false;
+            if (interestFilter === '1.5x' && mult !== '1.5x') return false;
+            if (interestFilter === '1x' && mult !== '1x') return false;
+            return true;
+        }).reduce((sum, l) => {
+            const totalRepay = Number(l.totalRepayment || (l.monthlyPayment * l.term)) || 0;
+            const principal = Number(l.amount) || 0;
+            const interest = totalRepay - principal;
+            return sum + (interest > 0 ? interest : 0);
+        }, 0);
+    }, [allLoansStats, interestFilter]);
 
     useEffect(() => { setPage(1); }, [debouncedSearch, statusFilter]);
-    
-    useEffect(() => {
-        setLoading(loadingLoans);
-    }, [loadingLoans]);
-
-    const totalInterestFiltered = allLoansStats.filter(l => {
-        if (l.status === 'rejected' || l.status === 'pending') return false;
-        const lType = (l.loanType || '').toLowerCase();
-        
-        let mult = '2x';
-        if (lType.includes('emergency')) mult = '1.5x';
-        if (lType.includes('short')) mult = '1x';
-        if (l.multiplier) mult = `${l.multiplier}x`;
-
-        if (interestFilter === '2x' && mult !== '2x') return false;
-        if (interestFilter === '1.5x' && mult !== '1.5x') return false;
-        if (interestFilter === '1x' && mult !== '1x') return false;
-        return true;
-    }).reduce((sum, l) => {
-        const totalRepay = Number(l.totalRepayment || (l.monthlyPayment * l.term)) || 0;
-        const principal = Number(l.amount) || 0;
-        const interest = totalRepay - principal;
-        return sum + (interest > 0 ? interest : 0);
-    }, 0);
 
     /* ── Approve ── */
     const handleApprove = (loan) => {
@@ -383,11 +388,15 @@ export default function LoanAdminLoanManagement() {
     };
 
     /* ── Derived loan-type info ── */
-    const selectedType = selectedLoan
-        ? LOAN_TYPES.find(t => t.key === selectedLoan.loanType) || LOAN_TYPES[0]
-        : null;
+    const selectedType = useMemo(() => {
+        return selectedLoan
+            ? LOAN_TYPES.find(t => t.key === selectedLoan.loanType) || LOAN_TYPES[0]
+            : null;
+    }, [selectedLoan]);
 
-    const maxLoanable = selectedType ? Math.max(0, memberSavings * selectedType.multiplier) : 0;
+    const maxLoanable = useMemo(() => {
+        return selectedType ? Math.max(0, memberSavings * selectedType.multiplier) : 0;
+    }, [selectedType, memberSavings]);
 
     /* ── Live calculation ── */
     const calc = useMemo(() => {
@@ -401,22 +410,37 @@ export default function LoanAdminLoanManagement() {
     }, [approvedAmount, repaymentTerm, selectedType]);
 
     /* ── Term options ── */
-    const termOptions = selectedType
-        ? Array.from({ length: selectedType.maxTerm - selectedType.minTerm + 1 }, (_, i) => selectedType.minTerm + i)
-        : [];
+    const termOptions = useMemo(() => {
+        return selectedType
+            ? Array.from({ length: selectedType.maxTerm - selectedType.minTerm + 1 }, (_, i) => selectedType.minTerm + i)
+            : [];
+    }, [selectedType]);
 
-    const filteredLoans = loans;
+    const filteredLoans = useMemo(() => {
+        return activeView === 'all' ? loans.filter(l => l.status !== 'completed') : loans;
+    }, [activeView, loans]);
+
     const counts = stats;
 
     /* ── Status class helpers for the details modal ── */
-    const detailStatusClass = selectedLoan ? resolveStatusClass(selectedLoan.status) : 'pending';
-    const detailStatusLabel = selectedLoan ? resolveStatusLabel(selectedLoan.status) : '';
-    const detailStatusDesc = selectedLoan ? resolveStatusDesc(selectedLoan.status) : '';
+    const detailStatusClass = useMemo(() => {
+        return selectedLoan ? resolveStatusClass(selectedLoan.status) : 'pending';
+    }, [selectedLoan]);
+
+    const detailStatusLabel = useMemo(() => {
+        return selectedLoan ? resolveStatusLabel(selectedLoan.status) : '';
+    }, [selectedLoan]);
+
+    const detailStatusDesc = useMemo(() => {
+        return selectedLoan ? resolveStatusDesc(selectedLoan.status) : '';
+    }, [selectedLoan]);
 
     /* ── Loan pill color helpers ── */
-    const pillColorKey = selectedType?.color || 'blue';
-    const pillColorMap = { blue: '', emergency: 'emergency', teal: 'short-term' };
-    const pillClass = pillColorMap[pillColorKey] || '';
+    const pillClass = useMemo(() => {
+        const pillColorKey = selectedType?.color || 'blue';
+        const pillColorMap = { blue: '', emergency: 'emergency', teal: 'short-term' };
+        return pillColorMap[pillColorKey] || '';
+    }, [selectedType]);
 
     return (
         <div className="loan-admin-mgmt-page">
@@ -468,79 +492,210 @@ export default function LoanAdminLoanManagement() {
                     </div>
                 </div>
 
-                {/* Search */}
-                <div className="loan-admin-mgmt-search">
-                    <Search size={20} color="#9CA3AF" />
-                    <input
-                        type="text"
-                        placeholder="Search by member name or loan ID..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
+                {/* Tabs */}
+                <div className="loan-admin-mgmt-tabs">
+                    <button
+                        onClick={() => { setActiveView('all'); setStatusFilter('all'); }}
+                        className={`loan-admin-mgmt-tab-btn ${activeView === 'all' ? 'active' : ''}`}
+                    >
+                        All Loans
+                    </button>
+                    <button
+                        onClick={() => { setActiveView('completed'); setStatusFilter('completed'); }}
+                        className={`loan-admin-mgmt-tab-btn ${activeView === 'completed' ? 'active' : ''}`}
+                    >
+                        Completed History
+                        {counts.completed > 0 && (
+                            <span className="loan-admin-mgmt-tab-badge">{counts.completed}</span>
+                        )}
+                    </button>
+                </div>
+
+                {/* Search + Filter */}
+                <div className="loan-admin-mgmt-search-row">
+                    <div className="loan-admin-mgmt-search">
+                        <Search size={20} color="#9CA3AF" />
+                        <input
+                            type="text"
+                            placeholder="Search by member name or loan ID..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
+                    {activeView === 'all' && (
+                        <select
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            className="loan-admin-mgmt-filter-select"
+                        >
+                            <option value="all">All Statuses</option>
+                            <option value="pending">Pending</option>
+                            <option value="approved">Approved</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
+                    )}
                 </div>
 
                 {/* Table */}
-                <div className="loan-admin-mgmt-table-container">
-                    {statusFilter === 'completed' && (
-                        <div style={{ padding: '16px 20px', borderBottom: '1px solid #e5e7eb', background: '#F9FAFB' }}>
-                            <h3 style={{ margin: 0, fontSize: '15px', color: '#111827', fontWeight: '600' }}>Completed Loans History</h3>
-                        </div>
-                    )}
-                    <table className="loan-admin-mgmt-table">
-                        <thead>
-                            <tr>
-                                <th>Loan ID</th>
-                                <th>Member</th>
-                                <th>Amount</th>
-                                <th>Purpose</th>
-                                <th>Applied Date</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {loading ? (
+                {activeView === 'all' ? (
+                    <div className="loan-admin-mgmt-table-container">
+                        <table className="loan-admin-mgmt-table">
+                            <thead>
                                 <tr>
-                                    <td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>
-                                        Loading loans…
-                                    </td>
+                                    <th>Loan ID</th>
+                                    <th>Member</th>
+                                    <th>Amount</th>
+                                    <th>Purpose</th>
+                                    <th>Applied Date</th>
+                                    <th>Status</th>
                                 </tr>
-                            ) : filteredLoans.length === 0 ? (
-                                <tr>
-                                    <td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>
-                                        No loans found
-                                    </td>
-                                </tr>
-                            ) : (
-                                filteredLoans.map(loan => (
-                                    <tr key={loan._id} onClick={() => handleViewDetails(loan)} style={{ cursor: 'pointer' }} className="loan-admin-mgmt-table-row-hover">
-                                        <td className="loan-admin-mgmt-table-id">{loan.loanId}</td>
-                                        <td>
-                                            <div className="loan-admin-mgmt-table-member">
-                                                <p className="loan-admin-mgmt-table-member-name">{loan.memberName}</p>
-                                                <p className="loan-admin-mgmt-table-member-email">{loan.email}</p>
-                                            </div>
-                                        </td>
-                                        <td className="loan-admin-mgmt-table-amount">{fmt(loan.amount)}</td>
-                                        <td>{loan.purpose}</td>
-                                        <td>{fmtDate(loan.appliedDate)}</td>
-                                        <td>
-                                            <span className={`loan-admin-mgmt-status-badge ${resolveStatusClass(loan.status)}`}>
-                                                {resolveStatusLabel(loan.status)}
-                                            </span>
-                                            {loan.status && loan.status.toLowerCase() === 'rejected' && loan.rejectionReason && (
-                                                <div className="loan-admin-mgmt-status-rejected">
-                                                    <p className="loan-admin-mgmt-rejection-reason">
-                                                        Reason: {loan.rejectionReason}
-                                                    </p>
-                                                </div>
-                                            )}
+                            </thead>
+                            <tbody>
+                                {loading ? (
+                                    <tr>
+                                        <td colSpan={6} className="loan-admin-mgmt-table-empty">
+                                            Loading loans…
                                         </td>
                                     </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                                ) : filteredLoans.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={6} className="loan-admin-mgmt-table-empty">
+                                            No loans found
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    filteredLoans.map(loan => (
+                                        <tr key={loan._id} onClick={() => handleViewDetails(loan)} className="loan-admin-mgmt-table-row-hover">
+                                            <td className="loan-admin-mgmt-table-id">{loan.loanId}</td>
+                                            <td>
+                                                <div className="loan-admin-mgmt-table-member">
+                                                    <p className="loan-admin-mgmt-table-member-name">{loan.memberName}</p>
+                                                    <p className="loan-admin-mgmt-table-member-email">{loan.email}</p>
+                                                </div>
+                                            </td>
+                                            <td className="loan-admin-mgmt-table-amount">{fmt(loan.amount)}</td>
+                                            <td>{loan.purpose}</td>
+                                            <td>{fmtDate(loan.appliedDate)}</td>
+                                            <td>
+                                                <span className={`loan-admin-mgmt-status-badge ${resolveStatusClass(loan.status)}`}>
+                                                    {resolveStatusLabel(loan.status)}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <div className="loan-admin-mgmt-table-container">
+                        <table className="loan-admin-mgmt-table">
+                            <thead>
+                                <tr>
+                                    <th>Loan ID</th>
+                                    <th>Member</th>
+                                    <th>Amount</th>
+                                    <th>Term</th>
+                                    <th>Total Repaid</th>
+                                    <th>Completed</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {loading ? (
+                                    <tr>
+                                        <td colSpan={6} className="loan-admin-mgmt-table-empty">
+                                            Loading…
+                                        </td>
+                                    </tr>
+                                ) : filteredLoans.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={6} className="loan-admin-mgmt-table-empty">
+                                            No completed loans found
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    filteredLoans.map(loan => {
+                                        const isExpanded = expandedLoanId === loan._id;
+                                        return (
+                                            <Fragment key={loan._id}>
+                                                <tr
+                                                    className={`loan-admin-mgmt-table-row-hover ${isExpanded ? 'loan-admin-mgmt-row-expanded' : ''}`}
+                                                    onClick={async () => {
+                                                        if (isExpanded) {
+                                                            setExpandedLoanId(null);
+                                                            setExpandedPayments([]);
+                                                            return;
+                                                        }
+                                                        setExpandedLoanId(loan._id);
+                                                        setExpandedPayments([]);
+                                                        setExpandedLoading(true);
+                                                        try {
+                                                            const res = await fetch(`${API}/api/admin/loan-payments?status=all&limit=50&search=${encodeURIComponent(loan.loanId)}`, { headers: { Authorization: `Bearer ${token}` } });
+                                                            const data = await res.json();
+                                                            if (data.success) setExpandedPayments((data.payments || []).filter(p => p.status === 'confirmed'));
+                                                        } catch { /* silent */ }
+                                                        finally { setExpandedLoading(false); }
+                                                    }}
+                                                >
+                                                    <td className="loan-admin-mgmt-table-id">{loan.loanId}</td>
+                                                    <td>
+                                                        <div className="loan-admin-mgmt-table-member">
+                                                            <p className="loan-admin-mgmt-table-member-name">{loan.memberName}</p>
+                                                            <p className="loan-admin-mgmt-table-member-email">{loan.email}</p>
+                                                        </div>
+                                                    </td>
+                                                    <td className="loan-admin-mgmt-table-amount">{fmt(loan.amount)}</td>
+                                                    <td>{loan.termMonths} months</td>
+                                                    <td className="loan-admin-mgmt-table-amount loan-admin-mgmt-amount-green">{fmt(loan.totalRepayment)}</td>
+                                                    <td>{fmtDate(loan.completedDate || loan.updatedAt)}</td>
+                                                </tr>
+                                                {isExpanded && (
+                                                    <tr className="loan-admin-mgmt-expanded-row">
+                                                        <td colSpan={6}>
+                                                            <div className="loan-admin-mgmt-payment-history">
+                                                                <p className="loan-admin-mgmt-ph-title">Payment History — {loan.loanId}</p>
+                                                                {expandedLoading ? (
+                                                                    <p className="loan-admin-mgmt-ph-loading">Loading payments...</p>
+                                                                ) : expandedPayments.length === 0 ? (
+                                                                    <p className="loan-admin-mgmt-ph-loading">No payment records found</p>
+                                                                ) : (
+                                                                    <table className="loan-admin-mgmt-ph-table">
+                                                                        <thead>
+                                                                            <tr>
+                                                                                <th>Date</th>
+                                                                                <th>Amount</th>
+                                                                                <th>Method</th>
+                                                                                <th>Type</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            {expandedPayments.map((p, i) => (
+                                                                                <tr key={p._id || i}>
+                                                                                    <td>{fmtDate(p.confirmedAt || p.submittedAt)}</td>
+                                                                                    <td className="loan-admin-mgmt-amount-green">{fmt(p.amount)}</td>
+                                                                                    <td className="loan-admin-mgmt-ph-method">{p.paymentMethod || 'cash'}</td>
+                                                                                    <td>
+                                                                                        <span className={`loan-admin-mgmt-ph-type-badge ${p.paymentType === 'full' ? 'ph-full' : p.paymentType === 'advance' ? 'ph-advance' : 'ph-regular'}`}>
+                                                                                            {p.paymentType || 'regular'}{p.monthsCovered > 1 ? ` (${p.monthsCovered}mo)` : ''}
+                                                                                        </span>
+                                                                                    </td>
+                                                                                </tr>
+                                                                            ))}
+                                                                        </tbody>
+                                                                    </table>
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </Fragment>
+                                        );
+                                    })
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
 
                 {/* Pagination */}
                 <div className="loan-admin-mgmt-pagination">
@@ -922,6 +1077,16 @@ export default function LoanAdminLoanManagement() {
                                             Review within 2–3 days. Late penalty 3%/mo applies.
                                         </div>
                                     </div>
+
+                                    {/* Rejection Reason (shown when loan is rejected) */}
+                                    {selectedLoan.status && selectedLoan.status.toLowerCase() === 'rejected' && selectedLoan.rejectionReason && (
+                                        <div className="dm-note-box" style={{ borderLeft: '4px solid #EF4444', background: '#FEF2F2' }}>
+                                            <div className="dm-note-title" style={{ color: '#DC2626' }}>Rejection Reason</div>
+                                            <div className="dm-note-text" style={{ color: '#991B1B' }}>
+                                                {selectedLoan.rejectionReason}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 

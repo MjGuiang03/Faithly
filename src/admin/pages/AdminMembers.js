@@ -730,9 +730,6 @@ const ITEMS_PER_PAGE = 5;
 export default function AdminMembers() {
   const navigate = useNavigate();
 
-  const [members,        setMembers]        = useState([]);
-  const [stats,          setStats]          = useState({ total: 0, active: 0, inactive: 0, officers: 0 });
-  const [pagination,     setPagination]     = useState({ page: 1, totalPages: 1, totalMembers: 0 });
   const [searchMembers,  setSearchMembers]  = useState('');
   const [roleFilter,     setRoleFilter]     = useState('all');
   const [currentPage,    setCurrentPage]    = useState(1);
@@ -780,15 +777,20 @@ export default function AdminMembers() {
   const { data, isValidating: loadingMembers, mutate: fetchMembers } = useSWR(
     `${API}/api/admin/members?${queryParams}`,
     fetcherSingle,
-    { revalidateOnFocus: false, revalidateIfStale: true }
+    { 
+      revalidateOnFocus: false, 
+      revalidateIfStale: true,
+      dedupingInterval: 30000,
+      keepPreviousData: true
+    }
   );
 
+  const members = useMemo(() => data?.members || [], [data]);
+  const stats = useMemo(() => data?.stats || { total: 0, active: 0, inactive: 0, officers: 0 }, [data]);
+  const pagination = useMemo(() => data?.pagination || { page: 1, totalPages: 1, totalMembers: 0 }, [data]);
+
   useEffect(() => {
-    if (data?.success) {
-      setMembers(data.members || []);
-      setStats(data.stats || {});
-      setPagination(data.pagination || { page: 1, totalPages: 1, totalMembers: 0 });
-    } else if (data && !data.success && data.message) {
+    if (data && data.success === false && data.message) {
       toast.error(data.message);
     }
   }, [data]);

@@ -1575,23 +1575,26 @@ router.put('/loans/payments/:id/approve', authenticateAdmin, async (req, res) =>
     const loan = await loans.findOne({ _id: loanObjectId });
     if (loan) {
       const pType = payment.paymentType || 'regular';
-      const pMonths = payment.monthsCovered || 1;
+      const pMonths = payment.monthsCovered != null ? payment.monthsCovered : (pType === 'regular' ? 1 : 0);
       let newPaidMonths;
       let newBalance;
 
       if (pType === 'full') {
           newPaidMonths = loan.termMonths || 12;
           newBalance = 0;
-      } else if (pType === 'open') {
-          newPaidMonths = loan.paidMonths || 0;
+      } else if (pType === 'open' || pType === 'custom') {
           newBalance = Math.max(0, (loan.remainingBalance || loan.totalRepayment || loan.amount) - Number(payment.amount));
+          const totalPaid = (loan.totalRepayment || loan.amount) - newBalance;
+          const monthlyInstallment = loan.monthlyInstallment || ((loan.totalRepayment || loan.amount) / (loan.termMonths || 12));
+          newPaidMonths = Math.floor(totalPaid / monthlyInstallment);
       } else {
           const months = pType === 'advance' ? pMonths : 1;
           newPaidMonths = Math.min((loan.paidMonths || 0) + months, loan.termMonths || 12);
           newBalance = Math.max(0, (loan.remainingBalance || loan.totalRepayment || loan.amount) - Number(payment.amount));
       }
 
-      const isComplete = newPaidMonths >= (loan.termMonths || 12) || newBalance <= 0;
+      // Only complete if balance is actually 0
+      const isComplete = newBalance <= 0;
       if (isComplete) { newPaidMonths = loan.termMonths || 12; newBalance = 0; }
 
       const startDate = new Date(loan.disbursementDate || loan.approvedDate || loan.appliedDate || new Date());

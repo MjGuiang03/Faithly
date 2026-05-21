@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import useSWR from 'swr';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -11,8 +11,21 @@ import '../styles/AdminFinancialReport.css';
 import API from '../../utils/api';
 import { FileText, Printer, RefreshCw, Sparkles, Calendar, ChevronDown, Download, MapPin, AlertCircle, X } from 'lucide-react';
 
+const renderSliceLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+  if (percent < 0.05) return null;
+  const RADIAN = Math.PI / 180;
+  const radius = innerRadius + (outerRadius - innerRadius) * 0.55;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+  return (
+    <text x={x} y={y} fill="#fff" textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight={700}>
+      {`${(percent * 100).toFixed(0)}%`}
+    </text>
+  );
+};
+
 const fmt = (n) => `₱${(Number(n) || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-const PIE_COLORS = ['#2563eb', '#8b5cf6', '#06b6d4', '#f59e0b', '#ef4444', '#10b981', '#ec4899'];
+const PIE_COLORS = ['#0D1F45', '#1e3a8a', '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe'];
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -33,7 +46,6 @@ export default function AdminFinancialReport() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [exporting, setExporting] = useState(false);
-  const [branchesData, setBranchesData] = useState([]);
   const [showConfirm, setShowConfirm] = useState(false);
 
   const adminRole = localStorage.getItem('adminRole'); // 'admin', 'loanAdmin', 'secretaryAdmin'
@@ -60,16 +72,16 @@ export default function AdminFinancialReport() {
   const fetcherSingle = (url) => fetch(url, { headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` } }).then(res => res.json());
   
   const { data: branchesResp } = useSWR(
-    adminRole === 'admin' ? `${API}/api/admin/branches?limit=1000` : null,
+    localStorage.getItem('adminToken') ? `${API}/api/admin/branches?limit=1000` : null,
     fetcherSingle,
-    { revalidateOnFocus: false }
+    { 
+      revalidateOnFocus: false,
+      dedupingInterval: 30000,
+      keepPreviousData: true
+    }
   );
 
-  useEffect(() => {
-    if (branchesResp && branchesResp.branches) {
-      setBranchesData(branchesResp.branches);
-    }
-  }, [branchesResp]);
+  const branchesData = useMemo(() => branchesResp?.branches || [], [branchesResp]);
 
   // Save report to sessionStorage whenever it changes
   useEffect(() => {
@@ -185,7 +197,7 @@ export default function AdminFinancialReport() {
   };
 
   const yearOptions = [];
-  for (let y = now.getFullYear(); y >= now.getFullYear() - 5; y--) {
+  for (let y = Math.max(2026, now.getFullYear()); y >= 2026; y--) {
     yearOptions.push(y);
   }
 
@@ -238,7 +250,7 @@ export default function AdminFinancialReport() {
             </div>
           )}
 
-          {adminRole === 'admin' && branchesData.length > 0 && (
+          {branchesData.length > 0 && (
             <>
               <div className="fin-report-filter">
                 <MapPin size={14} />
@@ -305,7 +317,7 @@ export default function AdminFinancialReport() {
       </div>
 
       {/* ── Specific Communities Selector ── */}
-      {adminRole === 'admin' && locationType === 'specific' && branchesData.length > 0 && (
+      {locationType === 'specific' && branchesData.length > 0 && (
         <div className="fin-report-specific-communities no-print">
           <p className="fin-report-specific-label">Select Communities (Multiple allowed):</p>
           <div className="fin-report-branch-list">
@@ -349,6 +361,7 @@ export default function AdminFinancialReport() {
           <div className="fin-report-print-header print-only">
             <h1>FaithLy Financial Report</h1>
             <p>Period: {report.period}</p>
+            {report.community && <p>Location: {report.community}</p>}
             <p>Generated: {new Date(report.generatedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
           </div>
 
@@ -410,7 +423,7 @@ export default function AdminFinancialReport() {
                     <h3 className="fin-report-chart-title">By Category</h3>
                     <ResponsiveContainer width="100%" height={200}>
                       <PieChart>
-                        <Pie data={report.donations.byCategory} cx="50%" cy="50%" innerRadius={45} outerRadius={75} paddingAngle={2} dataKey="value" nameKey="name">
+                        <Pie data={report.donations.byCategory} cx="50%" cy="42%" innerRadius={35} outerRadius={75} paddingAngle={2} dataKey="value" nameKey="name" label={renderSliceLabel} labelLine={false}>
                           {report.donations.byCategory.map((_, i) => (
                             <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                           ))}
@@ -440,7 +453,7 @@ export default function AdminFinancialReport() {
                         <XAxis dataKey="month" tick={{ fontSize: 11 }} />
                         <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false} />
                         <Tooltip formatter={v => fmt(v)} />
-                        <Bar dataKey="value" fill="#2563eb" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="value" fill="#0D1F45" radius={[4, 4, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
@@ -514,7 +527,7 @@ export default function AdminFinancialReport() {
                       <XAxis type="number" tick={{ fontSize: 11 }} allowDecimals={false} />
                       <YAxis type="category" dataKey="status" tick={{ fontSize: 11 }} width={80} />
                       <Tooltip />
-                      <Bar dataKey="count" fill="#8b5cf6" radius={[0, 4, 4, 0]} />
+                      <Bar dataKey="count" fill="#0D1F45" radius={[0, 4, 4, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -607,9 +620,46 @@ export default function AdminFinancialReport() {
                       <XAxis dataKey="name" tick={{ fontSize: 10 }} />
                       <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
                       <Tooltip />
-                      <Bar dataKey="value" fill="#10b981" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="value" fill="#0D1F45" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
+                </div>
+              )}
+
+              {/* Attendee Names Table */}
+              {report.attendance?.attendees?.length > 0 && (
+                <div className="fin-report-table-wrap">
+                  <h3 className="fin-report-chart-title">Attendee List ({report.attendance.attendees.length} records)</h3>
+                  <table className="fin-report-table">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Member</th>
+                        <th>Community</th>
+                        <th>Service</th>
+                        <th>Date</th>
+                        <th>Time In</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {report.attendance.attendees.map((a, i) => (
+                        <tr key={i}>
+                          <td>{i + 1}</td>
+                          <td style={{ fontWeight: 600 }}>{a.name}</td>
+                          <td>{a.branch}</td>
+                          <td>{a.service}</td>
+                          <td>{a.date}</td>
+                          <td>{a.time}</td>
+                          <td>
+                            <span className={`status-badge ${a.status.toLowerCase()}`} style={{ fontSize: '11px', padding: '2px 8px' }}>
+                              {a.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </div>
@@ -699,16 +749,14 @@ export default function AdminFinancialReport() {
                 <span className="fin-confirm-label">Period</span>
                 <span className="fin-confirm-value">{getPeriodName()}</span>
               </div>
-              {adminRole === 'admin' && (
-                <div className="fin-confirm-row">
-                  <span className="fin-confirm-label">Location</span>
-                  <span className="fin-confirm-value">
-                    {locationType === 'all' ? 'All Locations' : 
-                     locationType === 'province' ? `Province: ${selectedProvince || 'None'}` : 
-                     `${selectedCommunities.length} Communities Selected`}
-                  </span>
-                </div>
-              )}
+              <div className="fin-confirm-row">
+                <span className="fin-confirm-label">Location</span>
+                <span className="fin-confirm-value">
+                  {locationType === 'all' ? 'All Locations' : 
+                   locationType === 'province' ? `Province: ${selectedProvince || 'None'}` : 
+                   `${selectedCommunities.length} Communities Selected`}
+                </span>
+              </div>
             </div>
             <div className="fin-confirm-actions">
               <button className="fin-report-btn secondary" onClick={() => setShowConfirm(false)}>Cancel</button>

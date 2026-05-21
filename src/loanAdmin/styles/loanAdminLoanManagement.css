@@ -99,11 +99,69 @@
 }
 
 /* ─────────────────────────────────────────
-   SEARCH
+   TABS
 ───────────────────────────────────────── */
+.loan-admin-mgmt-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid #e5e7eb;
+    margin-bottom: 20px;
+}
+
+.loan-admin-mgmt-tab-btn {
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    color: #6b7280;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.loan-admin-mgmt-tab-btn:hover {
+    color: #111827;
+}
+
+.loan-admin-mgmt-tab-btn.active {
+    color: #1E3A8A;
+    border-bottom-color: #1E3A8A;
+}
+
+.loan-admin-mgmt-tab-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 10px;
+    background: #8B5CF6;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+/* ─────────────────────────────────────────
+   SEARCH + FILTER ROW
+───────────────────────────────────────── */
+.loan-admin-mgmt-search-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
 .loan-admin-mgmt-search {
     position: relative;
-    margin-bottom: 24px;
+    flex: 1;
 }
 
 .loan-admin-mgmt-search svg {
@@ -116,13 +174,16 @@
 
 .loan-admin-mgmt-search input {
     width: 100%;
-    padding: 10px 14px 10px 44px;
+    height: 42px;
+    padding: 0 14px 0 44px;
     background: #ffffff;
     border: 1px solid #e5e7eb;
-    border-radius: 2px;
+    border-radius: 8px;
     font-size: 13px;
+    font-family: 'Inter', sans-serif;
     color: #111827;
     outline: none;
+    transition: border-color 0.15s;
 }
 
 .loan-admin-mgmt-search input::placeholder {
@@ -131,6 +192,146 @@
 
 .loan-admin-mgmt-search input:focus {
     border-color: #0D1F45;
+}
+
+.loan-admin-mgmt-filter-select {
+    height: 42px;
+    padding: 0 16px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    color: #374151;
+    background: #fff;
+    cursor: pointer;
+    min-width: 150px;
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+.loan-admin-mgmt-filter-select:focus {
+    border-color: #0D1F45;
+}
+
+/* ─────────────────────────────────────────
+   TABLE UTILITIES
+───────────────────────────────────────── */
+.loan-admin-mgmt-table-empty {
+    text-align: center;
+    padding: 40px;
+    color: #9CA3AF;
+}
+
+.loan-admin-mgmt-table-row-hover {
+    cursor: pointer;
+}
+
+.loan-admin-mgmt-amount-green {
+    color: #16A34A;
+}
+
+/* ─────────────────────────────────────────
+   EXPANDABLE PAYMENT HISTORY ROW
+───────────────────────────────────────── */
+.loan-admin-mgmt-row-expanded {
+    background: #F0F4FF;
+}
+
+.loan-admin-mgmt-expanded-row > td {
+    padding: 0 !important;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.loan-admin-mgmt-payment-history {
+    padding: 16px 24px 20px;
+    background: #F9FAFB;
+    border-top: 1px solid #E5E7EB;
+}
+
+.loan-admin-mgmt-ph-title {
+    margin: 0 0 12px 0;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+    color: #1E3A8A;
+}
+
+.loan-admin-mgmt-ph-loading {
+    margin: 0;
+    font-size: 13px;
+    color: #9CA3AF;
+    font-family: 'Inter', sans-serif;
+    text-align: center;
+    padding: 12px 0;
+}
+
+.loan-admin-mgmt-ph-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #E5E7EB;
+}
+
+.loan-admin-mgmt-ph-table thead tr {
+    background: #EEF2FF;
+}
+
+.loan-admin-mgmt-ph-table th {
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #6B7280;
+    border-bottom: 1px solid #E5E7EB;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.loan-admin-mgmt-ph-table td {
+    padding: 8px 12px;
+    color: #374151;
+    border-bottom: 1px solid #F3F4F6;
+    font-weight: 500;
+}
+
+.loan-admin-mgmt-ph-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.loan-admin-mgmt-ph-table tbody tr:hover {
+    background: #F9FAFB;
+}
+
+.loan-admin-mgmt-ph-method {
+    text-transform: capitalize;
+}
+
+.loan-admin-mgmt-ph-type-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.loan-admin-mgmt-ph-type-badge.ph-full {
+    background: #DCFCE7;
+    color: #166534;
+}
+
+.loan-admin-mgmt-ph-type-badge.ph-advance {
+    background: #DBEAFE;
+    color: #1E3A8A;
+}
+
+.loan-admin-mgmt-ph-type-badge.ph-regular {
+    background: #F3F4F6;
+    color: #374151;
 }
 
 /* ─────────────────────────────────────────

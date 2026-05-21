@@ -231,15 +231,17 @@ function CommunityInfoModal({ branch, onClose, onEdit, totalAllDonations }) {
                   <PieChart>
                     <Pie 
                       data={totalShare > 0 ? pieData : [{ name: 'No Data', value: 1, fill: '#E2E8F0' }]} 
-                      cx="50%" cy="45%" innerRadius={22} outerRadius={32} paddingAngle={2} dataKey="value" stroke="none"
-                      labelLine={totalShare > 0 ? { stroke: '#CBD5E1', strokeWidth: 1 } : false}
-                      label={totalShare > 0 ? ({ cx, cy, midAngle, outerRadius, percent, value, name }) => {
-                        const radius = outerRadius + 12;
-                        const x = cx + radius * Math.cos(-midAngle * Math.PI / 180);
-                        const y = cy + radius * Math.sin(-midAngle * Math.PI / 180);
+                      cx="50%" cy="45%" innerRadius={15} outerRadius={38} paddingAngle={2} dataKey="value" stroke="none"
+                      labelLine={false}
+                      label={totalShare > 0 ? ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+                        if (percent < 0.05) return null;
+                        const RADIAN = Math.PI / 180;
+                        const radius = innerRadius + (outerRadius - innerRadius) * 0.55;
+                        const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                        const y = cy + radius * Math.sin(-midAngle * RADIAN);
                         return (
-                          <text x={x} y={y} fill="#64748B" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize="9px">
-                            {`₱${value.toLocaleString()} (${(percent * 100).toFixed(0)}%)`}
+                          <text x={x} y={y} fill="#fff" textAnchor="middle" dominantBaseline="central" fontSize={8} fontWeight={700}>
+                            {`${(percent * 100).toFixed(0)}%`}
                           </text>
                         );
                       } : false}

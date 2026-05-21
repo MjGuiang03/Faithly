@@ -468,34 +468,6 @@
   gap: 12px;
 }
 
-.ul-disbursement-notice-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 20px;
-}
-
-@media (max-width: 600px) {
-  .ul-disbursement-notice-row {
-    flex-direction: column;
-    align-items: stretch;
-  }
-}
-
-.ul-disbursement-notice {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: #fdf2f2;
-  border: 1px solid #fecaca;
-  border-radius: 9px;
-  padding: 14px 16px;
-  color: #991b1b;
-  font-size: 13px;
-  font-weight: 500;
-  flex: 1;
-}
-
 button.ul-action-btn.ul-action-btn--cancel {
   background: #dc2626;
   color: #fff;
@@ -506,11 +478,6 @@ button.ul-action-btn.ul-action-btn--cancel {
 button.ul-action-btn.ul-action-btn--cancel:hover {
   background: #b91c1c;
   border-color: #b91c1c;
-}
-
-.ul-disbursement-notice svg {
-  color: #ef4444;
-  flex-shrink: 0;
 }
 
 .ul-meta-item {
