@@ -24,10 +24,12 @@ const MAX_RETRIES = 3;
 for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
   try {
     const options = process.env.RENDER ? {
-      serverSelectionTimeoutMS: 30000,
-      connectTimeoutMS: 30000,
-      socketTimeoutMS: 60000,
-      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 60000,
+      connectTimeoutMS: 60000,
+      socketTimeoutMS: 120000,
+      maxPoolSize: 20,
+      minPoolSize: 2,
+      maxIdleTimeMS: 60000,
       retryReads: true,
       retryWrites: true,
     } : {};
