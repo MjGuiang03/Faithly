@@ -75,3 +75,39 @@ export const callGeminiChat = async (systemPrompt, history, userMessage) => {
     return null;
   }
 };
+
+/**
+ * Call Gemini with vision (image + text) input.
+ * @param {string} systemPrompt - System instructions
+ * @param {string} textPrompt - Text prompt to send alongside the image
+ * @param {string} base64Image - Base64-encoded image data (without data URI prefix)
+ * @param {string} [mimeType='image/jpeg'] - MIME type of the image
+ * @returns {Promise<string|null>} Generated text or null on failure
+ */
+export const callGeminiVision = async (systemPrompt, textPrompt, base64Image, mimeType = 'image/jpeg') => {
+  try {
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash',
+      systemInstruction: systemPrompt,
+    });
+
+    const result = await model.generateContent({
+      contents: [{
+        role: 'user',
+        parts: [
+          { text: textPrompt },
+          { inlineData: { data: base64Image, mimeType } },
+        ],
+      }],
+      generationConfig: {
+        temperature: 0.1,
+        responseMimeType: 'application/json',
+      },
+    });
+
+    return result.response.text();
+  } catch (error) {
+    console.error('[Gemini Vision Error]:', error.message || error);
+    return null;
+  }
+};

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
   BarChart, Bar, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Label
 } from 'recharts';
 
 import '../styles/AdminFinancialReport.css';
@@ -28,6 +28,17 @@ const fmt = (n) => `₱${(Number(n) || 0).toLocaleString('en-PH', { minimumFract
 const PIE_COLORS = ['#0D1F45', '#1e3a8a', '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe'];
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+const LOAN_STATUS_COLORS = {
+  active: '#10B981', completed: '#0D1F45', pending: '#2563EB',
+  rejected: '#EF4444', cancelled: '#F59E0B', approved: '#60A5FA',
+  'awaiting approval': '#BFDBFE'
+};
+
+const getStatusColor = (status) => {
+  return LOAN_STATUS_COLORS[(status || '').toLowerCase()] || PIE_COLORS[0];
+};
 
 const SESSION_KEY = 'faithly_financial_report';
 
@@ -444,20 +455,29 @@ export default function AdminFinancialReport() {
                 )}
 
                 {/* By Month */}
-                {report.donations.byMonth?.length > 0 && (
-                  <div className="fin-report-chart-card">
-                    <h3 className="fin-report-chart-title">Monthly Trend</h3>
-                    <ResponsiveContainer width="100%" height={200}>
-                      <BarChart data={report.donations.byMonth}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                        <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                        <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false} />
-                        <Tooltip formatter={v => fmt(v)} />
-                        <Bar dataKey="value" fill="#0D1F45" radius={[4, 4, 0, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                )}
+                {(() => {
+                  // Build full 12-month data for the selected year
+                  const byMonthMap = {};
+                  (report.donations.byMonth || []).forEach(d => { byMonthMap[d.month] = d.value; });
+                  const fullMonthData = MONTH_SHORT.map((label, i) => {
+                    const key = `${reportYear}-${String(i + 1).padStart(2, '0')}`;
+                    return { month: label, value: byMonthMap[key] || 0 };
+                  });
+                  return (
+                    <div className="fin-report-chart-card">
+                      <h3 className="fin-report-chart-title">Monthly Trend</h3>
+                      <ResponsiveContainer width="100%" height={200}>
+                        <BarChart data={fullMonthData}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                          <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+                          <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false} />
+                          <Tooltip formatter={v => fmt(v)} />
+                          <Bar dataKey="value" fill="#0D1F45" radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* By Branch Table */}
@@ -517,21 +537,83 @@ export default function AdminFinancialReport() {
                 </div>
               </div>
 
-              {/* Loan Status Breakdown */}
-              {report.loans.byStatus?.length > 0 && (
-                <div className="fin-report-chart-card">
-                  <h3 className="fin-report-chart-title">Application Status</h3>
-                  <ResponsiveContainer width="100%" height={180}>
-                    <BarChart data={report.loans.byStatus} layout="vertical">
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                      <XAxis type="number" tick={{ fontSize: 11 }} allowDecimals={false} />
-                      <YAxis type="category" dataKey="status" tick={{ fontSize: 11 }} width={80} />
-                      <Tooltip />
-                      <Bar dataKey="count" fill="#0D1F45" radius={[0, 4, 4, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              )}
+              {/* Loan Charts Row */}
+              <div className="fin-report-charts-row">
+                {/* Loan Status Donut */}
+                {report.loans.byStatus?.length > 0 && (
+                  <div className="fin-report-chart-card">
+                    <h3 className="fin-report-chart-title">Loan Status Distribution</h3>
+                    <ResponsiveContainer width="100%" height={220}>
+                      <PieChart>
+                        <Pie
+                          data={report.loans.byStatus.map(s => ({ name: s.status, value: s.count }))}
+                          cx="50%" cy="42%"
+                          innerRadius={35} outerRadius={75}
+                          paddingAngle={2}
+                          dataKey="value"
+                          label={renderSliceLabel}
+                          labelLine={false}
+                        >
+                          {report.loans.byStatus.map((s, i) => (
+                            <Cell key={i} fill={getStatusColor(s.status)} />
+                          ))}
+                          <Label value={report.loans.totalApplications} position="center" fill="#1e3a5f" style={{ fontSize: '18px', fontWeight: 'bold' }} />
+                          <Label value="Total" position="center" dy={16} fill="#6B7280" style={{ fontSize: '10px' }} />
+                        </Pie>
+                        <Tooltip formatter={(v, name) => [v + ' loans', name]} />
+                        <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '11px' }} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+
+                {/* Application Status Bar */}
+                {report.loans.byStatus?.length > 0 && (
+                  <div className="fin-report-chart-card">
+                    <h3 className="fin-report-chart-title">Application Status Breakdown</h3>
+                    <ResponsiveContainer width="100%" height={220}>
+                      <BarChart data={report.loans.byStatus} layout="vertical" margin={{ left: 10 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={true} vertical={false} />
+                        <XAxis type="number" tick={{ fontSize: 11 }} allowDecimals={false} />
+                        <YAxis type="category" dataKey="status" tick={{ fontSize: 11 }} width={80} />
+                        <Tooltip formatter={(v) => v + ' loans'} />
+                        <Bar dataKey="count" radius={[0, 4, 4, 0]} barSize={20}>
+                          {report.loans.byStatus.map((s, i) => (
+                            <Cell key={i} fill={getStatusColor(s.status)} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+              </div>
+
+              {/* Financial Overview Bar Chart */}
+              <div className="fin-report-chart-card">
+                <h3 className="fin-report-chart-title">Financial Overview</h3>
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart
+                    data={[
+                      { name: 'Applied', value: report.loans.totalAmountApplied || 0 },
+                      { name: 'Disbursed', value: report.loans.totalDisbursed || 0 },
+                      { name: 'Received', value: report.loans.totalPaymentsReceived || 0 },
+                      { name: 'Interest', value: report.loans.totalInterestEarned || 0 },
+                    ]}
+                    margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                    <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                    <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false} />
+                    <Tooltip formatter={v => fmt(v)} />
+                    <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={40}>
+                      <Cell fill="#2563EB" />
+                      <Cell fill="#0D1F45" />
+                      <Cell fill="#10B981" />
+                      <Cell fill="#8B5CF6" />
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           )}
 
@@ -567,6 +649,64 @@ export default function AdminFinancialReport() {
                 <div className="fin-report-stat">
                   <span className="fin-report-stat-label">Completed Goals</span>
                   <span className="fin-report-stat-value green">{report.savings.completedGoals}</span>
+                </div>
+              </div>
+
+              {/* Savings Charts Row */}
+              <div className="fin-report-charts-row">
+                {/* Savings Goals Donut */}
+                {(report.savings.activeGoals > 0 || report.savings.completedGoals > 0) && (
+                  <div className="fin-report-chart-card">
+                    <h3 className="fin-report-chart-title">Savings Goals</h3>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <PieChart>
+                        <Pie
+                          data={[
+                            { name: 'Active', value: report.savings.activeGoals },
+                            { name: 'Completed', value: report.savings.completedGoals },
+                          ]}
+                          cx="50%" cy="42%"
+                          innerRadius={35} outerRadius={70}
+                          paddingAngle={3}
+                          dataKey="value"
+                          label={renderSliceLabel}
+                          labelLine={false}
+                        >
+                          <Cell fill="#2563EB" />
+                          <Cell fill="#10B981" />
+                          <Label value={report.savings.activeGoals + report.savings.completedGoals} position="center" fill="#1e3a5f" style={{ fontSize: '18px', fontWeight: 'bold' }} />
+                          <Label value="Goals" position="center" dy={16} fill="#6B7280" style={{ fontSize: '10px' }} />
+                        </Pie>
+                        <Tooltip formatter={(v, name) => [v + ' goals', name]} />
+                        <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '11px' }} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+
+                {/* Savings vs Target Bar */}
+                <div className="fin-report-chart-card">
+                  <h3 className="fin-report-chart-title">Savings vs Target</h3>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <BarChart
+                      data={[
+                        { name: 'Total Saved', value: report.savings.totalSaved || 0 },
+                        { name: 'Total Target', value: report.savings.totalTargets || 0 },
+                        { name: 'Period Deposits', value: report.savings.periodDeposits || 0 },
+                      ]}
+                      margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                      <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                      <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false} />
+                      <Tooltip formatter={v => fmt(v)} />
+                      <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={40}>
+                        <Cell fill="#10B981" />
+                        <Cell fill="#0D1F45" />
+                        <Cell fill="#2563EB" />
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
                 </div>
               </div>
 

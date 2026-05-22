@@ -6,6 +6,7 @@ import { authenticateUser } from '../middleware/auth.js';
 import { authenticateAdmin } from '../middleware/auth.js';
 import { generatePaymentLink, sendPaymongoTransfer } from '../utils/paymongo.js';
 import { notifyUser } from '../utils/notifyHelpers.js';
+import { callGeminiVision } from '../utils/gemini.js';
 
 const router = Router();
 
@@ -93,6 +94,62 @@ function enrichLoanWithNextPayment(loan) {
 
   return { ...loan, nextPaymentDate: nextDue, upcomingPaymentAmount, isLate };
 }
+
+
+/* ================== USER - VERIFY ID FRAME (Gemini Vision) ================== */
+router.post('/loans/verify-id-frame', authenticateUser, async (req, res) => {
+  try {
+    const { imageData } = req.body;
+    if (!imageData) {
+      return res.status(400).json({ success: false, detected: false, message: 'No image data provided' });
+    }
+
+    // Strip the data URI prefix to get raw base64
+    const base64Data = imageData.replace(/^data:image\/\w+;base64,/, '');
+
+    const systemPrompt = `You are a document verification system. Your ONLY job is to determine whether the image contains a valid government-issued identification card or document.
+
+Valid Philippine government IDs include: SSS ID, PhilHealth ID, UMID, Driver's License, Passport, PRC ID, Voter's ID, Postal ID, TIN ID, Senior Citizen ID, PWD ID, NBI Clearance, Police Clearance, Barangay ID, Company ID, School ID, or any similar official identification card.
+
+Also accept government IDs from other countries (passport, driver's license, national ID, etc.).
+
+Respond ONLY with a JSON object. No other text.`;
+
+    const textPrompt = `Analyze this image and determine if it shows a government-issued ID card or official identification document.
+
+Rules:
+- The ID must be clearly visible (not just a corner or edge)
+- Text on the ID should be at least partially readable
+- The image should show the FRONT of an ID card
+- Random objects, faces without ID, blank surfaces, or non-ID documents should return detected: false
+
+Respond with: { "detected": true/false, "confidence": "high"/"medium"/"low", "reason": "brief reason" }`;
+
+    const aiResult = await callGeminiVision(systemPrompt, textPrompt, base64Data);
+
+    if (!aiResult) {
+      return res.json({ success: true, detected: false, confidence: 'low', reason: 'AI service unavailable' });
+    }
+
+    let parsed;
+    try {
+      const cleaned = aiResult.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      parsed = JSON.parse(cleaned);
+    } catch {
+      return res.json({ success: true, detected: false, confidence: 'low', reason: 'Could not parse response' });
+    }
+
+    return res.json({
+      success: true,
+      detected: !!parsed.detected,
+      confidence: parsed.confidence || 'low',
+      reason: parsed.reason || '',
+    });
+  } catch (err) {
+    console.error('[ID Verify Error]:', err);
+    res.json({ success: true, detected: false, confidence: 'low', reason: 'Verification failed' });
+  }
+});
 
 
 /* ================== USER - APPLY FOR LOAN ================== */

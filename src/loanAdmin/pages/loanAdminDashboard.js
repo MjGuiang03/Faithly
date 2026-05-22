@@ -28,8 +28,8 @@ const formatYAxis = (num) => {
 const CHART_TICKS = [0, 100000, 200000, 300000, 400000, 500000];
 const PIE_COLORS = ['#0D1F45', '#1E3A8A', '#2563EB', '#3B82F6', '#60A5FA', '#93C5FD', '#BFDBFE'];
 const STATUS_COLORS = {
-  Active: '#0D1F45', Completed: '#1E3A8A', Pending: '#2563EB',
-  Rejected: '#3B82F6', Cancelled: '#93C5FD', Approved: '#60A5FA',
+  Active: '#10B981', Completed: '#0D1F45', Pending: '#2563EB',
+  Rejected: '#EF4444', Cancelled: '#F59E0B', Approved: '#60A5FA',
   'Awaiting Approval': '#BFDBFE'
 };
 
@@ -891,8 +891,8 @@ export default function LoanAdminDashboard() {
                         <ResponsiveContainer width="100%" height="100%">
                           {(() => {
                             const STATUS_COLORS = {
-                              Active: '#0D1F45', Completed: '#1E3A8A', Pending: '#2563EB',
-                              Rejected: '#3B82F6', Cancelled: '#93C5FD', Approved: '#60A5FA',
+                              Active: '#10B981', Completed: '#0D1F45', Pending: '#2563EB',
+                              Rejected: '#EF4444', Cancelled: '#F59E0B', Approved: '#60A5FA',
                               'Awaiting Approval': '#BFDBFE'
                             };
                             const total = statusDistribution.reduce((s, d) => s + d.value, 0);
@@ -918,8 +918,8 @@ export default function LoanAdminDashboard() {
                       <div className="adm-expand-panel-chart la-status-table-wrap">
                         {(() => {
                           const STATUS_COLORS = {
-                            Active: '#0D1F45', Completed: '#1E3A8A', Pending: '#2563EB',
-                            Rejected: '#3B82F6', Cancelled: '#93C5FD', Approved: '#60A5FA',
+                            Active: '#10B981', Completed: '#0D1F45', Pending: '#2563EB',
+                            Rejected: '#EF4444', Cancelled: '#F59E0B', Approved: '#60A5FA',
                             'Awaiting Approval': '#BFDBFE'
                           };
                           const total = statusDistribution.reduce((s, d) => s + d.value, 0);

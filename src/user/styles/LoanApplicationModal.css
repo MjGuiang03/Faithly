@@ -1404,6 +1404,57 @@
   font-weight: 500;
 }
 
+/* ── ID Detection Status ── */
+.ula-id-detection-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+  transition: all 0.3s ease;
+  width: 100%;
+  justify-content: center;
+}
+
+.ula-id-detection-status.scanning {
+  background: rgba(234, 179, 8, 0.12);
+  border: 1px solid rgba(234, 179, 8, 0.25);
+  color: #fbbf24;
+}
+
+.ula-id-detection-status.detected {
+  background: rgba(22, 163, 74, 0.12);
+  border: 1px solid rgba(22, 163, 74, 0.3);
+  color: #4ade80;
+}
+
+.ula-id-detection-status .btn-spinner {
+  border: 2px solid rgba(251, 191, 36, 0.2);
+  border-top-color: #fbbf24;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* Green glow on capture ring when ID is detected */
+.ula-capture-ready .ula-camera-capture-ring {
+  border-color: #4ade80;
+  box-shadow: 0 0 16px rgba(74, 222, 128, 0.3);
+}
+
+.ula-capture-ready .ula-camera-capture-dot {
+  background: #4ade80;
+}
+
+/* Green outline on ID guide when detected */
+.ula-camera-video-container.ula-id-detected .ula-camera-id-outline {
+  border-color: rgba(74, 222, 128, 0.7);
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.2), 0 0 20px rgba(74, 222, 128, 0.2);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   /* Camera Modal Rules */
