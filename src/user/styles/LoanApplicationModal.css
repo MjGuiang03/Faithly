@@ -1406,6 +1406,42 @@
   font-weight: 500;
 }
 
+/* ── Verify ID Button ── */
+.ula-verify-id-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 20px;
+  background: rgba(37, 99, 235, 0.2);
+  border: 1.5px solid rgba(37, 99, 235, 0.5);
+  border-radius: 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: #60a5fa;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ula-verify-id-btn:hover:not(:disabled) {
+  background: rgba(37, 99, 235, 0.35);
+  border-color: #60a5fa;
+}
+
+.ula-verify-id-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ula-verify-id-btn .btn-spinner {
+  border: 2px solid rgba(96, 165, 250, 0.2);
+  border-top-color: #60a5fa;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
 /* ── ID Detection Status ── */
 .ula-id-detection-status {
   display: flex;

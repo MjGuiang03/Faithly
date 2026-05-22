@@ -86,9 +86,9 @@ export const callGeminiChat = async (systemPrompt, history, userMessage) => {
  */
 export const callGeminiVision = async (systemPrompt, textPrompt, base64Image, mimeType = 'image/jpeg') => {
   try {
-    // Use gemini-2.0-flash-lite for vision checks — much higher free-tier rate limits
+    // Use gemini-2.5-flash-lite for vision checks — lightweight with higher free-tier rate limits
     const model = genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash-lite',
+      model: 'gemini-2.5-flash-lite',
       systemInstruction: systemPrompt,
     });
 

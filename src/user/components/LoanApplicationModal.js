@@ -121,7 +121,6 @@ export default function LoanApplicationModal({
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
   const hintTimerRef = useRef(null);
-  const idCheckTimerRef = useRef(null);                       // periodic ID check timer
   const idCheckCanvasRef = useRef(null);                      // canvas for low-res frame capture
 
   /* ── derived ── */
@@ -177,14 +176,10 @@ export default function LoanApplicationModal({
     setIdChecking(false);
     setIdDetectionMsg('');
     if (hintTimerRef.current) clearInterval(hintTimerRef.current);
-    if (idCheckTimerRef.current) clearInterval(idCheckTimerRef.current);
   }, []);
 
-  const idCheckingRef = useRef(false);  // guard against overlapping requests
-
   const checkIdFrame = useCallback(async () => {
-    // Guard: skip if already checking, no stream, or already detected
-    if (idCheckingRef.current || !videoRef.current || !streamRef.current) return;
+    if (!videoRef.current || !streamRef.current) return;
     const video = videoRef.current;
     if (video.videoWidth === 0) return;
 
@@ -200,8 +195,8 @@ export default function LoanApplicationModal({
     ctx.drawImage(video, 0, 0, checkCanvas.width, checkCanvas.height);
     const frameData = checkCanvas.toDataURL('image/jpeg', 0.5);
 
-    idCheckingRef.current = true;
     setIdChecking(true);
+    setIdDetectionMsg('');
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`${API}/api/loans/verify-id-frame`, {
@@ -211,32 +206,21 @@ export default function LoanApplicationModal({
       });
       const data = await res.json();
 
-      // Handle rate limiting — pause scanning for 30s then resume slower
       if (data.rateLimited) {
-        setIdDetectionMsg('API busy — will retry shortly...');
-        if (idCheckTimerRef.current) clearInterval(idCheckTimerRef.current);
-        setTimeout(() => {
-          if (streamRef.current) {
-            idCheckTimerRef.current = setInterval(() => checkIdFrame(), 10000);
-          }
-        }, 30000);
+        setIdDetectionMsg('API busy — please try again in a moment');
         return;
       }
 
       if (data.detected && (data.confidence === 'high' || data.confidence === 'medium')) {
         setIdDetected(true);
-        setIdDetectionMsg('✓ Government ID detected');
-        // Stop polling — no need to keep checking
-        if (idCheckTimerRef.current) clearInterval(idCheckTimerRef.current);
+        setIdDetectionMsg('✓ Government ID detected — you can now capture');
       } else {
         setIdDetected(false);
-        setIdDetectionMsg(data.reason || 'No ID detected — point camera at your ID');
+        setIdDetectionMsg(data.reason || 'No ID detected — position your ID and try again');
       }
     } catch {
-      // Silent fail — don't block the UX on network errors
-      setIdDetectionMsg('Checking...');
+      setIdDetectionMsg('Verification failed — please try again');
     } finally {
-      idCheckingRef.current = false;
       setIdChecking(false);
     }
   }, []);
@@ -250,7 +234,6 @@ export default function LoanApplicationModal({
     setIdDetected(false);
     setIdChecking(false);
     setIdDetectionMsg('');
-    idCheckingRef.current = false;
 
     try {
       const facingMode = target === 'selfie' ? 'user' : 'environment';
@@ -266,13 +249,6 @@ export default function LoanApplicationModal({
           videoRef.current.srcObject = stream;
           videoRef.current.play().then(() => {
             setCameraReady(true);
-
-            // Start periodic ID detection for 'id' target (6s interval to respect rate limits)
-            if (target === 'id') {
-              // Initial check after 2s to let camera stabilize
-              setTimeout(() => checkIdFrame(), 2000);
-              idCheckTimerRef.current = setInterval(() => checkIdFrame(), 6000);
-            }
           });
         }
       }, 100);
@@ -1184,17 +1160,35 @@ export default function LoanApplicationModal({
             {/* Capture button */}
             {!cameraError && (
               <div className="ula-camera-actions">
-                {/* ID detection status indicator */}
+                {/* ID verification section */}
                 {cameraTarget === 'id' && cameraReady && (
-                  <div className={`ula-id-detection-status ${idDetected ? 'detected' : 'scanning'}`}>
-                    {idChecking ? (
-                      <><span className="btn-spinner" style={{ width: 14, height: 14 }} /> Scanning for ID...</>
-                    ) : idDetected ? (
-                      <><span style={{ color: '#16a34a', fontWeight: 600 }}>✓ ID Detected</span> — Ready to capture</>
-                    ) : (
-                      <><span style={{ color: '#dc2626' }}>⚠</span> {idDetectionMsg || 'Point your camera at a government ID'}</>
+                  <>
+                    {/* Status message */}
+                    {idDetectionMsg && (
+                      <div className={`ula-id-detection-status ${idDetected ? 'detected' : 'scanning'}`}>
+                        {idDetected ? (
+                          <><span style={{ color: '#16a34a', fontWeight: 600 }}>✓ ID Detected</span> — Ready to capture</>
+                        ) : (
+                          <><span style={{ color: '#dc2626' }}>⚠</span> {idDetectionMsg}</>
+                        )}
+                      </div>
                     )}
-                  </div>
+                    {/* Manual verify button */}
+                    {!idDetected && (
+                      <button
+                        type="button"
+                        className="ula-verify-id-btn"
+                        onClick={checkIdFrame}
+                        disabled={idChecking}
+                      >
+                        {idChecking ? (
+                          <><span className="btn-spinner" style={{ width: 14, height: 14 }} /> Verifying...</>
+                        ) : (
+                          '🔍 Verify ID'
+                        )}
+                      </button>
+                    )}
+                  </>
                 )}
                 <button
                   type="button"
@@ -1207,7 +1201,7 @@ export default function LoanApplicationModal({
                   </div>
                 </button>
                 <span className="ula-camera-capture-label">
-                  {cameraTarget === 'id' && !idDetected ? 'Show your ID to enable capture' : 'Tap to capture'}
+                  {cameraTarget === 'id' && !idDetected ? 'Verify your ID first, then capture' : 'Tap to capture'}
                 </span>
               </div>
             )}
