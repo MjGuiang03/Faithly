@@ -86,8 +86,9 @@ export const callGeminiChat = async (systemPrompt, history, userMessage) => {
  */
 export const callGeminiVision = async (systemPrompt, textPrompt, base64Image, mimeType = 'image/jpeg') => {
   try {
+    // Use gemini-2.0-flash-lite for vision checks — much higher free-tier rate limits
     const model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-2.0-flash-lite',
       systemInstruction: systemPrompt,
     });
 
@@ -107,7 +108,13 @@ export const callGeminiVision = async (systemPrompt, textPrompt, base64Image, mi
 
     return result.response.text();
   } catch (error) {
-    console.error('[Gemini Vision Error]:', error.message || error);
+    const msg = error.message || '';
+    // Return special marker for rate limiting so caller can back off
+    if (msg.includes('429') || msg.includes('Too Many Requests') || msg.includes('quota')) {
+      console.warn('[Gemini Vision] Rate limited — backing off');
+      return '__RATE_LIMITED__';
+    }
+    console.error('[Gemini Vision Error]:', msg);
     return null;
   }
 };

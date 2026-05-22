@@ -127,6 +127,10 @@ Respond with: { "detected": true/false, "confidence": "high"/"medium"/"low", "re
 
     const aiResult = await callGeminiVision(systemPrompt, textPrompt, base64Data);
 
+    if (aiResult === '__RATE_LIMITED__') {
+      return res.json({ success: true, detected: false, confidence: 'low', reason: 'Rate limited — please wait', rateLimited: true });
+    }
+
     if (!aiResult) {
       return res.json({ success: true, detected: false, confidence: 'low', reason: 'AI service unavailable' });
     }

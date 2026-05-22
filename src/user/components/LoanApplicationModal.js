@@ -180,8 +180,11 @@ export default function LoanApplicationModal({
     if (idCheckTimerRef.current) clearInterval(idCheckTimerRef.current);
   }, []);
 
+  const idCheckingRef = useRef(false);  // guard against overlapping requests
+
   const checkIdFrame = useCallback(async () => {
-    if (!videoRef.current || !streamRef.current) return;
+    // Guard: skip if already checking, no stream, or already detected
+    if (idCheckingRef.current || !videoRef.current || !streamRef.current) return;
     const video = videoRef.current;
     if (video.videoWidth === 0) return;
 
@@ -197,6 +200,7 @@ export default function LoanApplicationModal({
     ctx.drawImage(video, 0, 0, checkCanvas.width, checkCanvas.height);
     const frameData = checkCanvas.toDataURL('image/jpeg', 0.5);
 
+    idCheckingRef.current = true;
     setIdChecking(true);
     try {
       const token = localStorage.getItem('token');
@@ -206,9 +210,24 @@ export default function LoanApplicationModal({
         body: JSON.stringify({ imageData: frameData }),
       });
       const data = await res.json();
+
+      // Handle rate limiting — pause scanning for 30s then resume slower
+      if (data.rateLimited) {
+        setIdDetectionMsg('API busy — will retry shortly...');
+        if (idCheckTimerRef.current) clearInterval(idCheckTimerRef.current);
+        setTimeout(() => {
+          if (streamRef.current) {
+            idCheckTimerRef.current = setInterval(() => checkIdFrame(), 10000);
+          }
+        }, 30000);
+        return;
+      }
+
       if (data.detected && (data.confidence === 'high' || data.confidence === 'medium')) {
         setIdDetected(true);
         setIdDetectionMsg('✓ Government ID detected');
+        // Stop polling — no need to keep checking
+        if (idCheckTimerRef.current) clearInterval(idCheckTimerRef.current);
       } else {
         setIdDetected(false);
         setIdDetectionMsg(data.reason || 'No ID detected — point camera at your ID');
@@ -217,6 +236,7 @@ export default function LoanApplicationModal({
       // Silent fail — don't block the UX on network errors
       setIdDetectionMsg('Checking...');
     } finally {
+      idCheckingRef.current = false;
       setIdChecking(false);
     }
   }, []);
@@ -230,6 +250,7 @@ export default function LoanApplicationModal({
     setIdDetected(false);
     setIdChecking(false);
     setIdDetectionMsg('');
+    idCheckingRef.current = false;
 
     try {
       const facingMode = target === 'selfie' ? 'user' : 'environment';
@@ -246,11 +267,11 @@ export default function LoanApplicationModal({
           videoRef.current.play().then(() => {
             setCameraReady(true);
 
-            // Start periodic ID detection for 'id' target
+            // Start periodic ID detection for 'id' target (6s interval to respect rate limits)
             if (target === 'id') {
-              // Initial check after 1.5s to let camera stabilize
-              setTimeout(() => checkIdFrame(), 1500);
-              idCheckTimerRef.current = setInterval(() => checkIdFrame(), 3000);
+              // Initial check after 2s to let camera stabilize
+              setTimeout(() => checkIdFrame(), 2000);
+              idCheckTimerRef.current = setInterval(() => checkIdFrame(), 6000);
             }
           });
         }
