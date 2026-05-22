@@ -64,7 +64,7 @@ const GlobalLoader = () => (
           100% { transform: rotate(360deg); }
         }
       `}</style>
-      <div style={{ fontWeight: '600', fontSize: '14px', opacity: 0.8 }}>Loading PUAC...</div>
+      <div style={{ fontWeight: '600', fontSize: '14px', opacity: 0.8 }}>Loading IsangDiwa...</div>
     </div>
   </div>
 );

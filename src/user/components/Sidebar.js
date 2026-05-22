@@ -167,7 +167,7 @@ export default function Sidebar({ collapsed, setCollapsed, toggleCollapsed }) {
             </div>
             {!collapsed && (
               <div className="user-sidebar-logo-text">
-                <h1>PUAC</h1>
+                <h1>IsangDiwa</h1>
                 <p>Member Portal</p>
               </div>
             )}

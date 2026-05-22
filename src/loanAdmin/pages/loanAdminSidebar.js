@@ -85,7 +85,7 @@ export default function LoanAdminSidebar() {
             <img alt="PUAC Logo" src={puacLogo} />
           </div>
           <div className="loan-admin-sidebar-logo-text">
-            <h1>PUAC</h1>
+            <h1>IsangDiwa</h1>
             <p>Loan Admin Portal</p>
           </div>
         </div>
