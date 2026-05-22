@@ -1276,11 +1276,13 @@
 }
 
 .ula-camera-id-outline {
-  width: 80%;
-  height: 60%;
-  border: 2.5px dashed rgba(255, 255, 255, 0.5);
+  width: 88%;
+  aspect-ratio: 85.6 / 54;
+  max-height: 75%;
+  border: 2.5px dashed rgba(255, 255, 255, 0.6);
   border-radius: 12px;
-  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.55);
+  transition: border-color 0.3s, box-shadow 0.3s;
 }
 
 /* Hint bar */
@@ -1469,12 +1471,16 @@
   .ula-camera-video-container {
     border-radius: 0;
     aspect-ratio: auto;
-    height: 55vh;
+    height: 65vh;
   }
 
   .ula-camera-face-outline {
     width: 140px;
     height: 180px;
+  }
+
+  .ula-camera-id-outline {
+    width: 92%;
   }
 
   /* Main Loan Modal Rules */
