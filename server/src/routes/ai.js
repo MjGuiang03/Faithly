@@ -99,7 +99,7 @@ ATTENDANCE:
 - Records last month: ${attLastMonth.length}
 `;
 
-    const systemPrompt = `You are a church management analytics advisor for the Philippine United Apostolic Church (PUAC).
+    const systemPrompt = `You are a church management analytics advisor for IsangDiwa.
 Given the following operational data, provide exactly 5 insights as a JSON array of objects.
 Each object must have: "icon" (a Lucide icon name like "TrendingUp", "TrendingDown", "Users", "DollarSign", "AlertCircle", "CheckCircle", "Calendar", "Activity"), "title" (short 5-8 word title), "detail" (1-2 sentence actionable insight with specific numbers).
 Focus on: trends, anomalies, actionable recommendations, and comparisons.
@@ -168,17 +168,18 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
     const type = req.query.type || 'all';
     const communityQuery = req.query.community || '';
     const communities = communityQuery ? communityQuery.split(',').filter(Boolean) : [];
-    const province = req.query.province || '';
+    const provinceQuery = req.query.province || '';
+    const provinces = provinceQuery ? provinceQuery.split(',').filter(Boolean) : [];
     
     let branchToProvince = {};
-    if (province) {
+    if (provinces.length > 0) {
       const allBranches = await branches.find({}).toArray();
       allBranches.forEach(b => {
         branchToProvince[b.name] = b.province || (b.address ? b.address.split(',')[0].trim() : 'Unknown');
       });
     }
 
-    const report = { period: periodLabel, startDate, endDate, generatedAt: new Date(), generatedBy: req.admin.email, reportType: type, community: communities.length > 0 ? (communities.length === 1 ? communities[0] : `${communities.length} Selected Communities`) : (province ? `Province: ${province}` : 'All Communities') };
+    const report = { period: periodLabel, startDate, endDate, generatedAt: new Date(), generatedBy: req.admin.email, reportType: type, community: communities.length > 0 ? (communities.length === 1 ? communities[0] : `${communities.length} Selected Communities`) : (provinces.length > 0 ? (provinces.length === 1 ? `Province: ${provinces[0]}` : `${provinces.length} Selected Provinces`) : 'All Communities') };
 
     // === Donations (Super Admin) ===
     if (role === 'admin') {
@@ -191,12 +192,12 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
         let periodDonations = await donations.find(donationFilter).toArray();
 
         // Apply community/province filter BEFORE computing any aggregates
-        if (communities.length > 0 || province) {
+        if (communities.length > 0 || provinces.length > 0) {
           periodDonations = periodDonations.filter(d => {
             const member = allMembersMap[d.email];
             const targetBranch = d.community || member?.branch || 'Unknown';
             if (communities.length > 0) return communities.includes(targetBranch);
-            if (province) return branchToProvince[targetBranch] === province;
+            if (provinces.length > 0) return provinces.includes(branchToProvince[targetBranch]);
             return true;
           });
         }
@@ -239,13 +240,13 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
         // Filter member growth by community/province too
         if (communities.length > 0) {
           periodMembers = periodMembers.filter(m => communities.includes(m.branch));
-        } else if (province) {
-          periodMembers = periodMembers.filter(m => branchToProvince[m.branch] === province);
+        } else if (provinces.length > 0) {
+          periodMembers = periodMembers.filter(m => provinces.includes(branchToProvince[m.branch]));
         }
         const totalFiltered = communities.length > 0
           ? allMembers.filter(m => communities.includes(m.branch)).length
-          : province
-            ? allMembers.filter(m => branchToProvince[m.branch] === province).length
+          : provinces.length > 0
+            ? allMembers.filter(m => provinces.includes(branchToProvince[m.branch])).length
             : allMembers.length;
         report.memberGrowth = { newMembers: periodMembers.length, totalMembers: totalFiltered };
       }
@@ -258,11 +259,11 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
         periodAttendance = periodAttendance.filter(a => (a.status || 'Present').toLowerCase() !== 'absent');
 
         // Apply community/province filter BEFORE computing aggregates
-        if (communities.length > 0 || province) {
+        if (communities.length > 0 || provinces.length > 0) {
           periodAttendance = periodAttendance.filter(a => {
             const b = a.community || a.branch || a.userBranch || 'Unknown';
             if (communities.length > 0) return communities.includes(b);
-            if (province) return branchToProvince[b] === province;
+            if (provinces.length > 0) return provinces.includes(branchToProvince[b]);
             return true;
           });
         }
@@ -315,12 +316,12 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
       let periodPayments = await loanPayments.find({ status: 'confirmed', confirmedAt: dateFilter }).toArray();
 
       // Apply community/province filter
-      if (communities.length > 0 || province) {
+      if (communities.length > 0 || provinces.length > 0) {
         periodLoans = periodLoans.filter(l => {
           const member = allMembersMap[l.email || l.memberEmail];
           const targetBranch = l.branch || member?.branch || 'Unknown';
           if (communities.length > 0) return communities.includes(targetBranch);
-          if (province) return branchToProvince[targetBranch] === province;
+          if (provinces.length > 0) return provinces.includes(branchToProvince[targetBranch]);
           return true;
         });
 
@@ -328,7 +329,7 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
           const member = allMembersMap[p.email || p.memberEmail];
           const targetBranch = p.branch || member?.branch || 'Unknown';
           if (communities.length > 0) return communities.includes(targetBranch);
-          if (province) return branchToProvince[targetBranch] === province;
+          if (provinces.length > 0) return provinces.includes(branchToProvince[targetBranch]);
           return true;
         });
       }
@@ -367,12 +368,12 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
       let allGoals = await savingsGoals.find({}).toArray();
 
       // Apply community/province filter
-      if (communities.length > 0 || province) {
+      if (communities.length > 0 || provinces.length > 0) {
         periodSavingsTxns = periodSavingsTxns.filter(t => {
           const member = allMembersMap[t.email || t.memberEmail];
           const targetBranch = t.branch || member?.branch || 'Unknown';
           if (communities.length > 0) return communities.includes(targetBranch);
-          if (province) return branchToProvince[targetBranch] === province;
+          if (provinces.length > 0) return provinces.includes(branchToProvince[targetBranch]);
           return true;
         });
 
@@ -380,7 +381,7 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
           const member = allMembersMap[g.email || g.memberEmail];
           const targetBranch = g.branch || member?.branch || 'Unknown';
           if (communities.length > 0) return communities.includes(targetBranch);
-          if (province) return branchToProvince[targetBranch] === province;
+          if (provinces.length > 0) return provinces.includes(branchToProvince[targetBranch]);
           return true;
         });
       }
@@ -413,12 +414,12 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
       }).toArray();
 
       // Apply community/province filter
-      if (communities.length > 0 || province) {
+      if (communities.length > 0 || provinces.length > 0) {
         disbursedLoans = disbursedLoans.filter(l => {
           const member = allMembersMap[l.email || l.memberEmail];
           const targetBranch = l.branch || member?.branch || 'Unknown';
           if (communities.length > 0) return communities.includes(targetBranch);
-          if (province) return branchToProvince[targetBranch] === province;
+          if (provinces.length > 0) return provinces.includes(branchToProvince[targetBranch]);
           return true;
         });
       }
@@ -440,7 +441,7 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
     }
 
     // === AI Executive Summary with Caching ===
-    const cacheKey = `report_v2_${role}_${req.query.type || 'all'}_${reportMonth !== null ? reportMonth : 'full'}_${reportYear}_${communities.join('-') || 'all'}_${province || 'all'}`;
+    const cacheKey = `report_v2_${role}_${req.query.type || 'all'}_${reportMonth !== null ? reportMonth : 'full'}_${reportYear}_${communities.join('-') || 'all'}_${provinces.join('-') || 'all'}`;
     
     const cached = await reportCache.findOne({ cacheKey });
     const isOld = cached && (new Date() - new Date(cached.updatedAt) > 24 * 60 * 60 * 1000); 
@@ -450,7 +451,7 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
     } else {
       try {
         const reportDataText = JSON.stringify(report, null, 2);
-        const summaryPrompt = `You are a senior financial analyst for the Philippine United Apostolic Church (PUAC).
+        const summaryPrompt = `You are a senior financial analyst for IsangDiwa.
         Summarize the following financial data for "${periodLabel}" into a highly concise executive summary.
         Format:
         1. Start with a bold one-sentence overall performance statement.

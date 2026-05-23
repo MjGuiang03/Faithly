@@ -8,7 +8,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 // Resend requires a verified sender domain. If you haven't verified a domain yet,
 // 'onboarding@resend.dev' works for testing but ONLY to your own registered email address.
 // If you have a verified domain, set RESEND_SENDER_EMAIL in your .env (e.g., info@yourdomain.com).
-const senderEmail = process.env.RESEND_SENDER_EMAIL || 'noreply@puacfaithly.com';
+const senderEmail = process.env.RESEND_SENDER_EMAIL || 'noreply@isangdiwafaithly.com';
 
 export const generateOTP = () =>
   Math.floor(100000 + Math.random() * 900000).toString();

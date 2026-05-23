@@ -163,7 +163,7 @@ export default function Sidebar({ collapsed, setCollapsed, toggleCollapsed }) {
         <div className="user-sidebar-logo">
           <div className="user-sidebar-logo-content">
             <div className="user-sidebar-logo-image">
-              <img alt="PUAC Logo" src={puacLogo} />
+              <img alt="IsangDiwa Logo" src={puacLogo} />
             </div>
             {!collapsed && (
               <div className="user-sidebar-logo-text">
@@ -241,7 +241,7 @@ export default function Sidebar({ collapsed, setCollapsed, toggleCollapsed }) {
             {!collapsed && (
               <div className="user-sidebar-profile-details">
                 <p className="user-sidebar-profile-name">{profile?.fullName || 'Member'}</p>
-                <p className="user-sidebar-profile-email">{user?.email || 'member@puac.org'}</p>
+                <p className="user-sidebar-profile-email">{user?.email || 'member@isangdiwa.org'}</p>
               </div>
             )}
           </div>

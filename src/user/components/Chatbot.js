@@ -11,7 +11,7 @@ import API from '../../utils/api';
 const KB_SHARED = [
   {
     patterns: ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening', 'kumusta', 'magandang umaga', 'magandang hapon'],
-    responses: ["Hello! 👋 I'm PUAC Chatbot, your Faithly assistant. How can I help you today?"],
+    responses: ["Hello! 👋 I'm IsangDiwa Chatbot, your Faithly assistant. How can I help you today?"],
     quickReplies: ['Donations', 'Savings', 'Attendance', 'Branches']
   },
   {
@@ -31,7 +31,7 @@ const KB_SHARED = [
   },
   {
     patterns: ['branch', 'location', 'address', 'simbahan', 'church', 'community'],
-    responses: ["🏛️ PUAC has multiple branches across the Philippines. Visit the **Branches** page to find locations, contact info, and service schedules."],
+    responses: ["🏛️ IsangDiwa has multiple branches across the Philippines. Visit the **Branches** page to find locations, contact info, and service schedules."],
     quickReplies: ['Attendance', 'Donations']
   },
   {
@@ -45,8 +45,8 @@ const KB_SHARED = [
     quickReplies: ['Donations', 'Savings', 'Attendance']
   },
   {
-    patterns: ['what is faithly', 'about faithly', 'puac', 'ano ang faithly', 'what is puac', 'portal'],
-    responses: ["🙏 **Faithly** is the official digital portal of the **Philippine United Apostolic Church (PUAC)**.\n\nAll members can manage donations, savings, attendance, and branches. **Church officers** also get access to loans."],
+    patterns: ['what is faithly', 'about faithly', 'isangdiwa', 'ano ang faithly', 'what is isangdiwa', 'portal'],
+    responses: ["🙏 **Faithly** is the official digital portal of the **Philippine United Apostolic Church (IsangDiwa)**.\n\nAll members can manage donations, savings, attendance, and branches. **Church officers** also get access to loans."],
     quickReplies: ['Donations', 'Savings', 'Attendance']
   },
 ];
@@ -290,7 +290,7 @@ export default function Chatbot({ isOpen, onClose }) {
             </div>
             <div className="cb-header-info">
               <p className="cb-header-name">
-                PUAC Chatbot
+                IsangDiwa Chatbot
                 <span className="cb-ai-badge">AI</span>
               </p>
               <span className="cb-header-status">
@@ -316,7 +316,7 @@ export default function Chatbot({ isOpen, onClose }) {
               <div className={`cb-bubble cb-bubble--${msg.sender}`}>
                 {msg.greeting ? (
                   <p className="cb-bubble-text">
-                    👋 Hi <strong>{firstName}</strong>! I'm <strong>PUAC Chatbot</strong>, your AI-powered Faithly assistant.
+                    👋 Hi <strong>{firstName}</strong>! I'm <strong>IsangDiwa Chatbot</strong>, your AI-powered Faithly assistant.
                     I can help with <strong>donations</strong>, <strong>savings</strong>, <strong>attendance</strong>, and more.
                     {' '}Type anything to get started!
                   </p>
@@ -374,7 +374,7 @@ export default function Chatbot({ isOpen, onClose }) {
           <input
             ref={inputRef}
             className="cb-input"
-            placeholder="Ask me anything about PUAC..."
+            placeholder="Ask me anything about IsangDiwa..."
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKeyDown}

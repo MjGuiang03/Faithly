@@ -60,7 +60,7 @@ export default function UserLayout() {
         className={`user-chat-button ${chatOpen ? 'user-chat-button--open' : ''}`}
         onClick={() => setChatOpen(prev => !prev)}
         aria-label={chatOpen ? 'Close chat' : 'Open chat'}
-        title={chatOpen ? 'Close chat' : 'Chat with PUAC Chatbot'}
+        title={chatOpen ? 'Close chat' : 'Chat with IsangDiwa Chatbot'}
       >
         {chatOpen ? (
           <X size={22} color="white" />

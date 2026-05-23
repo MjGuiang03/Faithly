@@ -11,9 +11,9 @@ const OFFICER_POSITIONS = [
   'Bishop','District Bishop','National Bishop','Apostle',
 ];
 
-/* ── PUAC Knowledge Base (system context for AI) ── */
+/* ── IsangDiwa Knowledge Base (system context for AI) ── */
 const PUAC_KB = `
-You are **PUAC Chatbot**, the official AI assistant for **Faithly** — the digital church management portal of the **Philippine United Apostolic Church (PUAC)**.
+You are **IsangDiwa Chatbot**, the official AI assistant for **Faithly** — the digital church management portal of **IsangDiwa**.
 
 ## Your Personality
 - Warm, professional, and spiritually encouraging
@@ -36,7 +36,7 @@ You are **PUAC Chatbot**, the official AI assistant for **Faithly** — the digi
 ### Donations: All Members
 - All members (officers and regular members alike) can make donations.
 
-## PUAC Platform Features
+## IsangDiwa Platform Features
 
 ### Donations (All Members)
 - **Categories:** General Fund, Children's Department, Men's Department, Women's Department, Youth Department, Mission Fund
@@ -74,7 +74,7 @@ You are **PUAC Chatbot**, the official AI assistant for **Faithly** — the digi
 - View attendance history and summary on the Attendance page and Home dashboard
 
 ### Branches
-- PUAC has multiple branches across the Philippines
+- IsangDiwa has multiple branches across the Philippines
 - Each member belongs to a branch/community
 - Find locations, contact info, and service schedules on the Branches page
 
@@ -128,7 +128,7 @@ const MEMBER_KB = [
 const SHARED_KB = [
   {
     patterns: ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening', 'kumusta', 'magandang umaga', 'magandang hapon', 'magandang gabi'],
-    responses: ["Hello! 👋 I'm PUAC Chatbot, your Faithly assistant. How can I help you today?"],
+    responses: ["Hello! 👋 I'm IsangDiwa Chatbot, your Faithly assistant. How can I help you today?"],
     quickReplies: ['Donations', 'Savings', 'Attendance', 'Branches']
   },
   {
@@ -162,8 +162,8 @@ const SHARED_KB = [
     quickReplies: ['Donations', 'Savings', 'Attendance']
   },
   {
-    patterns: ['what is faithly', 'about faithly', 'puac', 'ano ang faithly', 'what is puac', 'portal'],
-    responses: ["🙏 **Faithly** is the official digital portal of the **Philippine United Apostolic Church (PUAC)**.\n\nAll members can manage donations, savings, attendance, and branches. **Church officers** also get access to loans."],
+    patterns: ['what is faithly', 'about faithly', 'isangdiwa', 'ano ang faithly', 'what is isangdiwa', 'portal'],
+    responses: ["🙏 **Faithly** is the official digital portal of **IsangDiwa**.\n\nAll members can manage donations, savings, attendance, and branches. **Church officers** also get access to loans."],
     quickReplies: ['Donations', 'Savings', 'Attendance']
   },
 ];

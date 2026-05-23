@@ -3,7 +3,7 @@
 :root {
   --font-size: 16px;
 
-  /* ── PUAC Light Mode ── */
+  /* ── IsangDiwa Light Mode ── */
   --background: #CBD5E1;
   --foreground: #111318;
   --card: #FFFFFF;
@@ -29,7 +29,7 @@
   --ring: #1E3A8A;
   --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 
-  /* PUAC Brand Tokens */
+  /* IsangDiwa Brand Tokens */
   --gold: #F5C800;
   --gold-text: #7A5F00;
   --gold-tint: #FFFBEA;
@@ -66,7 +66,7 @@
 }
 
 .dark {
-  /* ── PUAC Dark Mode — soft warm gray, NOT black ── */
+  /* ── IsangDiwa Dark Mode — soft warm gray, NOT black ── */
   --background: #161922;
   --foreground: #F0F2F8;
   --card: #1E2130;
@@ -92,7 +92,7 @@
   --ring: #7090D0;
   --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 
-  /* PUAC Brand Tokens — gold unchanged, red slightly brightened */
+  /* IsangDiwa Brand Tokens — gold unchanged, red slightly brightened */
   --gold: #F5C800;
   --gold-text: #F5C800;
   --gold-tint: #32300A;

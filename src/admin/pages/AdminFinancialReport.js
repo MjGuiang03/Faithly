@@ -51,13 +51,27 @@ export default function AdminFinancialReport() {
   const [reportYear, setReportYear] = useState(now.getFullYear());
   const [reportType, setReportType] = useState('all');
   const [locationType, setLocationType] = useState('all'); // 'all', 'province', 'specific'
-  const [selectedProvince, setSelectedProvince] = useState('');
+  const [selectedProvinces, setSelectedProvinces] = useState([]);
   const [selectedCommunities, setSelectedCommunities] = useState([]);
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [exporting, setExporting] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+
+  const [provinceSearch, setProvinceSearch] = useState('');
+  const [showProvinceDropdown, setShowProvinceDropdown] = useState(false);
+  const provinceDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (provinceDropdownRef.current && !provinceDropdownRef.current.contains(event.target)) {
+        setShowProvinceDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const adminRole = localStorage.getItem('adminRole'); // 'admin', 'loanAdmin', 'secretaryAdmin'
 
@@ -72,7 +86,7 @@ export default function AdminFinancialReport() {
         setReportYear(parsed.year ?? now.getFullYear());
         setReportType(parsed.type ?? 'all');
         setLocationType(parsed.locationType ?? 'all');
-        setSelectedProvince(parsed.selectedProvince ?? '');
+        setSelectedProvinces(parsed.selectedProvinces ?? []);
         setSelectedCommunities(parsed.selectedCommunities ?? []);
       }
     } catch { /* ignore parse errors */ }
@@ -104,12 +118,12 @@ export default function AdminFinancialReport() {
           year: reportYear,
           type: reportType,
           locationType,
-          selectedProvince,
+          selectedProvinces,
           selectedCommunities,
         }));
       } catch { /* quota exceeded — ignore */ }
     }
-  }, [report, reportMonth, reportYear, reportType, locationType, selectedProvince, selectedCommunities, adminRole]);
+  }, [report, reportMonth, reportYear, reportType, locationType, selectedProvinces, selectedCommunities, adminRole]);
 
   const generateReport = useCallback(async () => {
     setLoading(true);
@@ -125,8 +139,8 @@ export default function AdminFinancialReport() {
       
       if (locationType === 'specific' && selectedCommunities.length > 0) {
         params.set('community', selectedCommunities.join(','));
-      } else if (locationType === 'province' && selectedProvince) {
-        params.set('province', selectedProvince);
+      } else if (locationType === 'province' && selectedProvinces.length > 0) {
+        params.set('province', selectedProvinces.join(','));
       }
 
       const res = await fetch(`${API}/api/admin/financial-report?${params}`, {
@@ -147,11 +161,17 @@ export default function AdminFinancialReport() {
     } finally {
       setLoading(false);
     }
-  }, [reportMonth, reportYear, reportType, locationType, selectedProvince, selectedCommunities, navigate]);
+  }, [reportMonth, reportYear, reportType, locationType, selectedProvinces, selectedCommunities, navigate]);
 
   const toggleCommunity = (c) => {
     setSelectedCommunities(prev => 
       prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]
+    );
+  };
+
+  const toggleProvince = (p) => {
+    setSelectedProvinces(prev => 
+      prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p]
     );
   };
 
@@ -211,6 +231,9 @@ export default function AdminFinancialReport() {
   for (let y = Math.max(2026, now.getFullYear()); y >= 2026; y--) {
     yearOptions.push(y);
   }
+
+  const availableProvinces = Array.from(new Set(branchesData.map(b => b.province).filter(Boolean))).sort();
+  const filteredProvinces = availableProvinces.filter(p => p.toLowerCase().includes(provinceSearch.toLowerCase()));
 
   return (
     <div className="fin-report-page">
@@ -274,14 +297,42 @@ export default function AdminFinancialReport() {
               </div>
 
               {locationType === 'province' && (
-                <div className="fin-report-filter">
-                  <select value={selectedProvince} onChange={e => setSelectedProvince(e.target.value)} className="fin-report-select">
-                    <option value="">Select Province...</option>
-                    {Array.from(new Set(branchesData.map(b => b.province).filter(Boolean))).sort().map(p => (
-                      <option key={p} value={p}>{p}</option>
-                    ))}
-                  </select>
-                  <ChevronDown size={12} className="fin-report-select-arrow" />
+                <div className="fin-report-filter" ref={provinceDropdownRef} style={{ position: 'relative' }}>
+                  <div 
+                    className="fin-report-select" 
+                    style={{ minWidth: '180px', display: 'flex', alignItems: 'center', padding: '0 8px 0 0', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+                  >
+                    <input
+                      type="text"
+                      placeholder={selectedProvinces.length > 0 ? `${selectedProvinces.length} selected` : 'Search Province...'}
+                      value={provinceSearch}
+                      onChange={e => {
+                         setProvinceSearch(e.target.value);
+                         setShowProvinceDropdown(true);
+                      }}
+                      onFocus={() => setShowProvinceDropdown(true)}
+                      style={{ border: 'none', outline: 'none', background: 'transparent', width: '100%', padding: '8px 10px', fontSize: '13px', color: '#374151' }}
+                    />
+                    <ChevronDown size={12} className="fin-report-select-arrow" style={{ position: 'static', cursor: 'pointer' }} onClick={() => setShowProvinceDropdown(!showProvinceDropdown)} />
+                  </div>
+                  
+                  {showProvinceDropdown && (
+                    <div className="fin-report-dropdown-menu" style={{ position: 'absolute', top: '100%', left: 0, width: '100%', background: 'white', border: '1px solid #e5e7eb', borderRadius: '8px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', zIndex: 50, maxHeight: '250px', overflowY: 'auto', marginTop: '4px' }}>
+                      {filteredProvinces.map(p => (
+                        <label key={p} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', cursor: 'pointer', fontSize: '13px', borderBottom: '1px solid #f3f4f6', margin: 0 }}>
+                          <input 
+                            type="checkbox"
+                            checked={selectedProvinces.includes(p)}
+                            onChange={() => toggleProvince(p)}
+                          />
+                          {p}
+                        </label>
+                      ))}
+                      {filteredProvinces.length === 0 && (
+                        <div style={{ padding: '8px 12px', fontSize: '13px', color: '#6b7280' }}>No provinces found</div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </>
@@ -332,7 +383,7 @@ export default function AdminFinancialReport() {
         <div className="fin-report-specific-communities no-print">
           <p className="fin-report-specific-label">Select Communities (Multiple allowed):</p>
           <div className="fin-report-branch-list">
-            {branchesData.map(b => (
+            {[...branchesData].sort((a, b) => a.name.localeCompare(b.name)).map(b => (
               <label key={b.name} className={`fin-report-branch-chip${selectedCommunities.includes(b.name) ? ' selected' : ''}`}>
                 <input 
                   type="checkbox" 
@@ -893,7 +944,7 @@ export default function AdminFinancialReport() {
                 <span className="fin-confirm-label">Location</span>
                 <span className="fin-confirm-value">
                   {locationType === 'all' ? 'All Locations' : 
-                   locationType === 'province' ? `Province: ${selectedProvince || 'None'}` : 
+                   locationType === 'province' ? `${selectedProvinces.length} Provinces Selected` : 
                    `${selectedCommunities.length} Communities Selected`}
                 </span>
               </div>

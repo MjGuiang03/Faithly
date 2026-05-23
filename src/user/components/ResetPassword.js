@@ -170,7 +170,7 @@ export default function ResetPassword({ isOpen, onClose }) {
     if (step === 1) return (
       <>
         <div className="user-reset-header">
-          <img src={puacLogo} alt="PUAC Logo" className="user-reset-logo" />
+          <img src={puacLogo} alt="IsangDiwa Logo" className="user-reset-logo" />
           <h1 className="user-reset-title">Reset Password</h1>
           <p className="user-reset-subtitle">Enter your email and we'll send you a verification code</p>
         </div>
@@ -205,7 +205,7 @@ export default function ResetPassword({ isOpen, onClose }) {
     if (step === 2) return (
       <>
         <div className="user-reset-header">
-          <img src={puacLogo} alt="PUAC Logo" className="user-reset-logo" />
+          <img src={puacLogo} alt="IsangDiwa Logo" className="user-reset-logo" />
           <h1 className="user-reset-title">Enter Verification Code</h1>
           <p className="user-reset-subtitle">We sent a 6-digit code to <strong>{email}</strong></p>
         </div>
@@ -255,7 +255,7 @@ export default function ResetPassword({ isOpen, onClose }) {
     return (
       <>
         <div className="user-reset-header">
-          <img src={puacLogo} alt="PUAC Logo" className="user-reset-logo" />
+          <img src={puacLogo} alt="IsangDiwa Logo" className="user-reset-logo" />
           <h1 className="user-reset-title">Create New Password</h1>
           <p className="user-reset-subtitle">Make it strong and memorable</p>
         </div>

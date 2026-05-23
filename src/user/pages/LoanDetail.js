@@ -402,12 +402,12 @@ function PayNowModal({ loan, onClose, onSuccess }) {
                                 <div style={{ backgroundColor: '#F5F3FF', border: '1px solid #DDD6FE', borderRadius: '12px', padding: '20px', marginTop: '20px', display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
                                     <div style={{ flex: 1, minWidth: '200px' }}>
                                         <div style={{ fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', color: '#6D28D9', marginBottom: '12px', letterSpacing: '0.5px' }}>Send GCash To</div>
-                                        <div style={{ fontSize: '15px', color: '#334155' }}>Name: <strong>PUAC Church</strong></div>
+                                        <div style={{ fontSize: '15px', color: '#334155' }}>Name: <strong>IsangDiwa Church</strong></div>
                                         <div style={{ fontSize: '20px', fontWeight: 800, color: '#4C1D95', marginTop: '8px', letterSpacing: '1px' }}>0912 345 6789</div>
                                     </div>
                                     <div style={{ flex: 1, minWidth: '200px' }}>
                                         <div style={{ fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', color: '#6D28D9', marginBottom: '12px', letterSpacing: '0.5px' }}>Send Maya To</div>
-                                        <div style={{ fontSize: '15px', color: '#334155' }}>Name: <strong>PUAC Church</strong></div>
+                                        <div style={{ fontSize: '15px', color: '#334155' }}>Name: <strong>IsangDiwa Church</strong></div>
                                         <div style={{ fontSize: '20px', fontWeight: 800, color: '#4C1D95', marginTop: '8px', letterSpacing: '1px' }}>0998 765 4321</div>
                                     </div>
                                 </div>

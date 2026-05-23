@@ -266,6 +266,88 @@
   flex-shrink: 0;
 }
 
+/* ══════════════════════════════════════════════════════════════
+   HEADLINE REDESIGN
+   ══════════════════════════════════════════════════════════════ */
+
+/* Wrapper that groups headline + subheadline row */
+.wpt-headline-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 24px;
+}
+
+/* ── Split-color headline: "Isang" white / "Diwa" gold ── */
+.wpt-headline-split {
+  font-family: 'DM Sans', sans-serif !important;
+  font-weight: 700 !important;
+  font-size: clamp(3.5rem, 6vw, 5rem) !important;
+  margin-bottom: 10px !important;
+  line-height: 1.05;
+  letter-spacing: -4px;
+}
+
+.wpt-hl-white {
+  color: #ffffff;
+  
+}
+
+.wpt-hl-gold {
+  color: var(--wpt-gold-light);
+  /* #F0D89A — warm gold */
+}
+
+/* ── Subheadline row: thin rule + church name ── */
+.wpt-subheadline-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 2px;
+  margin-bottom: 0;
+}
+
+.wpt-subheadline-rule {
+  display: block;
+  width: 32px;
+  height: 1px;
+  background: var(--wpt-gold);
+  opacity: 0.55;
+  flex-shrink: 0;
+}
+
+/* Override the base subheadline so it sits flush in the new row */
+.wpt-subheadline-row .wpt-welcome-subheadline {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  font-size: clamp(0.85rem, 1.4vw, 1.1rem);
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.75);
+  font-family: 'DM Sans', sans-serif;
+  /* matches body font — not serif */
+}
+
+/* ── Responsive tweaks ── */
+@media (max-width: 560px) {
+  .wpt-headline-split {
+    letter-spacing: -0.5px;
+  }
+
+  .wpt-subheadline-row {
+    gap: 10px;
+  }
+
+  .wpt-subheadline-rule {
+    width: 20px;
+  }
+
+  .wpt-subheadline-row .wpt-welcome-subheadline {
+    font-size: 0.82rem;
+  }
+}
+
+
 /* Headline */
 .wpt-welcome-headline {
   font-family: 'Cormorant Garamond', serif;
@@ -280,6 +362,15 @@
 .wpt-welcome-headline em {
   font-style: italic;
   color: var(--wpt-gold-light);
+}
+
+.wpt-welcome-subheadline {
+  color: white;
+  font-weight: 400;
+  font-size: 1.5rem;
+  opacity: 0.9;
+  margin-top: -20px;
+  margin-bottom: 24px;
 }
 
 /* Body copy */

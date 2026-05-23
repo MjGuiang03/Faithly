@@ -82,7 +82,7 @@ export default function LoanAdminSidebar() {
       <div className="loan-admin-sidebar-logo">
         <div className="loan-admin-sidebar-logo-content">
           <div className="loan-admin-sidebar-logo-image">
-            <img alt="PUAC Logo" src={puacLogo} />
+            <img alt="IsangDiwa Logo" src={puacLogo} />
           </div>
           <div className="loan-admin-sidebar-logo-text">
             <h1>IsangDiwa</h1>

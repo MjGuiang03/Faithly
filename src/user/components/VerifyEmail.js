@@ -174,7 +174,7 @@ export default function VerifyEmailModal({ isOpen, onClose, email, onVerify, onR
           
           <div className="user-verify-header">
             <div className="user-verify-icon-wrapper">
-              <img src={puacLogo} alt="PUAC Logo" className="user-verify-mail-icon" size={48} />
+              <img src={puacLogo} alt="IsangDiwa Logo" className="user-verify-mail-icon" size={48} />
             </div>
             <h1 className="user-verify-title">Enter Verification Code</h1>
             <p className="user-verify-text">

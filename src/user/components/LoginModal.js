@@ -51,8 +51,8 @@ const validateEmailAdvanced = (email) => {
 // ── FaithLy brand mark (cross SVG) ───────────────────────────────────────────
 const BrandMark = () => (
   <div className="user-login-brand">
-    <img src={puacLogo} alt="PUAC Logo" className="user-login-brand-mark-img" />
-    <span className="user-login-brand-name">PUAC</span>
+    <img src={puacLogo} alt="IsangDiwa Logo" className="user-login-brand-mark-img" />
+    <span className="user-login-brand-name">IsangDiwa</span>
   </div>
 );
 

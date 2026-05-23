@@ -225,7 +225,7 @@ export default function Branches() {
                       {[
                         { icon: '📍', val: `${drawerBranch?.name}, ${drawerBranch?.province}` },
                         { icon: '📞', val: '+63 90 000 0000' },
-                        { icon: '✉️', val: 'puac@gmail.com' },
+                        { icon: '✉️', val: 'isangdiwa@gmail.com' },
                       ].map(({ icon, val }) => (
                         <div key={val} className="user-drawer-contact-row">
                           <span className="user-drawer-contact-emoji">{icon}</span>

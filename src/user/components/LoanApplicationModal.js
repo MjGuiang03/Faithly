@@ -279,7 +279,7 @@ export default function LoanApplicationModal({
       console.error('Camera error:', err);
       setCameraError('Unable to access camera. Please allow camera permissions and try again.');
     }
-  }, [checkIdFrame]);
+  }, []);
 
   const capturePhoto = useCallback(() => {
     if (!videoRef.current || !canvasRef.current) return;

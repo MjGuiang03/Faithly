@@ -711,7 +711,7 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
               </div>
               <div className="user-policy-modal-body">
                 <ol className="user-policy-list">
-                  <li><strong>Acceptance of Terms</strong><br />By accessing and using FaithLy, a loan management system developed for the Philippine United Apostolic Church, you agree to comply with and be bound by these Terms and Conditions. If you do not agree, you must discontinue use of the system.</li>
+                  <li><strong>Acceptance of Terms</strong><br />By accessing and using FaithLy, a loan management system developed for IsangDiwa, you agree to comply with and be bound by these Terms and Conditions. If you do not agree, you must discontinue use of the system.</li>
                   <li><strong>Purpose of the System</strong><br />FaithLy is designed to facilitate transparent and accountable management of church-related loan applications, approvals, payments, and member records in support of responsible financial stewardship.</li>
                   <li><strong>Authorized Users</strong><br />Only registered and approved church members, officers, and administrators are permitted to access FaithLy. Access rights are assigned based on user roles defined by church authorities.</li>
                   <li><strong>User Responsibilities</strong><br />Users are responsible for maintaining the confidentiality of their login credentials and for all activities performed under their accounts. Any unauthorized use must be reported immediately.</li>

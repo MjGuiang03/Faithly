@@ -39,7 +39,7 @@ export default function DonationInfoModal({ isOpen, onClose }) {
               <div className="donation-details">
                 <div className="detail-row">
                   <span className="detail-label">Name:</span>
-                  <span className="detail-value">PUAC Church</span>
+                  <span className="detail-value">IsangDiwa Church</span>
                 </div>
                 <div className="detail-row">
                   <span className="detail-label">Number:</span>
@@ -65,7 +65,7 @@ export default function DonationInfoModal({ isOpen, onClose }) {
               <div className="donation-details">
                 <div className="detail-row">
                   <span className="detail-label">Name:</span>
-                  <span className="detail-value">PUAC Church</span>
+                  <span className="detail-value">IsangDiwa Church</span>
                 </div>
                 <div className="detail-row">
                   <span className="detail-label">Number:</span>

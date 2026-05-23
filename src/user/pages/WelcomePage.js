@@ -27,7 +27,6 @@ export default function WelcomePage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Auth Modals State
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSignupModal, setShowSignupModal] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
@@ -43,22 +42,11 @@ export default function WelcomePage() {
 
   const handleOpenLogin = () => setShowLoginModal(true);
   const handleCloseLogin = () => setShowLoginModal(false);
-
   const handleOpenSignup = () => setShowSignupModal(true);
   const handleCloseSignup = () => setShowSignupModal(false);
-
-  const handleSwitchToSignup = () => {
-    setShowLoginModal(false);
-    setShowSignupModal(true);
-  };
-  const handleSwitchToReset = () => {
-    setShowLoginModal(false);
-    setShowResetModal(true);
-  };
-  const handleSwitchToLoginFromSignup = () => {
-    setShowSignupModal(false);
-    setShowLoginModal(true);
-  };
+  const handleSwitchToSignup = () => { setShowLoginModal(false); setShowSignupModal(true); };
+  const handleSwitchToReset = () => { setShowLoginModal(false); setShowResetModal(true); };
+  const handleSwitchToLoginFromSignup = () => { setShowSignupModal(false); setShowLoginModal(true); };
 
   const [loading, setLoading] = useState(true);
   const [scrolled, setScrolled] = useState(false);
@@ -73,31 +61,18 @@ export default function WelcomePage() {
   const maxIndex = slidesCount - visibleSlides;
 
   useEffect(() => {
-    // Loader
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 2000);
-
-    // Navbar Scroll
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
+    const timer = setTimeout(() => setLoading(false), 2000);
+    const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
 
-    // Scroll Reveal
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('wpt-visible');
-        }
+        if (entry.isIntersecting) entry.target.classList.add('wpt-visible');
       });
     }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
 
-    revealRefs.current.forEach(el => {
-      if (el) observer.observe(el);
-    });
+    revealRefs.current.forEach(el => { if (el) observer.observe(el); });
 
-    // Auto Carousel
     const autoSlide = setInterval(() => {
       setCurrentSlide(prev => prev < maxIndex ? prev + 1 : 0);
     }, 5000);
@@ -116,16 +91,13 @@ export default function WelcomePage() {
         setSlideWidth(trackRef.current.children[0].offsetWidth + 20);
       }
     };
-
     updateWidth();
     window.addEventListener('resize', updateWidth);
     return () => window.removeEventListener('resize', updateWidth);
   }, []);
 
   const addToRefs = el => {
-    if (el && !revealRefs.current.includes(el)) {
-      revealRefs.current.push(el);
-    }
+    if (el && !revealRefs.current.includes(el)) revealRefs.current.push(el);
   };
 
   const handlePrev = () => setCurrentSlide(prev => Math.max(0, prev - 1));
@@ -135,9 +107,10 @@ export default function WelcomePage() {
   return (
     <>
       <div className="wpt-wrapper">
+
         {/* LOADER */}
         <div id="wpt-loader" className={`wpt-loader ${!loading ? 'wpt-done' : ''}`}>
-          <img src={puacLogo} alt="PUAC Logo" className="wpt-loader-logo" />
+          <img src={puacLogo} alt="IsangDiwa Logo" className="wpt-loader-logo" />
           <div className="wpt-loader-text">Philippine United Apostolic Church</div>
           <div className="wpt-loader-bar"><div className="wpt-loader-fill"></div></div>
         </div>
@@ -147,7 +120,20 @@ export default function WelcomePage() {
           <div className="wpt-ticker-inner">
             <span className="wpt-ticker-label">📢 Announcements</span>
             <div className="wpt-ticker-track" id="wpt-tickerTrack">
-              <span className="wpt-ticker-item">Sunday Service — 9:00 AM &amp; 6:00 PM<span className="wpt-ticker-sep">✦</span>Youth Gathering — Every Friday 7:00 PM<span className="wpt-ticker-sep">✦</span>Monthly Thanksgiving Offering — 3rd Sunday<span className="wpt-ticker-sep">✦</span>Prayer &amp; Fasting Week — July 14–18<span className="wpt-ticker-sep">✦</span>New Branch Opening — Caloocan District<span className="wpt-ticker-sep">✦</span>Online Giving now available via GCash &amp; Maya<span className="wpt-ticker-sep">✦</span>Sunday Service — 9:00 AM &amp; 6:00 PM<span className="wpt-ticker-sep">✦</span>Youth Gathering — Every Friday 7:00 PM<span className="wpt-ticker-sep">✦</span>Monthly Thanksgiving Offering — 3rd Sunday<span className="wpt-ticker-sep">✦</span>Prayer &amp; Fasting Week — July 14–18<span className="wpt-ticker-sep">✦</span>New Branch Opening — Caloocan District<span className="wpt-ticker-sep">✦</span>Online Giving now available via GCash &amp; Maya</span>
+              <span className="wpt-ticker-item">
+                Sunday Service — 9:00 AM &amp; 6:00 PM<span className="wpt-ticker-sep">✦</span>
+                Youth Gathering — Every Friday 7:00 PM<span className="wpt-ticker-sep">✦</span>
+                Monthly Thanksgiving Offering — 3rd Sunday<span className="wpt-ticker-sep">✦</span>
+                Prayer &amp; Fasting Week — July 14–18<span className="wpt-ticker-sep">✦</span>
+                New Branch Opening — Caloocan District<span className="wpt-ticker-sep">✦</span>
+                Online Giving now available via GCash &amp; Maya<span className="wpt-ticker-sep">✦</span>
+                Sunday Service — 9:00 AM &amp; 6:00 PM<span className="wpt-ticker-sep">✦</span>
+                Youth Gathering — Every Friday 7:00 PM<span className="wpt-ticker-sep">✦</span>
+                Monthly Thanksgiving Offering — 3rd Sunday<span className="wpt-ticker-sep">✦</span>
+                Prayer &amp; Fasting Week — July 14–18<span className="wpt-ticker-sep">✦</span>
+                New Branch Opening — Caloocan District<span className="wpt-ticker-sep">✦</span>
+                Online Giving now available via GCash &amp; Maya
+              </span>
             </div>
           </div>
         </div>
@@ -155,20 +141,24 @@ export default function WelcomePage() {
         {/* NAVBAR */}
         <nav id="wpt-navbar" className={`wpt-nav ${scrolled ? 'wpt-scrolled' : ''}`}>
           <a href="#home" className="wpt-nav-logo">
-            <img src={puacLogo} alt="PUAC Logo" className="wpt-logo-img" />
-            <div className="wpt-nav-name">
-              PUAC
-            </div>
+            <img src={puacLogo} alt="IsangDiwa Logo" className="wpt-logo-img" />
+            <div className="wpt-nav-name">IsangDiwa</div>
           </a>
           <ul className="wpt-nav-links">
             <li><a href="#features">Features</a></li>
             <li><a href="#gallery">Gallery</a></li>
             <li><a href="#/" onClick={(e) => { e.preventDefault(); setShowDonationModal(true); }}>Give</a></li>
-            <li><a href="#/" className="wpt-nav-cta" onClick={(e) => { e.preventDefault(); handleOpenLogin(); }}>Log In</a></li>
+            <li>
+              <a href="#/" className="wpt-nav-cta" onClick={(e) => { e.preventDefault(); handleOpenLogin(); }}>
+                Log In
+              </a>
+            </li>
           </ul>
         </nav>
 
-        {/* WELCOME SECTION */}
+        {/* ══════════════════════════════════════════════
+            WELCOME SECTION — redesigned headline layout
+            ══════════════════════════════════════════════ */}
         <section className="wpt-welcome-section">
           <div className="wpt-welcome-bg">
             <div className="wpt-welcome-cross-watermark"></div>
@@ -181,22 +171,48 @@ export default function WelcomePage() {
           <div className="wpt-welcome-inner">
             {/* LEFT COLUMN */}
             <div className="wpt-welcome-left">
+
+              {/* Eyebrow */}
               <div className="wpt-welcome-eyebrow">
                 <span className="wpt-eyebrow-line"></span>
                 All Honour to God
               </div>
 
-              <h1 className="wpt-welcome-headline">
-                Philippine<br />United<br />Apostolic<br />Church
-              </h1>
+              {/* ── REDESIGNED HEADLINE BLOCK ── */}
+              <div className="wpt-headline-block">
+                {/* "Isang" white + "Diwa" gold — same baseline, split color */}
+                <h1 className="wpt-welcome-headline wpt-headline-split">
+                  <span className="wpt-hl-white">Isang</span><span className="wpt-hl-gold">Diwa</span>
+                </h1>
+                <div className="wpt-subheadline-row">
+                  <span className="wpt-subheadline-rule"></span>
+                  <h3 className="wpt-welcome-subheadline">
+                    Philippine United Apostolic Church
+                  </h3>
+                </div>
+              </div>
+              {/* ── END REDESIGNED HEADLINE BLOCK ── */}
 
               <p className="wpt-welcome-body">
-                A community of believers committed to transforming lives across the Philippines through faith, fellowship, and digital empowerment.
+                A community of believers committed to transforming lives across the Philippines
+                through faith, fellowship, and digital empowerment.
               </p>
 
               <div className="wpt-welcome-ctas">
-                <a href="#/" className="wpt-welcome-btn-primary" onClick={(e) => { e.preventDefault(); handleOpenSignup(); }}>Join Our Community</a>
-                <a href="#/" className="wpt-welcome-btn-outline" onClick={(e) => { e.preventDefault(); setShowDonationModal(true); }}>Give Offering</a>
+                <a
+                  href="#/"
+                  className="wpt-welcome-btn-primary"
+                  onClick={(e) => { e.preventDefault(); handleOpenSignup(); }}
+                >
+                  Join Our Community
+                </a>
+                <a
+                  href="#/"
+                  className="wpt-welcome-btn-outline"
+                  onClick={(e) => { e.preventDefault(); setShowDonationModal(true); }}
+                >
+                  Give Offering
+                </a>
               </div>
             </div>
 
@@ -204,7 +220,7 @@ export default function WelcomePage() {
             <div className="wpt-welcome-right">
               <div className="wpt-welcome-photo-grid">
                 <div className="wpt-welcome-photo wpt-welcome-photo-main wpt-reveal" ref={addToRefs}>
-                  <img src={puacCongregation} alt="PUAC Congregation" />
+                  <img src={puacCongregation} alt="IsangDiwa Congregation" />
                   <div className="wpt-photo-overlay">
                     <span className="wpt-photo-badge">Main Assembly</span>
                   </div>
@@ -212,7 +228,7 @@ export default function WelcomePage() {
 
                 <div className="wpt-welcome-photo-stack">
                   <div className="wpt-welcome-photo wpt-reveal wpt-delay-10" ref={addToRefs}>
-                    <img src={puacCommunity} alt="PUAC Community" />
+                    <img src={puacCommunity} alt="IsangDiwa Community" />
                     <div className="wpt-photo-overlay">
                       <span className="wpt-photo-badge">Church Family</span>
                     </div>
@@ -232,9 +248,7 @@ export default function WelcomePage() {
           <div className="wpt-welcome-scroll-hint">
             <div className="wpt-scroll-dot-gold"></div>
             <span className="wpt-scroll-hint-text">Scroll to Explore</span>
-            <div className="wpt-scroll-dots">
-
-            </div>
+            <div className="wpt-scroll-dots"></div>
           </div>
         </section>
 
@@ -248,11 +262,22 @@ export default function WelcomePage() {
           </div>
           <div className="wpt-hero-inner">
             <div className="wpt-hero-content">
-              <h1 className="wpt-hero-title">Built on <em>Faith,</em><br />Serving with <em>Purpose</em></h1>
-              <p className="wpt-hero-sub">A community of believers united in worship, empowered through digital tools to manage savings, give faithfully, and grow together as one body in Christ.</p>
+              <h1 className="wpt-hero-title">
+                Built on <em>Faith,</em><br />Serving with <em>Purpose</em>
+              </h1>
+              <p className="wpt-hero-sub">
+                A community of believers united in worship, empowered through digital tools to manage
+                savings, give faithfully, and grow together as one body in Christ.
+              </p>
               <div className="wpt-hero-actions">
                 <a href="#features" className="wpt-btn-primary">Explore Features →</a>
-                <a href="#/" className="wpt-btn-secondary" onClick={(e) => { e.preventDefault(); setShowDonationModal(true); }}>Give Offering</a>
+                <a
+                  href="#/"
+                  className="wpt-btn-secondary"
+                  onClick={(e) => { e.preventDefault(); setShowDonationModal(true); }}
+                >
+                  Give Offering
+                </a>
               </div>
               <div className="wpt-hero-stats">
                 <div>
@@ -302,7 +327,11 @@ export default function WelcomePage() {
             </div>
           </div>
           <div className="wpt-carousel-track-wrap">
-            <div className="wpt-carousel-track" ref={trackRef} style={{ transform: slideWidth ? `translateX(-${currentSlide * slideWidth}px)` : 'none' }}>
+            <div
+              className="wpt-carousel-track"
+              ref={trackRef}
+              style={{ transform: slideWidth ? `translateX(-${currentSlide * slideWidth}px)` : 'none' }}
+            >
               <div className="wpt-carousel-slide">
                 <img src={thanksgiving} alt="Annual Convention" className="wpt-carousel-img-placeholder" style={{ objectFit: 'cover', width: '100%', height: '100%', borderRadius: '12px' }} />
                 <div className="wpt-carousel-overlay">
@@ -342,7 +371,11 @@ export default function WelcomePage() {
           </div>
           <div className="wpt-carousel-dots">
             {[...Array(maxIndex + 1)].map((_, i) => (
-              <div key={i} className={`wpt-dot ${currentSlide === i ? 'wpt-active' : ''}`} onClick={() => goTo(i)}></div>
+              <div
+                key={i}
+                className={`wpt-dot ${currentSlide === i ? 'wpt-active' : ''}`}
+                onClick={() => goTo(i)}
+              ></div>
             ))}
           </div>
         </div>
@@ -350,7 +383,9 @@ export default function WelcomePage() {
         {/* VERSE BANNER */}
         <div className="wpt-verse-banner wpt-reveal" ref={addToRefs}>
           <div className="wpt-verse-cross-bg"></div>
-          <div className="wpt-verse-text">"For where two or three are gathered in my name, there am I among them."</div>
+          <div className="wpt-verse-text">
+            "For where two or three are gathered in my name, there am I among them."
+          </div>
           <div className="wpt-verse-ref">Matthew 18:20 · ESV</div>
         </div>
 
@@ -362,7 +397,10 @@ export default function WelcomePage() {
                 <div className="wpt-section-eyebrow">System Features</div>
                 <div className="wpt-section-title">Everything Your<br />Church Needs</div>
               </div>
-              <p className="wpt-section-sub wpt-reveal-right" ref={addToRefs}>A complete digital platform built for Filipino apostolic churches — from financial tools to member management, all in one place.</p>
+              <p className="wpt-section-sub wpt-reveal-right" ref={addToRefs}>
+                A complete digital platform built for Filipino apostolic churches — from financial
+                tools to member management, all in one place.
+              </p>
             </div>
             <div className="wpt-features-grid">
               <div className="wpt-feature-card wpt-reveal wpt-delay-05" ref={addToRefs}>
@@ -401,7 +439,13 @@ export default function WelcomePage() {
                 <div className="wpt-section-eyebrow">Giving &amp; Community</div>
                 <div className="wpt-section-title wpt-mb-0">One Body,<br />Many Ways to Give</div>
               </div>
-              <a href="#/" className="wpt-btn-primary wpt-shrink-0" onClick={(e) => { e.preventDefault(); setShowDonationModal(true); }}>Start Giving →</a>
+              <a
+                href="#/"
+                className="wpt-btn-primary wpt-shrink-0"
+                onClick={(e) => { e.preventDefault(); setShowDonationModal(true); }}
+              >
+                Start Giving →
+              </a>
             </div>
             <div className="wpt-bento-grid" id="donate">
               <div className="wpt-bento-item wpt-bento-navy wpt-reveal wpt-delay-05" ref={addToRefs}>
@@ -422,7 +466,13 @@ export default function WelcomePage() {
                         <span className="wpt-donation-method">Cash</span>
                       </div>
                     </div>
-                    <a href="#/" className="wpt-btn-gold wpt-btn-inline-mt" onClick={(e) => { e.preventDefault(); setShowDonationModal(true); }}>Give Now →</a>
+                    <a
+                      href="#/"
+                      className="wpt-btn-gold wpt-btn-inline-mt"
+                      onClick={(e) => { e.preventDefault(); setShowDonationModal(true); }}
+                    >
+                      Give Now →
+                    </a>
                   </div>
                 </div>
               </div>
@@ -482,11 +532,20 @@ export default function WelcomePage() {
             <div className="wpt-cta-inner wpt-reveal" ref={addToRefs}>
               <div className="wpt-relative-z1">
                 <div className="wpt-cta-text-label">Get Started Today</div>
-                <div className="wpt-cta-title">Join the PUAC Digital Community</div>
-                <p className="wpt-cta-sub">Register as a member, access your profile, manage your savings goals, and stay connected with your branch — all from one platform.</p>
+                <div className="wpt-cta-title">Join the IsangDiwa Digital Community</div>
+                <p className="wpt-cta-sub">
+                  Register as a member, access your profile, manage your savings goals, and stay
+                  connected with your branch — all from one platform.
+                </p>
               </div>
               <div className="wpt-cta-actions wpt-relative-z1">
-                <a href="#/" className="wpt-btn-gold" onClick={(e) => { e.preventDefault(); handleOpenSignup(); }}>Register Now →</a>
+                <a
+                  href="#/"
+                  className="wpt-btn-gold"
+                  onClick={(e) => { e.preventDefault(); handleOpenSignup(); }}
+                >
+                  Register Now →
+                </a>
               </div>
               <div className="wpt-cta-cross"></div>
             </div>
@@ -499,12 +558,15 @@ export default function WelcomePage() {
             <div className="wpt-footer-top">
               <div className="wpt-footer-brand">
                 <a href="#" className="wpt-nav-logo wpt-no-underline">
-                  <img src={puacLogo} alt="PUAC Logo" className="wpt-logo-img" />
+                  <img src={puacLogo} alt="IsangDiwa Logo" className="wpt-logo-img" />
                   <div className="wpt-nav-name wpt-text-white wpt-footer-logo-text">
-                    Philippine United Apostolic Church
+                    IsangDiwa
                   </div>
                 </a>
-                <p>A church rooted in apostolic doctrine, committed to transforming communities across the Philippines through faith, fellowship, and digital empowerment.</p>
+                <p>
+                  A church rooted in apostolic doctrine, committed to transforming communities
+                  across the Philippines through faith, fellowship, and digital empowerment.
+                </p>
               </div>
               <div className="wpt-footer-col">
                 <h4>Quick Links</h4>
@@ -536,7 +598,7 @@ export default function WelcomePage() {
               </div>
             </div>
             <div className="wpt-footer-bottom">
-              <span>© 2026 Philippine United Apostolic Church. All rights reserved.</span>
+              <span>© 2026 IsangDiwa | Philippine United Apostolic Church. All rights reserved.</span>
               <span>Glorifying God · Serving People</span>
             </div>
           </div>
@@ -559,16 +621,13 @@ export default function WelcomePage() {
         isOpen={showResetModal}
         onClose={() => {
           setShowResetModal(false);
-          if (location.pathname === '/reset-password') {
-            navigate('/', { replace: true });
-          }
+          if (location.pathname === '/reset-password') navigate('/', { replace: true });
         }}
       />
       <DonationInfoModal
         isOpen={showDonationModal}
         onClose={() => setShowDonationModal(false)}
       />
-
     </>
   );
 }

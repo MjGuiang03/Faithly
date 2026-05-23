@@ -672,7 +672,7 @@ export default function Donation() {
               <div className="user-receipt-header-content">
                 <Receipt className="user-receipt-main-icon" size={32} />
                 <h2 className="user-receipt-header-title">Donation Receipt</h2>
-                <p className="user-receipt-header-subtitle">PUAC Official Record</p>
+                <p className="user-receipt-header-subtitle">IsangDiwa Official Record</p>
               </div>
               <button
                 className="user-receipt-close-btn"
