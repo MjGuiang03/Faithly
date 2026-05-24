@@ -111,6 +111,7 @@ export default function WelcomePage() {
         {/* LOADER */}
         <div id="wpt-loader" className={`wpt-loader ${!loading ? 'wpt-done' : ''}`}>
           <img src={puacLogo} alt="IsangDiwa Logo" className="wpt-loader-logo" />
+          <div className="wpt-loader-brand"><span className="brand-text-isang">Isang</span><span className="brand-text-diwa">Diwa</span></div>
           <div className="wpt-loader-text">Philippine United Apostolic Church</div>
           <div className="wpt-loader-bar"><div className="wpt-loader-fill"></div></div>
         </div>

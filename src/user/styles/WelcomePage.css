@@ -52,10 +52,19 @@
   animation: wpt-fadeInUp 1.4s ease forwards;
 }
 
+.wpt-loader-brand {
+  font-size: clamp(3.5rem, 10vw, 5rem);
+  color: white;
+  text-align: center;
+  opacity: 0;
+  animation: wpt-fadeInUp 1.4s ease forwards;
+  margin-bottom: 8px;
+}
+
 .wpt-loader-text {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(1.6rem, 5vw, 4rem);
-  color: var(--wpt-gold-light);
+  font-family: 'DM Sans', sans-serif;
+  font-size: clamp(0.9rem, 2vw, 1.1rem);
+  color: rgba(255, 255, 255, 0.7);
   letter-spacing: 0.12em;
   text-align: center;
   padding: 0 20px;
