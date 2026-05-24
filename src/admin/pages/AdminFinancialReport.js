@@ -47,7 +47,10 @@ export default function AdminFinancialReport() {
   const now = new Date();
   const reportRef = useRef(null);
 
+  const [periodMode, setPeriodMode] = useState('full');
   const [reportMonth, setReportMonth] = useState('');
+  const [startMonth, setStartMonth] = useState(0);
+  const [endMonth, setEndMonth] = useState(11);
   const [reportYear, setReportYear] = useState(now.getFullYear());
   const [reportType, setReportType] = useState('all');
   const [locationType, setLocationType] = useState('all'); // 'all', 'province', 'specific'
@@ -82,7 +85,10 @@ export default function AdminFinancialReport() {
       if (cached) {
         const parsed = JSON.parse(cached);
         setReport(parsed.report);
+        setPeriodMode(parsed.periodMode ?? 'full');
         setReportMonth(parsed.month ?? '');
+        setStartMonth(parsed.startMonth ?? 0);
+        setEndMonth(parsed.endMonth ?? 11);
         setReportYear(parsed.year ?? now.getFullYear());
         setReportType(parsed.type ?? 'all');
         setLocationType(parsed.locationType ?? 'all');
@@ -114,7 +120,10 @@ export default function AdminFinancialReport() {
       try {
         sessionStorage.setItem(`${SESSION_KEY}_${adminRole}`, JSON.stringify({
           report,
+          periodMode,
           month: reportMonth,
+          startMonth,
+          endMonth,
           year: reportYear,
           type: reportType,
           locationType,
@@ -123,7 +132,7 @@ export default function AdminFinancialReport() {
         }));
       } catch { /* quota exceeded — ignore */ }
     }
-  }, [report, reportMonth, reportYear, reportType, locationType, selectedProvinces, selectedCommunities, adminRole]);
+  }, [report, periodMode, reportMonth, startMonth, endMonth, reportYear, reportType, locationType, selectedProvinces, selectedCommunities, adminRole]);
 
   const generateReport = useCallback(async () => {
     setLoading(true);
@@ -134,7 +143,11 @@ export default function AdminFinancialReport() {
 
       const params = new URLSearchParams();
       params.set('year', reportYear);
-      if (reportMonth !== '') params.set('month', reportMonth);
+      if (periodMode === 'month' && reportMonth !== '') params.set('month', reportMonth);
+      if (periodMode === 'range') {
+        params.set('startMonth', startMonth);
+        params.set('endMonth', endMonth);
+      }
       params.set('type', reportType);
       
       if (locationType === 'specific' && selectedCommunities.length > 0) {
@@ -161,7 +174,7 @@ export default function AdminFinancialReport() {
     } finally {
       setLoading(false);
     }
-  }, [reportMonth, reportYear, reportType, locationType, selectedProvinces, selectedCommunities, navigate]);
+  }, [periodMode, reportMonth, startMonth, endMonth, reportYear, reportType, locationType, selectedProvinces, selectedCommunities, navigate]);
 
   const toggleCommunity = (c) => {
     setSelectedCommunities(prev => 
@@ -191,7 +204,8 @@ export default function AdminFinancialReport() {
   };
 
   const getPeriodName = () => {
-    if (reportMonth !== '') return `${MONTHS[parseInt(reportMonth)]} ${reportYear}`;
+    if (periodMode === 'range') return `${MONTH_SHORT[startMonth]} - ${MONTH_SHORT[endMonth]} ${reportYear}`;
+    if (periodMode === 'month' && reportMonth !== '') return `${MONTHS[parseInt(reportMonth)]} ${reportYear}`;
     return `Full Year ${reportYear}`;
   };
 
@@ -340,14 +354,50 @@ export default function AdminFinancialReport() {
 
           <div className="fin-report-filter">
             <Calendar size={14} />
-            <select value={reportMonth} onChange={e => setReportMonth(e.target.value)} className="fin-report-select">
-              <option value="">Full Year</option>
+            <select 
+              value={periodMode === 'full' ? 'full' : periodMode === 'range' ? 'range' : `month-${reportMonth}`} 
+              onChange={e => {
+                const val = e.target.value;
+                if (val === 'full') setPeriodMode('full');
+                else if (val === 'range') setPeriodMode('range');
+                else {
+                  setPeriodMode('month');
+                  setReportMonth(val.replace('month-', ''));
+                }
+              }} 
+              className="fin-report-select"
+            >
+              <option value="full">Full Year</option>
               {MONTHS.map((m, i) => (
-                <option key={i} value={i}>{m}</option>
+                <option key={i} value={`month-${i}`}>{m}</option>
               ))}
+              <option value="range">Custom Range...</option>
             </select>
             <ChevronDown size={12} className="fin-report-select-arrow" />
           </div>
+
+          {periodMode === 'range' && (
+            <>
+              <div className="fin-report-filter">
+                <span style={{fontSize: '13px', color: '#6b7280', paddingRight: '4px'}}>From</span>
+                <select value={startMonth} onChange={e => setStartMonth(Number(e.target.value))} className="fin-report-select" style={{ minWidth: '70px', paddingLeft: 0 }}>
+                  {MONTHS.map((m, i) => (
+                    <option key={i} value={i}>{MONTH_SHORT[i]}</option>
+                  ))}
+                </select>
+                <ChevronDown size={12} className="fin-report-select-arrow" />
+              </div>
+              <div className="fin-report-filter">
+                <span style={{fontSize: '13px', color: '#6b7280', paddingRight: '4px'}}>To</span>
+                <select value={endMonth} onChange={e => setEndMonth(Number(e.target.value))} className="fin-report-select" style={{ minWidth: '70px', paddingLeft: 0 }}>
+                  {MONTHS.map((m, i) => (
+                    <option key={i} value={i}>{MONTH_SHORT[i]}</option>
+                  ))}
+                </select>
+                <ChevronDown size={12} className="fin-report-select-arrow" />
+              </div>
+            </>
+          )}
 
           <div className="fin-report-filter">
             <select value={reportYear} onChange={e => setReportYear(Number(e.target.value))} className="fin-report-select">
@@ -502,6 +552,7 @@ export default function AdminFinancialReport() {
                         </div>
                       ))}
                     </div>
+                    <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>Period: {report.period}</p>
                   </div>
                 )}
 
@@ -523,9 +574,10 @@ export default function AdminFinancialReport() {
                           <XAxis dataKey="month" tick={{ fontSize: 11 }} />
                           <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false} />
                           <Tooltip formatter={v => fmt(v)} />
-                          <Bar dataKey="value" fill="#0D1F45" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="value" fill="#0D1F45" radius={[4, 4, 0, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
+                      <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>Period: {report.period}</p>
                     </div>
                   );
                 })()}
@@ -615,26 +667,29 @@ export default function AdminFinancialReport() {
                         <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '11px' }} />
                       </PieChart>
                     </ResponsiveContainer>
+                    <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>Period: {report.period}</p>
                   </div>
                 )}
 
-                {/* Application Status Bar */}
-                {report.loans.byStatus?.length > 0 && (
+                {/* Monthly Trend Bar */}
+                {report.loans.byMonth?.length > 0 && (
                   <div className="fin-report-chart-card">
-                    <h3 className="fin-report-chart-title">Application Status Breakdown</h3>
+                    <h3 className="fin-report-chart-title">Monthly Trend</h3>
                     <ResponsiveContainer width="100%" height={220}>
-                      <BarChart data={report.loans.byStatus} layout="vertical" margin={{ left: 10 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={true} vertical={false} />
-                        <XAxis type="number" tick={{ fontSize: 11 }} allowDecimals={false} />
-                        <YAxis type="category" dataKey="status" tick={{ fontSize: 11 }} width={80} />
-                        <Tooltip formatter={(v) => v + ' loans'} />
-                        <Bar dataKey="count" radius={[0, 4, 4, 0]} barSize={20}>
-                          {report.loans.byStatus.map((s, i) => (
-                            <Cell key={i} fill={getStatusColor(s.status)} />
-                          ))}
-                        </Bar>
+                      <BarChart data={report.loans.byMonth} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                        <XAxis dataKey="month" tick={{ fontSize: 10 }} tickFormatter={v => MONTH_SHORT[parseInt(v.split('-')[1])-1]} />
+                        <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false} />
+                        <Tooltip formatter={v => fmt(v)} labelFormatter={v => {
+                          const [y, m] = v.split('-');
+                          return `${MONTHS[parseInt(m)-1]} ${y}`;
+                        }} />
+                        <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
+                        <Bar name="Disbursed" dataKey="disbursed" fill="#0D1F45" radius={[4, 4, 0, 0]} barSize={20} />
+                        <Bar name="Collected" dataKey="received" fill="#10B981" radius={[4, 4, 0, 0]} barSize={20} />
                       </BarChart>
                     </ResponsiveContainer>
+                    <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>Period: {report.period}</p>
                   </div>
                 )}
               </div>
@@ -664,6 +719,7 @@ export default function AdminFinancialReport() {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
+                <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>Period: {report.period}</p>
               </div>
             </div>
           )}
@@ -732,6 +788,7 @@ export default function AdminFinancialReport() {
                         <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '11px' }} />
                       </PieChart>
                     </ResponsiveContainer>
+                    <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>Period: {report.period}</p>
                   </div>
                 )}
 
@@ -758,6 +815,7 @@ export default function AdminFinancialReport() {
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
+                  <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>Period: {report.period}</p>
                 </div>
               </div>
 
@@ -811,9 +869,10 @@ export default function AdminFinancialReport() {
                       <XAxis dataKey="name" tick={{ fontSize: 10 }} />
                       <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
                       <Tooltip />
-                      <Bar dataKey="value" fill="#0D1F45" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="value" fill="#0D1F45" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
+                  <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>Period: {report.period}</p>
                 </div>
               )}
 
@@ -869,6 +928,67 @@ export default function AdminFinancialReport() {
                   <span className="fin-report-stat-value purple">{fmt(report.secretary.disbursements.totalAmount)}</span>
                   <span className="fin-report-stat-sub">{report.secretary.disbursements.count} releases processed</span>
                 </div>
+              </div>
+
+              {/* Secretary Charts Row */}
+              <div className="fin-report-charts-row">
+                {/* Monthly Disbursements */}
+                {report.secretary.disbursements.byMonth?.length > 0 && (
+                  <div className="fin-report-chart-card">
+                    <h3 className="fin-report-chart-title">Monthly Disbursements</h3>
+                    <ResponsiveContainer width="100%" height={220}>
+                      <BarChart data={report.secretary.disbursements.byMonth} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                        <XAxis dataKey="month" tick={{ fontSize: 10 }} tickFormatter={v => MONTH_SHORT[parseInt(v.split('-')[1])-1]} />
+                        <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false} />
+                        <Tooltip formatter={v => fmt(v)} labelFormatter={v => {
+                          const [y, m] = v.split('-');
+                          return `${MONTHS[parseInt(m)-1]} ${y}`;
+                        }} />
+                        <Bar dataKey="value" fill="#0D1F45" radius={[4, 4, 0, 0]} barSize={30} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                    <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>Period: {report.period}</p>
+                  </div>
+                )}
+
+                {/* Payment Method Distribution */}
+                {report.secretary.disbursements.byMethod?.length > 0 && (
+                  <div className="fin-report-chart-card">
+                    <h3 className="fin-report-chart-title">Payment Method</h3>
+                    <p style={{fontSize: '11px', color: '#6B7280', margin: '0 0 4px'}}>Disbursement distribution</p>
+                    <ResponsiveContainer width="100%" height={180}>
+                      <PieChart>
+                        <Pie
+                          data={report.secretary.disbursements.byMethod.map(m => ({ name: m.method, value: m.value }))}
+                          cx="50%" cy="45%"
+                          innerRadius={35} outerRadius={68}
+                          paddingAngle={2}
+                          dataKey="value"
+                          label={renderSliceLabel}
+                          labelLine={false}
+                        >
+                          {report.secretary.disbursements.byMethod.map((_, i) => (
+                            <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                          ))}
+                          <Label value={fmt(report.secretary.disbursements.totalAmount)} position="center" fill="#1e3a5f" style={{ fontSize: '13px', fontWeight: 'bold' }} />
+                          <Label value="Total" position="center" dy={16} fill="#6B7280" style={{ fontSize: '10px' }} />
+                        </Pie>
+                        <Tooltip formatter={v => fmt(v)} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className="fin-report-legend">
+                      {report.secretary.disbursements.byMethod.map((m, i) => (
+                        <div key={i} className="fin-report-legend-item">
+                          <span className="fin-report-legend-dot" style={{ background: PIE_COLORS[i % PIE_COLORS.length] }} />
+                          <span className="fin-report-legend-label">{m.method}</span>
+                          <span className="fin-report-legend-val">{fmt(m.value)} ({report.secretary.disbursements.totalAmount > 0 ? ((m.value / report.secretary.disbursements.totalAmount) * 100).toFixed(0) : 0}%)</span>
+                        </div>
+                      ))}
+                    </div>
+                    <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>Period: {report.period}</p>
+                  </div>
+                )}
               </div>
 
               {/* Disbursement List */}

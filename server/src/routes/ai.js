@@ -144,16 +144,24 @@ Respond ONLY with the JSON array, no markdown fences, no other text.`;
 /* ================== FINANCIAL REPORT — ADMIN ================== */
 router.get('/financial-report', authenticateAdmin, async (req, res) => {
   try {
-    const { month, year } = req.query;
+    const { month, year, startMonth, endMonth } = req.query;
     const reportYear = parseInt(year) || new Date().getFullYear();
     const reportMonth = month !== undefined && month !== '' ? parseInt(month) : null;
+    const rStartMonth = startMonth !== undefined && startMonth !== '' ? parseInt(startMonth) : null;
+    const rEndMonth = endMonth !== undefined && endMonth !== '' ? parseInt(endMonth) : null;
 
     // Role-based access
     const role = req.admin.role;
 
     // Date range
     let startDate, endDate, periodLabel;
-    if (reportMonth !== null) {
+    const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    if (rStartMonth !== null && rEndMonth !== null) {
+      startDate = new Date(reportYear, rStartMonth, 1);
+      endDate = new Date(reportYear, rEndMonth + 1, 0, 23, 59, 59);
+      periodLabel = `${MONTH_NAMES[rStartMonth]} - ${MONTH_NAMES[rEndMonth]} ${reportYear}`;
+    } else if (reportMonth !== null) {
       startDate = new Date(reportYear, reportMonth, 1);
       endDate = new Date(reportYear, reportMonth + 1, 0, 23, 59, 59);
       periodLabel = `${startDate.toLocaleDateString('en-US', { month: 'long' })} ${reportYear}`;
@@ -339,11 +347,21 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
       let totalDisbursedAmt = 0;
       let totalInterestEarned = 0;
 
+      const loansByMonth = {};
+      const paymentsByMonth = {};
+
       periodLoans.forEach(l => {
         const s = l.status || 'pending';
         loansByStatus[s] = (loansByStatus[s] || 0) + 1;
         totalApplied += l.amount || 0;
-        if (l.disbursed) totalDisbursedAmt += l.amount || 0;
+        if (l.disbursed) {
+          totalDisbursedAmt += l.amount || 0;
+          if (l.disbursementDate) {
+            const dt = new Date(l.disbursementDate);
+            const mKey = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
+            loansByMonth[mKey] = (loansByMonth[mKey] || 0) + (l.amount || 0);
+          }
+        }
       });
 
       periodPayments.forEach(p => {
@@ -351,7 +369,12 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
         if (loan && loan.totalInterest && loan.termMonths) {
           totalInterestEarned += loan.totalInterest / loan.termMonths;
         }
+        const dt = new Date(p.confirmedAt || p.createdAt || p.date);
+        const mKey = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
+        paymentsByMonth[mKey] = (paymentsByMonth[mKey] || 0) + (Number(p.amount) || 0);
       });
+      
+      const allMonths = Array.from(new Set([...Object.keys(loansByMonth), ...Object.keys(paymentsByMonth)])).sort();
 
       report.loans = {
         totalApplications: periodLoans.length,
@@ -361,6 +384,7 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
         totalInterestEarned: Math.round(totalInterestEarned),
         paymentsCount: periodPayments.length,
         byStatus: Object.entries(loansByStatus).map(([status, count]) => ({ status, count })),
+        byMonth: allMonths.map(month => ({ month, disbursed: loansByMonth[month] || 0, received: paymentsByMonth[month] || 0 }))
       };
 
       // Savings
@@ -426,10 +450,25 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
 
       const totalDisbursed = disbursedLoans.reduce((s, l) => s + (l.amount || 0), 0);
       
+      const disbByMonth = {};
+      const disbByMethod = {};
+      
+      disbursedLoans.forEach(l => {
+        if (l.disbursementDate) {
+          const dt = new Date(l.disbursementDate);
+          const mKey = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
+          disbByMonth[mKey] = (disbByMonth[mKey] || 0) + (l.amount || 0);
+        }
+        const method = l.disbursementMethod || l.paymentMethod || 'Bank Transfer'; // default to Bank Transfer or Cash based on existing records
+        disbByMethod[method] = (disbByMethod[method] || 0) + (l.amount || 0);
+      });
+      
       report.secretary = {
         disbursements: {
           totalAmount: totalDisbursed,
           count: disbursedLoans.length,
+          byMonth: Object.entries(disbByMonth).map(([month, value]) => ({ month, value })).sort((a, b) => a.month.localeCompare(b.month)),
+          byMethod: Object.entries(disbByMethod).map(([method, value]) => ({ method, value })).sort((a, b) => b.value - a.value),
           loans: disbursedLoans.map(l => ({
             id: l.loanId,
             member: l.memberName,
@@ -441,7 +480,7 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
     }
 
     // === AI Executive Summary with Caching ===
-    const cacheKey = `report_v2_${role}_${req.query.type || 'all'}_${reportMonth !== null ? reportMonth : 'full'}_${reportYear}_${communities.join('-') || 'all'}_${provinces.join('-') || 'all'}`;
+    const cacheKey = `report_v2_${role}_${req.query.type || 'all'}_${rStartMonth !== null ? rStartMonth : reportMonth !== null ? reportMonth : 'full'}_${rEndMonth !== null ? rEndMonth : 'full'}_${reportYear}_${communities.join('-') || 'all'}_${provinces.join('-') || 'all'}`;
     
     const cached = await reportCache.findOne({ cacheKey });
     const isOld = cached && (new Date() - new Date(cached.updatedAt) > 24 * 60 * 60 * 1000); 
