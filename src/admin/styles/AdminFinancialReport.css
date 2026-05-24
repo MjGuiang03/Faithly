@@ -785,3 +785,48 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* ── PDF Export overrides — show full content ── */
+.exporting-pdf .fin-report-table-scroll {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.exporting-pdf .fin-report-community-row {
+  grid-template-columns: 1fr !important;
+}
+
+.exporting-pdf .fin-report-charts-row {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+}
+
+.exporting-pdf .fin-report-chart-card {
+  width: 100% !important;
+  min-width: 0 !important;
+  page-break-inside: avoid;
+}
+
+.exporting-pdf .fin-report-stat-grid {
+  grid-template-columns: repeat(3, 1fr) !important;
+}
+
+.exporting-pdf .fin-report-progress-section {
+  page-break-inside: avoid;
+}
+
+@media print {
+  .fin-report-table-scroll {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  .fin-report-charts-row {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .fin-report-chart-card {
+    width: 100% !important;
+    page-break-inside: avoid;
+  }
+}

@@ -3,7 +3,7 @@ import useSWR from 'swr';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
-  BarChart, Bar, PieChart, Pie, Cell,
+  BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Label
 } from 'recharts';
 
@@ -228,6 +228,14 @@ export default function AdminFinancialReport() {
     return `Period: ${report.period} · ${loc}`;
   };
 
+  // Get the month range to display on charts based on selected period
+  const getChartMonthRange = () => {
+    const maxMonth = reportYear === now.getFullYear() ? currentMonthIndex : 11;
+    if (periodMode === 'range') return { from: startMonth, to: endMonth };
+    if (periodMode === 'month' && reportMonth !== '') return { from: parseInt(reportMonth), to: parseInt(reportMonth) };
+    return { from: 0, to: maxMonth }; // full year
+  };
+
   const handlePrint = () => {
     window.print();
   };
@@ -250,7 +258,9 @@ export default function AdminFinancialReport() {
       };
 
       const html2pdf = (await import('html2pdf.js')).default;
+      element.classList.add('exporting-pdf');
       await html2pdf().set(opt).from(element).save();
+      element.classList.remove('exporting-pdf');
       toast.success('PDF exported successfully');
     } catch (err) {
       console.error('[PDF Export Error]:', err);
@@ -399,9 +409,9 @@ export default function AdminFinancialReport() {
             <>
               <div className="fin-report-filter">
                 <span style={{fontSize: '13px', color: '#6b7280', paddingRight: '4px'}}>From</span>
-                <select value={startMonth} onChange={e => setStartMonth(Number(e.target.value))} className="fin-report-select" style={{ minWidth: '70px', paddingLeft: 0 }}>
+                <select value={startMonth} onChange={e => { const v = Number(e.target.value); setStartMonth(v); if (v >= endMonth) setEndMonth(Math.min(v + 1, maxSelectableMonth)); }} className="fin-report-select" style={{ minWidth: '70px', paddingLeft: 0 }}>
                   {MONTHS.map((m, i) => (
-                    i <= maxSelectableMonth ? <option key={i} value={i}>{MONTH_SHORT[i]}</option> : null
+                    i < maxSelectableMonth ? <option key={i} value={i}>{MONTH_SHORT[i]}</option> : null
                   ))}
                 </select>
                 <ChevronDown size={12} className="fin-report-select-arrow" />
@@ -410,7 +420,7 @@ export default function AdminFinancialReport() {
                 <span style={{fontSize: '13px', color: '#6b7280', paddingRight: '4px'}}>To</span>
                 <select value={endMonth} onChange={e => setEndMonth(Number(e.target.value))} className="fin-report-select" style={{ minWidth: '70px', paddingLeft: 0 }}>
                   {MONTHS.map((m, i) => (
-                    i <= maxSelectableMonth ? <option key={i} value={i}>{MONTH_SHORT[i]}</option> : null
+                    i > startMonth && i <= maxSelectableMonth ? <option key={i} value={i}>{MONTH_SHORT[i]}</option> : null
                   ))}
                 </select>
                 <ChevronDown size={12} className="fin-report-select-arrow" />
@@ -577,11 +587,12 @@ export default function AdminFinancialReport() {
 
                 {/* By Month */}
                 {(() => {
-                  // Build month data only up to current month (scalable)
+                  // Build month data only for selected period range
                   const byMonthMap = {};
                   (report.donations.byMonth || []).forEach(d => { byMonthMap[d.month] = d.value; });
-                  const maxMonth = reportYear === now.getFullYear() ? currentMonthIndex : 11;
-                  const fullMonthData = MONTH_SHORT.slice(0, maxMonth + 1).map((label, i) => {
+                  const { from, to } = getChartMonthRange();
+                  const fullMonthData = MONTH_SHORT.slice(from, to + 1).map((label, idx) => {
+                    const i = from + idx;
                     const key = `${reportYear}-${String(i + 1).padStart(2, '0')}`;
                     return { month: label, value: byMonthMap[key] || 0 };
                   });
@@ -651,6 +662,76 @@ export default function AdminFinancialReport() {
                   </div>
                 </div>
               )}
+
+              {/* Top 10 Donators + Attendance Trends Row */}
+              <div className="fin-report-charts-row">
+                {/* Top 10 Donators */}
+                {report.donations?.byDonor?.length > 0 && (
+                  <div className="fin-report-chart-card">
+                    <h3 className="fin-report-chart-title">Top 10 Donators</h3>
+                    <p style={{fontSize: '11px', color: '#6B7280', margin: '0 0 8px'}}>Members with highest donations</p>
+                    <ResponsiveContainer width="100%" height={Math.max(220, report.donations.byDonor.length * 32)}>
+                      <BarChart data={report.donations.byDonor} layout="vertical" margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
+                        <XAxis type="number" tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} />
+                        <YAxis type="category" dataKey="donor" tick={{ fontSize: 10 }} width={120} />
+                        <Tooltip formatter={v => fmt(v)} />
+                        <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={18}>
+                          {report.donations.byDonor.map((_, i) => (
+                            <Cell key={i} fill={i === 0 ? '#2563eb' : '#0D1F45'} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                    <div className="fin-report-legend">
+                      {report.donations.byDonor.slice(0, 5).map((d, i) => (
+                        <div key={i} className="fin-report-legend-item">
+                          <span className="fin-report-legend-dot" style={{ background: i === 0 ? '#2563eb' : '#0D1F45' }} />
+                          <span className="fin-report-legend-label">{d.donor}</span>
+                          <span className="fin-report-legend-val">{fmt(d.value)} ({report.donations.total > 0 ? ((d.value / report.donations.total) * 100).toFixed(0) : 0}%)</span>
+                        </div>
+                      ))}
+                    </div>
+                    <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>{getPeriodWithLocation()}</p>
+                  </div>
+                )}
+
+                {/* Attendance Trends */}
+                {report.attendance?.byMonth?.length > 0 && (() => {
+                  const { from, to } = getChartMonthRange();
+                  const attMap = {};
+                  report.attendance.byMonth.forEach(d => { attMap[d.month] = d.count; });
+                  const trendData = MONTH_SHORT.slice(from, to + 1).map((label, idx) => {
+                    const i = from + idx;
+                    const key = `${reportYear}-${String(i + 1).padStart(2, '0')}`;
+                    return { month: key, label, count: attMap[key] || 0 };
+                  });
+                  const totalAtt = trendData.reduce((s, d) => s + d.count, 0);
+                  return (
+                    <div className="fin-report-chart-card">
+                      <h3 className="fin-report-chart-title">Attendance Trends</h3>
+                      <p style={{fontSize: '11px', color: '#6B7280', margin: '0 0 4px'}}>{totalAtt} total attendees recorded</p>
+                      <ResponsiveContainer width="100%" height={220}>
+                        <BarChart data={trendData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                          <XAxis dataKey="label" tick={{ fontSize: 10 }} />
+                          <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
+                          <Tooltip formatter={(v) => [v + ' attendees']} labelFormatter={(v, payload) => payload?.[0]?.payload?.label || v} />
+                          <Bar dataKey="count" fill="#2563eb" radius={[4, 4, 0, 0]} barSize={24} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                      <div className="fin-report-legend">
+                        <div className="fin-report-legend-item">
+                          <span className="fin-report-legend-dot" style={{ background: '#2563eb' }} />
+                          <span className="fin-report-legend-label">Attendance</span>
+                          <span className="fin-report-legend-val">{totalAtt} total</span>
+                        </div>
+                      </div>
+                      <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>{getPeriodWithLocation()}</p>
+                    </div>
+                  );
+                })()}
+              </div>
             </div>
           )}
 
@@ -708,19 +789,32 @@ export default function AdminFinancialReport() {
                           <Label value="Total" position="center" dy={16} fill="#6B7280" style={{ fontSize: '10px' }} />
                         </Pie>
                         <Tooltip formatter={(v, name) => [v + ' loans', name]} />
-                        <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '11px' }} />
                       </PieChart>
                     </ResponsiveContainer>
+                    <div className="fin-report-legend">
+                      {report.loans.byStatus.map((s, i) => {
+                        const total = report.loans.totalApplications || 1;
+                        const pct = ((s.count / total) * 100).toFixed(0);
+                        return (
+                          <div key={i} className="fin-report-legend-item">
+                            <span className="fin-report-legend-dot" style={{ background: getStatusColor(s.status) }} />
+                            <span className="fin-report-legend-label">{s.status}</span>
+                            <span className="fin-report-legend-val">{s.count} loans ({pct}%)</span>
+                          </div>
+                        );
+                      })}
+                    </div>
                     <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>{getPeriodWithLocation()}</p>
                   </div>
                 )}
 
-                {/* Monthly Trend Bar — only show months up to current month */}
+                {/* Monthly Trend Bar — only show selected period months */}
                 {(() => {
-                  const maxMonth = reportYear === now.getFullYear() ? currentMonthIndex : 11;
+                  const { from, to } = getChartMonthRange();
                   const byMonthMap = {};
                   (report.loans.byMonth || []).forEach(d => { byMonthMap[d.month] = d; });
-                  const trendData = MONTH_SHORT.slice(0, maxMonth + 1).map((label, i) => {
+                  const trendData = MONTH_SHORT.slice(from, to + 1).map((label, idx) => {
+                    const i = from + idx;
                     const key = `${reportYear}-${String(i + 1).padStart(2, '0')}`;
                     const existing = byMonthMap[key];
                     return { month: key, label, disbursed: existing?.disbursed || 0, received: existing?.received || 0 };
@@ -734,7 +828,20 @@ export default function AdminFinancialReport() {
                           <XAxis dataKey="label" tick={{ fontSize: 10 }} />
                           <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false} />
                           <Tooltip formatter={v => fmt(v)} labelFormatter={(v, payload) => payload?.[0]?.payload?.label || v} />
-                          <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
+                          <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} content={({ payload }) => (
+                            <div className="fin-report-legend" style={{ justifyContent: 'center', display: 'flex', gap: '16px', paddingTop: '10px' }}>
+                              {payload?.map((entry, i) => {
+                                const total = trendData.reduce((s, d) => s + (d[entry.dataKey] || 0), 0);
+                                return (
+                                  <div key={i} className="fin-report-legend-item" style={{ gap: '4px' }}>
+                                    <span className="fin-report-legend-dot" style={{ background: entry.color }} />
+                                    <span className="fin-report-legend-label">{entry.value}</span>
+                                    <span className="fin-report-legend-val">{fmt(total)}</span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )} />
                           <Bar name="Disbursed" dataKey="disbursed" fill="#0D1F45" radius={[4, 4, 0, 0]} barSize={20} />
                           <Bar name="Collected" dataKey="received" fill="#10B981" radius={[4, 4, 0, 0]} barSize={20} />
                         </BarChart>
@@ -742,6 +849,95 @@ export default function AdminFinancialReport() {
                       <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>{getPeriodWithLocation()}</p>
                     </div>
                   ) : null;
+                })()}
+              </div>
+
+              {/* Application Trend + Repayment Performance Row */}
+              <div className="fin-report-charts-row">
+                {/* Loan Application Trend */}
+                {(() => {
+                  const { from, to } = getChartMonthRange();
+                  const appsMap = {};
+                  (report.loans.applicationsByMonth || []).forEach(d => { appsMap[d.month] = d.count; });
+                  const trendData = MONTH_SHORT.slice(from, to + 1).map((label, idx) => {
+                    const i = from + idx;
+                    const key = `${reportYear}-${String(i + 1).padStart(2, '0')}`;
+                    return { month: key, label, applications: appsMap[key] || 0 };
+                  });
+                  const totalApps = trendData.reduce((s, d) => s + d.applications, 0);
+                  return (
+                    <div className="fin-report-chart-card">
+                      <h3 className="fin-report-chart-title">Loan Application Trend</h3>
+                      <p style={{fontSize: '11px', color: '#6B7280', margin: '0 0 4px'}}>Monthly applications count</p>
+                      <ResponsiveContainer width="100%" height={220}>
+                        <AreaChart data={trendData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                          <defs>
+                            <linearGradient id="appGradient" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#2563eb" stopOpacity={0.3} />
+                              <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                          <XAxis dataKey="label" tick={{ fontSize: 10 }} />
+                          <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
+                          <Tooltip formatter={(v) => [v + ' applications']} labelFormatter={(v, payload) => payload?.[0]?.payload?.label || v} />
+                          <Area type="monotone" dataKey="applications" stroke="#2563eb" fill="url(#appGradient)" strokeWidth={2} dot={{ r: 3, fill: '#2563eb' }} />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                      <div className="fin-report-legend">
+                        <div className="fin-report-legend-item">
+                          <span className="fin-report-legend-dot" style={{ background: '#2563eb' }} />
+                          <span className="fin-report-legend-label">Applications</span>
+                          <span className="fin-report-legend-val">{totalApps} total</span>
+                        </div>
+                      </div>
+                      <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>{getPeriodWithLocation()}</p>
+                    </div>
+                  );
+                })()}
+
+                {/* Approval Rate Per Month */}
+                {(() => {
+                  const { from, to } = getChartMonthRange();
+                  const approvalMap = {};
+                  (report.loans.approvalByMonth || []).forEach(d => { approvalMap[d.month] = d; });
+                  const rateData = MONTH_SHORT.slice(from, to + 1).map((label, idx) => {
+                    const i = from + idx;
+                    const key = `${reportYear}-${String(i + 1).padStart(2, '0')}`;
+                    const existing = approvalMap[key];
+                    return { month: key, label, approvalRate: existing?.approvalRate || 0, rejectionRate: existing?.rejectionRate || 0, total: existing?.total || 0 };
+                  });
+                  const totalLoans = rateData.reduce((s, d) => s + d.total, 0);
+                  const avgApproval = totalLoans > 0 ? Math.round(rateData.reduce((s, d) => s + d.approvalRate * d.total, 0) / totalLoans) : 0;
+                  return (
+                    <div className="fin-report-chart-card">
+                      <h3 className="fin-report-chart-title">Approval Rate Per Month (%)</h3>
+                      <p style={{fontSize: '11px', color: '#6B7280', margin: '0 0 4px'}}>Avg: <span style={{color: '#10B981', fontWeight: 600}}>{avgApproval}%</span> approval</p>
+                      <ResponsiveContainer width="100%" height={220}>
+                        <BarChart data={rateData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                          <XAxis dataKey="label" tick={{ fontSize: 10 }} />
+                          <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${v}%`} domain={[0, 100]} />
+                          <Tooltip formatter={(v) => `${v}%`} labelFormatter={(v, payload) => payload?.[0]?.payload?.label || v} />
+                          <Bar name="Approval %" dataKey="approvalRate" stackId="a" fill="#10B981" radius={[0, 0, 0, 0]} barSize={24} />
+                          <Bar name="Rejection %" dataKey="rejectionRate" stackId="a" fill="#EF4444" radius={[4, 4, 0, 0]} barSize={24} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                      <div className="fin-report-legend" style={{ justifyContent: 'center', display: 'flex', gap: '16px' }}>
+                        <div className="fin-report-legend-item" style={{ gap: '4px' }}>
+                          <span className="fin-report-legend-dot" style={{ background: '#10B981' }} />
+                          <span className="fin-report-legend-label">Approval %</span>
+                          <span className="fin-report-legend-val">{avgApproval}% avg</span>
+                        </div>
+                        <div className="fin-report-legend-item" style={{ gap: '4px' }}>
+                          <span className="fin-report-legend-dot" style={{ background: '#EF4444' }} />
+                          <span className="fin-report-legend-label">Rejection %</span>
+                          <span className="fin-report-legend-val">{100 - avgApproval}% avg</span>
+                        </div>
+                      </div>
+                      <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>{getPeriodWithLocation()}</p>
+                    </div>
+                  );
                 })()}
               </div>
 
@@ -840,9 +1036,24 @@ export default function AdminFinancialReport() {
                           <Label value="Goals" position="center" dy={16} fill="#6B7280" style={{ fontSize: '10px' }} />
                         </Pie>
                         <Tooltip formatter={(v, name) => [v + ' goals', name]} />
-                        <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '11px' }} />
                       </PieChart>
                     </ResponsiveContainer>
+                    <div className="fin-report-legend">
+                      {[
+                        { name: 'Active', value: report.savings.activeGoals, color: '#2563EB' },
+                        { name: 'Completed', value: report.savings.completedGoals, color: '#10B981' },
+                      ].map((item, i) => {
+                        const total = report.savings.activeGoals + report.savings.completedGoals || 1;
+                        const pct = ((item.value / total) * 100).toFixed(0);
+                        return (
+                          <div key={i} className="fin-report-legend-item">
+                            <span className="fin-report-legend-dot" style={{ background: item.color }} />
+                            <span className="fin-report-legend-label">{item.name}</span>
+                            <span className="fin-report-legend-val">{item.value} goals ({pct}%)</span>
+                          </div>
+                        );
+                      })}
+                    </div>
                     <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>{getPeriodWithLocation()}</p>
                   </div>
                 )}
@@ -995,12 +1206,13 @@ export default function AdminFinancialReport() {
 
               {/* Secretary Charts Row */}
               <div className="fin-report-charts-row">
-                {/* Monthly Disbursements — only show months up to current month */}
+                {/* Monthly Disbursements — only show selected period months */}
                 {(() => {
-                  const maxMonth = reportYear === now.getFullYear() ? currentMonthIndex : 11;
+                  const { from, to } = getChartMonthRange();
                   const byMonthMap = {};
                   (report.secretary.disbursements.byMonth || []).forEach(d => { byMonthMap[d.month] = d; });
-                  const trendData = MONTH_SHORT.slice(0, maxMonth + 1).map((label, i) => {
+                  const trendData = MONTH_SHORT.slice(from, to + 1).map((label, idx) => {
+                    const i = from + idx;
                     const key = `${reportYear}-${String(i + 1).padStart(2, '0')}`;
                     const existing = byMonthMap[key];
                     return { month: key, label, value: existing?.value || 0 };
@@ -1053,6 +1265,71 @@ export default function AdminFinancialReport() {
                           <span className="fin-report-legend-dot" style={{ background: PIE_COLORS[i % PIE_COLORS.length] }} />
                           <span className="fin-report-legend-label">{m.method}</span>
                           <span className="fin-report-legend-val">{fmt(m.value)} ({report.secretary.disbursements.totalAmount > 0 ? ((m.value / report.secretary.disbursements.totalAmount) * 100).toFixed(0) : 0}%)</span>
+                        </div>
+                      ))}
+                    </div>
+                    <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>{getPeriodWithLocation()}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Top 5 Charts Row */}
+              <div className="fin-report-charts-row">
+                {/* Top 5 Communities by Disbursement */}
+                {report.secretary.disbursements.byCommunity?.length > 0 && (
+                  <div className="fin-report-chart-card">
+                    <h3 className="fin-report-chart-title">Top 5 Communities</h3>
+                    <p style={{fontSize: '11px', color: '#6B7280', margin: '0 0 8px'}}>Highest disbursement amount</p>
+                    <ResponsiveContainer width="100%" height={220}>
+                      <BarChart data={report.secretary.disbursements.byCommunity} layout="vertical" margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
+                        <XAxis type="number" tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} />
+                        <YAxis type="category" dataKey="community" tick={{ fontSize: 10 }} width={100} />
+                        <Tooltip formatter={v => fmt(v)} />
+                        <Bar dataKey="value" fill="#0D1F45" radius={[0, 4, 4, 0]} barSize={18}>
+                          {report.secretary.disbursements.byCommunity.map((_, i) => (
+                            <Cell key={i} fill={i === 0 ? '#2563eb' : '#0D1F45'} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                    <div className="fin-report-legend">
+                      {report.secretary.disbursements.byCommunity.map((c, i) => (
+                        <div key={i} className="fin-report-legend-item">
+                          <span className="fin-report-legend-dot" style={{ background: i === 0 ? '#2563eb' : '#0D1F45' }} />
+                          <span className="fin-report-legend-label">{c.community}</span>
+                          <span className="fin-report-legend-val">{fmt(c.value)} ({report.secretary.disbursements.totalAmount > 0 ? ((c.value / report.secretary.disbursements.totalAmount) * 100).toFixed(0) : 0}%)</span>
+                        </div>
+                      ))}
+                    </div>
+                    <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>{getPeriodWithLocation()}</p>
+                  </div>
+                )}
+
+                {/* Top 5 Recipients */}
+                {report.secretary.disbursements.byUser?.length > 0 && (
+                  <div className="fin-report-chart-card">
+                    <h3 className="fin-report-chart-title">Top 5 Recipients</h3>
+                    <p style={{fontSize: '11px', color: '#6B7280', margin: '0 0 8px'}}>Members with highest disbursements</p>
+                    <ResponsiveContainer width="100%" height={220}>
+                      <BarChart data={report.secretary.disbursements.byUser} layout="vertical" margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
+                        <XAxis type="number" tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} />
+                        <YAxis type="category" dataKey="user" tick={{ fontSize: 10 }} width={120} />
+                        <Tooltip formatter={v => fmt(v)} />
+                        <Bar dataKey="value" fill="#1e3a8a" radius={[0, 4, 4, 0]} barSize={18}>
+                          {report.secretary.disbursements.byUser.map((_, i) => (
+                            <Cell key={i} fill={i === 0 ? '#2563eb' : '#1e3a8a'} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                    <div className="fin-report-legend">
+                      {report.secretary.disbursements.byUser.map((u, i) => (
+                        <div key={i} className="fin-report-legend-item">
+                          <span className="fin-report-legend-dot" style={{ background: i === 0 ? '#2563eb' : '#1e3a8a' }} />
+                          <span className="fin-report-legend-label">{u.user}</span>
+                          <span className="fin-report-legend-val">{fmt(u.value)} ({report.secretary.disbursements.totalAmount > 0 ? ((u.value / report.secretary.disbursements.totalAmount) * 100).toFixed(0) : 0}%)</span>
                         </div>
                       ))}
                     </div>

@@ -213,6 +213,7 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
         const donByCategory = {};
         const donByMonth = {};
         const donByBranch = {};
+        const donByDonor = {};
         let donTotal = 0;
 
         periodDonations.forEach(d => {
@@ -230,6 +231,11 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
           const member = allMembersMap[d.email];
           const targetBranch = d.community || member?.branch || 'Unknown';
           donByBranch[targetBranch] = (donByBranch[targetBranch] || 0) + amt;
+
+          // Track by donor name
+          const donorName = d.member || member?.fullName || d.email || 'Unknown';
+          if (!donByDonor[donorName]) donByDonor[donorName] = 0;
+          donByDonor[donorName] += amt;
         });
 
       report.donations = {
@@ -238,6 +244,7 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
         byCategory: Object.entries(donByCategory).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value),
           byMonth: Object.entries(donByMonth).map(([month, value]) => ({ month, value })).sort((a, b) => a.month.localeCompare(b.month)),
           byBranch: Object.entries(donByBranch).map(([branch, value]) => ({ branch, value })).sort((a, b) => b.value - a.value),
+          byDonor: Object.entries(donByDonor).map(([donor, value]) => ({ donor, value })).sort((a, b) => b.value - a.value).slice(0, 10),
         };
 
         // Member growth for period
@@ -277,9 +284,17 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
         }
 
         const attByBranch = {};
+        const attByMonth = {};
         periodAttendance.forEach(a => {
           const b = a.community || a.branch || a.userBranch || 'Unknown';
           attByBranch[b] = (attByBranch[b] || 0) + 1;
+
+          // Track by month
+          const dt = a.createdAt ? new Date(a.createdAt) : (a.date ? new Date(a.date) : null);
+          if (dt && !isNaN(dt)) {
+            const mKey = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
+            attByMonth[mKey] = (attByMonth[mKey] || 0) + 1;
+          }
         });
 
         // Build attendee names list (for community/province filtered reports)
@@ -309,6 +324,7 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
         report.attendance = {
           totalRecords: periodAttendance.length,
           byBranch: Object.entries(attByBranch).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value),
+          byMonth: Object.entries(attByMonth).map(([month, count]) => ({ month, count })).sort((a, b) => a.month.localeCompare(b.month)),
           attendees,
         };
       }
@@ -376,6 +392,42 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
       
       const allMonths = Array.from(new Set([...Object.keys(loansByMonth), ...Object.keys(paymentsByMonth)])).sort();
 
+      // Applications count by month + approval/rejection rate by month
+      const appsByMonth = {};
+      const approvalByMonth = {};
+
+      periodLoans.forEach(l => {
+        const dt = new Date(l.appliedDate || l.createdAt);
+        const mKey = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
+        
+        // Count applications per month
+        if (!appsByMonth[mKey]) appsByMonth[mKey] = 0;
+        appsByMonth[mKey]++;
+
+        // Track approved vs rejected per month
+        if (!approvalByMonth[mKey]) approvalByMonth[mKey] = { approved: 0, rejected: 0, total: 0 };
+        approvalByMonth[mKey].total++;
+        if (['approved', 'active', 'completed', 'disbursed'].includes(l.status)) {
+          approvalByMonth[mKey].approved++;
+        } else if (l.status === 'rejected') {
+          approvalByMonth[mKey].rejected++;
+        }
+      });
+
+      // Repayment performance: on-time vs late payments by month
+      const repaymentByMonth = {};
+      periodPayments.forEach(p => {
+        const dt = new Date(p.confirmedAt || p.createdAt || p.date);
+        const mKey = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
+        if (!repaymentByMonth[mKey]) repaymentByMonth[mKey] = { onTime: 0, late: 0, total: 0 };
+        repaymentByMonth[mKey].total++;
+        if (p.isLate) {
+          repaymentByMonth[mKey].late++;
+        } else {
+          repaymentByMonth[mKey].onTime++;
+        }
+      });
+
       report.loans = {
         totalApplications: periodLoans.length,
         totalAmountApplied: totalApplied,
@@ -384,7 +436,22 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
         totalInterestEarned: Math.round(totalInterestEarned),
         paymentsCount: periodPayments.length,
         byStatus: Object.entries(loansByStatus).map(([status, count]) => ({ status, count })),
-        byMonth: allMonths.map(month => ({ month, disbursed: loansByMonth[month] || 0, received: paymentsByMonth[month] || 0 }))
+        byMonth: allMonths.map(month => ({ month, disbursed: loansByMonth[month] || 0, received: paymentsByMonth[month] || 0 })),
+        applicationsByMonth: Object.entries(appsByMonth).map(([month, count]) => ({ month, count })).sort((a, b) => a.month.localeCompare(b.month)),
+        approvalByMonth: Object.entries(approvalByMonth).map(([month, d]) => ({
+          month,
+          approvalRate: d.total > 0 ? Math.round((d.approved / d.total) * 100) : 0,
+          rejectionRate: d.total > 0 ? Math.round((d.rejected / d.total) * 100) : 0,
+          total: d.total,
+        })).sort((a, b) => a.month.localeCompare(b.month)),
+        repaymentByMonth: Object.entries(repaymentByMonth).map(([month, d]) => ({
+          month,
+          onTimeRate: d.total > 0 ? Math.round((d.onTime / d.total) * 100) : 0,
+          lateRate: d.total > 0 ? Math.round((d.late / d.total) * 100) : 0,
+          onTime: d.onTime,
+          late: d.late,
+          total: d.total,
+        })).sort((a, b) => a.month.localeCompare(b.month)),
       };
 
       // Savings
@@ -452,6 +519,8 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
       
       const disbByMonth = {};
       const disbByMethod = {};
+      const disbByCommunity = {};
+      const disbByUser = {};
       
       disbursedLoans.forEach(l => {
         if (l.disbursementDate) {
@@ -459,8 +528,17 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
           const mKey = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
           disbByMonth[mKey] = (disbByMonth[mKey] || 0) + (l.amount || 0);
         }
-        const method = l.disbursementMethod || l.paymentMethod || 'Bank Transfer'; // default to Bank Transfer or Cash based on existing records
+        const method = l.disbursementMethod || l.paymentMethod || 'Bank Transfer';
         disbByMethod[method] = (disbByMethod[method] || 0) + (l.amount || 0);
+
+        // Aggregate by community
+        const member = allMembersMap[l.email || l.memberEmail];
+        const branch = l.branch || member?.branch || 'Unknown';
+        disbByCommunity[branch] = (disbByCommunity[branch] || 0) + (l.amount || 0);
+
+        // Aggregate by user
+        const userName = l.memberName || member?.fullName || 'Unknown';
+        disbByUser[userName] = (disbByUser[userName] || 0) + (l.amount || 0);
       });
       
       report.secretary = {
@@ -469,6 +547,8 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
           count: disbursedLoans.length,
           byMonth: Object.entries(disbByMonth).map(([month, value]) => ({ month, value })).sort((a, b) => a.month.localeCompare(b.month)),
           byMethod: Object.entries(disbByMethod).map(([method, value]) => ({ method, value })).sort((a, b) => b.value - a.value),
+          byCommunity: Object.entries(disbByCommunity).map(([community, value]) => ({ community, value })).sort((a, b) => b.value - a.value).slice(0, 5),
+          byUser: Object.entries(disbByUser).map(([user, value]) => ({ user, value })).sort((a, b) => b.value - a.value).slice(0, 5),
           loans: disbursedLoans.map(l => ({
             id: l.loanId,
             member: l.memberName,
