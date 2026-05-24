@@ -46,11 +46,12 @@ export default function AdminFinancialReport() {
   const navigate = useNavigate();
   const now = new Date();
   const reportRef = useRef(null);
+  const currentMonthIndex = now.getMonth(); // 0=Jan, 4=May, etc.
 
   const [periodMode, setPeriodMode] = useState('full');
   const [reportMonth, setReportMonth] = useState('');
   const [startMonth, setStartMonth] = useState(0);
-  const [endMonth, setEndMonth] = useState(11);
+  const [endMonth, setEndMonth] = useState(currentMonthIndex);
   const [reportYear, setReportYear] = useState(now.getFullYear());
   const [reportType, setReportType] = useState('all');
   const [locationType, setLocationType] = useState('all'); // 'all', 'province', 'specific'
@@ -207,6 +208,24 @@ export default function AdminFinancialReport() {
     if (periodMode === 'range') return `${MONTH_SHORT[startMonth]} - ${MONTH_SHORT[endMonth]} ${reportYear}`;
     if (periodMode === 'month' && reportMonth !== '') return `${MONTHS[parseInt(reportMonth)]} ${reportYear}`;
     return `Full Year ${reportYear}`;
+  };
+
+  // Max selectable month: if selected year is current year, cap at current month; otherwise allow all 12
+  const maxSelectableMonth = reportYear === now.getFullYear() ? currentMonthIndex : 11;
+
+  // Build location label from report data
+  const getLocationLabel = () => {
+    if (!report) return '';
+    const loc = report.community;
+    if (!loc || loc === 'All Communities') return 'All Communities';
+    return loc;
+  };
+
+  // Combined period + location label for chart footers
+  const getPeriodWithLocation = () => {
+    if (!report) return '';
+    const loc = getLocationLabel();
+    return `Period: ${report.period} · ${loc}`;
   };
 
   const handlePrint = () => {
@@ -369,7 +388,7 @@ export default function AdminFinancialReport() {
             >
               <option value="full">Full Year</option>
               {MONTHS.map((m, i) => (
-                <option key={i} value={`month-${i}`}>{m}</option>
+                i <= maxSelectableMonth ? <option key={i} value={`month-${i}`}>{m}</option> : null
               ))}
               <option value="range">Custom Range...</option>
             </select>
@@ -382,7 +401,7 @@ export default function AdminFinancialReport() {
                 <span style={{fontSize: '13px', color: '#6b7280', paddingRight: '4px'}}>From</span>
                 <select value={startMonth} onChange={e => setStartMonth(Number(e.target.value))} className="fin-report-select" style={{ minWidth: '70px', paddingLeft: 0 }}>
                   {MONTHS.map((m, i) => (
-                    <option key={i} value={i}>{MONTH_SHORT[i]}</option>
+                    i <= maxSelectableMonth ? <option key={i} value={i}>{MONTH_SHORT[i]}</option> : null
                   ))}
                 </select>
                 <ChevronDown size={12} className="fin-report-select-arrow" />
@@ -391,7 +410,7 @@ export default function AdminFinancialReport() {
                 <span style={{fontSize: '13px', color: '#6b7280', paddingRight: '4px'}}>To</span>
                 <select value={endMonth} onChange={e => setEndMonth(Number(e.target.value))} className="fin-report-select" style={{ minWidth: '70px', paddingLeft: 0 }}>
                   {MONTHS.map((m, i) => (
-                    <option key={i} value={i}>{MONTH_SHORT[i]}</option>
+                    i <= maxSelectableMonth ? <option key={i} value={i}>{MONTH_SHORT[i]}</option> : null
                   ))}
                 </select>
                 <ChevronDown size={12} className="fin-report-select-arrow" />
@@ -552,16 +571,17 @@ export default function AdminFinancialReport() {
                         </div>
                       ))}
                     </div>
-                    <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>Period: {report.period}</p>
+                    <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>{getPeriodWithLocation()}</p>
                   </div>
                 )}
 
                 {/* By Month */}
                 {(() => {
-                  // Build full 12-month data for the selected year
+                  // Build month data only up to current month (scalable)
                   const byMonthMap = {};
                   (report.donations.byMonth || []).forEach(d => { byMonthMap[d.month] = d.value; });
-                  const fullMonthData = MONTH_SHORT.map((label, i) => {
+                  const maxMonth = reportYear === now.getFullYear() ? currentMonthIndex : 11;
+                  const fullMonthData = MONTH_SHORT.slice(0, maxMonth + 1).map((label, i) => {
                     const key = `${reportYear}-${String(i + 1).padStart(2, '0')}`;
                     return { month: label, value: byMonthMap[key] || 0 };
                   });
@@ -577,34 +597,58 @@ export default function AdminFinancialReport() {
                       <Bar dataKey="value" fill="#0D1F45" radius={[4, 4, 0, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
-                      <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>Period: {report.period}</p>
+                      <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>{getPeriodWithLocation()}</p>
                     </div>
                   );
                 })()}
               </div>
 
-              {/* By Branch Table */}
+              {/* Top Donor by Community Chart + Table Side by Side */}
               {report.donations.byBranch?.length > 0 && (
-                <div className="fin-report-table-wrap">
-                  <h3 className="fin-report-chart-title">By Community</h3>
-                  <table className="fin-report-table">
-                    <thead>
-                      <tr>
-                        <th>Community</th>
-                        <th>Amount</th>
-                        <th>% Share</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {report.donations.byBranch.map((b, i) => (
-                        <tr key={i}>
-                          <td>{b.branch}</td>
-                          <td className="amount">{fmt(b.value)}</td>
-                          <td>{report.donations.total > 0 ? ((b.value / report.donations.total) * 100).toFixed(1) : 0}%</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div className="fin-report-community-row">
+                  {/* Top Donor by Community Bar Chart */}
+                  <div className="fin-report-chart-card fin-report-community-chart">
+                    <h3 className="fin-report-chart-title">Top Donor by Community</h3>
+                    <ResponsiveContainer width="100%" height={280}>
+                      <BarChart data={report.donations.byBranch.slice(0, 10)} margin={{ top: 10, right: 10, left: -10, bottom: 40 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                        <XAxis dataKey="branch" tick={{ fontSize: 10, angle: -35, textAnchor: 'end' }} interval={0} height={60} />
+                        <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false} />
+                        <Tooltip formatter={v => fmt(v)} />
+                        <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={28}>
+                          {report.donations.byBranch.slice(0, 10).map((_, i) => (
+                            <Cell key={i} fill={i === 0 ? '#3b82f6' : '#0D1F45'} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                    <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '8px', marginBottom: 0}}>{getPeriodWithLocation()}</p>
+                  </div>
+
+                  {/* Community Table (compact) */}
+                  <div className="fin-report-table-wrap fin-report-community-table">
+                    <h3 className="fin-report-chart-title">By Community</h3>
+                    <div className="fin-report-table-scroll">
+                      <table className="fin-report-table">
+                        <thead>
+                          <tr>
+                            <th>Community</th>
+                            <th>Amount</th>
+                            <th>%</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {report.donations.byBranch.map((b, i) => (
+                            <tr key={i}>
+                              <td>{b.branch}</td>
+                              <td className="amount">{fmt(b.value)}</td>
+                              <td>{report.donations.total > 0 ? ((b.value / report.donations.total) * 100).toFixed(1) : 0}%</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
@@ -667,31 +711,38 @@ export default function AdminFinancialReport() {
                         <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '11px' }} />
                       </PieChart>
                     </ResponsiveContainer>
-                    <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>Period: {report.period}</p>
+                    <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>{getPeriodWithLocation()}</p>
                   </div>
                 )}
 
-                {/* Monthly Trend Bar */}
-                {report.loans.byMonth?.length > 0 && (
-                  <div className="fin-report-chart-card">
-                    <h3 className="fin-report-chart-title">Monthly Trend</h3>
-                    <ResponsiveContainer width="100%" height={220}>
-                      <BarChart data={report.loans.byMonth} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                        <XAxis dataKey="month" tick={{ fontSize: 10 }} tickFormatter={v => MONTH_SHORT[parseInt(v.split('-')[1])-1]} />
-                        <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false} />
-                        <Tooltip formatter={v => fmt(v)} labelFormatter={v => {
-                          const [y, m] = v.split('-');
-                          return `${MONTHS[parseInt(m)-1]} ${y}`;
-                        }} />
-                        <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
-                        <Bar name="Disbursed" dataKey="disbursed" fill="#0D1F45" radius={[4, 4, 0, 0]} barSize={20} />
-                        <Bar name="Collected" dataKey="received" fill="#10B981" radius={[4, 4, 0, 0]} barSize={20} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                    <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>Period: {report.period}</p>
-                  </div>
-                )}
+                {/* Monthly Trend Bar — only show months up to current month */}
+                {(() => {
+                  const maxMonth = reportYear === now.getFullYear() ? currentMonthIndex : 11;
+                  const byMonthMap = {};
+                  (report.loans.byMonth || []).forEach(d => { byMonthMap[d.month] = d; });
+                  const trendData = MONTH_SHORT.slice(0, maxMonth + 1).map((label, i) => {
+                    const key = `${reportYear}-${String(i + 1).padStart(2, '0')}`;
+                    const existing = byMonthMap[key];
+                    return { month: key, label, disbursed: existing?.disbursed || 0, received: existing?.received || 0 };
+                  });
+                  return trendData.length > 0 ? (
+                    <div className="fin-report-chart-card">
+                      <h3 className="fin-report-chart-title">Monthly Trend</h3>
+                      <ResponsiveContainer width="100%" height={220}>
+                        <BarChart data={trendData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                          <XAxis dataKey="label" tick={{ fontSize: 10 }} />
+                          <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false} />
+                          <Tooltip formatter={v => fmt(v)} labelFormatter={(v, payload) => payload?.[0]?.payload?.label || v} />
+                          <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
+                          <Bar name="Disbursed" dataKey="disbursed" fill="#0D1F45" radius={[4, 4, 0, 0]} barSize={20} />
+                          <Bar name="Collected" dataKey="received" fill="#10B981" radius={[4, 4, 0, 0]} barSize={20} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                      <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>{getPeriodWithLocation()}</p>
+                    </div>
+                  ) : null;
+                })()}
               </div>
 
               {/* Financial Overview Bar Chart */}
@@ -719,7 +770,7 @@ export default function AdminFinancialReport() {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
-                <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>Period: {report.period}</p>
+                <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>{getPeriodWithLocation()}</p>
               </div>
             </div>
           )}
@@ -731,22 +782,26 @@ export default function AdminFinancialReport() {
                 <h2 className="fin-report-section-title">🏦 Savings Overview</h2>
               </div>
 
-              <div className="fin-report-stat-grid">
+              <div className="fin-report-stat-grid savings-grid">
                 <div className="fin-report-stat">
                   <span className="fin-report-stat-label">Total Saved</span>
-                  <span className="fin-report-stat-value green">{fmt(report.savings.totalSaved)}</span>
+                  <span className="fin-report-stat-value green fin-stat-shrink">{fmt(report.savings.totalSaved)}</span>
                 </div>
                 <div className="fin-report-stat">
                   <span className="fin-report-stat-label">Total Targets</span>
-                  <span className="fin-report-stat-value">{fmt(report.savings.totalTargets)}</span>
+                  <span className="fin-report-stat-value fin-stat-shrink">{fmt(report.savings.totalTargets)}</span>
                 </div>
                 <div className="fin-report-stat">
                   <span className="fin-report-stat-label">Overall Progress</span>
-                  <span className="fin-report-stat-value blue">{report.savings.overallProgress}%</span>
+                  <span className="fin-report-stat-value blue">
+                    {report.savings.overallProgress > 0 && report.savings.overallProgress < 1
+                      ? `<1%`
+                      : `${report.savings.overallProgress}%`}
+                  </span>
                 </div>
                 <div className="fin-report-stat">
                   <span className="fin-report-stat-label">Period Deposits</span>
-                  <span className="fin-report-stat-value">{fmt(report.savings.periodDeposits)}</span>
+                  <span className="fin-report-stat-value fin-stat-shrink">{fmt(report.savings.periodDeposits)}</span>
                   <span className="fin-report-stat-sub">{report.savings.periodDepositCount} transactions</span>
                 </div>
                 <div className="fin-report-stat">
@@ -788,18 +843,17 @@ export default function AdminFinancialReport() {
                         <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '11px' }} />
                       </PieChart>
                     </ResponsiveContainer>
-                    <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>Period: {report.period}</p>
+                    <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>{getPeriodWithLocation()}</p>
                   </div>
                 )}
 
-                {/* Savings vs Target Bar */}
+                {/* Savings vs Target Bar — only Saved and Period Deposits (Target removed to fix scale issue) */}
                 <div className="fin-report-chart-card">
-                  <h3 className="fin-report-chart-title">Savings vs Target</h3>
+                  <h3 className="fin-report-chart-title">Savings Breakdown</h3>
                   <ResponsiveContainer width="100%" height={200}>
                     <BarChart
                       data={[
                         { name: 'Total Saved', value: report.savings.totalSaved || 0 },
-                        { name: 'Total Target', value: report.savings.totalTargets || 0 },
                         { name: 'Period Deposits', value: report.savings.periodDeposits || 0 },
                       ]}
                       margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
@@ -810,12 +864,11 @@ export default function AdminFinancialReport() {
                       <Tooltip formatter={v => fmt(v)} />
                       <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={40}>
                         <Cell fill="#10B981" />
-                        <Cell fill="#0D1F45" />
                         <Cell fill="#2563EB" />
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
-                  <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>Period: {report.period}</p>
+                  <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>{getPeriodWithLocation()}</p>
                 </div>
               </div>
 
@@ -823,11 +876,21 @@ export default function AdminFinancialReport() {
               <div className="fin-report-progress-section">
                 <div className="fin-report-progress-header">
                   <span>Overall Savings Progress</span>
-                  <span className="fin-report-progress-pct">{report.savings.overallProgress}%</span>
+                  <span className="fin-report-progress-pct">
+                    {report.savings.overallProgress > 0 && report.savings.overallProgress < 1
+                      ? '<1%'
+                      : `${report.savings.overallProgress}%`}
+                  </span>
                 </div>
                 <div className="fin-report-progress-track">
-                  <div className="fin-report-progress-fill" style={{ width: `${Math.min(100, report.savings.overallProgress)}%` }} />
+                  <div className="fin-report-progress-fill" style={{ width: `${Math.max(report.savings.overallProgress > 0 ? 1 : 0, Math.min(100, report.savings.overallProgress))}%` }} />
                 </div>
+                <p style={{fontSize: '10px', color: '#9ca3af', marginTop: '6px', marginBottom: 0}}>
+                  {fmt(report.savings.totalSaved)} saved out of {fmt(report.savings.totalTargets)} target
+                  {report.savings.totalTargets > 0 && report.savings.overallProgress < 1 && report.savings.totalSaved > 0
+                    ? ` — Progress is less than 1% because the total target (${fmt(report.savings.totalTargets)}) is significantly larger than the amount saved so far.`
+                    : ''}
+                </p>
               </div>
             </div>
           )}
@@ -932,25 +995,32 @@ export default function AdminFinancialReport() {
 
               {/* Secretary Charts Row */}
               <div className="fin-report-charts-row">
-                {/* Monthly Disbursements */}
-                {report.secretary.disbursements.byMonth?.length > 0 && (
-                  <div className="fin-report-chart-card">
-                    <h3 className="fin-report-chart-title">Monthly Disbursements</h3>
-                    <ResponsiveContainer width="100%" height={220}>
-                      <BarChart data={report.secretary.disbursements.byMonth} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                        <XAxis dataKey="month" tick={{ fontSize: 10 }} tickFormatter={v => MONTH_SHORT[parseInt(v.split('-')[1])-1]} />
-                        <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false} />
-                        <Tooltip formatter={v => fmt(v)} labelFormatter={v => {
-                          const [y, m] = v.split('-');
-                          return `${MONTHS[parseInt(m)-1]} ${y}`;
-                        }} />
-                        <Bar dataKey="value" fill="#0D1F45" radius={[4, 4, 0, 0]} barSize={30} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                    <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>Period: {report.period}</p>
-                  </div>
-                )}
+                {/* Monthly Disbursements — only show months up to current month */}
+                {(() => {
+                  const maxMonth = reportYear === now.getFullYear() ? currentMonthIndex : 11;
+                  const byMonthMap = {};
+                  (report.secretary.disbursements.byMonth || []).forEach(d => { byMonthMap[d.month] = d; });
+                  const trendData = MONTH_SHORT.slice(0, maxMonth + 1).map((label, i) => {
+                    const key = `${reportYear}-${String(i + 1).padStart(2, '0')}`;
+                    const existing = byMonthMap[key];
+                    return { month: key, label, value: existing?.value || 0 };
+                  });
+                  return trendData.length > 0 ? (
+                    <div className="fin-report-chart-card">
+                      <h3 className="fin-report-chart-title">Monthly Disbursements</h3>
+                      <ResponsiveContainer width="100%" height={220}>
+                        <BarChart data={trendData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                          <XAxis dataKey="label" tick={{ fontSize: 10 }} />
+                          <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false} />
+                          <Tooltip formatter={v => fmt(v)} labelFormatter={(v, payload) => payload?.[0]?.payload?.label || v} />
+                          <Bar dataKey="value" fill="#0D1F45" radius={[4, 4, 0, 0]} barSize={30} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                      <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>{getPeriodWithLocation()}</p>
+                    </div>
+                  ) : null;
+                })()}
 
                 {/* Payment Method Distribution */}
                 {report.secretary.disbursements.byMethod?.length > 0 && (
@@ -971,12 +1041,12 @@ export default function AdminFinancialReport() {
                           {report.secretary.disbursements.byMethod.map((_, i) => (
                             <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                           ))}
-                          <Label value={fmt(report.secretary.disbursements.totalAmount)} position="center" fill="#1e3a5f" style={{ fontSize: '13px', fontWeight: 'bold' }} />
-                          <Label value="Total" position="center" dy={16} fill="#6B7280" style={{ fontSize: '10px' }} />
                         </Pie>
                         <Tooltip formatter={v => fmt(v)} />
                       </PieChart>
                     </ResponsiveContainer>
+                    {/* Total displayed below chart */}
+                    <p className="fin-report-chart-total">{fmt(report.secretary.disbursements.totalAmount)} Total</p>
                     <div className="fin-report-legend">
                       {report.secretary.disbursements.byMethod.map((m, i) => (
                         <div key={i} className="fin-report-legend-item">
@@ -986,7 +1056,7 @@ export default function AdminFinancialReport() {
                         </div>
                       ))}
                     </div>
-                    <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>Period: {report.period}</p>
+                    <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>{getPeriodWithLocation()}</p>
                   </div>
                 )}
               </div>

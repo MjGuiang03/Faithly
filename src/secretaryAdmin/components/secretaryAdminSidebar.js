@@ -83,7 +83,7 @@ export default function SecretaryAdminSidebar() {
             <div className="sec-admin-sidebar-logo">
                 <img src={puacLogo} alt="IsangDiwa Logo" className="sec-admin-sidebar-logo-img" />
                 <div className="sec-admin-sidebar-logo-text">
-                    <h1 className="sec-admin-sidebar-logo-title">IsangDiwa</h1>
+                    <h1 className="sec-admin-sidebar-logo-title"><span className="brand-text-isang">Isang</span><span className="brand-text-diwa">Diwa</span></h1>
                     <p className="sec-admin-sidebar-logo-subtitle">Secretary Portal</p>
                 </div>
             </div>

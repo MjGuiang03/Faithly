@@ -82,7 +82,7 @@ export default function AdminSidebar() {
             <img alt="IsangDiwa Logo" src={puacLogo} />
           </div>
           <div className="admin-sidebar-logo-text">
-            <h1>IsangDiwa</h1>
+            <h1><span className="brand-text-isang">Isang</span><span className="brand-text-diwa">Diwa</span></h1>
             <p>Main Admin Portal</p>
           </div>
         </div>

@@ -142,7 +142,7 @@ export default function WelcomePage() {
         <nav id="wpt-navbar" className={`wpt-nav ${scrolled ? 'wpt-scrolled' : ''}`}>
           <a href="#home" className="wpt-nav-logo">
             <img src={puacLogo} alt="IsangDiwa Logo" className="wpt-logo-img" />
-            <div className="wpt-nav-name">IsangDiwa</div>
+            <div className="wpt-nav-name"><span className="brand-text-isang">Isang</span><span className="brand-text-diwa">Diwa</span></div>
           </a>
           <ul className="wpt-nav-links">
             <li><a href="#features">Features</a></li>
@@ -532,7 +532,7 @@ export default function WelcomePage() {
             <div className="wpt-cta-inner wpt-reveal" ref={addToRefs}>
               <div className="wpt-relative-z1">
                 <div className="wpt-cta-text-label">Get Started Today</div>
-                <div className="wpt-cta-title">Join the IsangDiwa Digital Community</div>
+                <div className="wpt-cta-title">Join the <span className="brand-text-isang">Isang</span><span className="brand-text-diwa">Diwa</span> Digital Community</div>
                 <p className="wpt-cta-sub">
                   Register as a member, access your profile, manage your savings goals, and stay
                   connected with your branch — all from one platform.
@@ -560,7 +560,7 @@ export default function WelcomePage() {
                 <a href="#" className="wpt-nav-logo wpt-no-underline">
                   <img src={puacLogo} alt="IsangDiwa Logo" className="wpt-logo-img" />
                   <div className="wpt-nav-name wpt-text-white wpt-footer-logo-text">
-                    IsangDiwa
+                    <span className="brand-text-isang">Isang</span><span className="brand-text-diwa">Diwa</span>
                   </div>
                 </a>
                 <p>

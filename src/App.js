@@ -64,7 +64,12 @@ const GlobalLoader = () => (
           100% { transform: rotate(360deg); }
         }
       `}</style>
-      <div style={{ fontWeight: '600', fontSize: '14px', opacity: 0.8 }}>Loading IsangDiwa...</div>
+      <div style={{ fontWeight: '600', fontSize: '14px', opacity: 0.8, textAlign: 'center' }}>
+        Loading <span className="brand-text-isang">Isang</span><span className="brand-text-diwa">Diwa</span>...
+        <div style={{ fontSize: '11px', marginTop: '4px', fontWeight: '400', opacity: 0.8 }}>
+          Philippine United Apostolic Church
+        </div>
+      </div>
     </div>
   </div>
 );

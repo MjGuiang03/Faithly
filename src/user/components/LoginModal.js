@@ -52,7 +52,7 @@ const validateEmailAdvanced = (email) => {
 const BrandMark = () => (
   <div className="user-login-brand">
     <img src={puacLogo} alt="IsangDiwa Logo" className="user-login-brand-mark-img" />
-    <span className="user-login-brand-name">IsangDiwa</span>
+    <span className="user-login-brand-name"><span className="brand-text-isang">Isang</span><span className="brand-text-diwa">Diwa</span></span>
   </div>
 );
 

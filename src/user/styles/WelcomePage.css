@@ -290,7 +290,7 @@
 
 .wpt-hl-white {
   color: #ffffff;
-  
+
 }
 
 .wpt-hl-gold {
@@ -350,9 +350,10 @@
 
 /* Headline */
 .wpt-welcome-headline {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Inter', 'DM Sans', sans-serif !important;
   font-size: clamp(3rem, 5vw, 5.5rem);
-  font-weight: 500;
+  font-weight: 800 !important;
+  letter-spacing: -0.03em !important;
   line-height: 1.15;
   color: white;
   margin-bottom: 18px;
@@ -599,7 +600,8 @@
   }
 
   .wpt-welcome-headline {
-    font-size: 4rem;
+    font-size: 16vw;
+    text-align: center;
   }
 
   .wpt-welcome-body {
