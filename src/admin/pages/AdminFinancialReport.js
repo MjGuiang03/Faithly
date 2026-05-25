@@ -941,33 +941,7 @@ export default function AdminFinancialReport() {
                 })()}
               </div>
 
-              {/* Financial Overview Bar Chart */}
-              <div className="fin-report-chart-card">
-                <h3 className="fin-report-chart-title">Financial Overview</h3>
-                <ResponsiveContainer width="100%" height={220}>
-                  <BarChart
-                    data={[
-                      { name: 'Applied', value: report.loans.totalAmountApplied || 0 },
-                      { name: 'Disbursed', value: report.loans.totalDisbursed || 0 },
-                      { name: 'Received', value: report.loans.totalPaymentsReceived || 0 },
-                      { name: 'Interest', value: report.loans.totalInterestEarned || 0 },
-                    ]}
-                    margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                    <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false} />
-                    <Tooltip formatter={v => fmt(v)} />
-                    <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={40}>
-                      <Cell fill="#2563EB" />
-                      <Cell fill="#0D1F45" />
-                      <Cell fill="#10B981" />
-                      <Cell fill="#8B5CF6" />
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-                <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>{getPeriodWithLocation()}</p>
-              </div>
+
             </div>
           )}
 
