@@ -48,12 +48,12 @@ const InsightIcon = ({ name }) => {
 
 
 const INITIAL_DONATION_CATEGORIES = [
-  { name: 'General Fund',           value: 0, color: '#0D1F45' },
-  { name: 'Children\'s Department', value: 0, color: '#152B5C' },
-  { name: 'Men\'s Department',      value: 0, color: '#1C3873' },
-  { name: 'Women\'s Department',    value: 0, color: '#1F408A' },
-  { name: 'Youth Department',       value: 0, color: '#23448A' },
-  { name: 'Mission Fund',           value: 0, color: '#2B51A1' },
+  { name: 'General Fund',           value: 0, color: '#0D1F45' }, // Navy
+  { name: 'Children\'s Department', value: 0, color: '#3B82F6' }, // Blue
+  { name: 'Men\'s Department',      value: 0, color: '#10B981' }, // Emerald
+  { name: 'Women\'s Department',    value: 0, color: '#8B5CF6' }, // Violet
+  { name: 'Youth Department',       value: 0, color: '#F59E0B' }, // Amber
+  { name: 'Mission Fund',           value: 0, color: '#14B8A6' }, // Teal
 ];
 
 export default function AdminDashboard() {
@@ -67,6 +67,15 @@ export default function AdminDashboard() {
   const [attMonth, setAttMonth] = useState('all');
   const [attBranch, setAttBranch] = useState('all');
   const [expandedChart, setExpandedChart] = useState(null);
+  const [branchSearchInput, setBranchSearchInput] = useState('');
+  const [branchSearchQuery, setBranchSearchQuery] = useState('');
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setBranchSearchQuery(branchSearchInput);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [branchSearchInput]);
 
   /* ── AI Insights State ── */
   const [aiInsights, setAiInsights] = useState([]);
@@ -382,7 +391,7 @@ export default function AdminDashboard() {
     return {
       ...item,
       percentage,
-      displayLabel: `₱${(item.value || 0).toLocaleString()} (${percentage}%)`,
+      displayLabel: `₱${(item.value || 0).toLocaleString()} • ${percentage}%`,
       fillColor: item.value > 0 ? item.color : '#D1D5DB'
     };
   });
@@ -423,6 +432,37 @@ export default function AdminDashboard() {
   return (
     <div className="admin-dashboard-main">
       {!expandedChart && (<>
+      {/* ── Dashboard Header ── */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h1 style={{ fontSize: '24px', fontWeight: 700, color: '#0D1F45', margin: 0 }}>Dashboard Overview</h1>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <div className="adm-filter-group" style={{ margin: 0 }}>
+            <select 
+              value={attYear} 
+              onChange={e => {
+                setAttYear(parseInt(e.target.value)); 
+                setGrowthYear(parseInt(e.target.value));
+              }} 
+              className="adm-filter-select"
+              style={{ height: '36px', padding: '0 32px 0 12px' }}
+            >
+              {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
+            </select>
+          </div>
+          <button 
+            onClick={() => window.print()} 
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '8px', height: '36px', 
+              padding: '0 16px', background: '#1E3A8A', color: 'white', 
+              border: 'none', borderRadius: '8px', cursor: 'pointer', 
+              fontFamily: 'Inter', fontWeight: 600, fontSize: '14px' 
+            }}
+          >
+            <Printer size={16} /> Export to PDF
+          </button>
+        </div>
+      </div>
+
       {/* ── Row 1: 4 Stat Cards ── */}
       <div className="adm-stats-grid">
         <div className="adm-stat-card blue adm-clickable-card" onClick={() => navigate('/admin/members')}>
@@ -456,6 +496,17 @@ export default function AdminDashboard() {
           </div>
           <div className="adm-stat-value">{donationsLoading ? '—' : `₱${(donationStats.total || 0).toLocaleString()}`}</div>
           <div className="adm-stat-sub"><span className="adm-stat-sub-highlight">+₱{donationsLoading ? '—' : (donationStats.thisMonth || 0).toLocaleString()}</span> this month</div>
+        </div>
+
+        <div className="adm-stat-card adm-clickable-card" onClick={() => navigate('/admin/attendance')}>
+          <div className="adm-stat-top">
+            <span className="adm-stat-label">Total Attendance</span>
+            <div className="adm-stat-icon adm-icon-blue">
+              <Activity size={18} color="white" />
+            </div>
+          </div>
+          <div className="adm-stat-value">{attendanceLoading ? '—' : totalAttendanceCount.toLocaleString()}</div>
+          <div className="adm-stat-sub"><span className="adm-stat-sub-highlight">YTD</span> {new Date().getFullYear()}</div>
         </div>
       </div>
 
@@ -515,11 +566,13 @@ export default function AdminDashboard() {
                 ))}
               </div>
             ) : (
-              <p className="adm-ai-empty">Click refresh to generate AI insights from your data.</p>
+              <p className="adm-ai-empty">AI Service is waiting to connect. Click refresh to generate insights.</p>
             )}
           </div>
         )}
       </div>
+
+
 
       {/* ── Row 2: Analytics Row ── */}
       <div className="adm-analytics-row">
@@ -528,7 +581,7 @@ export default function AdminDashboard() {
           <div className="adm-card-header">
             <div>
               <h3 className="adm-card-title">Donation Categories</h3>
-              <span className="adm-card-sub">Total: ₱{(pieTotal || 0).toLocaleString()}</span>
+              <span className="adm-stat-chip">₱{(pieTotal || 0).toLocaleString()}</span>
             </div>
             <button className="adm-chart-expand-btn" onClick={() => setExpandedChart('donations')} title="Expand Chart"><Expand size={16} color="#4B5563" strokeWidth={2.5} /></button>
           </div>
@@ -547,8 +600,7 @@ export default function AdminDashboard() {
                   axisLine={false} 
                   tickLine={false} 
                   tick={{ fontSize: 11, fill: '#4B5563' }} 
-                  width={130} 
-                  tickFormatter={(val) => val.length > 18 ? val.substring(0, 18) + '...' : val}
+                  width={140} 
                 />
                 <Tooltip 
                   cursor={{ fill: '#F9FAFB' }}
@@ -578,7 +630,7 @@ export default function AdminDashboard() {
           <div className="adm-card-header">
             <div>
               <h3 className="adm-card-title">Members by Community</h3>
-              <span className="adm-card-sub">{memberStats.total} total across {membersByBranch.length} communities</span>
+              <span className="adm-card-sub"><strong className="adm-sub-bold">{memberStats.total}</strong> total across <strong className="adm-sub-bold">{membersByBranch.length}</strong> communities</span>
             </div>
             <button className="adm-chart-expand-btn" onClick={() => setExpandedChart('branches')} title="Expand Chart"><Expand size={16} color="#4B5563" strokeWidth={2.5} /></button>
           </div>
@@ -593,11 +645,11 @@ export default function AdminDashboard() {
                 {isHorizontalMembers ? (
                   <>
                     <XAxis type="number" stroke="#9CA3AF" fontSize={11} domain={[0, maxMembersInBranch + 1]} allowDecimals={false} hide />
-                    <YAxis dataKey="branch" type="category" stroke="#9CA3AF" fontSize={11} width={80} tickFormatter={(val) => val.length > 10 ? val.substring(0, 10) + '...' : val} />
+                    <YAxis dataKey="branch" type="category" stroke="#9CA3AF" fontSize={11} width={140} />
                   </>
                 ) : (
                   <>
-                    <XAxis dataKey="branch" stroke="#9CA3AF" fontSize={11} angle={-15} textAnchor="end" height={35} tickMargin={5} tickFormatter={(val) => val.length > 10 ? val.substring(0, 10) + '...' : val} />
+                    <XAxis dataKey="branch" stroke="#9CA3AF" fontSize={11} angle={-35} textAnchor="end" height={50} tickMargin={5} />
                     <YAxis stroke="#9CA3AF" fontSize={11} domain={[0, maxMembersInBranch + 1]} allowDecimals={false} />
                   </>
                 )}
@@ -618,9 +670,9 @@ export default function AdminDashboard() {
             <div>
               <h3 className="adm-card-title">Member Growth Trends</h3>
               <span className="adm-card-sub">
-                <span style={{ color: momGrowth >= 0 ? '#10B981' : '#EF4444', fontWeight: 600 }}>
-                  {momGrowth >= 0 ? '↑' : '↓'} {Math.abs(momGrowth)}%
-                </span> vs last month
+                <span style={{ color: momGrowth === 0 ? '#6B7280' : momGrowth > 0 ? '#10B981' : '#EF4444', fontWeight: 600 }}>
+                  {momGrowth === 0 ? '—' : momGrowth > 0 ? '↑' : '↓'} {Math.abs(momGrowth)}%
+                </span> vs last month · <strong className="adm-sub-bold">{memberStats.total}</strong> members
               </span>
             </div>
             <button className="adm-chart-expand-btn" onClick={() => setExpandedChart('growth')} title="Expand Chart"><Expand size={16} color="#4B5563" strokeWidth={2.5} /></button>
@@ -629,16 +681,22 @@ export default function AdminDashboard() {
             <LineChart data={enhancedGrowthData} margin={{ top: 20, right: 8, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
               <XAxis dataKey="label" stroke="#9CA3AF" fontSize={12} />
-              <YAxis stroke="#9CA3AF" fontSize={12} allowDecimals={false} />
+              <YAxis stroke="#9CA3AF" fontSize={12} allowDecimals={false} domain={[0, memberStats.total > 0 ? memberStats.total + 2 : 'auto']} />
               <Tooltip formatter={(value, name) => [value, name === 'actualTotal' ? 'Total Members' : name === 'noDataTotal' ? 'No Data' : name]} />
               <Legend iconType="circle" wrapperStyle={{ paddingTop: '12px', fontSize: '12px' }} />
+              
+              {enhancedGrowthData.length > 0 && enhancedGrowthData.findIndex(d => d.actualTotal !== null) > 0 && (
+                <ReferenceLine 
+                  x={enhancedGrowthData[enhancedGrowthData.findIndex(d => d.actualTotal !== null)].label} 
+                  stroke="#9CA3AF" 
+                  strokeDasharray="3 3" 
+                  label={{ position: 'insideTopLeft', value: 'Registration Opened', fill: '#9CA3AF', fontSize: 11 }} 
+                />
+              )}
+              
               <Line type="monotone" dataKey="noDataTotal" stroke="#D1D5DB" strokeDasharray="5 5" strokeWidth={2} dot={false} name="No Data" connectNulls />
               <Line type="monotone" dataKey="actualTotal" stroke="#155DFC" strokeWidth={2} dot={{ r: 3 }} name="Total Members" connectNulls />
-              {spikeLabel && maxNewMembers > 0 && (
-                <ReferenceDot x={spikeLabel} y={growthData.find(g => g.label === spikeLabel)?.totalMembers} r={5} fill="#EF4444" stroke="none">
-                  <Label value="Registration opened" position="top" fill="#EF4444" fontSize={10} offset={10} />
-                </ReferenceDot>
-              )}
+
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -652,10 +710,10 @@ export default function AdminDashboard() {
             <button className="adm-chart-expand-btn" onClick={() => setExpandedChart('attendance')} title="Expand Chart"><Expand size={16} color="#4B5563" strokeWidth={2.5} /></button>
           </div>
           <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={attendVsDonData} margin={{ top: 20, right: 8, left: -20, bottom: 0 }}>
+            <BarChart data={attendVsDonData} margin={{ top: 20, right: 8, left: -10, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
               <XAxis dataKey="label" stroke="#9CA3AF" fontSize={12} />
-              <YAxis stroke="#9CA3AF" fontSize={12} allowDecimals={false} />
+              <YAxis stroke="#9CA3AF" fontSize={12} allowDecimals={false} label={{ value: 'Attendees', angle: -90, position: 'insideLeft', fill: '#9CA3AF', fontSize: 11 }} />
               <Tooltip cursor={{ fill: '#F9FAFB' }} />
               <Legend iconType="square" wrapperStyle={{ paddingTop: '12px', fontSize: '12px' }} />
               <Bar dataKey="attendance" fill="#155DFC" radius={[4, 4, 0, 0]} name="Attendance" background={{ fill: '#F3F4F6' }} />
@@ -664,21 +722,6 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Footer Export Button */}
-      <div className="admin-dashboard-footer" >
-        <button
-          className="admin-dashboard-export-btn"
-          onClick={() => window.print()}
-          style={{
-            padding: '8px 16px', background: '#1E3A8A', color: 'white', border: 'none',
-            borderRadius: '8px', cursor: 'pointer', fontFamily: 'Inter', fontWeight: 600,
-            fontSize: '14px', display: 'flex', gap: '8px', alignItems: 'center'
-          }}
-        >
-          <Printer size={18} />
-          Export to PDF
-        </button>
-      </div>
       </>)}
 
       {/* ── Expanded Chart View (inline, sidebar stays visible) ── */}
@@ -727,151 +770,226 @@ export default function AdminDashboard() {
             </div>
 
             <div className="adm-expand-body">
-              {expandedChart === 'donations' && (
-                <>
-                  <div className="adm-expand-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
-                    <div className="adm-expand-panel">
-                      <h4 className="adm-expand-panel-title">Distribution Overview</h4>
-                      <div className="adm-expand-panel-chart" style={{ display: 'flex', flexDirection: 'column', height: '100%', paddingTop: '10px' }}>
-                        <div style={{ flex: 1, minHeight: '260px' }}>
-                          <ResponsiveContainer width="100%" height="100%">
-                            <BarChart
-                              layout="vertical"
-                              data={sortedDonationData}
-                              margin={{ top: 10, right: 90, left: 10, bottom: 10 }}
-                            >
-                              <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#F3F4F6" />
-                              <XAxis type="number" hide />
-                              <YAxis 
-                                type="category" 
-                                dataKey="name" 
-                                axisLine={false} 
-                                tickLine={false} 
-                                tick={{ fontSize: 12, fill: '#4B5563' }} 
-                                width={160} 
-                              />
-                              <Tooltip 
-                                cursor={{ fill: '#F9FAFB' }}
-                                formatter={(value, name, props) => {
-                                  const p = props.payload;
-                                  return [`₱${value.toLocaleString()} (${p.percentage}%)`, 'Donations'];
-                                }}
-                              />
-                              <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={24} minPointSize={2}>
-                                {sortedDonationData.map((entry, index) => (
-                                  <Cell key={`cell-${index}`} fill={entry.fillColor} />
-                                ))}
-                                <LabelList 
-                                  dataKey="displayLabel" 
-                                  position="right" 
-                                  fill="#6B7280" 
-                                  fontSize={12} 
-                                />
-                              </Bar>
-                            </BarChart>
-                          </ResponsiveContainer>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="adm-expand-panel">
-                      <h4 className="adm-expand-panel-title">Top Donor by Community</h4>
-                      <div className="adm-expand-panel-chart">
-                        {(() => {
-                          const avgDonation = donationsByBranch.length ? donationsByBranch.reduce((sum, b) => sum + b.total, 0) / donationsByBranch.length : 0;
-                          return (
-                            <ResponsiveContainer width="100%" height="100%">
-                              <BarChart data={donationsByBranch} margin={{ top: 10, right: 10, left: -10, bottom: 30 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
-                                <XAxis dataKey="branch" stroke="#9CA3AF" fontSize={11} angle={-20} textAnchor="end" height={55} />
-                                <YAxis stroke="#9CA3AF" fontSize={12} />
-                                <Tooltip formatter={(value) => `₱${(value || 0).toLocaleString()}`} cursor={{ fill: '#F9FAFB' }} />
-                                {avgDonation > 0 && <ReferenceLine y={avgDonation} stroke="#EF4444" strokeDasharray="3 3" />}
-                                <Bar dataKey="total" name="Total Donations" radius={[4, 4, 0, 0]} barSize={28}>
-                                  {donationsByBranch.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={index === 0 ? '#4a90d9' : '#0D1F45'} />
-                                  ))}
-                                </Bar>
-                              </BarChart>
-                            </ResponsiveContainer>
-                          );
-                        })()}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="adm-expand-interpretation">
-                    <strong>Interpretation:</strong> The left panel shows the proportional distribution of confirmed donations across six ministry fund categories. The right panel ranks communities by their total donation contributions, helping leadership identify which communities are the most active givers and where fundraising support may be needed.
-                  </div>
-                </>
-              )}
-
-              {expandedChart === 'branches' && (() => {
-                const totalMembers = rawMembers.length;
-                const officers = rawMembers.filter(m => m.position && m.position.toLowerCase() !== 'member').length;
-                const regularMembers = totalMembers - officers;
-                const officerPct = totalMembers > 0 ? Math.round((officers / totalMembers) * 100) : 0;
-                const gaugeData = [
-                  { name: 'Officers', value: officers, fill: '#155DFC' },
-                  { name: 'Members', value: regularMembers, fill: '#0D1F45' }
-                ];
+              {expandedChart === 'donations' && (() => {
+                const dStats = donationsData?.stats || {};
+                const donorsByCat = dStats.donorsByCategory || {};
+                const donorsByComm = dStats.donorsByCommunity || {};
+                const topCatByComm = dStats.topCategoryByCommunity || {};
+                const highestCat = sortedDonationData.length > 0 ? sortedDonationData[0] : null;
+                const fmt = v => `₱${(v || 0).toLocaleString()}`;
                 return (
                 <>
-                  <div className="adm-expand-grid" style={{ gridTemplateColumns: '8fr 2fr' }}>
-                    <div className="adm-expand-panel">
-                      <h4 className="adm-expand-panel-title">Member Count by Community</h4>
-                      <div className="adm-expand-panel-chart">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <BarChart data={membersByBranch.length > 0 ? membersByBranch : [{ branch: 'No data', count: 0 }]} margin={{ top: 10, right: 10, left: -10, bottom: 40 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
-                            <XAxis dataKey="branch" stroke="#9CA3AF" fontSize={11} angle={-20} textAnchor="end" height={55} />
-                            <YAxis stroke="#9CA3AF" fontSize={12} allowDecimals={false} />
-                            <Tooltip cursor={{ fill: '#F9FAFB' }} />
-                            <Bar dataKey="count" fill="#0D1F45" radius={[4, 4, 0, 0]} name="Members" barSize={28} />
-                          </BarChart>
-                        </ResponsiveContainer>
+                  <div className="adm-dv-scorecard">
+                    {[
+                      { label: 'Total Donations Collected', value: fmt(dStats.total || pieTotal), color: '#3B82F6' },
+                      { label: 'Total Donors', value: dStats.totalDonors || 0, color: '#10B981' },
+                      { label: 'Average Donation', value: fmt(dStats.avgDonation || 0), color: '#8B5CF6' },
+                      { label: 'Highest Category', value: highestCat ? highestCat.name : '—', sub: highestCat ? fmt(highestCat.value) : '', color: '#F59E0B' },
+                    ].map((s, i) => (
+                      <div key={i} className="adm-dv-tile" style={{ borderLeft: `4px solid ${s.color}` }}>
+                        <div className="adm-dv-tile-value">{s.value}</div>
+                        {s.sub && <div className="adm-dv-tile-sub">{s.sub}</div>}
+                        <div className="adm-dv-tile-label">{s.label}</div>
                       </div>
-                    </div>
-                    <div className="adm-expand-panel" style={{ alignItems: 'center', justifyContent: 'center' }}>
-                      <h4 className="adm-expand-panel-title">Members & Officers</h4>
-                      <div className="adm-expand-panel-chart" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                        <ResponsiveContainer width="100%" height={180}>
-                          <PieChart>
-                            <Pie data={gaugeData} cx="50%" cy="85%" startAngle={180} endAngle={0} innerRadius={50} outerRadius={80} dataKey="value" stroke="none">
-                              {gaugeData.map((entry, i) => (<Cell key={`gauge-${i}`} fill={entry.fill} />))}
-                            </Pie>
-                            <Tooltip />
-                          </PieChart>
-                        </ResponsiveContainer>
-                        <div style={{ textAlign: 'center', marginTop: '-24px', fontFamily: 'Inter', display: 'flex', gap: '32px', justifyContent: 'center', alignItems: 'center' }}>
-                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                            <span style={{ fontSize: '18px', fontWeight: 700, color: '#155DFC', lineHeight: 1 }}>{officerPct}%</span>
-                            <span style={{ fontSize: '10px', color: '#6B7280', fontWeight: 600, marginTop: '4px' }}>Officers</span>
-                          </div>
-                          <div style={{ width: '1px', height: '24px', backgroundColor: '#E5E7EB' }} />
-                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                            <span style={{ fontSize: '18px', fontWeight: 700, color: '#0D1F45', lineHeight: 1 }}>{100 - officerPct}%</span>
-                            <span style={{ fontSize: '10px', color: '#6B7280', fontWeight: 600, marginTop: '4px' }}>Members</span>
-                          </div>
-                        </div>
-                        <div style={{ display: 'flex', gap: '14px', marginTop: '16px', fontSize: '11px', fontFamily: 'Inter' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#0D1F45' }} />
-                            <span style={{ color: '#374151' }}>Members ({regularMembers})</span>
-                          </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#155DFC' }} />
-                            <span style={{ color: '#374151' }}>Officers ({officers})</span>
-                          </div>
-                        </div>
-                        {officerPct > 50 && (
-                          <div style={{ marginTop: '12px', padding: '6px 12px', background: '#FEF3C7', color: '#B45309', borderRadius: '4px', fontSize: '11px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <AlertCircle size={14} /> High officer ratio — review membership
-                          </div>
-                        )}
-                      </div>
+                    ))}
+                  </div>
+
+                  <div className="adm-dv-section">
+                    <h4 className="adm-dv-section-title">Category Breakdown</h4>
+                    <div className="adm-dv-table-wrap">
+                      <table className="adm-dv-table">
+                        <thead>
+                          <tr>
+                            <th className="text-left">Category Name</th>
+                            <th className="text-right">Total Amount</th>
+                            <th className="text-center">Unique Donors</th>
+                            <th className="text-right">Avg Donation</th>
+                            <th className="text-right">% Share</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {sortedDonationData.map((cat, idx) => {
+                            const donors = donorsByCat[cat.name] || 0;
+                            const avg = donors > 0 ? Math.round(cat.value / donors) : 0;
+                            return (
+                              <tr key={idx}>
+                                <td className="fw-500">
+                                  <div className="adm-dv-cat-cell">
+                                    <div className="adm-dv-color-dot" style={{ background: cat.color }} />
+                                    {cat.name}
+                                  </div>
+                                </td>
+                                <td className="text-right fw-600">{fmt(cat.value)}</td>
+                                <td className="text-center">{donors || '—'}</td>
+                                <td className="text-right">{avg > 0 ? fmt(avg) : '—'}</td>
+                                <td className="text-right">{cat.percentage}%</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
                     </div>
                   </div>
+
+                  <div className="adm-dv-section-last">
+                    <h4 className="adm-dv-section-title">Donations by Community</h4>
+                    <div className="adm-dv-table-scroll">
+                      <table className="adm-dv-table">
+                        <thead>
+                          <tr>
+                            <th className="text-left">Community</th>
+                            <th className="text-right">Total Donated</th>
+                            <th className="text-center">Unique Donors</th>
+                            <th className="text-center">Top Category</th>
+                            <th className="text-right">Avg / Donor</th>
+                            <th className="text-right">% Share</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {donationsByBranch.map((b, idx) => {
+                            const donors = donorsByComm[b.branch] || 0;
+                            const topCat = topCatByComm[b.branch] || '—';
+                            const avgPerDonor = donors > 0 ? Math.round(b.total / donors) : 0;
+                            const share = pieTotal > 0 ? ((b.total / pieTotal) * 100).toFixed(1) : '0';
+                            return (
+                              <tr key={idx}>
+                                <td className="fw-500">{b.branch}</td>
+                                <td className="text-right fw-600">{fmt(b.total)}</td>
+                                <td className="text-center">{donors || '—'}</td>
+                                <td className="text-center"><span className="adm-dv-badge adm-dv-badge-blue">{topCat}</span></td>
+                                <td className="text-right">{avgPerDonor > 0 ? fmt(avgPerDonor) : '—'}</td>
+                                <td className="text-right">{share}%</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
                   <div className="adm-expand-interpretation">
-                    <strong>Interpretation:</strong> The left panel shows the member count distribution across communities. The right panel displays a gauge showing the proportion of verified officers ({officerPct}%) to total members, helping leadership assess organizational capacity and identify communities that may need more officer appointments.
+                    <strong>Interpretation:</strong> The scorecard shows overall donation health. The category table ranks each ministry fund by total amount and unique donor count — categories with high amounts but few donors indicate large individual gifts, while those with many donors but low totals reflect broad participation. The community table identifies the most generous communities and their preferred fund categories.
+                  </div>
+                </>
+                );
+              })()}
+
+              {expandedChart === 'branches' && (() => {
+                const totalMem = rawMembers.length;
+                const officers = rawMembers.filter(m => m.position && m.position.toLowerCase() !== 'member').length;
+                const regularMem = totalMem - officers;
+                const ratio = totalMem > 0 ? `${Math.round((officers / totalMem) * 100)}%` : '0%';
+                // Build per-community data
+                const commData = {};
+                rawMembers.forEach(m => {
+                  const b = m.branch || m.community;
+                  if (!b || b === 'Unknown') return;
+                  if (!commData[b]) commData[b] = { name: b, total: 0, officers: 0 };
+                  commData[b].total++;
+                  if (m.position && m.position.toLowerCase() !== 'member') commData[b].officers++;
+                });
+                let commArr = Object.values(commData).sort((a, b) => {
+                  const ra = a.total > 0 ? (a.officers / a.total) * 100 : 0;
+                  const rb = b.total > 0 ? (b.officers / b.total) * 100 : 0;
+                  return rb - ra;
+                });
+                
+                if (branchSearchQuery.trim()) {
+                  commArr = commArr.filter(c => c.name.toLowerCase().includes(branchSearchQuery.toLowerCase()));
+                }
+                
+                const highRatioCommunities = commArr.filter(c => c.total > 0 && (c.officers / c.total) * 100 > 30).length;
+                return (
+                <>
+                  <div className="adm-dv-scorecard">
+                    {[
+                      { label: 'Total Members', value: totalMem, color: '#3B82F6' },
+                      { label: 'Total Officers', value: officers, color: '#10B981' },
+                      { label: 'Officer Ratio', value: ratio, color: '#8B5CF6' },
+                      { label: 'High Officer Ratio Communities', value: highRatioCommunities, color: highRatioCommunities > 0 ? '#F59E0B' : '#10B981' },
+                    ].map((s, i) => (
+                      <div key={i} className="adm-dv-tile" style={{ borderLeft: `4px solid ${s.color}` }}>
+                        <div className="adm-dv-tile-value">{s.value}</div>
+                        <div className="adm-dv-tile-label">{s.label}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="adm-dv-section">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                      <h4 className="adm-dv-section-title" style={{ margin: 0 }}>Community Member Breakdown</h4>
+                      <input 
+                        type="text" 
+                        placeholder="Search community..." 
+                        value={branchSearchInput}
+                        onChange={(e) => setBranchSearchInput(e.target.value)}
+                        style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #D1D5DB', fontSize: '13px', width: '250px' }}
+                      />
+                    </div>
+                    <div className="adm-dv-table-scroll adm-dv-table-scroll-lg">
+                      <table className="adm-dv-table">
+                        <thead>
+                          <tr>
+                            <th className="text-left">Community</th>
+                            <th className="text-center">Total Members</th>
+                            <th className="text-center">Officers</th>
+                            <th className="text-center">Regular</th>
+                            <th className="text-center">Officer Ratio</th>
+                            <th className="text-center">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {commArr.map((c, idx) => {
+                            const ratioPct = c.total > 0 ? Math.round((c.officers / c.total) * 100) : 0;
+                            const statusCls = ratioPct > 40 ? 'adm-dv-badge-red' : ratioPct > 30 ? 'adm-dv-badge-yellow' : 'adm-dv-badge-green';
+                            const statusLabel = ratioPct > 40 ? 'Critical' : ratioPct > 30 ? 'Review' : 'Healthy';
+                            return (
+                              <tr key={idx}>
+                                <td className="fw-500">{c.name}</td>
+                                <td className="text-center fw-600">{c.total}</td>
+                                <td className="text-center">{c.officers}</td>
+                                <td className="text-center">{c.total - c.officers}</td>
+                                <td className="text-center">{ratioPct}%</td>
+                                <td className="text-center"><span className={`adm-dv-badge ${statusCls}`}>{statusLabel}</span></td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <div className="adm-dv-donut-center">
+                    <div className="adm-dv-donut-inner">
+                      <h4 className="adm-dv-section-title">Members vs Officers</h4>
+                      <ResponsiveContainer width="100%" height={280}>
+                        <PieChart>
+                          <Pie data={[{ name: 'Regular Members', value: regularMem, fill: '#0D1F45' }, { name: 'Officers', value: officers, fill: '#155DFC' }]} cx="50%" cy="45%" innerRadius={55} outerRadius={95} paddingAngle={2} dataKey="value" label={renderSliceLabel} labelLine={false}>
+                            <Cell fill="#0D1F45" /><Cell fill="#155DFC" />
+                            <Label 
+                              position="center" 
+                              content={({ viewBox: { cx, cy } }) => (
+                                <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central">
+                                  <tspan x={cx} y={cy - 5} fontSize="24" fontWeight="bold" fill="#0D1F45">{totalMem}</tspan>
+                                  <tspan x={cx} y={cy + 15} fontSize="11" fill="#6B7280">Total Members</tspan>
+                                </text>
+                              )} 
+                            />
+                          </Pie>
+                          <Tooltip formatter={(value) => [value, 'Members']} />
+                          <Legend verticalAlign="bottom" height={36} iconType="circle" iconSize={8} formatter={(value, entry) => <span className="adm-dv-legend-label">{value}: {entry.payload.value} ({totalMem > 0 ? Math.round((entry.payload.value / totalMem) * 100) : 0}%)</span>} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                      {highRatioCommunities > 0 && (
+                        <div className="adm-dv-warning">
+                          <AlertCircle size={14} /> {highRatioCommunities} communities have officer ratio above 30%
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="adm-expand-interpretation">
+                    <strong>Interpretation:</strong> The scorecard provides a high-level view of organizational capacity. The community table is sorted by officer ratio descending — communities marked "Critical" (red, &gt;40%) or "Review" (yellow, 30–40%) may need membership growth or officer role rebalancing. The donut chart visualizes the overall officer-to-member split.
                   </div>
                 </>
                 );
@@ -886,11 +1004,11 @@ export default function AdminDashboard() {
                         <LineChart data={growthData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
                           <XAxis dataKey="label" stroke="#9CA3AF" fontSize={12} />
-                          <YAxis stroke="#9CA3AF" fontSize={12} allowDecimals={false} tickFormatter={val => val >= 1000 ? `${(val/1000).toFixed(1)}k` : val} />
+                          <YAxis stroke="#9CA3AF" fontSize={12} allowDecimals={false} domain={[0, 'dataMax + 2']} tickFormatter={val => val >= 1000 ? `${(val/1000).toFixed(1)}k` : val} />
                           <Tooltip />
                           <Legend iconType="circle" />
                           {(growthView === 'both' || growthView === 'total') && <Line type="monotone" dataKey="totalMembers" stroke="#155DFC" strokeWidth={2.5} dot={{ r: 3 }} name="Total Members" />}
-                          {(growthView === 'both' || growthView === 'new') && <Line type="monotone" dataKey="newMembers" stroke="#0D1F45" strokeWidth={2.5} dot={{ r: 3 }} name="New Members" />}
+                          {(growthView === 'both' || growthView === 'new') && <Line type="monotone" dataKey="newMembers" stroke="#F59E0B" strokeWidth={2.5} dot={{ r: 3 }} name="New Members" />}
                         </LineChart>
                       </ResponsiveContainer>
                     </div>
@@ -905,7 +1023,9 @@ export default function AdminDashboard() {
                             <XAxis dataKey="branch" stroke="#9CA3AF" fontSize={11} angle={-20} textAnchor="end" height={45} />
                             <YAxis stroke="#9CA3AF" fontSize={12} allowDecimals={false} tickFormatter={val => val >= 1000 ? `${(val/1000).toFixed(1)}k` : val} />
                             <Tooltip cursor={{ fill: '#F9FAFB' }} />
-                            <Bar dataKey="count" fill="#0D1F45" radius={[4, 4, 0, 0]} name="New Members" barSize={28} />
+                            <Bar dataKey="count" fill="#0D1F45" radius={[4, 4, 0, 0]} name="New Members" barSize={28}>
+                              <LabelList dataKey="count" position="top" fill="#6B7280" fontSize={11} />
+                            </Bar>
                           </BarChart>
                         </ResponsiveContainer>
                       </div>
@@ -918,12 +1038,12 @@ export default function AdminDashboard() {
                           const inactivePct = memberStats.total > 0 ? (memberStats.inactive / memberStats.total) * 100 : 0;
                           return (
                             <>
-                              <ResponsiveContainer width="100%" height={220}>
+                              <ResponsiveContainer width="100%" height={280}>
                                 <PieChart margin={{ top: 0, right: 0, bottom: 20, left: 0 }}>
                                   <Pie data={[
                                     { name: 'Active', value: memberStats.active, fill: '#0D1F45' },
                                     { name: 'Inactive', value: memberStats.inactive, fill: '#155DFC' }
-                                  ]} cx="50%" cy="45%" innerRadius={35} outerRadius={65} paddingAngle={2} dataKey="value" label={renderSliceLabel} labelLine={false}>
+                                  ]} cx="50%" cy="45%" innerRadius={55} outerRadius={90} paddingAngle={2} dataKey="value" label={renderSliceLabel} labelLine={false}>
                                     <Cell fill="#0D1F45" />
                                     <Cell fill="#155DFC" />
                                   </Pie>
@@ -935,12 +1055,12 @@ export default function AdminDashboard() {
                                     iconSize={8}
                                     formatter={(value, entry) => {
                                       const pct = value === 'Active' ? activePct : inactivePct;
-                                      return <span style={{ color: '#4B5563', fontSize: '12px', fontWeight: 500 }}>{value}: {entry.payload.value} ({pct.toFixed(1)}%)</span>;
+                                      return <span className="adm-dv-legend-label">{value}: {entry.payload.value} ({pct.toFixed(1)}%)</span>;
                                     }}
                                   />
                                 </PieChart>
                               </ResponsiveContainer>
-                              <div className="adm-expand-growth-total-badge">
+                              <div className="adm-dv-donut-total">
                                 {memberStats.total} Total Members
                               </div>
                             </>
@@ -955,60 +1075,121 @@ export default function AdminDashboard() {
                 </div>
               )}
 
-              {expandedChart === 'attendance' && (
+              {expandedChart === 'attendance' && (() => {
+                const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                const now = new Date();
+                const ytdAtt = rawAttendance.filter(a => { const s = (a.status||'').toLowerCase(); const d = new Date(a.date||a.createdAt); return (s==='present'||s==='late') && d.getFullYear()===attYear; }).length;
+                const monthlyAtt = MONTHS.map((m, i) => {
+                  const count = rawAttendance.filter(a => { const s = (a.status||'').toLowerCase(); const d = new Date(a.date||a.createdAt); return (s==='present'||s==='late') && d.getFullYear()===attYear && d.getMonth()===i; }).length;
+                  return { month: m, count, idx: i };
+                });
+                const activeMonthsAtt = monthlyAtt.filter(m => m.count > 0);
+                const avgMonthly = activeMonthsAtt.length > 0 ? Math.round(ytdAtt / activeMonthsAtt.length) : 0;
+                const highestMonth = activeMonthsAtt.length > 0 ? activeMonthsAtt.reduce((a, b) => b.count > a.count ? b : a) : null;
+                // Community attendance
+                const commAttMap = {};
+                rawAttendance.forEach(a => {
+                  const s = (a.status||'').toLowerCase();
+                  const d = new Date(a.date||a.createdAt);
+                  if ((s==='present'||s==='late') && d.getFullYear()===attYear) {
+                    const b = a.branch || a.community || a.userBranch || 'Unknown';
+                    if (b !== 'Unknown') {
+                      if (!commAttMap[b]) commAttMap[b] = { name: b, total: 0, months: {} };
+                      commAttMap[b].total++;
+                      const mKey = d.getMonth();
+                      commAttMap[b].months[mKey] = (commAttMap[b].months[mKey] || 0) + 1;
+                    }
+                  }
+                });
+                const commAttArr = Object.values(commAttMap).sort((a, b) => b.total - a.total);
+                const topCommunity = commAttArr.length > 0 ? commAttArr[0].name : '—';
+                return (
                 <>
-                  <div className="adm-expand-grid">
-                    <div className="adm-expand-panel">
-                      <h4 className="adm-expand-panel-title">Attendance Volume (Bar)</h4>
-                      <div className="adm-expand-panel-chart">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <BarChart data={attendVsDonData} margin={{ top: 10, right: 10, left: -10, bottom: 10 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-                            <XAxis dataKey="label" stroke="#9CA3AF" fontSize={12} />
-                            <YAxis stroke="#9CA3AF" fontSize={12} allowDecimals={false} />
-                            <Tooltip />
-                            <Bar dataKey="attendance" fill="#155DFC" radius={[4, 4, 0, 0]} name="Attendance" barSize={28} />
-                          </BarChart>
-                        </ResponsiveContainer>
+                  <div className="adm-dv-scorecard">
+                    {[
+                      { label: 'Total Attendance YTD', value: ytdAtt.toLocaleString(), color: '#3B82F6' },
+                      { label: 'Avg Monthly Attendance', value: avgMonthly.toLocaleString(), color: '#10B981' },
+                      { label: 'Highest Month', value: highestMonth ? highestMonth.month : '—', sub: highestMonth ? `${highestMonth.count.toLocaleString()} attendees` : '', color: '#8B5CF6' },
+                      { label: 'Most Attended Community', value: topCommunity, color: '#F59E0B' },
+                    ].map((s, i) => (
+                      <div key={i} className="adm-dv-tile" style={{ borderLeft: `4px solid ${s.color}` }}>
+                        <div className="adm-dv-tile-value">{s.value}</div>
+                        {s.sub && <div className="adm-dv-tile-sub">{s.sub}</div>}
+                        <div className="adm-dv-tile-label">{s.label}</div>
                       </div>
-                    </div>
-                    {attBranch === 'all' ? (
-                      <div className="adm-expand-panel">
-                        <h4 className="adm-expand-panel-title">Avg Attendance by Community (Top {attendanceByBranch.length || 0})</h4>
-                        <div className="adm-expand-panel-chart">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={attendanceByBranch} margin={{ top: 10, right: 10, left: -10, bottom: 30 }}>
-                              <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
-                              <XAxis dataKey="branch" stroke="#9CA3AF" fontSize={11} angle={-20} textAnchor="end" height={55} />
-                              <YAxis stroke="#9CA3AF" fontSize={12} allowDecimals={false} />
-                              <Tooltip />
-                              <Bar dataKey="avg" fill="#0D1F45" radius={[4, 4, 0, 0]} name="Avg Attendance" barSize={28} />
-                            </BarChart>
-                          </ResponsiveContainer>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="adm-expand-panel">
-                        <h4 className="adm-expand-panel-title">Attendance Trend (Line)</h4>
-                        <div className="adm-expand-panel-chart">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={attendVsDonData} margin={{ top: 10, right: 10, left: -10, bottom: 10 }}>
-                              <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-                              <XAxis dataKey="label" stroke="#9CA3AF" fontSize={12} />
-                              <YAxis stroke="#9CA3AF" fontSize={12} allowDecimals={false} />
-                              <Tooltip />
-                              <Line type="monotone" dataKey="attendance" stroke="#155DFC" strokeWidth={2.5} dot={{ r: 3 }} name="Attendance" />
-                            </LineChart>
-                          </ResponsiveContainer>
-                        </div>
-                      </div>
-                    )}
+                    ))}
                   </div>
+
+                  <div className="adm-dv-section">
+                    <h4 className="adm-dv-section-title">Monthly Attendance</h4>
+                    <div className="adm-dv-table-wrap">
+                      <table className="adm-dv-table">
+                        <thead>
+                          <tr>
+                            <th className="text-left">Month</th>
+                            <th className="text-right">Total Attendance</th>
+                            <th className="text-right">MoM Change</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {monthlyAtt.map((m, i) => {
+                            const isFuture = m.count === 0 && i > now.getMonth() && attYear >= now.getFullYear();
+                            const prev = i > 0 ? monthlyAtt[i - 1].count : 0;
+                            const momPct = i === 0 || isFuture || (prev === 0 && m.count === 0) ? null : prev === 0 ? null : Math.round(((m.count - prev) / prev) * 100);
+                            const isBold = m.count > avgMonthly && m.count > 0;
+                            return (
+                              <tr key={i} className={`${isFuture ? 'future-row' : ''} ${isBold ? 'bold-row' : ''}`}>
+                                <td>{m.month}</td>
+                                <td className="text-right">{m.count > 0 ? m.count.toLocaleString() : '—'}</td>
+                                <td className="text-right">
+                                  {momPct === null ? '—' : momPct === 0 ? <span style={{ color: '#6B7280' }}>— 0%</span> : <span className={momPct > 0 ? 'adm-dv-mom-up' : 'adm-dv-mom-down'}>{momPct > 0 ? '↑' : '↓'} {Math.abs(momPct)}%</span>}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <div className="adm-dv-section-last">
+                    <h4 className="adm-dv-section-title">Attendance by Community</h4>
+                    <div className="adm-dv-table-scroll">
+                      <table className="adm-dv-table">
+                        <thead>
+                          <tr>
+                            <th className="text-left">Community</th>
+                            <th className="text-right">Total Attendance</th>
+                            <th className="text-right">Avg / Month</th>
+                            <th className="text-center">Most Active Month</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {commAttArr.map((c, idx) => {
+                            const activeMs = Object.keys(c.months).length;
+                            const avgPerMonth = activeMs > 0 ? Math.round(c.total / activeMs) : 0;
+                            const bestMonthIdx = Object.entries(c.months).sort((a, b) => b[1] - a[1])[0];
+                            const bestMonth = bestMonthIdx ? MONTHS[parseInt(bestMonthIdx[0])] : '—';
+                            return (
+                              <tr key={idx}>
+                                <td className="fw-500">{c.name}</td>
+                                <td className="text-right fw-600">{c.total.toLocaleString()}</td>
+                                <td className="text-right">{avgPerMonth}</td>
+                                <td className="text-center"><span className="adm-dv-badge adm-dv-badge-blue">{bestMonth}</span></td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
                   <div className="adm-expand-interpretation">
-                    <strong>Interpretation:</strong> The left panel shows attendance volume per period as a bar chart for easy comparison. The right panel presents the same data as a line chart to highlight the overall trend direction. This dual view helps leadership monitor worship service engagement, identify seasonal patterns, and measure the impact of outreach initiatives.
+                    <strong>Interpretation:</strong> The scorecard shows year-to-date attendance health. The monthly table highlights months exceeding the average in bold — consecutive MoM declines (red arrows) may signal engagement drops requiring outreach. The community table ranks communities by total attendance and identifies their peak months.
                   </div>
                 </>
-              )}
+                );
+              })()}
             </div>
           </div>
         </div>

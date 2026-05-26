@@ -236,6 +236,20 @@ router.get('/admin/donations', authenticateAdmin, async (req, res) => {
           categoryBreakdown: [
             { $match: { status: 'confirmed' } },
             { $group: { _id: { $ifNull: ["$category", "General Fund"] }, total: { $sum: safeAmount } } }
+          ],
+          donorsByCategory: [
+            { $match: { status: 'confirmed' } },
+            { $group: { _id: { $ifNull: ["$category", "General Fund"] }, donors: { $addToSet: "$email" } } }
+          ],
+          donorsByCommunity: [
+            { $match: { status: 'confirmed', community: { $exists: true, $ne: null } } },
+            { $group: { _id: "$community", donors: { $addToSet: "$email" } } }
+          ],
+          topCategoryByCommunity: [
+            { $match: { status: 'confirmed', community: { $exists: true, $ne: null } } },
+            { $group: { _id: { community: "$community", category: { $ifNull: ["$category", "General Fund"] } }, total: { $sum: safeAmount } } },
+            { $sort: { total: -1 } },
+            { $group: { _id: "$_id.community", topCategory: { $first: "$_id.category" }, topAmount: { $first: "$total" } } }
           ]
         }
       }
@@ -285,6 +299,21 @@ router.get('/admin/donations', authenticateAdmin, async (req, res) => {
       if (item._id) categoryBreakdown[item._id] = item.total;
     });
 
+    const donorsByCategory = {};
+    (sr.donorsByCategory || []).forEach(item => {
+      if (item._id) donorsByCategory[item._id] = (item.donors || []).length;
+    });
+
+    const donorsByCommunity = {};
+    (sr.donorsByCommunity || []).forEach(item => {
+      if (item._id) donorsByCommunity[item._id] = (item.donors || []).length;
+    });
+
+    const topCategoryByCommunity = {};
+    (sr.topCategoryByCommunity || []).forEach(item => {
+      if (item._id) topCategoryByCommunity[item._id] = item.topCategory;
+    });
+
     const stats = {
       totalCount: totals.count,
       total: totals.totalAmount,
@@ -297,6 +326,9 @@ router.get('/admin/donations', authenticateAdmin, async (req, res) => {
       rejectedCount,
       communityBreakdown,
       categoryBreakdown,
+      donorsByCategory,
+      donorsByCommunity,
+      topCategoryByCommunity,
     };
 
     res.status(200).json({

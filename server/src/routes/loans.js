@@ -23,6 +23,8 @@ router.get('/admin/member-savings', authenticateAdmin, async (req, res) => {
 
     let transactions = [];
     let monthlyTrend = [];
+    let communitySavings = [];
+    let savingsSummary = {};
     if (!email) {
       // Aggregate monthly trend on the server instead of sending all raw transactions
       const currentYear = new Date().getFullYear();
@@ -37,6 +39,47 @@ router.get('/admin/member-savings', authenticateAdmin, async (req, res) => {
         }},
         { $sort: { _id: 1 } }
       ]).toArray();
+
+      // Community/Branch savings breakdown
+      // Get all unique saver emails
+      const saverEmails = [...new Set(goals.map(g => g.email))];
+      
+      // Fetch branch info for all savers
+      const saverUsers = saverEmails.length > 0
+        ? await users.find(
+            { email: { $in: saverEmails }, isDeleted: { $ne: true } },
+            { projection: { email: 1, branch: 1 } }
+          ).toArray()
+        : [];
+      
+      // Build email-to-branch map
+      const emailToBranch = {};
+      saverUsers.forEach(u => { emailToBranch[u.email] = u.branch || 'Unassigned'; });
+
+      // Aggregate savings by community
+      const communityMap = {};
+      goals.forEach(g => {
+        const branch = emailToBranch[g.email] || 'Unassigned';
+        if (!communityMap[branch]) {
+          communityMap[branch] = { community: branch, totalSavings: 0, members: new Set() };
+        }
+        communityMap[branch].totalSavings += (g.savedAmount || 0);
+        communityMap[branch].members.add(g.email);
+      });
+
+      communitySavings = Object.values(communityMap)
+        .map(c => ({
+          community: c.community,
+          totalSavings: c.totalSavings,
+          memberCount: c.members.size,
+          avgPerMember: c.members.size > 0 ? Math.round(c.totalSavings / c.members.size) : 0,
+        }))
+        .sort((a, b) => b.totalSavings - a.totalSavings);
+
+      // Summary stats
+      const totalSavers = saverEmails.length;
+      const avgPerSaver = totalSavers > 0 ? Math.round(totalSavings / totalSavers) : 0;
+      savingsSummary = { totalSavers, avgPerSaver };
     }
 
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -45,7 +88,10 @@ router.get('/admin/member-savings', authenticateAdmin, async (req, res) => {
       return { month: m, savings: found ? found.savings : 0 };
     });
 
-    res.json({ success: true, totalSavings, transactions, monthlyTrend: formattedTrend });
+    // Find highest month
+    const highestMonth = formattedTrend.reduce((best, curr) => curr.savings > best.savings ? curr : best, { month: '—', savings: 0 });
+
+    res.json({ success: true, totalSavings, transactions, monthlyTrend: formattedTrend, communitySavings, savingsSummary: { ...savingsSummary, highestMonth: highestMonth.month, highestMonthAmount: highestMonth.savings } });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Failed to fetch member savings' });
@@ -345,9 +391,29 @@ router.get('/admin/loans', authenticateAdmin, async (req, res) => {
       totalDisbursed: sr.totalDisbursed[0]?.total || 0
     };
 
+    // Fetch branch/community for all member emails in this batch
+    const emailsInBatch = [...new Set(allLoans.map(l => l.email).filter(Boolean))];
+    const batchUsers = emailsInBatch.length > 0
+      ? await users.find(
+          { email: { $in: emailsInBatch } },
+          { projection: { email: 1, branch: 1 } }
+        ).toArray()
+      : [];
+    const emailToBranch = {};
+    batchUsers.forEach(u => { emailToBranch[u.email] = u.branch || 'Unassigned'; });
+
+    const enrichedLoans = allLoans.map(l => {
+      const enriched = enrichLoanWithNextPayment(l);
+      return {
+        ...enriched,
+        branchName: emailToBranch[l.email] || 'Unassigned',
+        community: emailToBranch[l.email] || 'Unassigned'
+      };
+    });
+
     res.status(200).json({ 
       success: true, 
-      loans: allLoans.map(enrichLoanWithNextPayment), 
+      loans: enrichedLoans, 
       totalCount,
       totalPages: Math.ceil(totalCount / limit),
       currentPage: page,
@@ -1182,6 +1248,124 @@ router.get('/admin/loan-reports', authenticateAdmin, async (req, res) => {
     const availableYears = [];
     for (let y = currentYear; y >= startYear; y--) availableYears.push(y);
 
+    // ── BRANCH-LEVEL AGGREGATIONS ──
+    // Build email → branch map from all relevant emails
+    const allEmails = new Set();
+    allLoansEver.forEach(l => allEmails.add(l.email));
+    allApplicationsInYear.forEach(l => allEmails.add(l.email));
+    allConfirmedPayments.forEach(p => allEmails.add(p.email));
+
+    const branchUsers = allEmails.size > 0
+      ? await users.find(
+          { email: { $in: [...allEmails] } },
+          { projection: { email: 1, branch: 1 } }
+        ).toArray()
+      : [];
+    const emailToBranch = {};
+    branchUsers.forEach(u => { emailToBranch[u.email] = u.branch || 'Unassigned'; });
+
+    // 1. Status distribution by branch (all loans ever - need email field)
+    const allLoansWithEmail = await loans.find({}).project({ status: 1, email: 1 }).toArray();
+    const branchStatusMap = {};
+    allLoansWithEmail.forEach(l => {
+      const branch = emailToBranch[l.email] || 'Unassigned';
+      if (!branchStatusMap[branch]) branchStatusMap[branch] = { branch, total: 0, active: 0, completed: 0, pending: 0, approved: 0, rejected: 0, cancelled: 0 };
+      branchStatusMap[branch].total++;
+      const s = l.status || 'pending';
+      if (s === 'active') branchStatusMap[branch].active++;
+      else if (s === 'completed') branchStatusMap[branch].completed++;
+      else if (s === 'pending' || s === 'awaiting_member_approval') branchStatusMap[branch].pending++;
+      else if (s === 'approved') branchStatusMap[branch].approved++;
+      else if (s === 'rejected') branchStatusMap[branch].rejected++;
+      else if (s === 'cancelled') branchStatusMap[branch].cancelled++;
+    });
+    const branchStatusData = Object.values(branchStatusMap).map(b => ({
+      ...b,
+      rejectionRate: b.total > 0 ? Math.round((b.rejected / b.total) * 100 * 10) / 10 : 0,
+    })).sort((a, b) => b.rejectionRate - a.rejectionRate);
+
+    // 2. Repayment performance by branch
+    const branchRepaymentMap = {};
+    allConfirmedPayments.forEach(p => {
+      const branch = emailToBranch[p.email] || 'Unassigned';
+      if (!branchRepaymentMap[branch]) branchRepaymentMap[branch] = { branch, onTime: 0, late: 0, total: 0, penalties: 0 };
+      branchRepaymentMap[branch].total++;
+      if (p.isLate) {
+        branchRepaymentMap[branch].late++;
+        branchRepaymentMap[branch].penalties += Math.round((p.amount || 0) * 0.03);
+      } else {
+        branchRepaymentMap[branch].onTime++;
+      }
+    });
+    const branchRepaymentData = Object.values(branchRepaymentMap).map(b => ({
+      ...b,
+      onTimeRate: b.total > 0 ? Math.round((b.onTime / b.total) * 100 * 10) / 10 : 100,
+    })).sort((a, b) => a.onTimeRate - b.onTimeRate);
+
+    // Monthly repayment trend (on-time vs late by month)
+    const monthlyRepayment = months.map((month, idx) => {
+      const mp = allConfirmedPayments.filter(p => new Date(p.confirmedAt || p.submittedAt).getMonth() === idx);
+      return { month, onTime: mp.filter(p => !p.isLate).length, late: mp.filter(p => p.isLate).length };
+    });
+
+    // Total penalties
+    const totalPenalties = allConfirmedPayments.filter(p => p.isLate).reduce((s, p) => s + Math.round((p.amount || 0) * 0.03), 0);
+
+    // 3. Applications by branch
+    const allAppsWithEmail = await loans.find({
+      appliedDate: { $gte: yearStart, $lt: yearEnd }
+    }).project({ appliedDate: 1, status: 1, email: 1, loanType: 1 }).toArray();
+    const branchAppMap = {};
+    allAppsWithEmail.forEach(l => {
+      const branch = emailToBranch[l.email] || 'Unassigned';
+      if (!branchAppMap[branch]) branchAppMap[branch] = { branch, total: 0, approved: 0, rejected: 0, pending: 0, loanTypes: {} };
+      branchAppMap[branch].total++;
+      if (['approved', 'active', 'completed'].includes(l.status)) branchAppMap[branch].approved++;
+      else if (l.status === 'rejected') branchAppMap[branch].rejected++;
+      else branchAppMap[branch].pending++;
+      const lt = l.loanType || 'personal';
+      branchAppMap[branch].loanTypes[lt] = (branchAppMap[branch].loanTypes[lt] || 0) + 1;
+    });
+    const branchAppData = Object.values(branchAppMap).map(b => {
+      const topType = Object.entries(b.loanTypes).sort((a, c) => c[1] - a[1])[0];
+      // Cap approved at total to prevent >100% rates from edge cases
+      const safeApproved = Math.min(b.approved, b.total);
+      return {
+        ...b,
+        approved: safeApproved,
+        approvalRate: b.total > 0 ? Math.min(Math.round((safeApproved / b.total) * 100 * 10) / 10, 100) : 0,
+        topLoanType: topType ? (LOAN_TYPE_LABELS[topType[0]] || topType[0]) : '—',
+        loanTypes: undefined,
+      };
+    }).sort((a, b) => b.total - a.total);
+
+    // 4. Delinquency by branch
+    const branchDelinquencyData = Object.values(branchRepaymentMap).map(b => ({
+      branch: b.branch,
+      total: b.total,
+      onTime: b.onTime,
+      late: b.late,
+      delinquencyRate: b.total > 0 ? Math.round((b.late / b.total) * 100 * 10) / 10 : 0,
+      status: b.total > 0 ? (b.late / b.total > 0.15 ? 'Critical' : b.late / b.total > 0.10 ? 'At Risk' : 'Healthy') : 'Healthy',
+    })).sort((a, b) => b.delinquencyRate - a.delinquencyRate);
+    const branchesAtRisk = branchDelinquencyData.filter(b => b.delinquencyRate > 15).length;
+
+    // Monthly status trend
+    const allLoansMonthlyStatus = await loans.find({
+      appliedDate: { $gte: yearStart, $lt: yearEnd }
+    }).project({ appliedDate: 1, status: 1 }).toArray();
+    const monthlyStatusTrend = months.map((month, idx) => {
+      const ml = allLoansMonthlyStatus.filter(l => new Date(l.appliedDate).getMonth() === idx);
+      return {
+        month,
+        active: ml.filter(l => l.status === 'active').length,
+        completed: ml.filter(l => l.status === 'completed').length,
+        rejected: ml.filter(l => l.status === 'rejected').length,
+        cancelled: ml.filter(l => l.status === 'cancelled').length,
+        pending: ml.filter(l => ['pending', 'awaiting_member_approval', 'approved'].includes(l.status)).length,
+      };
+    });
+
     res.json({
       success: true,
       year,
@@ -1194,6 +1378,15 @@ router.get('/admin/loan-reports', authenticateAdmin, async (req, res) => {
       repaymentPerformance,
       monthlyApplications,
       delinquencyRate,
+      // Branch-level data
+      branchStatusData,
+      branchRepaymentData,
+      branchAppData,
+      branchDelinquencyData,
+      monthlyRepayment,
+      monthlyStatusTrend,
+      totalPenalties,
+      branchesAtRisk,
     });
   } catch (err) {
     console.error(err);

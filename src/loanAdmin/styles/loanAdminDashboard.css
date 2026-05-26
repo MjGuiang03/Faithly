@@ -447,3 +447,11 @@
     min-width: 40px;
     text-align: right;
 }
+
+/* Tighter card spacing for Loan Admin */
+.loan-admin-dashboard-content .adm-card {
+    padding: 16px 20px;
+}
+.loan-admin-dashboard-content .adm-card-header {
+    margin-bottom: 10px;
+}

@@ -1,12 +1,12 @@
 /* eslint-disable no-unused-vars */
 import { useState, useEffect, useMemo } from 'react';
 import useSWR from 'swr';
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Label } from 'recharts';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Label, Legend, AreaChart, Area, LineChart, Line } from 'recharts';
 import SecretaryAdminSidebar from '../components/secretaryAdminSidebar';
 import '../../admin/styles/AdminDashboard.css';
 import '../styles/secretaryAdminDashboard.css';
 import API from '../../utils/api';
-import { Banknote, Clock, CheckCircle, CalendarDays, X, Filter } from 'lucide-react';
+import { Banknote, Clock, CheckCircle, CalendarDays, X, Filter, Expand } from 'lucide-react';
 
 
 const fmt = (n) => n != null ? `₱${Number(n).toLocaleString('en-PH', { minimumFractionDigits: 0 })}` : '₱0';
@@ -20,6 +20,7 @@ const YEAR_OPTIONS = Array.from({ length: 5 }, (_, i) => new Date().getFullYear(
 
 export default function SecretaryAdminDashboard() {
   const [chartYear, setChartYear] = useState(new Date().getFullYear());
+  const [expandedChart, setExpandedChart] = useState(null);
 
   // Modal states
   const [showAwaitingModal, setShowAwaitingModal] = useState(false);
@@ -41,7 +42,7 @@ export default function SecretaryAdminDashboard() {
   });
 
   const { data, isValidating } = useSWR(
-    token ? `${API}/api/admin/loans` : null,
+    token ? `${API}/api/admin/loans?limit=10000` : null,
     fetcherSingle,
     { 
       revalidateOnFocus: false,
@@ -208,8 +209,9 @@ export default function SecretaryAdminDashboard() {
     <div className="sec-admin-dashboard-page">
       <SecretaryAdminSidebar />
       <div className="sec-admin-dashboard-content">
-
-        {/* Header */}
+        {!expandedChart && (
+          <>
+            {/* Header */}
         <h1 className="admin-dashboard-title">Secretary Dashboard</h1>
 
         {loading ? (
@@ -293,18 +295,21 @@ export default function SecretaryAdminDashboard() {
               {/* Monthly Disbursements */}
               <div className="adm-card">
                 <div className="adm-card-header">
-                  <div className="adm-card-header-row adm-chart-header-full">
-                    <div>
-                      <h3 className="adm-card-title">Monthly Disbursements</h3>
-                      <span className="adm-card-sub">Funds released per month</span>
-                      {(() => {
-                        const ytd = moneyFlowData.reduce((s, d) => s + d.released, 0);
-                        return <div className="sec-adm-ytd-text">YTD: ₱{ytd.toLocaleString()}</div>;
-                      })()}
-                    </div>
+                  <div>
+                    <h3 className="adm-card-title">Monthly Disbursements</h3>
+                    <span className="adm-card-sub">Funds released per month</span>
+                    {(() => {
+                      const ytd = moneyFlowData.reduce((s, d) => s + d.released, 0);
+                      return <div className="sec-adm-ytd-text">YTD: ₱{ytd.toLocaleString()}</div>;
+                    })()}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <select value={chartYear} onChange={e => setChartYear(parseInt(e.target.value))} className="adm-filter-select">
                       {YEAR_OPTIONS.map(y => <option key={y} value={y}>{y}</option>)}
                     </select>
+                    <button className="la-chart-expand-btn" onClick={() => setExpandedChart('disbursements')} title="Expand Chart">
+                      <Expand size={18} color="#4B5563" strokeWidth={2.5} />
+                    </button>
                   </div>
                 </div>
                 <ResponsiveContainer width="100%" height={220}>
@@ -338,6 +343,9 @@ export default function SecretaryAdminDashboard() {
                     <h3 className="adm-card-title">Payment Method</h3>
                     <span className="adm-card-sub">Disbursement distribution</span>
                   </div>
+                  <button className="la-chart-expand-btn" onClick={() => setExpandedChart('paymentMethod')} title="Expand Chart">
+                    <Expand size={18} color="#4B5563" strokeWidth={2.5} />
+                  </button>
                 </div>
                 <ResponsiveContainer width="100%" height={220}>
                   {(() => {
@@ -454,7 +462,259 @@ export default function SecretaryAdminDashboard() {
             </div>
           </>
         )}
-      </div>
+      </>
+      )}
+
+        {/* ── Expanded Chart Overlay ── */}
+        {expandedChart && (
+          <div className="adm-expand-overlay">
+          <div className="adm-expand-modal">
+            <div className="adm-expand-header">
+              <h2 className="adm-expand-title">
+                {expandedChart === 'disbursements' ? 'Monthly Disbursements — Detailed View' : 'Payment Method — Detailed View'}
+              </h2>
+              <button className="adm-expand-close" onClick={() => setExpandedChart(null)}><X size={22} /></button>
+            </div>
+            <div className="adm-expand-body">
+
+              {expandedChart === 'disbursements' && (() => {
+                const ytd = moneyFlowData.reduce((s, d) => s + d.released, 0);
+                const activeMonths = moneyFlowData.filter(d => d.released > 0);
+                const highestMonth = activeMonths.length > 0 ? activeMonths.reduce((a, b) => b.released > a.released ? b : a) : null;
+                const avgMonthly = activeMonths.length > 0 ? Math.round(ytd / activeMonths.length) : 0;
+                const totalCount = disbursedLoans.filter(l => l.disbursementDate && new Date(l.disbursementDate).getFullYear() === chartYear).length;
+                return (
+                <>
+                  {/* Section 1 — Scorecard */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '20px' }}>
+                    {[
+                      { label: 'YTD Total Disbursed', value: fmt(ytd), color: '#3B82F6' },
+                      { label: 'Highest Month', value: highestMonth ? `${highestMonth.month} · ${fmt(highestMonth.released)}` : '—', color: '#10B981' },
+                      { label: 'Avg Monthly', value: fmt(avgMonthly), color: '#8B5CF6' },
+                      { label: 'Total Transactions', value: totalCount, color: '#F59E0B' },
+                    ].map((s, i) => (
+                      <div key={i} style={{ background: '#0D1F45', borderRadius: '10px', padding: '16px', borderLeft: `4px solid ${s.color}`, boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <div style={{ fontSize: '20px', fontWeight: 700, color: '#ffffff' }}>{s.value}</div>
+                        <div style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.7)', fontWeight: 500 }}>{s.label}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Section 2 — Monthly Breakdown Table */}
+                  <div style={{ marginBottom: '24px' }}>
+                    <h4 className="adm-expand-panel-title" style={{ marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>MONTHLY BREAKDOWN</h4>
+                    <div style={{ maxHeight: '320px', overflowY: 'auto', border: '1px solid #E5E7EB', borderRadius: '8px' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+                        <thead style={{ position: 'sticky', top: 0, background: '#fff', zIndex: 1 }}>
+                          <tr style={{ borderBottom: '2px solid #E5E7EB', background: '#F8FAFC' }}>
+                            <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 600 }}>Month</th>
+                            <th style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600 }}>Total Disbursed</th>
+                            <th style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 600 }}>Transactions</th>
+                            <th style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600 }}>Avg / Txn</th>
+                            <th style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600 }}>MoM Change</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {moneyFlowData.map((d, i) => {
+                            const monthLoansCount = disbursedLoans.filter(l => { if (!l.disbursementDate) return false; const dd = new Date(l.disbursementDate); return dd.getMonth() === i && dd.getFullYear() === chartYear; }).length;
+                            const avgPerTxn = monthLoansCount > 0 ? Math.round(d.released / monthLoansCount) : 0;
+                            const prev = i > 0 ? moneyFlowData[i - 1].released : 0;
+                            const isFuture = d.released === 0 && i > new Date().getMonth();
+                            const momPct = i === 0 || isFuture || (prev === 0 && d.released === 0) ? null : prev === 0 ? null : Math.round(((d.released - prev) / prev) * 100);
+                            const isBold = d.released > avgMonthly && d.released > 0;
+                            return (
+                              <tr key={i} style={{ borderBottom: '1px solid #F3F4F6', opacity: isFuture ? 0.35 : 1, fontWeight: isBold ? 700 : 400, background: i % 2 !== 0 ? '#F9FAFB' : '#ffffff' }}>
+                                <td style={{ padding: '10px 12px' }}>{d.month}</td>
+                                <td style={{ padding: '10px 12px', textAlign: 'right' }}>{d.released > 0 ? fmt(d.released) : '—'}</td>
+                                <td style={{ padding: '10px 12px', textAlign: 'center' }}>{monthLoansCount || '—'}</td>
+                                <td style={{ padding: '10px 12px', textAlign: 'right' }}>{avgPerTxn > 0 ? fmt(avgPerTxn) : '—'}</td>
+                                <td style={{ padding: '10px 12px', textAlign: 'right' }}>
+                                  {momPct === null ? '—' : <span style={{ color: momPct >= 0 ? '#10B981' : '#EF4444', fontWeight: 600 }}>{momPct >= 0 ? '↑' : '↓'} {Math.abs(momPct)}%</span>}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Section 3 — Branch Table */}
+                  <div style={{ marginBottom: '16px' }}>
+                    <h4 className="adm-expand-panel-title" style={{ marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>DISBURSEMENTS BY BRANCH</h4>
+                    <div style={{ maxHeight: '280px', overflowY: 'auto', border: '1px solid #E5E7EB', borderRadius: '8px' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+                        <thead style={{ position: 'sticky', top: 0, background: '#fff', zIndex: 1 }}>
+                          <tr style={{ borderBottom: '2px solid #E5E7EB', background: '#F8FAFC' }}>
+                            <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 600 }}>Branch</th>
+                            <th style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600 }}>Total Disbursed</th>
+                            <th style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 600 }}>Transactions</th>
+                            <th style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 600 }}>Top Method</th>
+                            <th style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600 }}>% Share</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(() => {
+                            const yearLoans = disbursedLoans.filter(l => l.disbursementDate && new Date(l.disbursementDate).getFullYear() === chartYear);
+                            const branchMap = {};
+                            yearLoans.forEach(l => {
+                              const b = l.branchName || l.community || 'Unassigned';
+                              if (!branchMap[b]) branchMap[b] = { branch: b, total: 0, count: 0, methods: {} };
+                              branchMap[b].total += Number(l.amount) || 0;
+                              branchMap[b].count++;
+                              const m = (l.paymentMethod || 'Cash').toLowerCase();
+                              const normalized = m === 'e-wallet' || m === 'gcash' ? 'E-Wallet' : m.includes('bank') ? 'Bank Transfer' : 'Cash';
+                              branchMap[b].methods[normalized] = (branchMap[b].methods[normalized] || 0) + 1;
+                            });
+                            const totalAll = yearLoans.reduce((s, l) => s + (Number(l.amount) || 0), 0);
+                            const METHOD_BADGE = { 'E-Wallet': { bg: '#EFF6FF', color: '#2563EB' }, 'Bank Transfer': { bg: '#F0F4FF', color: '#1e3a5f' }, 'Cash': { bg: '#F3F4F6', color: '#6B7280' } };
+                            return Object.values(branchMap).sort((a, b) => b.total - a.total).map((b, idx) => {
+                              const topMethod = Object.entries(b.methods).sort((x, y) => y[1] - x[1])[0];
+                              const topName = topMethod ? topMethod[0] : '—';
+                              const badge = METHOD_BADGE[topName] || { bg: '#EFF6FF', color: '#1D4ED8' };
+                              const share = totalAll > 0 ? ((b.total / totalAll) * 100).toFixed(1) : 0;
+                              return (
+                                <tr key={idx} style={{ borderBottom: '1px solid #F3F4F6', background: idx % 2 !== 0 ? '#F9FAFB' : '#ffffff' }}>
+                                  <td style={{ padding: '10px 12px', fontWeight: 500 }}>{b.branch}</td>
+                                  <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600 }}>{fmt(b.total)}</td>
+                                  <td style={{ padding: '10px 12px', textAlign: 'center' }}>{b.count}</td>
+                                  <td style={{ padding: '10px 12px', textAlign: 'center' }}><span style={{ background: badge.bg, color: badge.color, padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 600 }}>{topName}</span></td>
+                                  <td style={{ padding: '10px 12px', textAlign: 'right' }}>{share}%</td>
+                                </tr>
+                              );
+                            });
+                          })()}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <div className="adm-expand-interpretation">
+                    <strong>Interpretation:</strong> The scorecard shows year-to-date totals. Bold rows in the monthly table exceed the average monthly disbursement. MoM change shows directional momentum — consecutive red arrows may signal declining demand. The branch table identifies where the most funds are flowing.
+                  </div>
+                </>
+                );
+              })()}
+
+              {expandedChart === 'paymentMethod' && (() => {
+                const PIE_COLORS_EX = ['#1e3a5f', '#4a90d9', '#9CA3AF'];
+                const METHOD_BORDERS = { 'E-Wallet': '#4a90d9', 'Bank Transfer': '#1e3a5f', 'Cash': '#9CA3AF' };
+                const totalVal = paymentMethodData.reduce((s, d) => s + d.value, 0);
+                const yearLoans = disbursedLoans.filter(l => l.disbursementDate && new Date(l.disbursementDate).getFullYear() === chartYear);
+                return (
+                <>
+                  {/* Section 1 — Method Scorecard */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '20px' }}>
+                    {paymentMethodData.map((m, i) => {
+                      const count = yearLoans.filter(l => {
+                        const pm = (l.paymentMethod || 'Cash').toLowerCase();
+                        if (m.name === 'E-Wallet') return pm === 'e-wallet' || pm === 'gcash';
+                        if (m.name === 'Bank Transfer') return pm.includes('bank');
+                        return pm === 'cash' || !l.paymentMethod;
+                      }).length;
+                      return (
+                        <div key={i} style={{ background: '#0D1F45', borderRadius: '10px', padding: '16px', borderLeft: `4px solid ${METHOD_BORDERS[m.name] || PIE_COLORS_EX[i]}`, boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <div style={{ fontSize: '20px', fontWeight: 700, color: '#ffffff' }}>{fmt(m.value)}</div>
+                          <div style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.7)', fontWeight: 500 }}>{m.name}</div>
+                          <div style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.5)', marginTop: '2px' }}>{count} txn · {m.percentage}%</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Section 2 — Branch Table */}
+                  <div style={{ marginBottom: '24px' }}>
+                    <h4 className="adm-expand-panel-title" style={{ marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>PAYMENT METHOD BY BRANCH</h4>
+                    <div style={{ maxHeight: '300px', overflowY: 'auto', border: '1px solid #E5E7EB', borderRadius: '8px' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+                        <thead style={{ position: 'sticky', top: 0, background: '#fff', zIndex: 1 }}>
+                          <tr style={{ borderBottom: '2px solid #E5E7EB', background: '#F8FAFC' }}>
+                            <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 600 }}>Branch</th>
+                            <th style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600, color: '#4a90d9' }}>E-Wallet</th>
+                            <th style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600, color: '#1e3a5f' }}>Bank</th>
+                            <th style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600, color: '#6B7280' }}>Cash</th>
+                            <th style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600 }}>Total</th>
+                            <th style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 600 }}>Dominant</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(() => {
+                            const branchMap = {};
+                            yearLoans.forEach(l => {
+                              const b = l.branchName || l.community || 'Unassigned';
+                              if (!branchMap[b]) branchMap[b] = { branch: b, ewallet: 0, bank: 0, cash: 0, total: 0 };
+                              const pm = (l.paymentMethod || 'Cash').toLowerCase();
+                              const amt = Number(l.amount) || 0;
+                              if (pm === 'e-wallet' || pm === 'gcash') branchMap[b].ewallet += amt;
+                              else if (pm.includes('bank')) branchMap[b].bank += amt;
+                              else branchMap[b].cash += amt;
+                              branchMap[b].total += amt;
+                            });
+                            return Object.values(branchMap).sort((a, b) => b.total - a.total).map((b, idx) => {
+                              const dominant = b.ewallet >= b.bank && b.ewallet >= b.cash ? 'E-Wallet' : b.bank >= b.cash ? 'Bank' : 'Cash';
+                              const dColor = dominant === 'E-Wallet' ? '#4a90d9' : dominant === 'Bank' ? '#1e3a5f' : '#6B7280';
+                              return (
+                                <tr key={idx} style={{ borderBottom: '1px solid #F3F4F6', background: idx % 2 !== 0 ? '#F9FAFB' : '#ffffff' }}>
+                                  <td style={{ padding: '10px 12px', fontWeight: 500 }}>{b.branch}</td>
+                                  <td style={{ padding: '10px 12px', textAlign: 'right' }}>{b.ewallet > 0 ? fmt(b.ewallet) : '—'}</td>
+                                  <td style={{ padding: '10px 12px', textAlign: 'right' }}>{b.bank > 0 ? fmt(b.bank) : '—'}</td>
+                                  <td style={{ padding: '10px 12px', textAlign: 'right' }}>{b.cash > 0 ? fmt(b.cash) : '—'}</td>
+                                  <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600 }}>{fmt(b.total)}</td>
+                                  <td style={{ padding: '10px 12px', textAlign: 'center' }}>
+                                    <span style={{ background: `${dColor}15`, color: dColor, padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 600 }}>{dominant}</span>
+                                  </td>
+                                </tr>
+                              );
+                            });
+                          })()}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Section 3 — Monthly Trend */}
+                  <div style={{ marginBottom: '16px' }}>
+                    <h4 className="adm-expand-panel-title" style={{ marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>MONTHLY TREND BY PAYMENT METHOD</h4>
+                    <div style={{ height: '260px' }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={(() => {
+                          return MONTH_NAMES.map((month, idx) => {
+                            const mLoans = yearLoans.filter(l => new Date(l.disbursementDate).getMonth() === idx);
+                            let ew = 0, bk = 0, ca = 0;
+                            mLoans.forEach(l => {
+                              const pm = (l.paymentMethod || 'Cash').toLowerCase();
+                              const amt = Number(l.amount) || 0;
+                              if (pm === 'e-wallet' || pm === 'gcash') ew += amt;
+                              else if (pm.includes('bank')) bk += amt;
+                              else ca += amt;
+                            });
+                            return { month, 'E-Wallet': ew, 'Bank Transfer': bk, Cash: ca };
+                          });
+                        })()} margin={{ top: 10, right: 30, left: 10, bottom: 10 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+                          <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
+                          <YAxis stroke="#9CA3AF" fontSize={12} tickFormatter={v => v >= 1000 ? `₱${(v / 1000).toFixed(0)}k` : `₱${v}`} />
+                          <Tooltip formatter={v => fmt(v)} />
+                          <Legend iconType="circle" iconSize={8} />
+                          <Line type="monotone" dataKey="Bank Transfer" stroke="#1e3a5f" strokeWidth={3} dot={{ r: 5, fill: '#1e3a5f' }} activeDot={{ r: 7 }} />
+                          <Line type="monotone" dataKey="E-Wallet" stroke="#10B981" strokeWidth={3} dot={{ r: 5, fill: '#10B981' }} activeDot={{ r: 7 }} />
+                          <Line type="monotone" dataKey="Cash" stroke="#F59E0B" strokeWidth={3} dot={{ r: 5, fill: '#F59E0B' }} activeDot={{ r: 7 }} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  <div className="adm-expand-interpretation">
+                    <strong>Interpretation:</strong> The scorecards show each method's total and share. The branch table reveals which branches are cash-heavy vs digital — cash-dominant branches may benefit from e-wallet adoption campaigns. The trend chart shows whether digital payment usage is growing month-over-month.
+                  </div>
+                </>
+                );
+              })()}
+
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Awaiting Processing Modal ── */}
       {showAwaitingModal && (
@@ -545,6 +805,7 @@ export default function SecretaryAdminDashboard() {
           </div>
         </div>
       )}
+      </div>
 
       {/* ── This Month Modal ── */}
       {showMonthModal && (
