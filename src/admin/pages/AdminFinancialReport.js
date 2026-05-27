@@ -832,6 +832,8 @@ export default function AdminFinancialReport() {
 
                   const isMulti = allSeries.length >= 2;
 
+                  const seriesWithData = allSeries.filter(s => Object.values(dataMap).some(monthObj => (monthObj[s] || 0) > 0));
+
                   const fullMonthData = MONTH_SHORT.slice(from, to + 1).map((label, idx) => {
                     const i = from + idx;
                     const key = `${reportYear}-${String(i + 1).padStart(2, '0')}`;
