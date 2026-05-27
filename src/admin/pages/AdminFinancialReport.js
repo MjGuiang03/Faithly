@@ -784,30 +784,50 @@ export default function AdminFinancialReport() {
                   </div>
                 )}
 
-                {/* By Month */}
+                {/* Monthly Donation Trend (Row 1) */}
                 {(() => {
                   const byMonthMap = {};
                   (report.donations.byMonth || []).forEach(d => { byMonthMap[d.month] = d.value; });
                   const { from, to } = getChartMonthRange();
+
+                  // Determine if we show Province trend here
+                  const showProvinceTrend = locationType === 'province' && selectedProvinces.length > 0;
+                  const bmp = report.donations.byMonthByProvince || {};
                   const bmc = report.donations.byMonthByCommunity || {};
-                  // Collect all community names across all months
-                  const allCommunities = [...new Set(Object.values(bmc).flatMap(obj => Object.keys(obj)))].sort();
-                  const isMulti = allCommunities.length >= 2;
+
+                  // Setup Row 1 data (Province if applicable, otherwise Community)
+                  let allSeries = [];
+                  let dataMap = {};
+                  let chartTitle = 'Monthly Donation Trend';
+
+                  if (showProvinceTrend) {
+                    allSeries = [...new Set(Object.values(bmp).flatMap(obj => Object.keys(obj)))].sort();
+                    dataMap = bmp;
+                    chartTitle = `Monthly Donation Trend ${allSeries.length >= 2 ? '(By Province)' : ''}`;
+                  } else {
+                    allSeries = [...new Set(Object.values(bmc).flatMap(obj => Object.keys(obj)))].sort();
+                    dataMap = bmc;
+                    chartTitle = `Monthly Donation Trend ${allSeries.length >= 2 ? '(By Community)' : ''}`;
+                  }
+
+                  const isMulti = allSeries.length >= 2;
 
                   const fullMonthData = MONTH_SHORT.slice(from, to + 1).map((label, idx) => {
                     const i = from + idx;
                     const key = `${reportYear}-${String(i + 1).padStart(2, '0')}`;
                     const row = { month: label, value: byMonthMap[key] || 0 };
-                    if (isMulti && bmc[key]) {
-                      allCommunities.forEach(c => { row[c] = bmc[key][c] || 0; });
+                    if (isMulti && dataMap[key]) {
+                      allSeries.forEach(s => { row[s] = dataMap[key][s] || 0; });
                     }
                     return row;
                   });
+
                   const totalDon = fullMonthData.reduce((s, d) => s + d.value, 0);
                   const highestMon = fullMonthData.reduce((a, b) => b.value > a.value ? b : a, fullMonthData[0]);
+                  
                   return (
                     <div className="fin-report-chart-card">
-                      <h3 className="fin-report-chart-title">Monthly Donation Trend {isMulti ? '(By Community)' : ''}</h3>
+                      <h3 className="fin-report-chart-title">{chartTitle}</h3>
                       <p className="fin-chart-summary">Total: <strong>{fmt(totalDon)}</strong> · Highest: <strong>{highestMon?.month}</strong> ({fmt(highestMon?.value)})</p>
                       <ResponsiveContainer width="100%" height={isMulti ? 280 : 220}>
                         {isMulti ? (
@@ -818,8 +838,8 @@ export default function AdminFinancialReport() {
                               <Label value="Amount (₱)" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
                             </YAxis>
                             <Tooltip formatter={v => fmt(v)} />
-                            {allCommunities.map((c, i) => (
-                              <Line key={c} type="monotone" dataKey={c} stroke={COMMUNITY_COLORS[i % COMMUNITY_COLORS.length]} strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                            {allSeries.map((s, i) => (
+                              <Line key={s} type="monotone" dataKey={s} stroke={COMMUNITY_COLORS[i % COMMUNITY_COLORS.length]} strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
                             ))}
                           </LineChart>
                         ) : (
@@ -838,10 +858,10 @@ export default function AdminFinancialReport() {
                       </ResponsiveContainer>
                       {isMulti && (
                         <div className="fin-report-legend">
-                          {allCommunities.map((c, i) => (
-                            <div key={c} className="fin-report-legend-item">
+                          {allSeries.map((s, i) => (
+                            <div key={s} className="fin-report-legend-item">
                               <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[i % COMMUNITY_COLORS.length] }} />
-                              <span className="fin-report-legend-label">{c}</span>
+                              <span className="fin-report-legend-label">{s}</span>
                             </div>
                           ))}
                         </div>
@@ -851,6 +871,97 @@ export default function AdminFinancialReport() {
                   );
                 })()}
               </div>
+
+              {/* Monthly Donation Trend (By Community) - Only shown below Row 1 if Row 1 was By Province */}
+              {locationType === 'province' && selectedProvinces.length > 0 && (
+                <div className="fin-report-charts-row">
+                  {(() => {
+                    const byMonthMap = {};
+                    (report.donations.byMonth || []).forEach(d => { byMonthMap[d.month] = d.value; });
+                    const { from, to } = getChartMonthRange();
+                    const bmc = report.donations.byMonthByCommunity || {};
+                    const allCommunities = [...new Set(Object.values(bmc).flatMap(obj => Object.keys(obj)))].sort();
+                    const isMulti = allCommunities.length >= 2;
+
+                    const fullMonthData = MONTH_SHORT.slice(from, to + 1).map((label, idx) => {
+                      const i = from + idx;
+                      const key = `${reportYear}-${String(i + 1).padStart(2, '0')}`;
+                      const row = { month: label, value: byMonthMap[key] || 0 };
+                      if (isMulti && bmc[key]) {
+                        allCommunities.forEach(c => { row[c] = bmc[key][c] || 0; });
+                      }
+                      return row;
+                    });
+                    const totalDon = fullMonthData.reduce((s, d) => s + d.value, 0);
+                    const highestMon = fullMonthData.reduce((a, b) => b.value > a.value ? b : a, fullMonthData[0]);
+
+                    return (
+                      <div className="fin-report-chart-card" style={{ width: '100%' }}>
+                        <h3 className="fin-report-chart-title">Monthly Donation Trend {isMulti ? '(By Community)' : ''}</h3>
+                        <p className="fin-chart-summary">Detailed Community Breakdown · Total: <strong>{fmt(totalDon)}</strong> · Highest: <strong>{highestMon?.month}</strong></p>
+                        <ResponsiveContainer width="100%" height={isMulti ? 300 : 250}>
+                          {isMulti ? (
+                            <BarChart data={fullMonthData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                              <XAxis dataKey="month" tick={{ fontSize: 10 }} />
+                              <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false}>
+                                <Label value="Amount (₱)" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                              </YAxis>
+                              <Tooltip formatter={v => fmt(v)} />
+                              {allCommunities.map((c, i) => (
+                                <Bar key={c} dataKey={c} stackId="a" fill={COMMUNITY_COLORS[i % COMMUNITY_COLORS.length]} />
+                              ))}
+                            </BarChart>
+                          ) : (
+                            <BarChart data={fullMonthData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                              <XAxis dataKey="month" tick={{ fontSize: 10 }} />
+                              <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false}>
+                                <Label value="Amount (₱)" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                              </YAxis>
+                              <Tooltip formatter={v => fmt(v)} />
+                              <Bar dataKey="value" fill="#0D1F45" radius={[4, 4, 0, 0]}>
+                                <LabelList dataKey="value" position="top" formatter={v => v > 0 ? fmtShort(v) : ''} style={{ fontSize: 10, fill: '#6B7280' }} />
+                              </Bar>
+                            </BarChart>
+                          )}
+                        </ResponsiveContainer>
+                        {isMulti && (() => {
+                          const branchToProv = {};
+                          branchesData.forEach(b => {
+                            branchToProv[b.name] = b.province || (b.address ? b.address.split(',')[0].trim() : 'Unknown');
+                          });
+                          const commsByProv = {};
+                          allCommunities.forEach((c, i) => {
+                            const prov = branchToProv[c] || 'Unknown';
+                            if (!commsByProv[prov]) commsByProv[prov] = [];
+                            commsByProv[prov].push({ name: c, index: i });
+                          });
+                          
+                          return (
+                            <div className="fin-report-grouped-legend" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', marginTop: '16px' }}>
+                              {Object.entries(commsByProv).map(([prov, comms]) => (
+                                <div key={prov} className="fin-report-legend-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '120px' }}>
+                                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#6b7280', textTransform: 'uppercase', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '2px' }}>
+                                    {prov}
+                                  </div>
+                                  {comms.map((c) => (
+                                    <div key={c.name} className="fin-report-legend-item" style={{ margin: 0 }}>
+                                      <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[c.index % COMMUNITY_COLORS.length] }} />
+                                      <span className="fin-report-legend-label">{c.name}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })()}
+                        <ChartFooter period={report.period} location={getLocationLabel()} />
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
 
               {/* Top Donor by Community Chart + Table Side by Side */}
               {report.donations.byBranch?.length > 0 && (
