@@ -608,10 +608,12 @@ export default function AdminFinancialReport() {
                         <div className="fin-report-legend-item fin-report-legend-gap">
                           <span className="fin-report-legend-dot" style={{ background: '#0D1F45' }} />
                           <span className="fin-report-legend-label">{report.comparison.currentPeriod}</span>
+                          <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: '6px' }}>({fmt(report.comparison.donations.current)})</span>
                         </div>
                         <div className="fin-report-legend-item fin-report-legend-gap">
                           <span className="fin-report-legend-dot" style={{ background: '#93c5fd' }} />
                           <span className="fin-report-legend-label">{report.comparison.prevPeriod}</span>
+                          <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: '6px' }}>({fmt(report.comparison.donations.previous)})</span>
                         </div>
                       </div>
                       <ChartFooter period={`${report.comparison.currentPeriod} vs ${report.comparison.prevPeriod}`} location={getLocationLabel()} />
@@ -648,10 +650,12 @@ export default function AdminFinancialReport() {
                         <div className="fin-report-legend-item fin-report-legend-gap">
                           <span className="fin-report-legend-dot" style={{ background: '#2563eb' }} />
                           <span className="fin-report-legend-label">{report.comparison.currentPeriod}</span>
+                          <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: '6px' }}>({a.current} attendees)</span>
                         </div>
                         <div className="fin-report-legend-item fin-report-legend-gap">
                           <span className="fin-report-legend-dot" style={{ background: '#bfdbfe' }} />
                           <span className="fin-report-legend-label">{report.comparison.prevPeriod}</span>
+                          <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: '6px' }}>({a.previous} attendees)</span>
                         </div>
                       </div>
                       <ChartFooter period={`${report.comparison.currentPeriod} vs ${report.comparison.prevPeriod}`} location={getLocationLabel()} />
@@ -732,10 +736,12 @@ export default function AdminFinancialReport() {
                       <div className="fin-report-legend-item fin-report-legend-gap">
                         <span className="fin-report-legend-dot" style={{ background: '#0D1F45' }} />
                         <span className="fin-report-legend-label">{report.comparison.currentPeriod}</span>
+                        <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: '6px' }}>({fmt(report.comparison.disbursements.current)})</span>
                       </div>
                       <div className="fin-report-legend-item fin-report-legend-gap">
                         <span className="fin-report-legend-dot" style={{ background: '#93c5fd' }} />
                         <span className="fin-report-legend-label">{report.comparison.prevPeriod}</span>
+                        <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: '6px' }}>({fmt(report.comparison.disbursements.previous)})</span>
                       </div>
                     </div>
                     <ChartFooter period={`${report.comparison.currentPeriod} vs ${report.comparison.prevPeriod}`} location={getLocationLabel()} />
@@ -771,7 +777,7 @@ export default function AdminFinancialReport() {
               </div>
 
               {/* Charts Row */}
-              <div className="fin-report-charts-row" style={{ gridTemplateColumns: '4fr 6fr' }}>
+              <div className="fin-report-charts-row" style={{ gridTemplateColumns: report.donations.byCategory?.length > 0 ? '4fr 6fr' : '1fr' }}>
                 {/* By Category */}
                 {report.donations.byCategory?.length > 0 && (
                   <div className="fin-report-chart-card">
@@ -807,7 +813,6 @@ export default function AdminFinancialReport() {
                   const { from, to } = getChartMonthRange();
 
                   const bmp = report.donations.byMonthByProvince || {};
-                  const bmc = report.donations.byMonthByCommunity || {};
                   const availableProvinces = [...new Set(Object.values(bmp).flatMap(obj => Object.keys(obj)))].sort();
                   const showProvinceTrend = availableProvinces.length >= 2;
 
@@ -820,9 +825,9 @@ export default function AdminFinancialReport() {
                     dataMap = bmp;
                     chartTitle = `Monthly Donation Trend (By Province)`;
                   } else {
-                    allSeries = [...new Set(Object.values(bmc).flatMap(obj => Object.keys(obj)))].sort();
-                    dataMap = bmc;
-                    chartTitle = `Monthly Donation Trend ${allSeries.length >= 2 ? '(By Community)' : ''}`;
+                    allSeries = [];
+                    dataMap = {};
+                    chartTitle = `Monthly Donation Trend`;
                   }
 
                   const isMulti = allSeries.length >= 2;
@@ -892,14 +897,18 @@ export default function AdminFinancialReport() {
                                     {prov}
                                   </div>
                                 )}
-                                {seriesList.map((s) => (
-                                  <div key={s.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                                      <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[s.index % COMMUNITY_COLORS.length] }} />
-                                      <span className="fin-report-legend-label">{s.name}</span>
+                                {seriesList.map((s) => {
+                                  const totalVal = fullMonthData.reduce((sum, row) => sum + (row[s.name] || 0), 0);
+                                  return (
+                                    <div key={s.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start' }}>
+                                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                                        <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[s.index % COMMUNITY_COLORS.length] }} />
+                                        <span className="fin-report-legend-label">{s.name}</span>
+                                        <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: '6px' }}>({fmt(totalVal)})</span>
+                                      </div>
                                     </div>
-                                  </div>
-                                ))}
+                                  );
+                                })}
                               </div>
                             ))}
                           </div>
@@ -913,19 +922,16 @@ export default function AdminFinancialReport() {
 
               {/* Monthly Donation Trend (Row 2 - By Community) */}
               {(() => {
-                const bmpCheck = report.donations.byMonthByProvince || {};
-                const availProvCheck = [...new Set(Object.values(bmpCheck).flatMap(obj => Object.keys(obj)))].sort();
-                const shouldShowRow2 = availProvCheck.length >= 2;
+                const bmc = report.donations.byMonthByCommunity || {};
+                let allSeries = [...new Set(Object.values(bmc).flatMap(obj => Object.keys(obj)))].sort();
+                const shouldShowRow2 = allSeries.length >= 1;
                 if (!shouldShowRow2) return null;
                 return (
-                <div className="fin-report-charts-row" style={{ gridTemplateColumns: '1fr' }}>
+                <div className="fin-report-charts-row" style={{ gridTemplateColumns: '1fr', marginTop: '16px' }}>
                   {(() => {
                     const byMonthMap = {};
                     (report.donations.byMonth || []).forEach(d => { byMonthMap[d.month] = d.value; });
                     const { from, to } = getChartMonthRange();
-                    
-                    const bmc = report.donations.byMonthByCommunity || {};
-                    let allSeries = [...new Set(Object.values(bmc).flatMap(obj => Object.keys(obj)))].sort();
                     const isMulti = allSeries.length >= 2;
 
                     // Separate communities with data vs without
@@ -998,15 +1004,19 @@ export default function AdminFinancialReport() {
                                   <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#6b7280', textTransform: 'uppercase', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '2px' }}>
                                     {prov}
                                   </div>
-                                  {seriesList.map((s) => (
-                                    <div key={s.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start', opacity: s.hasData ? 1 : 0.5 }}>
-                                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                                        <span className="fin-report-legend-dot" style={{ background: s.hasData ? COMMUNITY_COLORS[s.index % COMMUNITY_COLORS.length] : '#d1d5db' }} />
-                                        <span className="fin-report-legend-label">{s.name}</span>
-                                        {!s.hasData && <span style={{ fontSize: '9px', color: '#9CA3AF', marginLeft: '4px', fontStyle: 'italic' }}>No data</span>}
+                                  {seriesList.map((s) => {
+                                    const totalVal = fullMonthData.reduce((sum, row) => sum + (row[s.name] || 0), 0);
+                                    return (
+                                      <div key={s.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start', opacity: s.hasData ? 1 : 0.5 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                                          <span className="fin-report-legend-dot" style={{ background: s.hasData ? COMMUNITY_COLORS[s.index % COMMUNITY_COLORS.length] : '#d1d5db' }} />
+                                          <span className="fin-report-legend-label">{s.name}</span>
+                                          {s.hasData && <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: '6px' }}>({fmt(totalVal)})</span>}
+                                          {!s.hasData && <span style={{ fontSize: '9px', color: '#9CA3AF', marginLeft: '4px', fontStyle: 'italic' }}>No data</span>}
+                                        </div>
                                       </div>
-                                    </div>
-                                  ))}
+                                    );
+                                  })}
                                 </div>
                               ))}
                             </div>
@@ -1019,102 +1029,6 @@ export default function AdminFinancialReport() {
                 </div>
                 );
               })()}
-              {/* Monthly Donation Trend (By Community) - Only shown below Row 1 if Row 1 was By Province */}
-              {locationType === 'province' && selectedProvinces.length > 0 && (
-                <div className="fin-report-charts-row">
-                  {(() => {
-                    const byMonthMap = {};
-                    (report.donations.byMonth || []).forEach(d => { byMonthMap[d.month] = d.value; });
-                    const { from, to } = getChartMonthRange();
-                    const bmc = report.donations.byMonthByCommunity || {};
-                    const allCommunities = [...new Set(Object.values(bmc).flatMap(obj => Object.keys(obj)))].sort();
-                    const isMulti = allCommunities.length >= 2;
-
-                    // Filter communities with actual data
-                    const commsWithData = allCommunities.filter(c => Object.values(bmc).some(monthObj => (monthObj[c] || 0) > 0));
-
-                    const fullMonthData = MONTH_SHORT.slice(from, to + 1).map((label, idx) => {
-                      const i = from + idx;
-                      const key = `${reportYear}-${String(i + 1).padStart(2, '0')}`;
-                      const row = { month: label, value: byMonthMap[key] || 0 };
-                      if (isMulti && bmc[key]) {
-                        commsWithData.forEach(c => { row[c] = bmc[key][c] || 0; });
-                      }
-                      return row;
-                    });
-                    const totalDon = fullMonthData.reduce((s, d) => s + d.value, 0);
-                    const highestMon = fullMonthData.reduce((a, b) => b.value > a.value ? b : a, fullMonthData[0]);
-
-                    return (
-                      <div className="fin-report-chart-card" style={{ width: '100%' }}>
-                        <h3 className="fin-report-chart-title">Monthly Donation Trend {isMulti ? '(By Community)' : ''}</h3>
-                        <p className="fin-chart-summary">Detailed Community Breakdown · Total: <strong>{fmt(totalDon)}</strong> · Highest: <strong>{highestMon?.month}</strong></p>
-                        <ResponsiveContainer width="100%" height={isMulti ? 300 : 250}>
-                          {isMulti ? (
-                            <BarChart data={fullMonthData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
-                              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                              <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-                              <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false}>
-                                <Label value="Amount (₱)" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
-                              </YAxis>
-                              <Tooltip formatter={(v, name) => [fmt(v), name === 'value' ? 'Amount' : name]} />
-                              {commsWithData.map((c, i) => {
-                                const origIdx = allCommunities.indexOf(c);
-                                return <Bar key={c} dataKey={c} fill={COMMUNITY_COLORS[origIdx % COMMUNITY_COLORS.length]} />;
-                              })}
-                            </BarChart>
-                          ) : (
-                            <BarChart data={fullMonthData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
-                              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                              <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-                              <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false}>
-                                <Label value="Amount (₱)" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
-                              </YAxis>
-                              <Tooltip formatter={(v, name) => [fmt(v), name === 'value' ? 'Amount' : name]} />
-                              <Bar dataKey="value" fill="#0D1F45" radius={[4, 4, 0, 0]}>
-                                <LabelList dataKey="value" position="top" formatter={v => v > 0 ? fmtShort(v) : ''} style={{ fontSize: 10, fill: '#6B7280' }} />
-                              </Bar>
-                            </BarChart>
-                          )}
-                        </ResponsiveContainer>
-                        {isMulti && (() => {
-                          const branchToProv = {};
-                          branchesData.forEach(b => {
-                            branchToProv[b.name] = b.province || (b.address ? b.address.split(',')[0].trim() : 'Unknown');
-                          });
-                          const commsByProv = {};
-                          allCommunities.forEach((c, i) => {
-                            const prov = branchToProv[c] || 'Unknown';
-                            if (!commsByProv[prov]) commsByProv[prov] = [];
-                            const hasData = commsWithData.includes(c);
-                            commsByProv[prov].push({ name: c, index: i, hasData });
-                          });
-                          
-                          return (
-                            <div className="fin-report-grouped-legend" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', marginTop: '16px' }}>
-                              {Object.entries(commsByProv).map(([prov, comms]) => (
-                                <div key={prov} className="fin-report-legend-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '120px' }}>
-                                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#6b7280', textTransform: 'uppercase', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '2px' }}>
-                                    {prov}
-                                  </div>
-                                  {comms.map((c) => (
-                                    <div key={c.name} className="fin-report-legend-item" style={{ margin: 0, opacity: c.hasData ? 1 : 0.5 }}>
-                                      <span className="fin-report-legend-dot" style={{ background: c.hasData ? COMMUNITY_COLORS[c.index % COMMUNITY_COLORS.length] : '#d1d5db' }} />
-                                      <span className="fin-report-legend-label">{c.name}</span>
-                                      {!c.hasData && <span style={{ fontSize: '9px', color: '#9CA3AF', marginLeft: '4px', fontStyle: 'italic' }}>No data</span>}
-                                    </div>
-                                  ))}
-                                </div>
-                              ))}
-                            </div>
-                          );
-                        })()}
-                        <ChartFooter period={report.period} location={getLocationLabel()} />
-                      </div>
-                    );
-                  })()}
-                </div>
-              )}
 
               {/* Top Communities & Top 8 Donators Side-by-Side */}
               <div className="fin-report-charts-row">
@@ -1285,15 +1199,19 @@ export default function AdminFinancialReport() {
                                 <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#6b7280', textTransform: 'uppercase', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '2px' }}>
                                   {prov}
                                 </div>
-                                {comms.map((c) => (
-                                  <div key={c.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start', opacity: c.hasData ? 1 : 0.5 }}>
-                                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                                      <span className="fin-report-legend-dot" style={{ background: c.hasData ? COMMUNITY_COLORS[c.index % COMMUNITY_COLORS.length] : '#d1d5db' }} />
-                                      <span className="fin-report-legend-label">{c.name}</span>
-                                      {!c.hasData && <span style={{ fontSize: '9px', color: '#9CA3AF', marginLeft: '4px', fontStyle: 'italic' }}>No data</span>}
+                                {comms.map((c) => {
+                                  const totalVal = trendData.reduce((sum, row) => sum + (row[c.name] || 0), 0);
+                                  return (
+                                    <div key={c.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start', opacity: c.hasData ? 1 : 0.5 }}>
+                                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                                        <span className="fin-report-legend-dot" style={{ background: c.hasData ? COMMUNITY_COLORS[c.index % COMMUNITY_COLORS.length] : '#d1d5db' }} />
+                                        <span className="fin-report-legend-label">{c.name}</span>
+                                        {c.hasData && <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: '6px' }}>({totalVal} attendees)</span>}
+                                        {!c.hasData && <span style={{ fontSize: '9px', color: '#9CA3AF', marginLeft: '4px', fontStyle: 'italic' }}>No data</span>}
+                                      </div>
                                     </div>
-                                  </div>
-                                ))}
+                                  );
+                                })}
                               </div>
                             ))}
                           </div>
@@ -1404,8 +1322,14 @@ export default function AdminFinancialReport() {
                   const collMap = showProvinceTrend ? provCollMap : (report.loans.byMonthByCommunity?.collected || {});
                   
                   let allSeries = [...new Set([...Object.values(disbMap), ...Object.values(collMap)].flatMap(obj => Object.keys(obj)))].sort();
-                  const chartTitle = `Monthly Disbursement vs Collection ${allSeries.length >= 2 ? (showProvinceTrend ? '(By Province)' : '(By Community)') : ''}`;
                   const isMulti = allSeries.length >= 2;
+
+                  // Filter communities/provinces with actual data
+                  const seriesWithData = allSeries.filter(s => {
+                    return Object.values(disbMap).some(monthObj => (monthObj[s] || 0) > 0) || Object.values(collMap).some(monthObj => (monthObj[s] || 0) > 0);
+                  });
+
+                  const chartTitle = `Monthly Disbursement vs Collection ${allSeries.length >= 2 ? (showProvinceTrend ? '(By Province)' : '(By Community)') : ''}`;
 
                   const trendData = MONTH_SHORT.slice(from, to + 1).map((label, idx) => {
                     const i = from + idx;
@@ -1434,12 +1358,14 @@ export default function AdminFinancialReport() {
                               <Label value="Amount (₱)" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
                             </YAxis>
                             <Tooltip formatter={(v, name) => [fmt(v), name === 'value' ? 'Amount' : name]} />
-                            {allSeries.map((s, i) => (
-                              <Bar key={`disb_${s}`} dataKey={`disb_${s}`} name={`${s} (Disbursed)`} fill={COMMUNITY_COLORS[i % COMMUNITY_COLORS.length]} />
-                            ))}
-                            {allSeries.map((s, i) => (
-                              <Bar key={`coll_${s}`} dataKey={`coll_${s}`} name={`${s} (Collected)`} fill={COMMUNITY_COLORS[i % COMMUNITY_COLORS.length]} fillOpacity={0.6} />
-                            ))}
+                            {seriesWithData.map((s) => {
+                              const origIdx = allSeries.indexOf(s);
+                              return <Bar key={`disb_${s}`} dataKey={`disb_${s}`} name={`${s} (Disbursed)`} fill={COMMUNITY_COLORS[origIdx % COMMUNITY_COLORS.length]} />;
+                            })}
+                            {seriesWithData.map((s) => {
+                              const origIdx = allSeries.indexOf(s);
+                              return <Bar key={`coll_${s}`} dataKey={`coll_${s}`} name={`${s} (Collected)`} fill={COMMUNITY_COLORS[origIdx % COMMUNITY_COLORS.length]} fillOpacity={0.6} />;
+                            })}
                           </BarChart>
                         ) : (
                           <BarChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
@@ -1479,14 +1405,19 @@ export default function AdminFinancialReport() {
                                     {prov}
                                   </div>
                                 )}
-                                {seriesList.map((s) => (
-                                  <div key={s.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                                      <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[s.index % COMMUNITY_COLORS.length] }} />
-                                      <span className="fin-report-legend-label">{s.name}</span>
+                                {seriesList.map((s) => {
+                                  const totalDisb = trendData.reduce((sum, row) => sum + (row['disb_' + s.name] || 0), 0);
+                                  const totalColl = trendData.reduce((sum, row) => sum + (row['coll_' + s.name] || 0), 0);
+                                  return (
+                                    <div key={s.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start' }}>
+                                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                                        <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[s.index % COMMUNITY_COLORS.length] }} />
+                                        <span className="fin-report-legend-label">{s.name}</span>
+                                        <span style={{ fontSize: '9px', color: '#4b5563', marginLeft: '6px' }}>(Disb: {fmt(totalDisb)} · Coll: {fmt(totalColl)})</span>
+                                      </div>
                                     </div>
-                                  </div>
-                                ))}
+                                  );
+                                })}
                               </div>
                             ))}
                             <div style={{ width: '100%', fontSize: '11px', color: '#6b7280', marginTop: '8px' }}>
@@ -1600,15 +1531,20 @@ export default function AdminFinancialReport() {
                                   <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#6b7280', textTransform: 'uppercase', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '2px' }}>
                                     {prov}
                                   </div>
-                                  {seriesList.map((s) => (
-                                    <div key={s.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start', opacity: s.hasData ? 1 : 0.5 }}>
-                                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                                        <span className="fin-report-legend-dot" style={{ background: s.hasData ? COMMUNITY_COLORS[s.index % COMMUNITY_COLORS.length] : '#d1d5db' }} />
-                                        <span className="fin-report-legend-label">{s.name}</span>
-                                        {!s.hasData && <span style={{ fontSize: '9px', color: '#9CA3AF', marginLeft: '4px', fontStyle: 'italic' }}>No data</span>}
+                                  {seriesList.map((s) => {
+                                    const totalDisb = trendData.reduce((sum, row) => sum + (row['disb_' + s.name] || 0), 0);
+                                    const totalColl = trendData.reduce((sum, row) => sum + (row['coll_' + s.name] || 0), 0);
+                                    return (
+                                      <div key={s.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start', opacity: s.hasData ? 1 : 0.5 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                                          <span className="fin-report-legend-dot" style={{ background: s.hasData ? COMMUNITY_COLORS[s.index % COMMUNITY_COLORS.length] : '#d1d5db' }} />
+                                          <span className="fin-report-legend-label">{s.name}</span>
+                                          {s.hasData && <span style={{ fontSize: '9px', color: '#4b5563', marginLeft: '6px' }}>(Disb: {fmt(totalDisb)} · Coll: {fmt(totalColl)})</span>}
+                                          {!s.hasData && <span style={{ fontSize: '9px', color: '#9CA3AF', marginLeft: '4px', fontStyle: 'italic' }}>No data</span>}
+                                        </div>
                                       </div>
-                                    </div>
-                                  ))}
+                                    );
+                                  })}
                                 </div>
                               ))}
                               <div style={{ width: '100%', fontSize: '11px', color: '#6b7280', marginTop: '8px' }}>
@@ -1807,15 +1743,19 @@ export default function AdminFinancialReport() {
                                   <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#6b7280', textTransform: 'uppercase', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '2px' }}>
                                     {prov}
                                   </div>
-                                  {seriesList.map((s) => (
-                                    <div key={s.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start', opacity: s.hasData ? 1 : 0.5 }}>
-                                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                                        <span className="fin-report-legend-dot" style={{ background: s.hasData ? COMMUNITY_COLORS[s.index % COMMUNITY_COLORS.length] : '#d1d5db' }} />
-                                        <span className="fin-report-legend-label">{s.name}</span>
-                                        {!s.hasData && <span style={{ fontSize: '9px', color: '#9CA3AF', marginLeft: '4px', fontStyle: 'italic' }}>No data</span>}
+                                  {seriesList.map((s) => {
+                                    const totalVal = trendData.reduce((sum, row) => sum + (row[s.name] || 0), 0);
+                                    return (
+                                      <div key={s.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start', opacity: s.hasData ? 1 : 0.5 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                                          <span className="fin-report-legend-dot" style={{ background: s.hasData ? COMMUNITY_COLORS[s.index % COMMUNITY_COLORS.length] : '#d1d5db' }} />
+                                          <span className="fin-report-legend-label">{s.name}</span>
+                                          {s.hasData && <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: '6px' }}>({totalVal} apps)</span>}
+                                          {!s.hasData && <span style={{ fontSize: '9px', color: '#9CA3AF', marginLeft: '4px', fontStyle: 'italic' }}>No data</span>}
+                                        </div>
                                       </div>
-                                    </div>
-                                  ))}
+                                    );
+                                  })}
                                 </div>
                               ))}
                             </div>
@@ -2158,6 +2098,9 @@ export default function AdminFinancialReport() {
 
                   const isMulti = allSeries.length >= 2;
 
+                  // Filter series with actual data
+                  const seriesWithData = allSeries.filter(s => Object.values(dataMap).some(monthObj => (monthObj[s] || 0) > 0));
+
                   const fullMonthData = MONTH_SHORT.slice(from, to + 1).map((label, idx) => {
                     const i = from + idx;
                     const key = `${reportYear}-${String(i + 1).padStart(2, '0')}`;
@@ -2184,9 +2127,10 @@ export default function AdminFinancialReport() {
                               <Label value="Attendees" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
                             </YAxis>
                             <Tooltip />
-                            {allSeries.map((s, i) => (
-                              <Bar key={s} dataKey={s} fill={COMMUNITY_COLORS[i % COMMUNITY_COLORS.length]} />
-                            ))}
+                            {seriesWithData.map((s) => {
+                              const origIdx = allSeries.indexOf(s);
+                              return <Bar key={s} dataKey={s} fill={COMMUNITY_COLORS[origIdx % COMMUNITY_COLORS.length]} />;
+                            })}
                           </BarChart>
                         ) : (
                           <BarChart data={fullMonthData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
@@ -2204,12 +2148,16 @@ export default function AdminFinancialReport() {
                       </ResponsiveContainer>
                       {isMulti && (
                         <div className="fin-report-legend">
-                          {allSeries.map((s, i) => (
-                            <div key={s} className="fin-report-legend-item">
-                              <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[i % COMMUNITY_COLORS.length] }} />
-                              <span className="fin-report-legend-label">{s}</span>
-                            </div>
-                          ))}
+                          {allSeries.map((s, i) => {
+                            const totalVal = fullMonthData.reduce((sum, row) => sum + (row[s] || 0), 0);
+                            return (
+                              <div key={s} className="fin-report-legend-item">
+                                <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[i % COMMUNITY_COLORS.length] }} />
+                                <span className="fin-report-legend-label">{s}</span>
+                                <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: '6px' }}>({totalVal} {showProvinceTrend ? 'attendees' : 'attendees'})</span>
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
                       <ChartFooter period={report.period} location={getLocationLabel()} />
@@ -2300,13 +2248,19 @@ export default function AdminFinancialReport() {
                                   <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#6b7280', textTransform: 'uppercase', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '2px' }}>
                                     {prov}
                                   </div>
-                                  {comms.map((c) => (
-                                    <div key={c.name} className="fin-report-legend-item" style={{ margin: 0, opacity: c.hasData ? 1 : 0.5 }}>
-                                      <span className="fin-report-legend-dot" style={{ background: c.hasData ? COMMUNITY_COLORS[c.index % COMMUNITY_COLORS.length] : '#d1d5db' }} />
-                                      <span className="fin-report-legend-label">{c.name}</span>
-                                      {!c.hasData && <span style={{ fontSize: '9px', color: '#9CA3AF', marginLeft: '4px', fontStyle: 'italic' }}>No data</span>}
-                                    </div>
-                                  ))}
+                                  {comms.map((c) => {
+                                    const totalVal = fullMonthData.reduce((sum, row) => sum + (row[c.name] || 0), 0);
+                                    return (
+                                      <div key={c.name} className="fin-report-legend-item" style={{ margin: 0, opacity: c.hasData ? 1 : 0.5 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                                          <span className="fin-report-legend-dot" style={{ background: c.hasData ? COMMUNITY_COLORS[c.index % COMMUNITY_COLORS.length] : '#d1d5db' }} />
+                                          <span className="fin-report-legend-label">{c.name}</span>
+                                          {c.hasData && <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: '6px' }}>({totalVal} attendees)</span>}
+                                          {!c.hasData && <span style={{ fontSize: '9px', color: '#9CA3AF', marginLeft: '4px', fontStyle: 'italic' }}>No data</span>}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
                                 </div>
                               ))}
                             </div>
@@ -2558,15 +2512,19 @@ export default function AdminFinancialReport() {
                                   <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#6b7280', textTransform: 'uppercase', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '2px' }}>
                                     {prov}
                                   </div>
-                                  {seriesList.map((s) => (
-                                    <div key={s.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start', opacity: s.hasData ? 1 : 0.5 }}>
-                                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                                        <span className="fin-report-legend-dot" style={{ background: s.hasData ? COMMUNITY_COLORS[s.index % COMMUNITY_COLORS.length] : '#d1d5db' }} />
-                                        <span className="fin-report-legend-label">{s.name}</span>
-                                        {!s.hasData && <span style={{ fontSize: '9px', color: '#9CA3AF', marginLeft: '4px', fontStyle: 'italic' }}>No data</span>}
+                                  {seriesList.map((s) => {
+                                    const totalVal = trendData.reduce((sum, row) => sum + (row[s.name] || 0), 0);
+                                    return (
+                                      <div key={s.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start', opacity: s.hasData ? 1 : 0.5 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                                          <span className="fin-report-legend-dot" style={{ background: s.hasData ? COMMUNITY_COLORS[s.index % COMMUNITY_COLORS.length] : '#d1d5db' }} />
+                                          <span className="fin-report-legend-label">{s.name}</span>
+                                          {s.hasData && <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: '6px' }}>({fmt(totalVal)})</span>}
+                                          {!s.hasData && <span style={{ fontSize: '9px', color: '#9CA3AF', marginLeft: '4px', fontStyle: 'italic' }}>No data</span>}
+                                        </div>
                                       </div>
-                                    </div>
-                                  ))}
+                                    );
+                                  })}
                                 </div>
                               ))}
                             </div>
