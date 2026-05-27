@@ -16,6 +16,13 @@ const categoryMap = {
   'Mission Fund': 'Mission Fund'
 };
 
+const methodMap = {
+  'bank': 'Bank Transfer', 'bank transfer': 'Bank Transfer',
+  'gcash': 'GCash', 'e-wallet': 'E-Wallet', 'ewallet': 'E-Wallet',
+  'cash': 'Cash', 'check': 'Check', 'cheque': 'Check'
+};
+const normalizeMethodName = (m) => methodMap[(m || '').toLowerCase()] || m;
+
 /* ================== AI INSIGHTS — ADMIN DASHBOARD ================== */
 router.get('/ai-insights', authenticateAdmin, async (req, res) => {
   try {
@@ -172,6 +179,27 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
     }
 
     const dateFilter = { $gte: startDate, $lte: endDate };
+
+    // Previous-period comparison: same period but previous year
+    const compareEnabled = req.query.compare === 'true';
+    let prevStartDate, prevEndDate, prevPeriodLabel, prevDateFilter;
+    if (compareEnabled) {
+      const prevYear = reportYear - 1;
+      if (rStartMonth !== null && rEndMonth !== null) {
+        prevStartDate = new Date(prevYear, rStartMonth, 1);
+        prevEndDate = new Date(prevYear, rEndMonth + 1, 0, 23, 59, 59);
+        prevPeriodLabel = `${MONTH_NAMES[rStartMonth]} - ${MONTH_NAMES[rEndMonth]} ${prevYear}`;
+      } else if (reportMonth !== null) {
+        prevStartDate = new Date(prevYear, reportMonth, 1);
+        prevEndDate = new Date(prevYear, reportMonth + 1, 0, 23, 59, 59);
+        prevPeriodLabel = `${new Date(prevYear, reportMonth).toLocaleDateString('en-US', { month: 'long' })} ${prevYear}`;
+      } else {
+        prevStartDate = new Date(prevYear, 0, 1);
+        prevEndDate = new Date(prevYear, 11, 31, 23, 59, 59);
+        prevPeriodLabel = `Full Year ${prevYear}`;
+      }
+      prevDateFilter = { $gte: prevStartDate, $lte: prevEndDate };
+    }
 
     const type = req.query.type || 'all';
     const communityQuery = req.query.community || '';
@@ -528,7 +556,7 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
           const mKey = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
           disbByMonth[mKey] = (disbByMonth[mKey] || 0) + (l.amount || 0);
         }
-        const method = l.disbursementMethod || l.paymentMethod || 'Bank Transfer';
+        const method = normalizeMethodName(l.disbursementMethod || l.paymentMethod || 'Bank Transfer');
         disbByMethod[method] = (disbByMethod[method] || 0) + (l.amount || 0);
 
         // Aggregate by community
@@ -559,8 +587,124 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
       };
     }
 
+    // === Year-over-Year Comparison ===
+    if (compareEnabled) {
+      const comparison = { prevPeriod: prevPeriodLabel, currentPeriod: periodLabel };
+
+      if (role === 'admin') {
+        // Compare donations
+        let prevDonations = await donations.find({ status: 'confirmed', $or: [{ createdAt: prevDateFilter }, { date: prevDateFilter }] }).toArray();
+        if (communities.length > 0 || provinces.length > 0) {
+          const allMembersMap2 = {};
+          (await users.find({}).toArray()).forEach(m => { allMembersMap2[m.email] = m; });
+          prevDonations = prevDonations.filter(d => {
+            const member = allMembersMap2[d.email];
+            const targetBranch = d.community || member?.branch || 'Unknown';
+            if (communities.length > 0) return communities.includes(targetBranch);
+            if (provinces.length > 0) return provinces.includes(branchToProvince[targetBranch]);
+            return true;
+          });
+        }
+        const prevDonTotal = prevDonations.reduce((s, d) => s + (Number(d.amount) || 0), 0);
+
+        let prevAttendance = await attendance.find({ $or: [{ date: prevDateFilter }, { createdAt: prevDateFilter }] }).toArray();
+        prevAttendance = prevAttendance.filter(a => (a.status || 'Present').toLowerCase() !== 'absent');
+        if (communities.length > 0 || provinces.length > 0) {
+          prevAttendance = prevAttendance.filter(a => {
+            const b = a.community || a.branch || a.userBranch || 'Unknown';
+            if (communities.length > 0) return communities.includes(b);
+            if (provinces.length > 0) return provinces.includes(branchToProvince[b]);
+            return true;
+          });
+        }
+
+        comparison.donations = {
+          current: report.donations?.total || 0,
+          previous: prevDonTotal,
+          change: prevDonTotal > 0 ? Math.round(((report.donations?.total || 0) - prevDonTotal) / prevDonTotal * 100) : null,
+          currentCount: report.donations?.count || 0,
+          previousCount: prevDonations.length
+        };
+        comparison.attendance = {
+          current: report.attendance?.totalRecords || 0,
+          previous: prevAttendance.length,
+          change: prevAttendance.length > 0 ? Math.round(((report.attendance?.totalRecords || 0) - prevAttendance.length) / prevAttendance.length * 100) : null
+        };
+      }
+
+      if (role === 'loanAdmin') {
+        let prevLoans = await loans.find({ appliedDate: prevDateFilter, status: { $ne: 'cancelled' } }).toArray();
+        let prevPayments = await loanPayments.find({ status: 'confirmed', confirmedAt: prevDateFilter }).toArray();
+        
+        if (communities.length > 0 || provinces.length > 0) {
+          const allMembersMap2 = {};
+          (await users.find({}).toArray()).forEach(m => { allMembersMap2[m.email] = m; });
+          
+          prevLoans = prevLoans.filter(l => {
+            const member = allMembersMap2[l.email || l.memberEmail];
+            const branch = l.branch || member?.branch || 'Unknown';
+            if (communities.length > 0) return communities.includes(branch);
+            if (provinces.length > 0) return provinces.includes(branchToProvince[branch]);
+            return true;
+          });
+          
+          prevPayments = prevPayments.filter(p => {
+            const member = allMembersMap2[p.email || p.memberEmail];
+            const branch = member?.branch || 'Unknown';
+            if (communities.length > 0) return communities.includes(branch);
+            if (provinces.length > 0) return provinces.includes(branchToProvince[branch]);
+            return true;
+          });
+        }
+
+        const prevTotalDisbursed = prevLoans.filter(l => l.disbursed).reduce((s, l) => s + (l.amount || 0), 0);
+        const prevTotalCollected = prevPayments.reduce((s, p) => s + (Number(p.amount) || 0), 0);
+
+        comparison.loans = {
+          currentApps: report.loans?.totalApplications || 0,
+          previousApps: prevLoans.length,
+          changeApps: prevLoans.length > 0 ? Math.round(((report.loans?.totalApplications || 0) - prevLoans.length) / prevLoans.length * 100) : null,
+          currentDisbursed: report.loans?.totalDisbursed || 0,
+          previousDisbursed: prevTotalDisbursed,
+          changeDisbursed: prevTotalDisbursed > 0 ? Math.round(((report.loans?.totalDisbursed || 0) - prevTotalDisbursed) / prevTotalDisbursed * 100) : null,
+          currentCollected: report.loans?.totalPaymentsReceived || 0,
+          previousCollected: prevTotalCollected,
+          changeCollected: prevTotalCollected > 0 ? Math.round(((report.loans?.totalPaymentsReceived || 0) - prevTotalCollected) / prevTotalCollected * 100) : null
+        };
+      }
+
+      if (role === 'secretaryAdmin') {
+        let prevDisbursedLoans = await loans.find({ disbursed: true, disbursementDate: prevDateFilter }).toArray();
+        
+        if (communities.length > 0 || provinces.length > 0) {
+          const allMembersMap2 = {};
+          (await users.find({}).toArray()).forEach(m => { allMembersMap2[m.email] = m; });
+          
+          prevDisbursedLoans = prevDisbursedLoans.filter(l => {
+            const member = allMembersMap2[l.email || l.memberEmail];
+            const branch = l.branch || member?.branch || 'Unknown';
+            if (communities.length > 0) return communities.includes(branch);
+            if (provinces.length > 0) return provinces.includes(branchToProvince[branch]);
+            return true;
+          });
+        }
+
+        const prevTotalDisb = prevDisbursedLoans.reduce((s, l) => s + (l.amount || 0), 0);
+
+        comparison.disbursements = {
+          current: report.secretary?.disbursements?.totalAmount || 0,
+          previous: prevTotalDisb,
+          change: prevTotalDisb > 0 ? Math.round(((report.secretary?.disbursements?.totalAmount || 0) - prevTotalDisb) / prevTotalDisb * 100) : null,
+          currentCount: report.secretary?.disbursements?.count || 0,
+          previousCount: prevDisbursedLoans.length
+        };
+      }
+
+      report.comparison = comparison;
+    }
+
     // === AI Executive Summary with Caching ===
-    const cacheKey = `report_v2_${role}_${req.query.type || 'all'}_${rStartMonth !== null ? rStartMonth : reportMonth !== null ? reportMonth : 'full'}_${rEndMonth !== null ? rEndMonth : 'full'}_${reportYear}_${communities.join('-') || 'all'}_${provinces.join('-') || 'all'}`;
+    const cacheKey = `report_v2_${role}_${req.query.type || 'all'}_${rStartMonth !== null ? rStartMonth : reportMonth !== null ? reportMonth : 'full'}_${rEndMonth !== null ? rEndMonth : 'full'}_${reportYear}_${communities.join('-') || 'all'}_${provinces.join('-') || 'all'}_${compareEnabled ? 'compare' : 'nocompare'}`;
     
     const cached = await reportCache.findOne({ cacheKey });
     const isOld = cached && (new Date() - new Date(cached.updatedAt) > 24 * 60 * 60 * 1000); 

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
   BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Label
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Label, LabelList
 } from 'recharts';
 
 import '../styles/AdminFinancialReport.css';
@@ -25,7 +25,18 @@ const renderSliceLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent 
 };
 
 const fmt = (n) => `₱${(Number(n) || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const fmtShort = (n) => { const v = Number(n) || 0; return v >= 1000 ? `₱${(v/1000).toFixed(1)}k` : `₱${v.toLocaleString()}`; };
 const PIE_COLORS = ['#0D1F45', '#1e3a8a', '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe'];
+
+const METHOD_MAP = { 'bank': 'Bank Transfer', 'bank transfer': 'Bank Transfer', 'gcash': 'GCash', 'e-wallet': 'E-Wallet', 'ewallet': 'E-Wallet', 'cash': 'Cash', 'check': 'Check', 'cheque': 'Check' };
+const normalizeMethod = (m) => METHOD_MAP[(m || '').toLowerCase()] || m;
+
+const ChartFooter = ({ period, location }) => (
+  <div className="fin-chart-footer">
+    <p className="fin-chart-footer-period">Period: {period} · {location}</p>
+    <p className="fin-chart-footer-source">Source: IsangDiwa · {period} · {location}</p>
+  </div>
+);
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -62,6 +73,7 @@ export default function AdminFinancialReport() {
   const [error, setError] = useState(null);
   const [exporting, setExporting] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [compareYoY, setCompareYoY] = useState(false);
 
   const [provinceSearch, setProvinceSearch] = useState('');
   const [showProvinceDropdown, setShowProvinceDropdown] = useState(false);
@@ -156,6 +168,7 @@ export default function AdminFinancialReport() {
       } else if (locationType === 'province' && selectedProvinces.length > 0) {
         params.set('province', selectedProvinces.join(','));
       }
+      if (compareYoY) params.set('compare', 'true');
 
       const res = await fetch(`${API}/api/admin/financial-report?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -175,7 +188,7 @@ export default function AdminFinancialReport() {
     } finally {
       setLoading(false);
     }
-  }, [periodMode, reportMonth, startMonth, endMonth, reportYear, reportType, locationType, selectedProvinces, selectedCommunities, navigate]);
+  }, [periodMode, reportMonth, startMonth, endMonth, reportYear, reportType, locationType, selectedProvinces, selectedCommunities, compareYoY, navigate]);
 
   const toggleCommunity = (c) => {
     setSelectedCommunities(prev => 
@@ -216,9 +229,13 @@ export default function AdminFinancialReport() {
   // Build location label from report data
   const getLocationLabel = () => {
     if (!report) return '';
-    const loc = report.community;
-    if (!loc || loc === 'All Communities') return 'All Communities';
-    return loc;
+    if (locationType === 'province' && selectedProvinces.length > 0) {
+      return selectedProvinces.length === 1 ? `Province: ${selectedProvinces[0]}` : `${selectedProvinces.length} Provinces Selected`;
+    }
+    if (locationType === 'specific' && selectedCommunities.length > 0) {
+      return selectedCommunities.length <= 3 ? `Communities: ${selectedCommunities.join(', ')}` : `Communities: ${selectedCommunities.slice(0, 2).join(', ')} (+${selectedCommunities.length - 2} more)`;
+    }
+    return 'Scope: All Communities \u00b7 All Provinces';
   };
 
   // Combined period + location label for chart footers
@@ -436,6 +453,11 @@ export default function AdminFinancialReport() {
             </select>
             <ChevronDown size={12} className="fin-report-select-arrow" />
           </div>
+
+          <label className="fin-report-compare-label">
+            <input type="checkbox" checked={compareYoY} onChange={e => setCompareYoY(e.target.checked)} className="fin-report-compare-checkbox" />
+            Compare YoY
+          </label>
         </div>
 
         <button
@@ -531,6 +553,184 @@ export default function AdminFinancialReport() {
             </div>
           </div>
 
+          {/* === Year-over-Year Comparative Analysis === */}
+          {report.comparison && (
+            <div className="fin-report-section">
+              <div className="fin-report-section-header">
+                <h2 className="fin-report-section-title">📊 Year-over-Year Comparison</h2>
+              </div>
+              <p className="fin-chart-summary compare-vs"><strong>{report.comparison.currentPeriod}</strong> vs <strong>{report.comparison.prevPeriod}</strong></p>
+
+              <div className="fin-report-charts-row">
+                {/* Donations Comparison */}
+                {report.comparison.donations && (() => {
+                  const d = report.comparison.donations;
+                  const barData = [
+                    { label: 'Total Amount', current: d.current, previous: d.previous },
+                    { label: 'Transactions', current: d.currentCount, previous: d.previousCount },
+                  ];
+                  return (
+                    <div className="fin-report-chart-card">
+                      <h3 className="fin-report-chart-title">Donations — Period Over Period</h3>
+                      <p className="fin-chart-summary">
+                        Current: <strong>{fmt(d.current)}</strong> · Previous: <strong>{fmt(d.previous)}</strong>
+                        {d.change !== null && <> · Change: <strong className={d.change >= 0 ? 'fin-change-positive' : 'fin-change-negative'}>{d.change >= 0 ? '+' : ''}{d.change}%</strong></>}
+                      </p>
+                      <ResponsiveContainer width="100%" height={220}>
+                        <BarChart data={barData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                          <XAxis dataKey="label" tick={{ fontSize: 10 }} />
+                          <YAxis tick={{ fontSize: 10 }} tickFormatter={v => v >= 1000 ? `${(v/1000).toFixed(0)}k` : v} allowDecimals={false} />
+                          <Tooltip formatter={v => typeof v === 'number' && v >= 100 ? fmt(v) : v} />
+                          <Bar name={report.comparison.currentPeriod} dataKey="current" fill="#0D1F45" radius={[4, 4, 0, 0]} barSize={28}>
+                            <LabelList dataKey="current" position="top" formatter={v => v >= 1000 ? fmtShort(v) : v} style={{ fontSize: 10, fill: '#0D1F45', fontWeight: 700 }} />
+                          </Bar>
+                          <Bar name={report.comparison.prevPeriod} dataKey="previous" fill="#93c5fd" radius={[4, 4, 0, 0]} barSize={28}>
+                            <LabelList dataKey="previous" position="top" formatter={v => v >= 1000 ? fmtShort(v) : v} style={{ fontSize: 10, fill: '#93c5fd' }} />
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                      <div className="fin-report-legend fin-report-legend-center">
+                        <div className="fin-report-legend-item fin-report-legend-gap">
+                          <span className="fin-report-legend-dot" style={{ background: '#0D1F45' }} />
+                          <span className="fin-report-legend-label">{report.comparison.currentPeriod}</span>
+                        </div>
+                        <div className="fin-report-legend-item fin-report-legend-gap">
+                          <span className="fin-report-legend-dot" style={{ background: '#93c5fd' }} />
+                          <span className="fin-report-legend-label">{report.comparison.prevPeriod}</span>
+                        </div>
+                      </div>
+                      <ChartFooter period={`${report.comparison.currentPeriod} vs ${report.comparison.prevPeriod}`} location={getLocationLabel()} />
+                    </div>
+                  );
+                })()}
+
+                {/* Attendance Comparison */}
+                {report.comparison.attendance && (() => {
+                  const a = report.comparison.attendance;
+                  const barData = [{ label: 'Total Attendance', current: a.current, previous: a.previous }];
+                  return (
+                    <div className="fin-report-chart-card">
+                      <h3 className="fin-report-chart-title">Attendance — Period Over Period</h3>
+                      <p className="fin-chart-summary">
+                        Current: <strong>{a.current} attendees</strong> · Previous: <strong>{a.previous} attendees</strong>
+                        {a.change !== null && <> · Change: <strong className={a.change >= 0 ? 'fin-change-positive' : 'fin-change-negative'}>{a.change >= 0 ? '+' : ''}{a.change}%</strong></>}
+                      </p>
+                      <ResponsiveContainer width="100%" height={180}>
+                        <BarChart data={barData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                          <XAxis dataKey="label" tick={{ fontSize: 10 }} />
+                          <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
+                          <Tooltip />
+                          <Bar name={report.comparison.currentPeriod} dataKey="current" fill="#2563eb" radius={[4, 4, 0, 0]} barSize={36}>
+                            <LabelList dataKey="current" position="top" style={{ fontSize: 11, fill: '#2563eb', fontWeight: 700 }} />
+                          </Bar>
+                          <Bar name={report.comparison.prevPeriod} dataKey="previous" fill="#bfdbfe" radius={[4, 4, 0, 0]} barSize={36}>
+                            <LabelList dataKey="previous" position="top" style={{ fontSize: 11, fill: '#93c5fd' }} />
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                      <div className="fin-report-legend fin-report-legend-center">
+                        <div className="fin-report-legend-item fin-report-legend-gap">
+                          <span className="fin-report-legend-dot" style={{ background: '#2563eb' }} />
+                          <span className="fin-report-legend-label">{report.comparison.currentPeriod}</span>
+                        </div>
+                        <div className="fin-report-legend-item fin-report-legend-gap">
+                          <span className="fin-report-legend-dot" style={{ background: '#bfdbfe' }} />
+                          <span className="fin-report-legend-label">{report.comparison.prevPeriod}</span>
+                        </div>
+                      </div>
+                      <ChartFooter period={`${report.comparison.currentPeriod} vs ${report.comparison.prevPeriod}`} location={getLocationLabel()} />
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* Loans Comparison */}
+              {report.comparison.loans && (
+                <div className="fin-report-charts-row" style={{marginTop: '16px'}}>
+                  <div className="fin-report-chart-card">
+                    <h3 className="fin-report-chart-title">Loans — Period Over Period</h3>
+                    <p className="fin-chart-summary">
+                      Applications: <strong>{report.comparison.loans.currentApps}</strong> vs <strong>{report.comparison.loans.previousApps}</strong>
+                      {report.comparison.loans.changeApps !== null && <> (<strong className={report.comparison.loans.changeApps >= 0 ? 'fin-change-positive' : 'fin-change-negative'}>{report.comparison.loans.changeApps >= 0 ? '+' : ''}{report.comparison.loans.changeApps}%</strong>)</>}
+                    </p>
+                    <ResponsiveContainer width="100%" height={220}>
+                      <BarChart data={[
+                        { label: 'Applications', current: report.comparison.loans.currentApps, previous: report.comparison.loans.previousApps },
+                        { label: 'Disbursed', current: report.comparison.loans.currentDisbursed, previous: report.comparison.loans.previousDisbursed },
+                        { label: 'Collected', current: report.comparison.loans.currentCollected, previous: report.comparison.loans.previousCollected },
+                      ]} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                        <XAxis dataKey="label" tick={{ fontSize: 10 }} />
+                        <YAxis tick={{ fontSize: 10 }} tickFormatter={v => v >= 1000 ? `${(v/1000).toFixed(0)}k` : v} allowDecimals={false} />
+                        <Tooltip formatter={v => typeof v === 'number' && v >= 100 ? fmt(v) : v} />
+                        <Bar name={report.comparison.currentPeriod} dataKey="current" fill="#0D1F45" radius={[4, 4, 0, 0]} barSize={24}>
+                          <LabelList dataKey="current" position="top" formatter={v => v >= 1000 ? fmtShort(v) : v} style={{ fontSize: 9, fill: '#0D1F45', fontWeight: 700 }} />
+                        </Bar>
+                        <Bar name={report.comparison.prevPeriod} dataKey="previous" fill="#93c5fd" radius={[4, 4, 0, 0]} barSize={24}>
+                          <LabelList dataKey="previous" position="top" formatter={v => v >= 1000 ? fmtShort(v) : v} style={{ fontSize: 9, fill: '#93c5fd' }} />
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                    <div className="fin-report-legend fin-report-legend-center">
+                      <div className="fin-report-legend-item fin-report-legend-gap">
+                        <span className="fin-report-legend-dot" style={{ background: '#0D1F45' }} />
+                        <span className="fin-report-legend-label">{report.comparison.currentPeriod}</span>
+                      </div>
+                      <div className="fin-report-legend-item fin-report-legend-gap">
+                        <span className="fin-report-legend-dot" style={{ background: '#93c5fd' }} />
+                        <span className="fin-report-legend-label">{report.comparison.prevPeriod}</span>
+                      </div>
+                    </div>
+                    <ChartFooter period={`${report.comparison.currentPeriod} vs ${report.comparison.prevPeriod}`} location={getLocationLabel()} />
+                  </div>
+                </div>
+              )}
+
+              {/* Disbursements Comparison */}
+              {report.comparison.disbursements && (
+                <div className="fin-report-charts-row" style={{marginTop: '16px'}}>
+                  <div className="fin-report-chart-card">
+                    <h3 className="fin-report-chart-title">Disbursements — Period Over Period</h3>
+                    <p className="fin-chart-summary">
+                      Current: <strong>{fmt(report.comparison.disbursements.current)}</strong> · Previous: <strong>{fmt(report.comparison.disbursements.previous)}</strong>
+                      {report.comparison.disbursements.change !== null && <> · Change: <strong className={report.comparison.disbursements.change >= 0 ? 'fin-change-positive' : 'fin-change-negative'}>{report.comparison.disbursements.change >= 0 ? '+' : ''}{report.comparison.disbursements.change}%</strong></>}
+                    </p>
+                    <ResponsiveContainer width="100%" height={180}>
+                      <BarChart data={[
+                        { label: 'Amount', current: report.comparison.disbursements.current, previous: report.comparison.disbursements.previous },
+                        { label: 'Count', current: report.comparison.disbursements.currentCount, previous: report.comparison.disbursements.previousCount },
+                      ]} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                        <XAxis dataKey="label" tick={{ fontSize: 10 }} />
+                        <YAxis tick={{ fontSize: 10 }} tickFormatter={v => v >= 1000 ? `${(v/1000).toFixed(0)}k` : v} allowDecimals={false} />
+                        <Tooltip formatter={v => typeof v === 'number' && v >= 100 ? fmt(v) : v} />
+                        <Bar name={report.comparison.currentPeriod} dataKey="current" fill="#0D1F45" radius={[4, 4, 0, 0]} barSize={36}>
+                          <LabelList dataKey="current" position="top" formatter={v => v >= 1000 ? fmtShort(v) : v} style={{ fontSize: 10, fill: '#0D1F45', fontWeight: 700 }} />
+                        </Bar>
+                        <Bar name={report.comparison.prevPeriod} dataKey="previous" fill="#93c5fd" radius={[4, 4, 0, 0]} barSize={36}>
+                          <LabelList dataKey="previous" position="top" formatter={v => v >= 1000 ? fmtShort(v) : v} style={{ fontSize: 10, fill: '#93c5fd' }} />
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                    <div className="fin-report-legend fin-report-legend-center">
+                      <div className="fin-report-legend-item fin-report-legend-gap">
+                        <span className="fin-report-legend-dot" style={{ background: '#0D1F45' }} />
+                        <span className="fin-report-legend-label">{report.comparison.currentPeriod}</span>
+                      </div>
+                      <div className="fin-report-legend-item fin-report-legend-gap">
+                        <span className="fin-report-legend-dot" style={{ background: '#93c5fd' }} />
+                        <span className="fin-report-legend-label">{report.comparison.prevPeriod}</span>
+                      </div>
+                    </div>
+                    <ChartFooter period={`${report.comparison.currentPeriod} vs ${report.comparison.prevPeriod}`} location={getLocationLabel()} />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Donations Section - Only for Super Admin */}
           {report.donations && adminRole === 'admin' && (report.reportType === 'all' || report.reportType === 'donations') && (
             <div className="fin-report-section">
@@ -561,7 +761,8 @@ export default function AdminFinancialReport() {
                 {/* By Category */}
                 {report.donations.byCategory?.length > 0 && (
                   <div className="fin-report-chart-card">
-                    <h3 className="fin-report-chart-title">By Category</h3>
+                    <h3 className="fin-report-chart-title">Donations By Category</h3>
+                    <p className="fin-chart-summary">Total: <strong>{fmt(report.donations.total)}</strong> · {report.donations.byCategory.length} categories</p>
                     <ResponsiveContainer width="100%" height={200}>
                       <PieChart>
                         <Pie data={report.donations.byCategory} cx="50%" cy="42%" innerRadius={35} outerRadius={75} paddingAngle={2} dataKey="value" nameKey="name" label={renderSliceLabel} labelLine={false}>
@@ -577,11 +778,11 @@ export default function AdminFinancialReport() {
                         <div key={i} className="fin-report-legend-item">
                           <span className="fin-report-legend-dot" style={{ background: PIE_COLORS[i % PIE_COLORS.length] }} />
                           <span className="fin-report-legend-label">{cat.name}</span>
-                          <span className="fin-report-legend-val">{fmt(cat.value)}</span>
+                          <span className="fin-report-legend-val">{fmt(cat.value)} · {report.donations.total > 0 ? ((cat.value / report.donations.total) * 100).toFixed(0) : 0}%</span>
                         </div>
                       ))}
                     </div>
-                    <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>{getPeriodWithLocation()}</p>
+                    <ChartFooter period={report.period} location={getLocationLabel()} />
                   </div>
                 )}
 
@@ -596,19 +797,26 @@ export default function AdminFinancialReport() {
                     const key = `${reportYear}-${String(i + 1).padStart(2, '0')}`;
                     return { month: label, value: byMonthMap[key] || 0 };
                   });
+                  const totalDon = fullMonthData.reduce((s, d) => s + d.value, 0);
+                  const highestMon = fullMonthData.reduce((a, b) => b.value > a.value ? b : a, fullMonthData[0]);
                   return (
                     <div className="fin-report-chart-card">
-                      <h3 className="fin-report-chart-title">Monthly Trend</h3>
-                      <ResponsiveContainer width="100%" height={200}>
-                        <BarChart data={fullMonthData}>
+                      <h3 className="fin-report-chart-title">Monthly Donation Trend</h3>
+                      <p className="fin-chart-summary">Total: <strong>{fmt(totalDon)}</strong> · Highest: <strong>{highestMon?.month}</strong> ({fmt(highestMon?.value)})</p>
+                      <ResponsiveContainer width="100%" height={220}>
+                        <BarChart data={fullMonthData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                          <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                          <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false} />
+                          <XAxis dataKey="month" tick={{ fontSize: 10 }} />
+                          <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false}>
+                            <Label value="Amount (₱)" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                          </YAxis>
                           <Tooltip formatter={v => fmt(v)} />
-                      <Bar dataKey="value" fill="#0D1F45" radius={[4, 4, 0, 0]} />
+                          <Bar dataKey="value" fill="#0D1F45" radius={[4, 4, 0, 0]}>
+                            <LabelList dataKey="value" position="top" formatter={v => v > 0 ? fmtShort(v) : ''} style={{ fontSize: 10, fill: '#6B7280' }} />
+                          </Bar>
                         </BarChart>
                       </ResponsiveContainer>
-                      <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>{getPeriodWithLocation()}</p>
+                      <ChartFooter period={report.period} location={getLocationLabel()} />
                     </div>
                   );
                 })()}
@@ -619,21 +827,25 @@ export default function AdminFinancialReport() {
                 <div className="fin-report-community-row">
                   {/* Top Donor by Community Bar Chart */}
                   <div className="fin-report-chart-card fin-report-community-chart">
-                    <h3 className="fin-report-chart-title">Top Donor by Community</h3>
+                    <h3 className="fin-report-chart-title">Top Donor Communities</h3>
+                    <p className="fin-chart-summary">Top: <strong>{report.donations.byBranch[0]?.branch}</strong> · {fmt(report.donations.byBranch[0]?.value)} ({report.donations.total > 0 ? ((report.donations.byBranch[0]?.value / report.donations.total) * 100).toFixed(1) : 0}%)</p>
                     <ResponsiveContainer width="100%" height={280}>
-                      <BarChart data={report.donations.byBranch.slice(0, 10)} margin={{ top: 10, right: 10, left: -10, bottom: 40 }}>
+                      <BarChart data={report.donations.byBranch.slice(0, 8)} margin={{ top: 15, right: 10, left: -10, bottom: 40 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                        <XAxis dataKey="branch" tick={{ fontSize: 10, angle: -35, textAnchor: 'end' }} interval={0} height={60} />
-                        <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false} />
+                        <XAxis dataKey="branch" tick={{ fontSize: 9, angle: -35, textAnchor: 'end' }} interval={0} height={60} />
+                        <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false}>
+                          <Label value="Amount (₱)" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                        </YAxis>
                         <Tooltip formatter={v => fmt(v)} />
                         <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={28}>
-                          {report.donations.byBranch.slice(0, 10).map((_, i) => (
+                          {report.donations.byBranch.slice(0, 8).map((_, i) => (
                             <Cell key={i} fill={i === 0 ? '#3b82f6' : '#0D1F45'} />
                           ))}
+                          <LabelList dataKey="value" position="top" formatter={v => fmtShort(v)} style={{ fontSize: 10, fill: '#6B7280' }} />
                         </Bar>
                       </BarChart>
                     </ResponsiveContainer>
-                    <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '8px', marginBottom: 0}}>{getPeriodWithLocation()}</p>
+                    <ChartFooter period={report.period} location={getLocationLabel()} />
                   </div>
 
                   {/* Community Table (compact) */}
@@ -666,35 +878,41 @@ export default function AdminFinancialReport() {
               {/* Top 10 Donators + Attendance Trends Row */}
               <div className="fin-report-charts-row">
                 {/* Top 10 Donators */}
-                {report.donations?.byDonor?.length > 0 && (
+                {report.donations?.byDonor?.length > 0 && (() => {
+                  const topDonors = report.donations.byDonor.slice(0, 8);
+                  return (
                   <div className="fin-report-chart-card">
-                    <h3 className="fin-report-chart-title">Top 10 Donators</h3>
-                    <p style={{fontSize: '11px', color: '#6B7280', margin: '0 0 8px'}}>Members with highest donations</p>
-                    <ResponsiveContainer width="100%" height={Math.max(220, report.donations.byDonor.length * 32)}>
-                      <BarChart data={report.donations.byDonor} layout="vertical" margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
+                    <h3 className="fin-report-chart-title">Top {topDonors.length} Donators</h3>
+                    <p className="fin-chart-summary">#1: <strong>{topDonors[0]?.donor}</strong> · {fmt(topDonors[0]?.value)} ({report.donations.total > 0 ? ((topDonors[0]?.value / report.donations.total) * 100).toFixed(0) : 0}%)</p>
+                    <ResponsiveContainer width="100%" height={Math.max(220, topDonors.length * 32)}>
+                      <BarChart data={topDonors} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
-                        <XAxis type="number" tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} />
+                        <XAxis type="number" tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`}>
+                          <Label value="Amount (₱)" position="bottom" offset={-5} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                        </XAxis>
                         <YAxis type="category" dataKey="donor" tick={{ fontSize: 10 }} width={120} />
                         <Tooltip formatter={v => fmt(v)} />
                         <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={18}>
-                          {report.donations.byDonor.map((_, i) => (
+                          {topDonors.map((_, i) => (
                             <Cell key={i} fill={i === 0 ? '#2563eb' : '#0D1F45'} />
                           ))}
+                          <LabelList dataKey="value" position="right" formatter={v => fmtShort(v)} style={{ fontSize: 10, fill: '#6B7280' }} />
                         </Bar>
                       </BarChart>
                     </ResponsiveContainer>
                     <div className="fin-report-legend">
-                      {report.donations.byDonor.slice(0, 5).map((d, i) => (
+                      {topDonors.slice(0, 5).map((d, i) => (
                         <div key={i} className="fin-report-legend-item">
                           <span className="fin-report-legend-dot" style={{ background: i === 0 ? '#2563eb' : '#0D1F45' }} />
                           <span className="fin-report-legend-label">{d.donor}</span>
-                          <span className="fin-report-legend-val">{fmt(d.value)} ({report.donations.total > 0 ? ((d.value / report.donations.total) * 100).toFixed(0) : 0}%)</span>
+                          <span className="fin-report-legend-val">{fmt(d.value)} · {report.donations.total > 0 ? ((d.value / report.donations.total) * 100).toFixed(0) : 0}%</span>
                         </div>
                       ))}
                     </div>
-                    <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>{getPeriodWithLocation()}</p>
+                    <ChartFooter period={report.period} location={getLocationLabel()} />
                   </div>
-                )}
+                  );
+                })()}
 
                 {/* Attendance Trends */}
                 {report.attendance?.byMonth?.length > 0 && (() => {
@@ -709,15 +927,19 @@ export default function AdminFinancialReport() {
                   const totalAtt = trendData.reduce((s, d) => s + d.count, 0);
                   return (
                     <div className="fin-report-chart-card">
-                      <h3 className="fin-report-chart-title">Attendance Trends</h3>
-                      <p style={{fontSize: '11px', color: '#6B7280', margin: '0 0 4px'}}>{totalAtt} total attendees recorded</p>
+                      <h3 className="fin-report-chart-title">Monthly Attendance Trend</h3>
+                      <p className="fin-chart-summary">Total: <strong>{totalAtt} attendees</strong> · Peak: <strong>{trendData.reduce((a, b) => b.count > a.count ? b : a, trendData[0])?.label}</strong></p>
                       <ResponsiveContainer width="100%" height={220}>
-                        <BarChart data={trendData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                        <BarChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                           <XAxis dataKey="label" tick={{ fontSize: 10 }} />
-                          <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
+                          <YAxis tick={{ fontSize: 10 }} allowDecimals={false}>
+                            <Label value="Attendance Count" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                          </YAxis>
                           <Tooltip formatter={(v) => [v + ' attendees']} labelFormatter={(v, payload) => payload?.[0]?.payload?.label || v} />
-                          <Bar dataKey="count" fill="#2563eb" radius={[4, 4, 0, 0]} barSize={24} />
+                          <Bar dataKey="count" fill="#2563eb" radius={[4, 4, 0, 0]} barSize={24}>
+                            <LabelList dataKey="count" position="top" formatter={v => v > 0 ? v : ''} style={{ fontSize: 10, fill: '#6B7280' }} />
+                          </Bar>
                         </BarChart>
                       </ResponsiveContainer>
                       <div className="fin-report-legend">
@@ -727,7 +949,7 @@ export default function AdminFinancialReport() {
                           <span className="fin-report-legend-val">{totalAtt} total</span>
                         </div>
                       </div>
-                      <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>{getPeriodWithLocation()}</p>
+                      <ChartFooter period={report.period} location={getLocationLabel()} />
                     </div>
                   );
                 })()}
@@ -771,6 +993,7 @@ export default function AdminFinancialReport() {
                 {report.loans.byStatus?.length > 0 && (
                   <div className="fin-report-chart-card">
                     <h3 className="fin-report-chart-title">Loan Status Distribution</h3>
+                    <p className="fin-chart-summary">Total: <strong>{report.loans.totalApplications} applications</strong> · {report.loans.byStatus.length} statuses</p>
                     <ResponsiveContainer width="100%" height={220}>
                       <PieChart>
                         <Pie
@@ -799,12 +1022,12 @@ export default function AdminFinancialReport() {
                           <div key={i} className="fin-report-legend-item">
                             <span className="fin-report-legend-dot" style={{ background: getStatusColor(s.status) }} />
                             <span className="fin-report-legend-label">{s.status}</span>
-                            <span className="fin-report-legend-val">{s.count} loans ({pct}%)</span>
+                            <span className="fin-report-legend-val">{s.count} loans · {pct}%</span>
                           </div>
                         );
                       })}
                     </div>
-                    <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>{getPeriodWithLocation()}</p>
+                    <ChartFooter period={report.period} location={getLocationLabel()} />
                   </div>
                 )}
 
@@ -821,12 +1044,15 @@ export default function AdminFinancialReport() {
                   });
                   return trendData.length > 0 ? (
                     <div className="fin-report-chart-card">
-                      <h3 className="fin-report-chart-title">Monthly Trend</h3>
+                      <h3 className="fin-report-chart-title">Monthly Disbursement vs Collection</h3>
+                      <p className="fin-chart-summary">Disbursed: <strong>{fmt(trendData.reduce((s, d) => s + d.disbursed, 0))}</strong> · Collected: <strong>{fmt(trendData.reduce((s, d) => s + d.received, 0))}</strong></p>
                       <ResponsiveContainer width="100%" height={220}>
-                        <BarChart data={trendData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                        <BarChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                           <XAxis dataKey="label" tick={{ fontSize: 10 }} />
-                          <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false} />
+                          <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false}>
+                            <Label value="Amount (₱)" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                          </YAxis>
                           <Tooltip formatter={v => fmt(v)} labelFormatter={(v, payload) => payload?.[0]?.payload?.label || v} />
                           <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} content={({ payload }) => (
                             <div className="fin-report-legend" style={{ justifyContent: 'center', display: 'flex', gap: '16px', paddingTop: '10px' }}>
@@ -842,11 +1068,15 @@ export default function AdminFinancialReport() {
                               })}
                             </div>
                           )} />
-                          <Bar name="Disbursed" dataKey="disbursed" fill="#0D1F45" radius={[4, 4, 0, 0]} barSize={20} />
-                          <Bar name="Collected" dataKey="received" fill="#10B981" radius={[4, 4, 0, 0]} barSize={20} />
+                          <Bar name="Disbursed" dataKey="disbursed" fill="#0D1F45" radius={[4, 4, 0, 0]} barSize={20}>
+                            <LabelList dataKey="disbursed" position="top" formatter={v => v > 0 ? fmtShort(v) : ''} style={{ fontSize: 9, fill: '#6B7280' }} />
+                          </Bar>
+                          <Bar name="Collected" dataKey="received" fill="#10B981" radius={[4, 4, 0, 0]} barSize={20}>
+                            <LabelList dataKey="received" position="top" formatter={v => v > 0 ? fmtShort(v) : ''} style={{ fontSize: 9, fill: '#6B7280' }} />
+                          </Bar>
                         </BarChart>
                       </ResponsiveContainer>
-                      <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>{getPeriodWithLocation()}</p>
+                      <ChartFooter period={report.period} location={getLocationLabel()} />
                     </div>
                   ) : null;
                 })()}
@@ -865,12 +1095,14 @@ export default function AdminFinancialReport() {
                     return { month: key, label, applications: appsMap[key] || 0 };
                   });
                   const totalApps = trendData.reduce((s, d) => s + d.applications, 0);
+                  const peakIdx = trendData.reduce((maxI, d, i, arr) => d.applications > arr[maxI].applications ? i : maxI, 0);
+                  const lowIdx = trendData.reduce((minI, d, i, arr) => d.applications < arr[minI].applications ? i : minI, 0);
                   return (
                     <div className="fin-report-chart-card">
                       <h3 className="fin-report-chart-title">Loan Application Trend</h3>
-                      <p style={{fontSize: '11px', color: '#6B7280', margin: '0 0 4px'}}>Monthly applications count</p>
+                      <p className="fin-chart-summary">Total: <strong>{totalApps} applications</strong> · Peak: <strong>{trendData[peakIdx]?.label}</strong> ({trendData[peakIdx]?.applications})</p>
                       <ResponsiveContainer width="100%" height={220}>
-                        <AreaChart data={trendData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                        <AreaChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
                           <defs>
                             <linearGradient id="appGradient" x1="0" y1="0" x2="0" y2="1">
                               <stop offset="5%" stopColor="#2563eb" stopOpacity={0.3} />
@@ -879,9 +1111,11 @@ export default function AdminFinancialReport() {
                           </defs>
                           <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                           <XAxis dataKey="label" tick={{ fontSize: 10 }} />
-                          <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
+                          <YAxis tick={{ fontSize: 10 }} allowDecimals={false}>
+                            <Label value="No. of Applications" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                          </YAxis>
                           <Tooltip formatter={(v) => [v + ' applications']} labelFormatter={(v, payload) => payload?.[0]?.payload?.label || v} />
-                          <Area type="monotone" dataKey="applications" stroke="#2563eb" fill="url(#appGradient)" strokeWidth={2} dot={{ r: 3, fill: '#2563eb' }} />
+                          <Area type="monotone" dataKey="applications" stroke="#2563eb" fill="url(#appGradient)" strokeWidth={2} dot={(props) => { const { cx, cy, index } = props; if (index === peakIdx || index === lowIdx) return <circle cx={cx} cy={cy} r={4} fill="#2563eb" stroke="#fff" strokeWidth={2} />; return <circle cx={cx} cy={cy} r={3} fill="#2563eb" />; }} label={(props) => { const { x, y, index, value } = props; if (index === peakIdx || index === lowIdx) return <text x={x} y={y - 10} textAnchor="middle" fill="#2563eb" fontSize={10} fontWeight={700}>{value}</text>; return null; }} />
                         </AreaChart>
                       </ResponsiveContainer>
                       <div className="fin-report-legend">
@@ -891,7 +1125,7 @@ export default function AdminFinancialReport() {
                           <span className="fin-report-legend-val">{totalApps} total</span>
                         </div>
                       </div>
-                      <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>{getPeriodWithLocation()}</p>
+                      <ChartFooter period={report.period} location={getLocationLabel()} />
                     </div>
                   );
                 })()}
@@ -912,12 +1146,14 @@ export default function AdminFinancialReport() {
                   return (
                     <div className="fin-report-chart-card">
                       <h3 className="fin-report-chart-title">Approval Rate Per Month (%)</h3>
-                      <p style={{fontSize: '11px', color: '#6B7280', margin: '0 0 4px'}}>Avg: <span style={{color: '#10B981', fontWeight: 600}}>{avgApproval}%</span> approval</p>
+                      <p className="fin-chart-summary">Avg: <strong style={{color: '#10B981'}}>{avgApproval}%</strong> approval · <strong style={{color: '#EF4444'}}>{100 - avgApproval}%</strong> rejection</p>
                       <ResponsiveContainer width="100%" height={220}>
-                        <BarChart data={rateData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                        <BarChart data={rateData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                           <XAxis dataKey="label" tick={{ fontSize: 10 }} />
-                          <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${v}%`} domain={[0, 100]} />
+                          <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${v}%`} domain={[0, 100]}>
+                            <Label value="%" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                          </YAxis>
                           <Tooltip formatter={(v) => `${v}%`} labelFormatter={(v, payload) => payload?.[0]?.payload?.label || v} />
                           <Bar name="Approval %" dataKey="approvalRate" stackId="a" fill="#10B981" radius={[0, 0, 0, 0]} barSize={24} />
                           <Bar name="Rejection %" dataKey="rejectionRate" stackId="a" fill="#EF4444" radius={[4, 4, 0, 0]} barSize={24} />
@@ -935,7 +1171,7 @@ export default function AdminFinancialReport() {
                           <span className="fin-report-legend-val">{100 - avgApproval}% avg</span>
                         </div>
                       </div>
-                      <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>{getPeriodWithLocation()}</p>
+                      <ChartFooter period={report.period} location={getLocationLabel()} />
                     </div>
                   );
                 })()}
@@ -989,7 +1225,8 @@ export default function AdminFinancialReport() {
                 {/* Savings Goals Donut */}
                 {(report.savings.activeGoals > 0 || report.savings.completedGoals > 0) && (
                   <div className="fin-report-chart-card">
-                    <h3 className="fin-report-chart-title">Savings Goals</h3>
+                    <h3 className="fin-report-chart-title">Savings Goals Status</h3>
+                    <p className="fin-chart-summary">Total: <strong>{report.savings.activeGoals + report.savings.completedGoals} goals</strong> · Progress: <strong>{report.savings.overallProgress}%</strong></p>
                     <ResponsiveContainer width="100%" height={200}>
                       <PieChart>
                         <Pie
@@ -1023,37 +1260,41 @@ export default function AdminFinancialReport() {
                           <div key={i} className="fin-report-legend-item">
                             <span className="fin-report-legend-dot" style={{ background: item.color }} />
                             <span className="fin-report-legend-label">{item.name}</span>
-                            <span className="fin-report-legend-val">{item.value} goals ({pct}%)</span>
+                            <span className="fin-report-legend-val">{item.value} goals · {pct}%</span>
                           </div>
                         );
                       })}
                     </div>
-                    <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>{getPeriodWithLocation()}</p>
+                    <ChartFooter period={report.period} location={getLocationLabel()} />
                   </div>
                 )}
 
                 {/* Savings vs Target Bar — only Saved and Period Deposits (Target removed to fix scale issue) */}
                 <div className="fin-report-chart-card">
                   <h3 className="fin-report-chart-title">Savings Breakdown</h3>
+                  <p className="fin-chart-summary">Saved: <strong>{fmt(report.savings.totalSaved)}</strong> · Period Deposits: <strong>{fmt(report.savings.periodDeposits)}</strong></p>
                   <ResponsiveContainer width="100%" height={200}>
                     <BarChart
                       data={[
                         { name: 'Total Saved', value: report.savings.totalSaved || 0 },
                         { name: 'Period Deposits', value: report.savings.periodDeposits || 0 },
                       ]}
-                      margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
+                      margin={{ top: 15, right: 10, left: -10, bottom: 0 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                      <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                      <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false} />
+                      <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                      <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false}>
+                        <Label value="Amount (₱)" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                      </YAxis>
                       <Tooltip formatter={v => fmt(v)} />
                       <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={40}>
                         <Cell fill="#10B981" />
                         <Cell fill="#2563EB" />
+                        <LabelList dataKey="value" position="top" formatter={v => fmtShort(v)} style={{ fontSize: 10, fill: '#6B7280' }} />
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
-                  <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>{getPeriodWithLocation()}</p>
+                  <ChartFooter period={report.period} location={getLocationLabel()} />
                 </div>
               </div>
 
@@ -1110,17 +1351,22 @@ export default function AdminFinancialReport() {
               {/* Attendance Chart */}
               {report.attendance?.byBranch?.length > 0 && (
                 <div className="fin-report-chart-card">
-                  <h3 className="fin-report-chart-title">Attendance by Community</h3>
-                  <ResponsiveContainer width="100%" height={180}>
-                    <BarChart data={report.attendance.byBranch}>
+                  <h3 className="fin-report-chart-title">Attendance By Community</h3>
+                  <p className="fin-chart-summary">Top: <strong>{report.attendance.byBranch[0]?.name}</strong> · {report.attendance.byBranch[0]?.value} attendees</p>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <BarChart data={report.attendance.byBranch.slice(0, 8)} margin={{ top: 15, right: 10, left: -10, bottom: 40 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                      <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-                      <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
+                      <XAxis dataKey="name" tick={{ fontSize: 9, angle: -35, textAnchor: 'end' }} interval={0} height={50} />
+                      <YAxis tick={{ fontSize: 10 }} allowDecimals={false}>
+                        <Label value="Attendance Count" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                      </YAxis>
                       <Tooltip />
-                    <Bar dataKey="value" fill="#0D1F45" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="value" fill="#0D1F45" radius={[4, 4, 0, 0]}>
+                        <LabelList dataKey="value" position="top" style={{ fontSize: 10, fill: '#6B7280' }} />
+                      </Bar>
                     </BarChart>
                   </ResponsiveContainer>
-                  <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>Period: {report.period}</p>
+                  <ChartFooter period={report.period} location={getLocationLabel()} />
                 </div>
               )}
 
@@ -1191,32 +1437,46 @@ export default function AdminFinancialReport() {
                     const existing = byMonthMap[key];
                     return { month: key, label, value: existing?.value || 0 };
                   });
+                  const totalDisb = trendData.reduce((s, d) => s + d.value, 0);
+                  const highestMon = trendData.reduce((a, b) => b.value > a.value ? b : a, trendData[0]);
                   return trendData.length > 0 ? (
                     <div className="fin-report-chart-card">
                       <h3 className="fin-report-chart-title">Monthly Disbursements</h3>
+                      <p className="fin-chart-summary">Total: <strong>{fmt(totalDisb)}</strong> · {report.secretary.disbursements.count} releases · Highest: <strong>{highestMon?.label}</strong></p>
                       <ResponsiveContainer width="100%" height={220}>
-                        <BarChart data={trendData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                        <BarChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                           <XAxis dataKey="label" tick={{ fontSize: 10 }} />
-                          <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false} />
+                          <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false}>
+                            <Label value="Amount (₱)" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                          </YAxis>
                           <Tooltip formatter={v => fmt(v)} labelFormatter={(v, payload) => payload?.[0]?.payload?.label || v} />
-                          <Bar dataKey="value" fill="#0D1F45" radius={[4, 4, 0, 0]} barSize={30} />
+                          <Bar dataKey="value" fill="#0D1F45" radius={[4, 4, 0, 0]} barSize={30}>
+                            <LabelList dataKey="value" position="top" formatter={v => v > 0 ? fmtShort(v) : ''} style={{ fontSize: 10, fill: '#6B7280' }} />
+                          </Bar>
                         </BarChart>
                       </ResponsiveContainer>
-                      <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>{getPeriodWithLocation()}</p>
+                      <ChartFooter period={report.period} location={getLocationLabel()} />
                     </div>
                   ) : null;
                 })()}
 
                 {/* Payment Method Distribution */}
-                {report.secretary.disbursements.byMethod?.length > 0 && (
+                {report.secretary.disbursements.byMethod?.length > 0 && (() => {
+                  const normalizedMethods = {};
+                  report.secretary.disbursements.byMethod.forEach(m => {
+                    const normalized = normalizeMethod(m.method);
+                    normalizedMethods[normalized] = (normalizedMethods[normalized] || 0) + m.value;
+                  });
+                  const methodData = Object.entries(normalizedMethods).map(([method, value]) => ({ method, value })).sort((a, b) => b.value - a.value);
+                  return (
                   <div className="fin-report-chart-card">
-                    <h3 className="fin-report-chart-title">Payment Method</h3>
-                    <p style={{fontSize: '11px', color: '#6B7280', margin: '0 0 4px'}}>Disbursement distribution</p>
+                    <h3 className="fin-report-chart-title">Disbursement By Payment Method</h3>
+                    <p className="fin-chart-summary">Total: <strong>{fmt(report.secretary.disbursements.totalAmount)}</strong> · {methodData.length} methods</p>
                     <ResponsiveContainer width="100%" height={180}>
                       <PieChart>
                         <Pie
-                          data={report.secretary.disbursements.byMethod.map(m => ({ name: m.method, value: m.value }))}
+                          data={methodData.map(m => ({ name: m.method, value: m.value }))}
                           cx="50%" cy="45%"
                           innerRadius={35} outerRadius={68}
                           paddingAngle={2}
@@ -1224,27 +1484,27 @@ export default function AdminFinancialReport() {
                           label={renderSliceLabel}
                           labelLine={false}
                         >
-                          {report.secretary.disbursements.byMethod.map((_, i) => (
+                          {methodData.map((_, i) => (
                             <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                           ))}
                         </Pie>
                         <Tooltip formatter={v => fmt(v)} />
                       </PieChart>
                     </ResponsiveContainer>
-                    {/* Total displayed below chart */}
                     <p className="fin-report-chart-total">{fmt(report.secretary.disbursements.totalAmount)} Total</p>
                     <div className="fin-report-legend">
-                      {report.secretary.disbursements.byMethod.map((m, i) => (
+                      {methodData.map((m, i) => (
                         <div key={i} className="fin-report-legend-item">
                           <span className="fin-report-legend-dot" style={{ background: PIE_COLORS[i % PIE_COLORS.length] }} />
                           <span className="fin-report-legend-label">{m.method}</span>
-                          <span className="fin-report-legend-val">{fmt(m.value)} ({report.secretary.disbursements.totalAmount > 0 ? ((m.value / report.secretary.disbursements.totalAmount) * 100).toFixed(0) : 0}%)</span>
+                          <span className="fin-report-legend-val">{fmt(m.value)} · {report.secretary.disbursements.totalAmount > 0 ? ((m.value / report.secretary.disbursements.totalAmount) * 100).toFixed(0) : 0}%</span>
                         </div>
                       ))}
                     </div>
-                    <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>{getPeriodWithLocation()}</p>
+                    <ChartFooter period={report.period} location={getLocationLabel()} />
                   </div>
-                )}
+                  );
+                })()}
               </div>
 
               {/* Top 5 Charts Row */}
@@ -1252,18 +1512,21 @@ export default function AdminFinancialReport() {
                 {/* Top 5 Communities by Disbursement */}
                 {report.secretary.disbursements.byCommunity?.length > 0 && (
                   <div className="fin-report-chart-card">
-                    <h3 className="fin-report-chart-title">Top 5 Communities</h3>
-                    <p style={{fontSize: '11px', color: '#6B7280', margin: '0 0 8px'}}>Highest disbursement amount</p>
+                    <h3 className="fin-report-chart-title">Top Communities By Disbursement</h3>
+                    <p className="fin-chart-summary">Top: <strong>{report.secretary.disbursements.byCommunity[0]?.community}</strong> · {fmt(report.secretary.disbursements.byCommunity[0]?.value)} ({report.secretary.disbursements.totalAmount > 0 ? ((report.secretary.disbursements.byCommunity[0]?.value / report.secretary.disbursements.totalAmount) * 100).toFixed(1) : 0}%)</p>
                     <ResponsiveContainer width="100%" height={220}>
-                      <BarChart data={report.secretary.disbursements.byCommunity} layout="vertical" margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
+                      <BarChart data={report.secretary.disbursements.byCommunity} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
-                        <XAxis type="number" tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} />
+                        <XAxis type="number" tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`}>
+                          <Label value="Amount (₱)" position="bottom" offset={-5} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                        </XAxis>
                         <YAxis type="category" dataKey="community" tick={{ fontSize: 10 }} width={100} />
                         <Tooltip formatter={v => fmt(v)} />
                         <Bar dataKey="value" fill="#0D1F45" radius={[0, 4, 4, 0]} barSize={18}>
                           {report.secretary.disbursements.byCommunity.map((_, i) => (
                             <Cell key={i} fill={i === 0 ? '#2563eb' : '#0D1F45'} />
                           ))}
+                          <LabelList dataKey="value" position="right" formatter={v => fmtShort(v)} style={{ fontSize: 10, fill: '#6B7280' }} />
                         </Bar>
                       </BarChart>
                     </ResponsiveContainer>
@@ -1272,29 +1535,32 @@ export default function AdminFinancialReport() {
                         <div key={i} className="fin-report-legend-item">
                           <span className="fin-report-legend-dot" style={{ background: i === 0 ? '#2563eb' : '#0D1F45' }} />
                           <span className="fin-report-legend-label">{c.community}</span>
-                          <span className="fin-report-legend-val">{fmt(c.value)} ({report.secretary.disbursements.totalAmount > 0 ? ((c.value / report.secretary.disbursements.totalAmount) * 100).toFixed(0) : 0}%)</span>
+                          <span className="fin-report-legend-val">{fmt(c.value)} · {report.secretary.disbursements.totalAmount > 0 ? ((c.value / report.secretary.disbursements.totalAmount) * 100).toFixed(0) : 0}%</span>
                         </div>
                       ))}
                     </div>
-                    <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>{getPeriodWithLocation()}</p>
+                    <ChartFooter period={report.period} location={getLocationLabel()} />
                   </div>
                 )}
 
                 {/* Top 5 Recipients */}
                 {report.secretary.disbursements.byUser?.length > 0 && (
                   <div className="fin-report-chart-card">
-                    <h3 className="fin-report-chart-title">Top 5 Recipients</h3>
-                    <p style={{fontSize: '11px', color: '#6B7280', margin: '0 0 8px'}}>Members with highest disbursements</p>
+                    <h3 className="fin-report-chart-title">Top Recipients By Disbursement</h3>
+                    <p className="fin-chart-summary">#1: <strong>{report.secretary.disbursements.byUser[0]?.user}</strong> · {fmt(report.secretary.disbursements.byUser[0]?.value)} ({report.secretary.disbursements.totalAmount > 0 ? ((report.secretary.disbursements.byUser[0]?.value / report.secretary.disbursements.totalAmount) * 100).toFixed(1) : 0}%)</p>
                     <ResponsiveContainer width="100%" height={220}>
-                      <BarChart data={report.secretary.disbursements.byUser} layout="vertical" margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
+                      <BarChart data={report.secretary.disbursements.byUser} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
-                        <XAxis type="number" tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} />
+                        <XAxis type="number" tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`}>
+                          <Label value="Amount (₱)" position="bottom" offset={-5} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                        </XAxis>
                         <YAxis type="category" dataKey="user" tick={{ fontSize: 10 }} width={120} />
                         <Tooltip formatter={v => fmt(v)} />
                         <Bar dataKey="value" fill="#1e3a8a" radius={[0, 4, 4, 0]} barSize={18}>
                           {report.secretary.disbursements.byUser.map((_, i) => (
                             <Cell key={i} fill={i === 0 ? '#2563eb' : '#1e3a8a'} />
                           ))}
+                          <LabelList dataKey="value" position="right" formatter={v => fmtShort(v)} style={{ fontSize: 10, fill: '#6B7280' }} />
                         </Bar>
                       </BarChart>
                     </ResponsiveContainer>
@@ -1303,11 +1569,11 @@ export default function AdminFinancialReport() {
                         <div key={i} className="fin-report-legend-item">
                           <span className="fin-report-legend-dot" style={{ background: i === 0 ? '#2563eb' : '#1e3a8a' }} />
                           <span className="fin-report-legend-label">{u.user}</span>
-                          <span className="fin-report-legend-val">{fmt(u.value)} ({report.secretary.disbursements.totalAmount > 0 ? ((u.value / report.secretary.disbursements.totalAmount) * 100).toFixed(0) : 0}%)</span>
+                          <span className="fin-report-legend-val">{fmt(u.value)} · {report.secretary.disbursements.totalAmount > 0 ? ((u.value / report.secretary.disbursements.totalAmount) * 100).toFixed(0) : 0}%</span>
                         </div>
                       ))}
                     </div>
-                    <p style={{textAlign: 'center', fontSize: '11px', color: '#6B7280', marginTop: '12px', marginBottom: 0}}>{getPeriodWithLocation()}</p>
+                    <ChartFooter period={report.period} location={getLocationLabel()} />
                   </div>
                 )}
               </div>

@@ -343,9 +343,40 @@
   font-size: 12px;
   font-weight: 700;
   color: #374151;
-  margin: 0 0 12px;
+  margin: 0 0 4px;
   text-transform: uppercase;
   letter-spacing: 0.03em;
+}
+
+.fin-chart-summary {
+  font-size: 11px;
+  color: #6B7280;
+  margin: 0 0 10px;
+  font-weight: 500;
+}
+
+.fin-chart-summary strong {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.fin-chart-footer {
+  margin-top: 10px;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.fin-chart-footer-period {
+  font-size: 10px;
+  color: #6B7280;
+  margin: 0;
+}
+
+.fin-chart-footer-source {
+  font-size: 9px;
+  color: #9CA3AF;
+  font-style: italic;
+  margin: 2px 0 0;
 }
 
 /* ── Legend ── */
@@ -800,6 +831,43 @@
   display: flex !important;
   flex-direction: column !important;
   gap: 16px !important;
+}
+
+/* ── YoY Comparison Styles ── */
+.fin-report-compare-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #374151;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.fin-report-compare-checkbox {
+  accent-color: #0D1F45;
+}
+
+.fin-chart-summary.compare-vs {
+  margin: 0 0 16px;
+}
+
+.fin-change-positive {
+  color: #10B981;
+}
+
+.fin-change-negative {
+  color: #EF4444;
+}
+
+.fin-report-legend-center {
+  justify-content: center;
+  display: flex;
+  gap: 16px;
+}
+
+.fin-report-legend-gap {
+  gap: 4px;
 }
 
 .exporting-pdf .fin-report-chart-card {
