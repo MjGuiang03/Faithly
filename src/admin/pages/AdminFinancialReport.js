@@ -36,7 +36,6 @@ const normalizeMethod = (m) => METHOD_MAP[(m || '').toLowerCase()] || m;
 
 const ChartFooter = ({ period, location }) => (
   <div className="fin-chart-footer">
-    <p className="fin-chart-footer-period">Period: {period} · {location}</p>
     <p className="fin-chart-footer-source">Source: IsangDiwa · {period} · {location}</p>
   </div>
 );
@@ -233,12 +232,14 @@ export default function AdminFinancialReport() {
   const getLocationLabel = () => {
     if (!report) return '';
     if (locationType === 'province' && selectedProvinces.length > 0) {
-      return selectedProvinces.length === 1 ? `Province: ${selectedProvinces[0]}` : `${selectedProvinces.length} Provinces Selected`;
+      if (selectedProvinces.length <= 3) return selectedProvinces.join(' and ');
+      return `${selectedProvinces.slice(0, 3).join(', ')} (+${selectedProvinces.length - 3} more)`;
     }
     if (locationType === 'specific' && selectedCommunities.length > 0) {
-      return selectedCommunities.length <= 3 ? `Communities: ${selectedCommunities.join(', ')}` : `Communities: ${selectedCommunities.slice(0, 2).join(', ')} (+${selectedCommunities.length - 2} more)`;
+      if (selectedCommunities.length <= 5) return selectedCommunities.join(', ');
+      return `${selectedCommunities.slice(0, 4).join(', ')} (+${selectedCommunities.length - 4} more)`;
     }
-    return 'Scope: All Communities \u00b7 All Provinces';
+    return 'All Locations';
   };
 
 
@@ -261,7 +262,22 @@ export default function AdminFinancialReport() {
     try {
       const element = reportRef.current;
       const periodName = report?.period?.replace(/\s+/g, '_') || 'Report';
-      const filename = `IsangDiwa_Financial_Report_${periodName}.pdf`;
+      const reportTypeName = (() => {
+        if (adminRole === 'loanAdmin') return 'Loan_Staff';
+        if (adminRole === 'secretaryAdmin') return 'Secretary';
+        return getReportTypeName().replace(/\s+/g, '_');
+      })();
+      const locationName = (() => {
+        if (locationType === 'province' && selectedProvinces.length > 0) {
+          return '_' + selectedProvinces.join('_').replace(/\s+/g, '_');
+        }
+        if (locationType === 'specific' && selectedCommunities.length > 0) {
+          const names = selectedCommunities.length <= 3 ? selectedCommunities : selectedCommunities.slice(0, 3);
+          return '_' + names.join('_').replace(/\s+/g, '_') + (selectedCommunities.length > 3 ? `_+${selectedCommunities.length - 3}more` : '');
+        }
+        return '_All_Locations';
+      })();
+      const filename = `IsangDiwa_${reportTypeName}_Report_${periodName}${locationName}.pdf`;
 
       const opt = {
         margin:       [10, 10, 10, 10],
@@ -831,7 +847,7 @@ export default function AdminFinancialReport() {
                       <p className="fin-chart-summary">Total: <strong>{fmt(totalDon)}</strong> · Highest: <strong>{highestMon?.month}</strong> ({fmt(highestMon?.value)})</p>
                       <ResponsiveContainer width="100%" height={isMulti ? 280 : 220}>
                         {isMulti ? (
-                          <LineChart data={fullMonthData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
+                          <BarChart data={fullMonthData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                             <XAxis dataKey="month" tick={{ fontSize: 10 }} />
                             <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false}>
@@ -839,9 +855,9 @@ export default function AdminFinancialReport() {
                             </YAxis>
                             <Tooltip formatter={v => fmt(v)} />
                             {allSeries.map((s, i) => (
-                              <Line key={s} type="monotone" dataKey={s} stroke={COMMUNITY_COLORS[i % COMMUNITY_COLORS.length]} strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                              <Bar key={s} dataKey={s} fill={COMMUNITY_COLORS[i % COMMUNITY_COLORS.length]} />
                             ))}
-                          </LineChart>
+                          </BarChart>
                         ) : (
                           <BarChart data={fullMonthData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -1201,16 +1217,22 @@ export default function AdminFinancialReport() {
                   </div>
                 )}
 
-                {/* Monthly Trend Bar — only show selected period months */}
+                {/* Monthly Disbursement vs Collection (Row 1) */}
                 {(() => {
                   const { from, to } = getChartMonthRange();
                   const byMonthMap = {};
                   (report.loans.byMonth || []).forEach(d => { byMonthMap[d.month] = d; });
-                  const bmcData = report.loans.byMonthByCommunity || {};
-                  const disbBmc = bmcData.disbursed || {};
-                  const collBmc = bmcData.collected || {};
-                  const allComm = [...new Set([...Object.values(disbBmc), ...Object.values(collBmc)].flatMap(obj => Object.keys(obj)))].sort();
-                  const isMulti = allComm.length >= 2;
+                  
+                  const provDisbMap = report.loans.byMonthByProvince?.disbursed || {};
+                  const provCollMap = report.loans.byMonthByProvince?.collected || {};
+                  const availableProvinces = [...new Set([...Object.values(provDisbMap), ...Object.values(provCollMap)].flatMap(obj => Object.keys(obj)))].sort();
+                  const showProvinceTrend = availableProvinces.length >= 2;
+                  const disbMap = showProvinceTrend ? provDisbMap : (report.loans.byMonthByCommunity?.disbursed || {});
+                  const collMap = showProvinceTrend ? provCollMap : (report.loans.byMonthByCommunity?.collected || {});
+                  
+                  let allSeries = [...new Set([...Object.values(disbMap), ...Object.values(collMap)].flatMap(obj => Object.keys(obj)))].sort();
+                  const chartTitle = `Monthly Disbursement vs Collection ${allSeries.length >= 2 ? (showProvinceTrend ? '(By Province)' : '(By Community)') : ''}`;
+                  const isMulti = allSeries.length >= 2;
 
                   const trendData = MONTH_SHORT.slice(from, to + 1).map((label, idx) => {
                     const i = from + idx;
@@ -1218,33 +1240,34 @@ export default function AdminFinancialReport() {
                     const existing = byMonthMap[key];
                     const row = { month: key, label, disbursed: existing?.disbursed || 0, received: existing?.received || 0 };
                     if (isMulti) {
-                      allComm.forEach(c => {
-                        row[`disb_${c}`] = disbBmc[key]?.[c] || 0;
-                        row[`coll_${c}`] = collBmc[key]?.[c] || 0;
+                      allSeries.forEach(s => {
+                        row[`disb_${s}`] = disbMap[key]?.[s] || 0;
+                        row[`coll_${s}`] = collMap[key]?.[s] || 0;
                       });
                     }
                     return row;
                   });
+
                   return trendData.length > 0 ? (
-                    <div className="fin-report-chart-card">
-                      <h3 className="fin-report-chart-title">Monthly Disbursement vs Collection {isMulti ? '(By Community)' : ''}</h3>
+                    <div className="fin-report-chart-card" style={{ width: '100%' }}>
+                      <h3 className="fin-report-chart-title">{chartTitle}</h3>
                       <p className="fin-chart-summary">Disbursed: <strong>{fmt(trendData.reduce((s, d) => s + d.disbursed, 0))}</strong> · Collected: <strong>{fmt(trendData.reduce((s, d) => s + d.received, 0))}</strong></p>
-                      <ResponsiveContainer width="100%" height={isMulti ? 280 : 220}>
+                      <ResponsiveContainer width="100%" height={isMulti ? 300 : 250}>
                         {isMulti ? (
-                          <LineChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
+                          <BarChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                             <XAxis dataKey="label" tick={{ fontSize: 10 }} />
                             <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false}>
                               <Label value="Amount (₱)" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
                             </YAxis>
                             <Tooltip formatter={v => fmt(v)} />
-                            {allComm.map((c, i) => (
-                              <Line key={`disb_${c}`} type="monotone" dataKey={`disb_${c}`} name={`${c} (Disbursed)`} stroke={COMMUNITY_COLORS[i % COMMUNITY_COLORS.length]} strokeWidth={2} dot={{ r: 3 }} />
+                            {allSeries.map((s, i) => (
+                              <Bar key={`disb_${s}`} dataKey={`disb_${s}`} name={`${s} (Disbursed)`} stackId="disbursed" fill={COMMUNITY_COLORS[i % COMMUNITY_COLORS.length]} />
                             ))}
-                            {allComm.map((c, i) => (
-                              <Line key={`coll_${c}`} type="monotone" dataKey={`coll_${c}`} name={`${c} (Collected)`} stroke={COMMUNITY_COLORS[i % COMMUNITY_COLORS.length]} strokeWidth={2} strokeDasharray="5 5" dot={{ r: 3 }} />
+                            {allSeries.map((s, i) => (
+                              <Bar key={`coll_${s}`} dataKey={`coll_${s}`} name={`${s} (Collected)`} stackId="collected" fill={COMMUNITY_COLORS[i % COMMUNITY_COLORS.length]} fillOpacity={0.6} />
                             ))}
-                          </LineChart>
+                          </BarChart>
                         ) : (
                           <BarChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
@@ -1262,100 +1285,365 @@ export default function AdminFinancialReport() {
                           </BarChart>
                         )}
                       </ResponsiveContainer>
-                      {isMulti && (
-                        <div className="fin-report-legend">
-                          {allComm.map((c, i) => (
-                            <div key={c} className="fin-report-legend-item">
-                              <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[i % COMMUNITY_COLORS.length] }} />
-                              <span className="fin-report-legend-label">{c}</span>
-                              <span className="fin-report-legend-val" style={{ fontSize: 9 }}>— solid: disbursed, dashed: collected</span>
+                      {isMulti && (() => {
+                        const branchToProv = {};
+                        branchesData.forEach(b => {
+                          branchToProv[b.name] = b.province || (b.address ? b.address.split(',')[0].trim() : 'Unknown');
+                        });
+                        const seriesByProv = {};
+                        allSeries.forEach((s, i) => {
+                          const prov = showProvinceTrend ? s : (branchToProv[s] || 'Unknown');
+                          if (!seriesByProv[prov]) seriesByProv[prov] = [];
+                          seriesByProv[prov].push({ name: s, index: i });
+                        });
+                        
+                        return (
+                          <div className="fin-report-grouped-legend" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', marginTop: '16px' }}>
+                            {Object.entries(seriesByProv).map(([prov, seriesList]) => (
+                              <div key={prov} className="fin-report-legend-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '120px' }}>
+                                {!showProvinceTrend && (
+                                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#6b7280', textTransform: 'uppercase', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '2px' }}>
+                                    {prov}
+                                  </div>
+                                )}
+                                {seriesList.map((s) => (
+                                  <div key={s.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                      <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[s.index % COMMUNITY_COLORS.length] }} />
+                                      <span className="fin-report-legend-label">{s.name}</span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ))}
+                            <div style={{ width: '100%', fontSize: '11px', color: '#6b7280', marginTop: '8px' }}>
+                              <em>Note: For each month, the left bar is Disbursed (solid) and the right bar is Collected (lighter color).</em>
                             </div>
-                          ))}
-                        </div>
-                      )}
+                          </div>
+                        );
+                      })()}
                       <ChartFooter period={report.period} location={getLocationLabel()} />
                     </div>
                   ) : null;
                 })()}
               </div>
 
+              {/* Monthly Disbursement vs Collection (Row 2 - By Community) */}
+              {(() => {
+                const provDisbMap2 = report.loans.byMonthByProvince?.disbursed || {};
+                const provCollMap2 = report.loans.byMonthByProvince?.collected || {};
+                const availProv2 = [...new Set([...Object.values(provDisbMap2), ...Object.values(provCollMap2)].flatMap(obj => Object.keys(obj)))].sort();
+                const shouldShowRow2 = availProv2.length >= 2;
+                if (!shouldShowRow2) return null;
+                return (
+                <div className="fin-report-charts-row">
+                  {(() => {
+                    const { from, to } = getChartMonthRange();
+                    const byMonthMap = {};
+                    (report.loans.byMonth || []).forEach(d => { byMonthMap[d.month] = d; });
+                    
+                    const disbMap = report.loans.byMonthByCommunity?.disbursed || {};
+                    const collMap = report.loans.byMonthByCommunity?.collected || {};
+                    
+                    let allSeries = [...new Set([...Object.values(disbMap), ...Object.values(collMap)].flatMap(obj => Object.keys(obj)))].sort();
+                    const chartTitle = `Monthly Disbursement vs Collection (By Community)`;
+                    const isMulti = allSeries.length >= 2;
+
+                    const trendData = MONTH_SHORT.slice(from, to + 1).map((label, idx) => {
+                      const i = from + idx;
+                      const key = `${reportYear}-${String(i + 1).padStart(2, '0')}`;
+                      const existing = byMonthMap[key];
+                      const row = { month: key, label, disbursed: existing?.disbursed || 0, received: existing?.received || 0 };
+                      if (isMulti) {
+                        allSeries.forEach(s => {
+                          row[`disb_${s}`] = disbMap[key]?.[s] || 0;
+                          row[`coll_${s}`] = collMap[key]?.[s] || 0;
+                        });
+                      }
+                      return row;
+                    });
+
+                    return trendData.length > 0 ? (
+                      <div className="fin-report-chart-card" style={{ width: '100%' }}>
+                        <h3 className="fin-report-chart-title">{chartTitle}</h3>
+                        <p className="fin-chart-summary">Detailed Community Breakdown · Disbursed: <strong>{fmt(trendData.reduce((s, d) => s + d.disbursed, 0))}</strong> · Collected: <strong>{fmt(trendData.reduce((s, d) => s + d.received, 0))}</strong></p>
+                        <ResponsiveContainer width="100%" height={isMulti ? 300 : 250}>
+                          {isMulti ? (
+                            <BarChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                              <XAxis dataKey="label" tick={{ fontSize: 10 }} />
+                              <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false}>
+                                <Label value="Amount (₱)" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                              </YAxis>
+                              <Tooltip formatter={v => fmt(v)} />
+                              {allSeries.map((s, i) => (
+                                <Bar key={`disb_${s}`} dataKey={`disb_${s}`} name={`${s} (Disbursed)`} stackId="disbursed" fill={COMMUNITY_COLORS[i % COMMUNITY_COLORS.length]} />
+                              ))}
+                              {allSeries.map((s, i) => (
+                                <Bar key={`coll_${s}`} dataKey={`coll_${s}`} name={`${s} (Collected)`} stackId="collected" fill={COMMUNITY_COLORS[i % COMMUNITY_COLORS.length]} fillOpacity={0.6} />
+                              ))}
+                            </BarChart>
+                          ) : (
+                            <BarChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                              <XAxis dataKey="label" tick={{ fontSize: 10 }} />
+                              <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false}>
+                                <Label value="Amount (₱)" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                              </YAxis>
+                              <Tooltip formatter={v => fmt(v)} labelFormatter={(v, payload) => payload?.[0]?.payload?.label || v} />
+                              <Bar name="Disbursed" dataKey="disbursed" fill="#0D1F45" radius={[4, 4, 0, 0]} barSize={20}>
+                                <LabelList dataKey="disbursed" position="top" formatter={v => v > 0 ? fmtShort(v) : ''} style={{ fontSize: 9, fill: '#6B7280' }} />
+                              </Bar>
+                              <Bar name="Collected" dataKey="received" fill="#10B981" radius={[4, 4, 0, 0]} barSize={20}>
+                                <LabelList dataKey="received" position="top" formatter={v => v > 0 ? fmtShort(v) : ''} style={{ fontSize: 9, fill: '#6B7280' }} />
+                              </Bar>
+                            </BarChart>
+                          )}
+                        </ResponsiveContainer>
+                        {isMulti && (() => {
+                          const branchToProv = {};
+                          branchesData.forEach(b => {
+                            branchToProv[b.name] = b.province || (b.address ? b.address.split(',')[0].trim() : 'Unknown');
+                          });
+                          const seriesByProv = {};
+                          allSeries.forEach((s, i) => {
+                            const prov = branchToProv[s] || 'Unknown';
+                            if (!seriesByProv[prov]) seriesByProv[prov] = [];
+                            seriesByProv[prov].push({ name: s, index: i });
+                          });
+                          
+                          return (
+                            <div className="fin-report-grouped-legend" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', marginTop: '16px' }}>
+                              {Object.entries(seriesByProv).map(([prov, seriesList]) => (
+                                <div key={prov} className="fin-report-legend-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '120px' }}>
+                                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#6b7280', textTransform: 'uppercase', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '2px' }}>
+                                    {prov}
+                                  </div>
+                                  {seriesList.map((s) => (
+                                    <div key={s.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start' }}>
+                                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                                        <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[s.index % COMMUNITY_COLORS.length] }} />
+                                        <span className="fin-report-legend-label">{s.name}</span>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              ))}
+                              <div style={{ width: '100%', fontSize: '11px', color: '#6b7280', marginTop: '8px' }}>
+                                <em>Note: For each month, the left bar is Disbursed (solid) and the right bar is Collected (lighter color).</em>
+                              </div>
+                            </div>
+                          );
+                        })()}
+                        <ChartFooter period={report.period} location={getLocationLabel()} />
+                      </div>
+                    ) : null;
+                  })()}
+                </div>
+              );
+              })()}
+
               {/* Application Trend + Repayment Performance Row */}
               <div className="fin-report-charts-row">
-                {/* Loan Application Trend */}
+                {/* === Loan Application Trend (Row 1) === */}
                 {(() => {
                   const { from, to } = getChartMonthRange();
                   const appsMap = {};
                   (report.loans.applicationsByMonth || []).forEach(d => { appsMap[d.month] = d.count; });
-                  const bmc = report.loans.applicationsByMonthByCommunity || {};
-                  const allComm = [...new Set(Object.values(bmc).flatMap(obj => Object.keys(obj)))].sort();
-                  const isMulti = allComm.length >= 2;
+                  
+                  const provAppMap = report.loans.applicationsByMonthByProvince || {};
+                  const availableProvApps = [...new Set(Object.values(provAppMap).flatMap(obj => Object.keys(obj)))].sort();
+                  const showProvinceTrend = availableProvApps.length >= 2;
+                  const dataMap = showProvinceTrend ? provAppMap : (report.loans.applicationsByMonthByCommunity || {});
+                  let allSeries = [...new Set(Object.values(dataMap).flatMap(obj => Object.keys(obj)))].sort();
+                  const chartTitle = `Loan Application Trend ${allSeries.length >= 2 ? (showProvinceTrend ? '(By Province)' : '(By Community)') : ''}`;
+                  const isMulti = allSeries.length >= 2;
 
                   const trendData = MONTH_SHORT.slice(from, to + 1).map((label, idx) => {
                     const i = from + idx;
                     const key = `${reportYear}-${String(i + 1).padStart(2, '0')}`;
                     const row = { month: key, label, applications: appsMap[key] || 0 };
-                    if (isMulti && bmc[key]) {
-                      allComm.forEach(c => { row[c] = bmc[key][c] || 0; });
+                    if (isMulti && dataMap[key]) {
+                      allSeries.forEach(s => { row[s] = dataMap[key][s] || 0; });
                     }
                     return row;
                   });
                   const totalApps = trendData.reduce((s, d) => s + d.applications, 0);
                   const peakIdx = trendData.reduce((maxI, d, i, arr) => d.applications > arr[maxI].applications ? i : maxI, 0);
                   const lowIdx = trendData.reduce((minI, d, i, arr) => d.applications < arr[minI].applications ? i : minI, 0);
-                  return (
-                    <div className="fin-report-chart-card">
-                      <h3 className="fin-report-chart-title">Loan Application Trend {isMulti ? '(By Community)' : ''}</h3>
+                  return trendData.length > 0 ? (
+                    <div className="fin-report-chart-card" style={{ width: '100%' }}>
+                      <h3 className="fin-report-chart-title">{chartTitle}</h3>
                       <p className="fin-chart-summary">Total: <strong>{totalApps} applications</strong> · Peak: <strong>{trendData[peakIdx]?.label}</strong> ({trendData[peakIdx]?.applications})</p>
-                      <ResponsiveContainer width="100%" height={isMulti ? 280 : 220}>
+                      <ResponsiveContainer width="100%" height={isMulti ? 300 : 250}>
                         {isMulti ? (
-                          <LineChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
+                          <BarChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                             <XAxis dataKey="label" tick={{ fontSize: 10 }} />
                             <YAxis tick={{ fontSize: 10 }} allowDecimals={false}>
                               <Label value="No. of Applications" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
                             </YAxis>
                             <Tooltip formatter={(v) => [v + ' applications']} />
-                            {allComm.map((c, i) => (
-                              <Line key={c} type="monotone" dataKey={c} stroke={COMMUNITY_COLORS[i % COMMUNITY_COLORS.length]} strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                            {allSeries.map((s, i) => (
+                              <Bar key={s} dataKey={s} name={s} fill={COMMUNITY_COLORS[i % COMMUNITY_COLORS.length]} />
                             ))}
-                          </LineChart>
+                          </BarChart>
                         ) : (
-                          <AreaChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
-                            <defs>
-                              <linearGradient id="appGradient" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#2563eb" stopOpacity={0.3} />
-                                <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
-                              </linearGradient>
-                            </defs>
+                          <BarChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                             <XAxis dataKey="label" tick={{ fontSize: 10 }} />
                             <YAxis tick={{ fontSize: 10 }} allowDecimals={false}>
                               <Label value="No. of Applications" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
                             </YAxis>
                             <Tooltip formatter={(v) => [v + ' applications']} labelFormatter={(v, payload) => payload?.[0]?.payload?.label || v} />
-                            <Area type="monotone" dataKey="applications" stroke="#2563eb" fill="url(#appGradient)" strokeWidth={2} dot={(props) => { const { cx, cy, index } = props; if (index === peakIdx || index === lowIdx) return <circle cx={cx} cy={cy} r={4} fill="#2563eb" stroke="#fff" strokeWidth={2} />; return <circle cx={cx} cy={cy} r={3} fill="#2563eb" />; }} label={(props) => { const { x, y, index, value } = props; if (index === peakIdx || index === lowIdx) return <text x={x} y={y - 10} textAnchor="middle" fill="#2563eb" fontSize={10} fontWeight={700}>{value}</text>; return null; }} />
-                          </AreaChart>
+                            <Bar name="Applications" dataKey="applications" fill="#2563eb" radius={[4, 4, 0, 0]} barSize={20}>
+                              <LabelList dataKey="applications" position="top" style={{ fontSize: 9, fill: '#6B7280' }} />
+                            </Bar>
+                          </BarChart>
                         )}
                       </ResponsiveContainer>
-                      <div className="fin-report-legend">
-                        {isMulti ? allComm.map((c, i) => (
-                          <div key={c} className="fin-report-legend-item">
-                            <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[i % COMMUNITY_COLORS.length] }} />
-                            <span className="fin-report-legend-label">{c}</span>
+                      {isMulti && (() => {
+                        const branchToProv = {};
+                        branchesData.forEach(b => {
+                          branchToProv[b.name] = b.province || (b.address ? b.address.split(',')[0].trim() : 'Unknown');
+                        });
+                        const seriesByProv = {};
+                        allSeries.forEach((s, i) => {
+                          const prov = showProvinceTrend ? s : (branchToProv[s] || 'Unknown');
+                          if (!seriesByProv[prov]) seriesByProv[prov] = [];
+                          seriesByProv[prov].push({ name: s, index: i });
+                        });
+                        
+                        return (
+                          <div className="fin-report-grouped-legend" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', marginTop: '16px' }}>
+                            {Object.entries(seriesByProv).map(([prov, seriesList]) => (
+                              <div key={prov} className="fin-report-legend-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '120px' }}>
+                                {!showProvinceTrend && (
+                                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#6b7280', textTransform: 'uppercase', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '2px' }}>
+                                    {prov}
+                                  </div>
+                                )}
+                                {seriesList.map((s) => (
+                                  <div key={s.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                      <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[s.index % COMMUNITY_COLORS.length] }} />
+                                      <span className="fin-report-legend-label">{s.name}</span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ))}
                           </div>
-                        )) : (
-                          <div className="fin-report-legend-item">
-                            <span className="fin-report-legend-dot" style={{ background: '#2563eb' }} />
-                            <span className="fin-report-legend-label">Applications</span>
-                            <span className="fin-report-legend-val">{totalApps} total</span>
-                          </div>
-                        )}
-                      </div>
+                        );
+                      })()}
                       <ChartFooter period={report.period} location={getLocationLabel()} />
                     </div>
-                  );
+                  ) : null;
                 })()}
+              </div>
 
+              {(() => {
+                const provAppMap2 = report.loans.applicationsByMonthByProvince || {};
+                const availProvApps2 = [...new Set(Object.values(provAppMap2).flatMap(obj => Object.keys(obj)))].sort();
+                const shouldShowRow2 = availProvApps2.length >= 2;
+                if (!shouldShowRow2) return null;
+                return (
+                <div className="fin-report-charts-row">
+                  {(() => {
+                    const { from, to } = getChartMonthRange();
+                    const appsMap = {};
+                    (report.loans.applicationsByMonth || []).forEach(d => { appsMap[d.month] = d.count; });
+                    
+                    const dataMap = report.loans.applicationsByMonthByCommunity || {};
+                    let allSeries = [...new Set(Object.values(dataMap).flatMap(obj => Object.keys(obj)))].sort();
+                    const chartTitle = `Loan Application Trend (By Community)`;
+                    const isMulti = allSeries.length >= 2;
+
+                    const trendData = MONTH_SHORT.slice(from, to + 1).map((label, idx) => {
+                      const i = from + idx;
+                      const key = `${reportYear}-${String(i + 1).padStart(2, '0')}`;
+                      const row = { month: key, label, applications: appsMap[key] || 0 };
+                      if (isMulti && dataMap[key]) {
+                        allSeries.forEach(s => { row[s] = dataMap[key][s] || 0; });
+                      }
+                      return row;
+                    });
+                    const totalApps = trendData.reduce((s, d) => s + d.applications, 0);
+                    const peakIdx = trendData.reduce((maxI, d, i, arr) => d.applications > arr[maxI].applications ? i : maxI, 0);
+
+                    return trendData.length > 0 ? (
+                      <div className="fin-report-chart-card" style={{ width: '100%' }}>
+                        <h3 className="fin-report-chart-title">{chartTitle}</h3>
+                        <p className="fin-chart-summary">Detailed Community Breakdown · Total: <strong>{totalApps} applications</strong> · Peak: <strong>{trendData[peakIdx]?.label}</strong> ({trendData[peakIdx]?.applications})</p>
+                        <ResponsiveContainer width="100%" height={isMulti ? 300 : 250}>
+                          {isMulti ? (
+                            <BarChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                              <XAxis dataKey="label" tick={{ fontSize: 10 }} />
+                              <YAxis tick={{ fontSize: 10 }} allowDecimals={false}>
+                                <Label value="No. of Applications" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                              </YAxis>
+                              <Tooltip formatter={(v) => [v + ' applications']} />
+                              {allSeries.map((s, i) => (
+                                <Bar key={s} dataKey={s} name={s} fill={COMMUNITY_COLORS[i % COMMUNITY_COLORS.length]} />
+                              ))}
+                            </BarChart>
+                          ) : (
+                            <BarChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                              <XAxis dataKey="label" tick={{ fontSize: 10 }} />
+                              <YAxis tick={{ fontSize: 10 }} allowDecimals={false}>
+                                <Label value="No. of Applications" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                              </YAxis>
+                              <Tooltip formatter={(v) => [v + ' applications']} labelFormatter={(v, payload) => payload?.[0]?.payload?.label || v} />
+                              <Bar name="Applications" dataKey="applications" fill="#2563eb" radius={[4, 4, 0, 0]} barSize={20}>
+                                <LabelList dataKey="applications" position="top" style={{ fontSize: 9, fill: '#6B7280' }} />
+                              </Bar>
+                            </BarChart>
+                          )}
+                        </ResponsiveContainer>
+                        {isMulti && (() => {
+                          const branchToProv = {};
+                          branchesData.forEach(b => {
+                            branchToProv[b.name] = b.province || (b.address ? b.address.split(',')[0].trim() : 'Unknown');
+                          });
+                          const seriesByProv = {};
+                          allSeries.forEach((s, i) => {
+                            const prov = branchToProv[s] || 'Unknown';
+                            if (!seriesByProv[prov]) seriesByProv[prov] = [];
+                            seriesByProv[prov].push({ name: s, index: i });
+                          });
+                          
+                          return (
+                            <div className="fin-report-grouped-legend" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', marginTop: '16px' }}>
+                              {Object.entries(seriesByProv).map(([prov, seriesList]) => (
+                                <div key={prov} className="fin-report-legend-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '120px' }}>
+                                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#6b7280', textTransform: 'uppercase', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '2px' }}>
+                                    {prov}
+                                  </div>
+                                  {seriesList.map((s) => (
+                                    <div key={s.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start' }}>
+                                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                                        <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[s.index % COMMUNITY_COLORS.length] }} />
+                                        <span className="fin-report-legend-label">{s.name}</span>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })()}
+                        <ChartFooter period={report.period} location={getLocationLabel()} />
+                      </div>
+                    ) : null;
+                   })()}
+                </div>
+              );
+              })()}
+
+              {/* Approval Rate + Repayment Row */}
+              <div className="fin-report-charts-row">
                 {/* Approval Rate Per Month */}
                 {(() => {
                   const { from, to } = getChartMonthRange();
@@ -1381,8 +1669,8 @@ export default function AdminFinancialReport() {
                             <Label value="%" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
                           </YAxis>
                           <Tooltip formatter={(v) => `${v}%`} labelFormatter={(v, payload) => payload?.[0]?.payload?.label || v} />
-                          <Bar name="Approval %" dataKey="approvalRate" stackId="a" fill="#10B981" radius={[0, 0, 0, 0]} barSize={24} />
-                          <Bar name="Rejection %" dataKey="rejectionRate" stackId="a" fill="#EF4444" radius={[4, 4, 0, 0]} barSize={24} />
+                          <Bar name="Approval %" dataKey="approvalRate" fill="#10B981" radius={[4, 4, 0, 0]} barSize={16} />
+                          <Bar name="Rejection %" dataKey="rejectionRate" fill="#EF4444" radius={[4, 4, 0, 0]} barSize={16} />
                         </BarChart>
                       </ResponsiveContainer>
                       <div className="fin-report-legend" style={{ justifyContent: 'center', display: 'flex', gap: '16px' }}>
@@ -1495,33 +1783,53 @@ export default function AdminFinancialReport() {
                   </div>
                 )}
 
-                {/* Savings vs Target Bar — only Saved and Period Deposits (Target removed to fix scale issue) */}
-                <div className="fin-report-chart-card">
-                  <h3 className="fin-report-chart-title">Savings Breakdown</h3>
-                  <p className="fin-chart-summary">Saved: <strong>{fmt(report.savings.totalSaved)}</strong> · Period Deposits: <strong>{fmt(report.savings.periodDeposits)}</strong></p>
-                  <ResponsiveContainer width="100%" height={200}>
-                    <BarChart
-                      data={[
-                        { name: 'Total Saved', value: report.savings.totalSaved || 0 },
-                        { name: 'Period Deposits', value: report.savings.periodDeposits || 0 },
-                      ]}
-                      margin={{ top: 15, right: 10, left: -10, bottom: 0 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                      <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-                      <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false}>
-                        <Label value="Amount (₱)" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
-                      </YAxis>
-                      <Tooltip formatter={v => fmt(v)} />
-                      <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={40}>
-                        <Cell fill="#10B981" />
-                        <Cell fill="#2563EB" />
-                        <LabelList dataKey="value" position="top" formatter={v => fmtShort(v)} style={{ fontSize: 10, fill: '#6B7280' }} />
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                  <ChartFooter period={report.period} location={getLocationLabel()} />
-                </div>
+                {/* Savings Breakdown by Month */}
+                {(() => {
+                  const { from, to } = getChartMonthRange();
+                  const byMonthMap = {};
+                  (report.savings.byMonth || []).forEach(d => { byMonthMap[d.month] = d; });
+                  
+                  const savingsData = MONTH_SHORT.slice(from, to + 1).map((label, idx) => {
+                    const i = from + idx;
+                    const key = `${reportYear}-${String(i + 1).padStart(2, '0')}`;
+                    const existing = byMonthMap[key];
+                    return { month: key, label, deposits: existing?.deposits || 0, withdrawals: existing?.withdrawals || 0 };
+                  });
+                  
+                  return (
+                    <div className="fin-report-chart-card">
+                      <h3 className="fin-report-chart-title">Savings Trend (Deposits vs Withdrawals)</h3>
+                      <p className="fin-chart-summary">Total Saved: <strong>{fmt(report.savings.totalSaved)}</strong> · Deposits: <strong style={{color: '#10B981'}}>{fmt(report.savings.periodDeposits)}</strong> · Withdrawals: <strong style={{color: '#EF4444'}}>{fmt(report.savings.periodWithdrawals)}</strong></p>
+                      <ResponsiveContainer width="100%" height={220}>
+                        <BarChart data={savingsData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                          <XAxis dataKey="label" tick={{ fontSize: 10 }} />
+                          <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false}>
+                            <Label value="Amount (₱)" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                          </YAxis>
+                          <Tooltip formatter={v => fmt(v)} labelFormatter={(v, payload) => payload?.[0]?.payload?.label || v} />
+                          <Bar name="Deposits" dataKey="deposits" fill="#10B981" radius={[4, 4, 0, 0]} barSize={16}>
+                            <LabelList dataKey="deposits" position="top" formatter={v => v > 0 ? fmtShort(v) : ''} style={{ fontSize: 9, fill: '#6B7280' }} />
+                          </Bar>
+                          <Bar name="Withdrawals" dataKey="withdrawals" fill="#EF4444" radius={[4, 4, 0, 0]} barSize={16}>
+                            <LabelList dataKey="withdrawals" position="top" formatter={v => v > 0 ? fmtShort(v) : ''} style={{ fontSize: 9, fill: '#6B7280' }} />
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                      <div className="fin-report-legend" style={{ justifyContent: 'center', display: 'flex', gap: '16px' }}>
+                        <div className="fin-report-legend-item" style={{ gap: '4px' }}>
+                          <span className="fin-report-legend-dot" style={{ background: '#10B981' }} />
+                          <span className="fin-report-legend-label">Deposits</span>
+                        </div>
+                        <div className="fin-report-legend-item" style={{ gap: '4px' }}>
+                          <span className="fin-report-legend-dot" style={{ background: '#EF4444' }} />
+                          <span className="fin-report-legend-label">Withdrawals</span>
+                        </div>
+                      </div>
+                      <ChartFooter period={report.period} location={getLocationLabel()} />
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Savings Progress Bar */}
@@ -1635,6 +1943,189 @@ export default function AdminFinancialReport() {
                   ) : null;
                 })()}
               </div>
+              {/* === NEW: Monthly Attendance Trend (Row 1) === */}
+              <div className="fin-report-charts-row">
+                {(() => {
+                  const byMonthMap = {};
+                  (report.attendance.byMonth || []).forEach(d => { byMonthMap[d.month] = d.count; });
+                  const { from, to } = getChartMonthRange();
+
+                  const bmp = report.attendance.byMonthByProvince || {};
+                  const bmc = report.attendance.byMonthByCommunity || {};
+                  const availProvinces = [...new Set(Object.values(bmp).flatMap(obj => Object.keys(obj)))].sort();
+                  const showProvinceTrend = availProvinces.length >= 2;
+
+                  let allSeries = [];
+                  let dataMap = {};
+                  let chartTitle = 'Monthly Attendance Trend';
+
+                  if (showProvinceTrend) {
+                    allSeries = availProvinces;
+                    dataMap = bmp;
+                    chartTitle = `Monthly Attendance Trend (By Province)`;
+                  } else {
+                    allSeries = [...new Set(Object.values(bmc).flatMap(obj => Object.keys(obj)))].sort();
+                    dataMap = bmc;
+                    chartTitle = `Monthly Attendance Trend ${allSeries.length >= 2 ? '(By Community)' : ''}`;
+                  }
+
+                  const isMulti = allSeries.length >= 2;
+
+                  const fullMonthData = MONTH_SHORT.slice(from, to + 1).map((label, idx) => {
+                    const i = from + idx;
+                    const key = `${reportYear}-${String(i + 1).padStart(2, '0')}`;
+                    const row = { month: label, value: byMonthMap[key] || 0 };
+                    if (isMulti && dataMap[key]) {
+                      allSeries.forEach(s => { row[s] = dataMap[key][s] || 0; });
+                    }
+                    return row;
+                  });
+
+                  const totalAtt = fullMonthData.reduce((s, d) => s + d.value, 0);
+                  const highestMon = fullMonthData.reduce((a, b) => b.value > a.value ? b : a, fullMonthData[0]);
+
+                  return fullMonthData.some(d => d.value > 0) ? (
+                    <div className="fin-report-chart-card" style={{ width: '100%' }}>
+                      <h3 className="fin-report-chart-title">{chartTitle}</h3>
+                      <p className="fin-chart-summary">Total: <strong>{totalAtt}</strong> attendees · Highest: <strong>{highestMon?.month}</strong> ({highestMon?.value})</p>
+                      <ResponsiveContainer width="100%" height={isMulti ? 300 : 250}>
+                        {isMulti ? (
+                          <BarChart data={fullMonthData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                            <XAxis dataKey="month" tick={{ fontSize: 10 }} />
+                            <YAxis tick={{ fontSize: 10 }} allowDecimals={false}>
+                              <Label value="Attendees" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                            </YAxis>
+                            <Tooltip />
+                            {allSeries.map((s, i) => (
+                              <Bar key={s} dataKey={s} fill={COMMUNITY_COLORS[i % COMMUNITY_COLORS.length]} />
+                            ))}
+                          </BarChart>
+                        ) : (
+                          <BarChart data={fullMonthData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                            <XAxis dataKey="month" tick={{ fontSize: 10 }} />
+                            <YAxis tick={{ fontSize: 10 }} allowDecimals={false}>
+                              <Label value="Attendees" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                            </YAxis>
+                            <Tooltip />
+                            <Bar dataKey="value" fill="#0D1F45" radius={[4, 4, 0, 0]}>
+                              <LabelList dataKey="value" position="top" style={{ fontSize: 10, fill: '#6B7280' }} />
+                            </Bar>
+                          </BarChart>
+                        )}
+                      </ResponsiveContainer>
+                      {isMulti && (
+                        <div className="fin-report-legend">
+                          {allSeries.map((s, i) => (
+                            <div key={s} className="fin-report-legend-item">
+                              <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[i % COMMUNITY_COLORS.length] }} />
+                              <span className="fin-report-legend-label">{s}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <ChartFooter period={report.period} location={getLocationLabel()} />
+                    </div>
+                  ) : null;
+                })()}
+              </div>
+
+              {(() => {
+                const bmpCheck = report.attendance.byMonthByProvince || {};
+                const availProvCheck = [...new Set(Object.values(bmpCheck).flatMap(obj => Object.keys(obj)))].sort();
+                const shouldShowRow2 = availProvCheck.length >= 2;
+                if (!shouldShowRow2) return null;
+                return (
+                <div className="fin-report-charts-row">
+                  {(() => {
+                    const byMonthMap = {};
+                    (report.attendance.byMonth || []).forEach(d => { byMonthMap[d.month] = d.count; });
+                    const { from, to } = getChartMonthRange();
+                    const bmc = report.attendance.byMonthByCommunity || {};
+                    const allCommunities = [...new Set(Object.values(bmc).flatMap(obj => Object.keys(obj)))].sort();
+                    const isMulti = allCommunities.length >= 2;
+
+                    const fullMonthData = MONTH_SHORT.slice(from, to + 1).map((label, idx) => {
+                      const i = from + idx;
+                      const key = `${reportYear}-${String(i + 1).padStart(2, '0')}`;
+                      const row = { month: label, value: byMonthMap[key] || 0 };
+                      if (isMulti && bmc[key]) {
+                        allCommunities.forEach(c => { row[c] = bmc[key][c] || 0; });
+                      }
+                      return row;
+                    });
+                    const totalAtt = fullMonthData.reduce((s, d) => s + d.value, 0);
+                    const highestMon = fullMonthData.reduce((a, b) => b.value > a.value ? b : a, fullMonthData[0]);
+
+                    return fullMonthData.some(d => d.value > 0) ? (
+                      <div className="fin-report-chart-card" style={{ width: '100%' }}>
+                        <h3 className="fin-report-chart-title">Monthly Attendance Trend {isMulti ? '(By Community)' : ''}</h3>
+                        <p className="fin-chart-summary">Detailed Community Breakdown · Total: <strong>{totalAtt}</strong> attendees · Highest: <strong>{highestMon?.month}</strong></p>
+                        <ResponsiveContainer width="100%" height={isMulti ? 300 : 250}>
+                          {isMulti ? (
+                            <BarChart data={fullMonthData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                              <XAxis dataKey="month" tick={{ fontSize: 10 }} />
+                              <YAxis tick={{ fontSize: 10 }} allowDecimals={false}>
+                                <Label value="Attendees" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                              </YAxis>
+                              <Tooltip />
+                              {allCommunities.map((c, i) => (
+                                <Bar key={c} dataKey={c} stackId="a" fill={COMMUNITY_COLORS[i % COMMUNITY_COLORS.length]} />
+                              ))}
+                            </BarChart>
+                          ) : (
+                            <BarChart data={fullMonthData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                              <XAxis dataKey="month" tick={{ fontSize: 10 }} />
+                              <YAxis tick={{ fontSize: 10 }} allowDecimals={false}>
+                                <Label value="Attendees" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                              </YAxis>
+                              <Tooltip />
+                              <Bar dataKey="value" fill="#0D1F45" radius={[4, 4, 0, 0]}>
+                                <LabelList dataKey="value" position="top" style={{ fontSize: 10, fill: '#6B7280' }} />
+                              </Bar>
+                            </BarChart>
+                          )}
+                        </ResponsiveContainer>
+                        {isMulti && (() => {
+                          const branchToProv = {};
+                          branchesData.forEach(b => {
+                            branchToProv[b.name] = b.province || (b.address ? b.address.split(',')[0].trim() : 'Unknown');
+                          });
+                          const commsByProv = {};
+                          allCommunities.forEach((c, i) => {
+                            const prov = branchToProv[c] || 'Unknown';
+                            if (!commsByProv[prov]) commsByProv[prov] = [];
+                            commsByProv[prov].push({ name: c, index: i });
+                          });
+                          
+                          return (
+                            <div className="fin-report-grouped-legend" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', marginTop: '16px' }}>
+                              {Object.entries(commsByProv).map(([prov, comms]) => (
+                                <div key={prov} className="fin-report-legend-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '120px' }}>
+                                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#6b7280', textTransform: 'uppercase', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '2px' }}>
+                                    {prov}
+                                  </div>
+                                  {comms.map((c) => (
+                                    <div key={c.name} className="fin-report-legend-item" style={{ margin: 0 }}>
+                                      <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[c.index % COMMUNITY_COLORS.length] }} />
+                                      <span className="fin-report-legend-label">{c.name}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })()}
+                        <ChartFooter period={report.period} location={getLocationLabel()} />
+                      </div>
+                    ) : null;
+                  })()}
+                </div>
+              );
+              })()}
 
               {/* Attendee Names Table */}
               {report.attendance?.attendees?.length > 0 && (
@@ -1692,44 +2183,49 @@ export default function AdminFinancialReport() {
 
               {/* Secretary Charts Row */}
               <div className="fin-report-charts-row">
-                {/* Monthly Disbursements — only show selected period months */}
+                {/* === Monthly Disbursements (Row 1) === */}
                 {(() => {
                   const { from, to } = getChartMonthRange();
                   const byMonthMap = {};
                   (report.secretary.disbursements.byMonth || []).forEach(d => { byMonthMap[d.month] = d; });
-                  const bmc = report.secretary.disbursements.byMonthByCommunity || {};
-                  const allComm = [...new Set(Object.values(bmc).flatMap(obj => Object.keys(obj)))].sort();
-                  const isMulti = allComm.length >= 2;
+                  
+                  const provDataMap = report.secretary.disbursements.byMonthByProvince || {};
+                  const availableProvinces = [...new Set(Object.values(provDataMap).flatMap(obj => Object.keys(obj)))].sort();
+                  const showProvinceTrend = availableProvinces.length >= 2;
+                  const dataMap = showProvinceTrend ? provDataMap : (report.secretary.disbursements.byMonthByCommunity || {});
+                  let allSeries = [...new Set(Object.values(dataMap).flatMap(obj => Object.keys(obj)))].sort();
+                  const chartTitle = `Monthly Disbursements ${allSeries.length >= 2 ? (showProvinceTrend ? '(By Province)' : '(By Community)') : ''}`;
+                  const isMulti = allSeries.length >= 2;
 
                   const trendData = MONTH_SHORT.slice(from, to + 1).map((label, idx) => {
                     const i = from + idx;
                     const key = `${reportYear}-${String(i + 1).padStart(2, '0')}`;
                     const existing = byMonthMap[key];
                     const row = { month: key, label, value: existing?.value || 0 };
-                    if (isMulti && bmc[key]) {
-                      allComm.forEach(c => { row[c] = bmc[key][c] || 0; });
+                    if (isMulti && dataMap[key]) {
+                      allSeries.forEach(s => { row[s] = dataMap[key][s] || 0; });
                     }
                     return row;
                   });
                   const totalDisb = trendData.reduce((s, d) => s + d.value, 0);
                   const highestMon = trendData.reduce((a, b) => b.value > a.value ? b : a, trendData[0]);
                   return trendData.length > 0 ? (
-                    <div className="fin-report-chart-card">
-                      <h3 className="fin-report-chart-title">Monthly Disbursements {isMulti ? '(By Community)' : ''}</h3>
+                    <div className="fin-report-chart-card" style={{ width: '100%' }}>
+                      <h3 className="fin-report-chart-title">{chartTitle}</h3>
                       <p className="fin-chart-summary">Total: <strong>{fmt(totalDisb)}</strong> · {report.secretary.disbursements.count} releases · Highest: <strong>{highestMon?.label}</strong></p>
-                      <ResponsiveContainer width="100%" height={isMulti ? 280 : 220}>
+                      <ResponsiveContainer width="100%" height={isMulti ? 300 : 250}>
                         {isMulti ? (
-                          <LineChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
+                          <BarChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                             <XAxis dataKey="label" tick={{ fontSize: 10 }} />
                             <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false}>
                               <Label value="Amount (₱)" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
                             </YAxis>
                             <Tooltip formatter={v => fmt(v)} />
-                            {allComm.map((c, i) => (
-                              <Line key={c} type="monotone" dataKey={c} stroke={COMMUNITY_COLORS[i % COMMUNITY_COLORS.length]} strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                            {allSeries.map((s, i) => (
+                              <Bar key={s} dataKey={s} name={s} fill={COMMUNITY_COLORS[i % COMMUNITY_COLORS.length]} />
                             ))}
-                          </LineChart>
+                          </BarChart>
                         ) : (
                           <BarChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
@@ -1738,27 +2234,155 @@ export default function AdminFinancialReport() {
                               <Label value="Amount (₱)" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
                             </YAxis>
                             <Tooltip formatter={v => fmt(v)} labelFormatter={(v, payload) => payload?.[0]?.payload?.label || v} />
-                            <Bar dataKey="value" fill="#0D1F45" radius={[4, 4, 0, 0]} barSize={30}>
+                            <Bar name="Amount" dataKey="value" fill="#0D1F45" radius={[4, 4, 0, 0]} barSize={30}>
                               <LabelList dataKey="value" position="top" formatter={v => v > 0 ? fmtShort(v) : ''} style={{ fontSize: 10, fill: '#6B7280' }} />
                             </Bar>
                           </BarChart>
                         )}
                       </ResponsiveContainer>
-                      {isMulti && (
-                        <div className="fin-report-legend">
-                          {allComm.map((c, i) => (
-                            <div key={c} className="fin-report-legend-item">
-                              <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[i % COMMUNITY_COLORS.length] }} />
-                              <span className="fin-report-legend-label">{c}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                      {isMulti && (() => {
+                        const branchToProv = {};
+                        branchesData.forEach(b => {
+                          branchToProv[b.name] = b.province || (b.address ? b.address.split(',')[0].trim() : 'Unknown');
+                        });
+                        const seriesByProv = {};
+                        allSeries.forEach((s, i) => {
+                          const prov = showProvinceTrend ? s : (branchToProv[s] || 'Unknown');
+                          if (!seriesByProv[prov]) seriesByProv[prov] = [];
+                          seriesByProv[prov].push({ name: s, index: i });
+                        });
+                        
+                        return (
+                          <div className="fin-report-grouped-legend" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', marginTop: '16px' }}>
+                            {Object.entries(seriesByProv).map(([prov, seriesList]) => (
+                              <div key={prov} className="fin-report-legend-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '120px' }}>
+                                {!showProvinceTrend && (
+                                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#6b7280', textTransform: 'uppercase', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '2px' }}>
+                                    {prov}
+                                  </div>
+                                )}
+                                {seriesList.map((s) => (
+                                  <div key={s.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                      <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[s.index % COMMUNITY_COLORS.length] }} />
+                                      <span className="fin-report-legend-label">{s.name}</span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
                       <ChartFooter period={report.period} location={getLocationLabel()} />
                     </div>
                   ) : null;
                 })()}
+              </div>
 
+              {(() => {
+                const provDataMap2 = report.secretary.disbursements.byMonthByProvince || {};
+                const availProv2 = [...new Set(Object.values(provDataMap2).flatMap(obj => Object.keys(obj)))].sort();
+                const shouldShowRow2 = availProv2.length >= 2;
+                if (!shouldShowRow2) return null;
+                return (
+                <div className="fin-report-charts-row">
+                  {(() => {
+                    const { from, to } = getChartMonthRange();
+                    const byMonthMap = {};
+                    (report.secretary.disbursements.byMonth || []).forEach(d => { byMonthMap[d.month] = d; });
+                    
+                    const dataMap = report.secretary.disbursements.byMonthByCommunity || {};
+                    let allSeries = [...new Set(Object.values(dataMap).flatMap(obj => Object.keys(obj)))].sort();
+                    const chartTitle = `Monthly Disbursements (By Community)`;
+                    const isMulti = allSeries.length >= 2;
+
+                    const trendData = MONTH_SHORT.slice(from, to + 1).map((label, idx) => {
+                      const i = from + idx;
+                      const key = `${reportYear}-${String(i + 1).padStart(2, '0')}`;
+                      const existing = byMonthMap[key];
+                      const row = { month: key, label, value: existing?.value || 0 };
+                      if (isMulti && dataMap[key]) {
+                        allSeries.forEach(s => { row[s] = dataMap[key][s] || 0; });
+                      }
+                      return row;
+                    });
+                    const totalDisb = trendData.reduce((s, d) => s + d.value, 0);
+                    const highestMon = trendData.reduce((a, b) => b.value > a.value ? b : a, trendData[0]);
+
+                    return trendData.length > 0 ? (
+                      <div className="fin-report-chart-card" style={{ width: '100%' }}>
+                        <h3 className="fin-report-chart-title">{chartTitle}</h3>
+                        <p className="fin-chart-summary">Detailed Community Breakdown · Total: <strong>{fmt(totalDisb)}</strong> · Highest: <strong>{highestMon?.label}</strong></p>
+                        <ResponsiveContainer width="100%" height={isMulti ? 300 : 250}>
+                          {isMulti ? (
+                            <BarChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                              <XAxis dataKey="label" tick={{ fontSize: 10 }} />
+                              <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false}>
+                                <Label value="Amount (₱)" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                              </YAxis>
+                              <Tooltip formatter={v => fmt(v)} />
+                              {allSeries.map((s, i) => (
+                                <Bar key={s} dataKey={s} name={s} stackId="a" fill={COMMUNITY_COLORS[i % COMMUNITY_COLORS.length]} />
+                              ))}
+                            </BarChart>
+                          ) : (
+                            <BarChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                              <XAxis dataKey="label" tick={{ fontSize: 10 }} />
+                              <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false}>
+                                <Label value="Amount (₱)" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                              </YAxis>
+                              <Tooltip formatter={v => fmt(v)} labelFormatter={(v, payload) => payload?.[0]?.payload?.label || v} />
+                              <Bar name="Amount" dataKey="value" fill="#0D1F45" radius={[4, 4, 0, 0]} barSize={30}>
+                                <LabelList dataKey="value" position="top" formatter={v => v > 0 ? fmtShort(v) : ''} style={{ fontSize: 10, fill: '#6B7280' }} />
+                              </Bar>
+                            </BarChart>
+                          )}
+                        </ResponsiveContainer>
+                        {isMulti && (() => {
+                          const branchToProv = {};
+                          branchesData.forEach(b => {
+                            branchToProv[b.name] = b.province || (b.address ? b.address.split(',')[0].trim() : 'Unknown');
+                          });
+                          const seriesByProv = {};
+                          allSeries.forEach((s, i) => {
+                            const prov = branchToProv[s] || 'Unknown';
+                            if (!seriesByProv[prov]) seriesByProv[prov] = [];
+                            seriesByProv[prov].push({ name: s, index: i });
+                          });
+                          
+                          return (
+                            <div className="fin-report-grouped-legend" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', marginTop: '16px' }}>
+                              {Object.entries(seriesByProv).map(([prov, seriesList]) => (
+                                <div key={prov} className="fin-report-legend-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '120px' }}>
+                                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#6b7280', textTransform: 'uppercase', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '2px' }}>
+                                    {prov}
+                                  </div>
+                                  {seriesList.map((s) => (
+                                    <div key={s.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start' }}>
+                                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                                        <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[s.index % COMMUNITY_COLORS.length] }} />
+                                        <span className="fin-report-legend-label">{s.name}</span>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })()}
+                        <ChartFooter period={report.period} location={getLocationLabel()} />
+                      </div>
+                    ) : null;
+                   })()}
+                </div>
+              );
+              })()}
+
+              {/* Payment Method + Top Communities Row */}
+              <div className="fin-report-charts-row">
                 {/* Payment Method Distribution */}
                 {report.secretary.disbursements.byMethod?.length > 0 && (() => {
                   const normalizedMethods = {};
@@ -1937,10 +2561,12 @@ export default function AdminFinancialReport() {
             <h3 className="fin-confirm-title">Confirm Report Generation</h3>
             <p className="fin-confirm-desc">Please review the details below before proceeding. AI report generation may take 10–15 seconds.</p>
             <div className="fin-confirm-details">
-              <div className="fin-confirm-row">
-                <span className="fin-confirm-label">Report Type</span>
-                <span className="fin-confirm-value">{getReportTypeName()}</span>
-              </div>
+              {adminRole === 'admin' && (
+                <div className="fin-confirm-row">
+                  <span className="fin-confirm-label">Report Type</span>
+                  <span className="fin-confirm-value">{getReportTypeName()}</span>
+                </div>
+              )}
               <div className="fin-confirm-row">
                 <span className="fin-confirm-label">Period</span>
                 <span className="fin-confirm-value">{getPeriodName()}</span>
@@ -1948,9 +2574,7 @@ export default function AdminFinancialReport() {
               <div className="fin-confirm-row">
                 <span className="fin-confirm-label">Location</span>
                 <span className="fin-confirm-value">
-                  {locationType === 'all' ? 'All Locations' : 
-                   locationType === 'province' ? `${selectedProvinces.length} Provinces Selected` : 
-                   `${selectedCommunities.length} Communities Selected`}
+                  {getLocationLabel()}
                 </span>
               </div>
             </div>

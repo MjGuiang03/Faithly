@@ -243,6 +243,7 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
         const donByBranch = {};
         const donByDonor = {};
         const donByMonthByCommunity = {};
+        const donByMonthByProvince = {};
         let donTotal = 0;
 
         periodDonations.forEach(d => {
@@ -261,9 +262,13 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
           const targetBranch = d.community || member?.branch || 'Unknown';
           donByBranch[targetBranch] = (donByBranch[targetBranch] || 0) + amt;
 
-          // Per-community monthly breakdown
+          // Per-community and per-province monthly breakdown
           if (!donByMonthByCommunity[mKey]) donByMonthByCommunity[mKey] = {};
           donByMonthByCommunity[mKey][targetBranch] = (donByMonthByCommunity[mKey][targetBranch] || 0) + amt;
+
+          const targetProv = branchToProvince[targetBranch] || 'Unknown';
+          if (!donByMonthByProvince[mKey]) donByMonthByProvince[mKey] = {};
+          donByMonthByProvince[mKey][targetProv] = (donByMonthByProvince[mKey][targetProv] || 0) + amt;
 
           // Track by donor name
           const donorName = d.member || member?.fullName || d.email || 'Unknown';
@@ -279,6 +284,7 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
           byBranch: Object.entries(donByBranch).map(([branch, value]) => ({ branch, value })).sort((a, b) => b.value - a.value),
           byDonor: Object.entries(donByDonor).map(([donor, value]) => ({ donor, value })).sort((a, b) => b.value - a.value).slice(0, 10),
           byMonthByCommunity: donByMonthByCommunity,
+          byMonthByProvince: donByMonthByProvince,
         };
 
         // Member growth for period
@@ -320,6 +326,7 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
         const attByBranch = {};
         const attByMonth = {};
         const attByMonthByCommunity = {};
+        const attByMonthByProvince = {};
         periodAttendance.forEach(a => {
           const b = a.community || a.branch || a.userBranch || 'Unknown';
           attByBranch[b] = (attByBranch[b] || 0) + 1;
@@ -333,6 +340,10 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
             // Per-community monthly breakdown
             if (!attByMonthByCommunity[mKey]) attByMonthByCommunity[mKey] = {};
             attByMonthByCommunity[mKey][b] = (attByMonthByCommunity[mKey][b] || 0) + 1;
+
+            const targetProv = branchToProvince[b] || 'Unknown';
+            if (!attByMonthByProvince[mKey]) attByMonthByProvince[mKey] = {};
+            attByMonthByProvince[mKey][targetProv] = (attByMonthByProvince[mKey][targetProv] || 0) + 1;
           }
         });
 
@@ -365,6 +376,7 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
           byBranch: Object.entries(attByBranch).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value),
           byMonth: Object.entries(attByMonth).map(([month, count]) => ({ month, count })).sort((a, b) => a.month.localeCompare(b.month)),
           byMonthByCommunity: attByMonthByCommunity,
+          byMonthByProvince: attByMonthByProvince,
           attendees,
         };
       }
@@ -407,6 +419,8 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
       const paymentsByMonth = {};
       const loansByMonthByCommunity = {};
       const paymentsByMonthByCommunity = {};
+      const loansByMonthByProvince = {};
+      const paymentsByMonthByProvince = {};
 
       periodLoans.forEach(l => {
         const s = l.status || 'pending';
@@ -422,6 +436,10 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
             loansByMonth[mKey] = (loansByMonth[mKey] || 0) + (l.amount || 0);
             if (!loansByMonthByCommunity[mKey]) loansByMonthByCommunity[mKey] = {};
             loansByMonthByCommunity[mKey][loanBranch] = (loansByMonthByCommunity[mKey][loanBranch] || 0) + (l.amount || 0);
+
+            const loanProv = branchToProvince[loanBranch] || 'Unknown';
+            if (!loansByMonthByProvince[mKey]) loansByMonthByProvince[mKey] = {};
+            loansByMonthByProvince[mKey][loanProv] = (loansByMonthByProvince[mKey][loanProv] || 0) + (l.amount || 0);
           }
         }
       });
@@ -438,6 +456,10 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
         const payBranch = p.branch || payMember?.branch || 'Unknown';
         if (!paymentsByMonthByCommunity[mKey]) paymentsByMonthByCommunity[mKey] = {};
         paymentsByMonthByCommunity[mKey][payBranch] = (paymentsByMonthByCommunity[mKey][payBranch] || 0) + (Number(p.amount) || 0);
+
+        const payProv = branchToProvince[payBranch] || 'Unknown';
+        if (!paymentsByMonthByProvince[mKey]) paymentsByMonthByProvince[mKey] = {};
+        paymentsByMonthByProvince[mKey][payProv] = (paymentsByMonthByProvince[mKey][payProv] || 0) + (Number(p.amount) || 0);
       });
       
       const allMonths = Array.from(new Set([...Object.keys(loansByMonth), ...Object.keys(paymentsByMonth)])).sort();
@@ -445,6 +467,7 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
       // Applications count by month + approval/rejection rate by month
       const appsByMonth = {};
       const appsByMonthByCommunity = {};
+      const appsByMonthByProvince = {};
       const approvalByMonth = {};
 
       periodLoans.forEach(l => {
@@ -460,6 +483,10 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
         // Per-community application count
         if (!appsByMonthByCommunity[mKey]) appsByMonthByCommunity[mKey] = {};
         appsByMonthByCommunity[mKey][appBranch] = (appsByMonthByCommunity[mKey][appBranch] || 0) + 1;
+
+        const appProv = branchToProvince[appBranch] || 'Unknown';
+        if (!appsByMonthByProvince[mKey]) appsByMonthByProvince[mKey] = {};
+        appsByMonthByProvince[mKey][appProv] = (appsByMonthByProvince[mKey][appProv] || 0) + 1;
 
         // Track approved vs rejected per month
         if (!approvalByMonth[mKey]) approvalByMonth[mKey] = { approved: 0, rejected: 0, total: 0 };
@@ -495,8 +522,10 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
         byStatus: Object.entries(loansByStatus).map(([status, count]) => ({ status, count })),
         byMonth: allMonths.map(month => ({ month, disbursed: loansByMonth[month] || 0, received: paymentsByMonth[month] || 0 })),
         byMonthByCommunity: { disbursed: loansByMonthByCommunity, collected: paymentsByMonthByCommunity },
+        byMonthByProvince: { disbursed: loansByMonthByProvince, collected: paymentsByMonthByProvince },
         applicationsByMonth: Object.entries(appsByMonth).map(([month, count]) => ({ month, count })).sort((a, b) => a.month.localeCompare(b.month)),
         applicationsByMonthByCommunity: appsByMonthByCommunity,
+        applicationsByMonthByProvince: appsByMonthByProvince,
         approvalByMonth: Object.entries(approvalByMonth).map(([month, d]) => ({
           month,
           approvalRate: d.total > 0 ? Math.round((d.approved / d.total) * 100) : 0,
@@ -514,7 +543,11 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
       };
 
       // Savings
-      let periodSavingsTxns = await savingsTransactions.find({ type: 'deposit', status: 'confirmed', date: dateFilter }).toArray();
+      let periodSavingsTxns = await savingsTransactions.find({ 
+        type: { $in: ['deposit', 'withdrawal'] }, 
+        status: { $in: ['confirmed', 'approved'] }, // withdrawals might be approved
+        date: dateFilter 
+      }).toArray();
       let allGoals = await savingsGoals.find({}).toArray();
 
       // Apply community/province filter
@@ -539,16 +572,38 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
       const totalSaved = allGoals.reduce((s, g) => s + (g.savedAmount || 0), 0);
       const totalTargets = allGoals.reduce((s, g) => s + (g.targetAmount || 0), 0);
       const completedGoals = allGoals.filter(g => g.status === 'completed').length;
-      const periodDeposits = periodSavingsTxns.reduce((s, t) => s + (Number(t.amount) || 0), 0);
+      
+      const deposits = periodSavingsTxns.filter(t => t.type === 'deposit');
+      const withdrawals = periodSavingsTxns.filter(t => t.type === 'withdrawal');
+      
+      const periodDeposits = deposits.reduce((s, t) => s + (Number(t.amount) || 0), 0);
+      const periodWithdrawals = withdrawals.reduce((s, t) => s + (Number(t.amount) || 0), 0);
+
+      // Group by month
+      const savingsByMonth = {};
+      periodSavingsTxns.forEach(t => {
+        if (!t.date) return;
+        const dt = new Date(t.date);
+        const mKey = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
+        if (!savingsByMonth[mKey]) savingsByMonth[mKey] = { deposits: 0, withdrawals: 0 };
+        if (t.type === 'deposit') {
+          savingsByMonth[mKey].deposits += (Number(t.amount) || 0);
+        } else if (t.type === 'withdrawal') {
+          savingsByMonth[mKey].withdrawals += (Number(t.amount) || 0);
+        }
+      });
 
       report.savings = {
         totalSaved,
         totalTargets,
         overallProgress: totalTargets > 0 ? Math.round((totalSaved / totalTargets) * 100) : 0,
         periodDeposits,
-        periodDepositCount: periodSavingsTxns.length,
+        periodWithdrawals,
+        periodDepositCount: deposits.length,
+        periodWithdrawalCount: withdrawals.length,
         activeGoals: allGoals.filter(g => g.status === 'active').length,
         completedGoals,
+        byMonth: Object.entries(savingsByMonth).map(([month, data]) => ({ month, ...data })).sort((a, b) => a.month.localeCompare(b.month)),
       };
     }
 
@@ -578,6 +633,7 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
       
       const disbByMonth = {};
       const disbByMonthByCommunity = {};
+      const disbByMonthByProvince = {};
       const disbByMethod = {};
       const disbByCommunity = {};
       const disbByUser = {};
@@ -592,6 +648,10 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
           disbByMonth[mKey] = (disbByMonth[mKey] || 0) + (l.amount || 0);
           if (!disbByMonthByCommunity[mKey]) disbByMonthByCommunity[mKey] = {};
           disbByMonthByCommunity[mKey][branch] = (disbByMonthByCommunity[mKey][branch] || 0) + (l.amount || 0);
+          
+          const prov = branchToProvince[branch] || 'Unknown';
+          if (!disbByMonthByProvince[mKey]) disbByMonthByProvince[mKey] = {};
+          disbByMonthByProvince[mKey][prov] = (disbByMonthByProvince[mKey][prov] || 0) + (l.amount || 0);
         }
         const method = normalizeMethodName(l.disbursementMethod || l.paymentMethod || 'Bank Transfer');
         disbByMethod[method] = (disbByMethod[method] || 0) + (l.amount || 0);
@@ -610,6 +670,7 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
           count: disbursedLoans.length,
           byMonth: Object.entries(disbByMonth).map(([month, value]) => ({ month, value })).sort((a, b) => a.month.localeCompare(b.month)),
           byMonthByCommunity: disbByMonthByCommunity,
+          byMonthByProvince: disbByMonthByProvince,
           byMethod: Object.entries(disbByMethod).map(([method, value]) => ({ method, value })).sort((a, b) => b.value - a.value),
           byCommunity: Object.entries(disbByCommunity).map(([community, value]) => ({ community, value })).sort((a, b) => b.value - a.value).slice(0, 5),
           byUser: Object.entries(disbByUser).map(([user, value]) => ({ user, value })).sort((a, b) => b.value - a.value).slice(0, 5),

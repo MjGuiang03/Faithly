@@ -34,22 +34,15 @@ const COMMUNITIES = [
 
 const FIRST_NAMES = ['Juan', 'Maria', 'Jose', 'Ana', 'Pedro', 'Rosa', 'Luis', 'Carmen', 'Carlos', 'Teresa', 'Miguel', 'Lourdes', 'Antonio', 'Cristina', 'Manuel', 'Elena', 'Francisco', 'Margarita', 'Rafael', 'Lucia', 'Ramon', 'Beatriz', 'Fernando', 'Gloria', 'Eduardo', 'Silvia', 'Mario', 'Victoria', 'Jorge', 'Cecilia', 'Ricardo', 'Raquel', 'Roberto', 'Patricia', 'Alberto', 'Angela', 'Emilio', 'Consuelo', 'Victor', 'Dolores'];
 const LAST_NAMES = ['Dela Cruz', 'Santos', 'Reyes', 'Cruz', 'Bautista', 'Ocampo', 'Garcia', 'Mendoza', 'Torres', 'Tomas', 'Andrada', 'Castillo', 'Flores', 'Villanueva', 'Perez', 'Gonzales', 'Rodriguez', 'Lopez', 'Fernandez', 'Gomez', 'Marquez', 'Aquino', 'Navarro', 'Ramos', 'Guzman', 'Velasco', 'Castro', 'Rivera', 'Diaz', 'Sison'];
-const CATEGORIES = ['Tithes', 'Offering', 'Missions', 'Building Fund', 'General Fund'];
+const CATEGORIES = ['General Fund', 'Children\'s Department', 'Men\'s Department', 'Women\'s Department', 'Youth Department', 'Mission Fund'];
 const SAVINGS_CATEGORIES = ['Emergency Fund', 'Education Fund', 'Medical Fund', 'Home Improvement', 'Business Capital', 'Travel Fund'];
 const SERVICE_TYPES = ["Sunday Worship", "Bible Study", "Prayer Meeting", "Youth Service", "Special Event", "Women's Fellowship", "Men's Fellowship"];
 
 const getRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
 const randomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
-// Generate dates specifically patterned for presentation
-const randomDate = (startMonth, endMonth, isSpike = false, spikeMonth = 4) => {
-  // spikeMonth: 0-indexed (4 = May)
-  let m;
-  if (isSpike && Math.random() < 0.6) {
-    m = spikeMonth;
-  } else {
-    m = randomInt(startMonth, endMonth);
-  }
+const randomDate = (startMonth, endMonth) => {
+  const m = randomInt(startMonth, endMonth);
   const d = randomInt(1, 28);
   return new Date(2026, m, d, randomInt(7, 20), randomInt(0, 59), randomInt(0, 59));
 };
@@ -63,36 +56,41 @@ async function run() {
     const db = client.db(DB_NAME);
 
     const hashedPwd = await bcrypt.hash('Mjguiang03!', 12);
-    const usersCount = randomInt(100, 150);
-
-    console.log(`⏳ Seeding ${usersCount} users...`);
+    
+    console.log(`⏳ Seeding users per community...`);
     const users = [];
-    for (let i = 0; i < usersCount; i++) {
-      const fn = getRandom(FIRST_NAMES);
-      const ln = getRandom(LAST_NAMES);
-      const email = `${fn.toLowerCase()}.${ln.toLowerCase().replace(/ /g, '')}${randomInt(1,9999)}@example.com`;
+    for (const community of COMMUNITIES) {
+      // 25% chance of being a large community
+      const isLarge = Math.random() < 0.25;
+      const count = isLarge ? randomInt(15, 25) : randomInt(1, 10);
       
-      const isOfficer = Math.random() < 0.55;
-      const isActive = Math.random() < 0.8;
-      const createdAt = randomDate(0, 4, true, 4); // Jan-May, May spike
+      for (let i = 0; i < count; i++) {
+        const fn = getRandom(FIRST_NAMES);
+        const ln = getRandom(LAST_NAMES);
+        const email = `${fn.toLowerCase()}.${ln.toLowerCase().replace(/ /g, '')}${randomInt(1,9999)}@example.com`;
+        
+        const isOfficer = Math.random() < 0.55;
+        const isActive = Math.random() < 0.8;
+        const createdAt = randomDate(0, 7); // Jan-Aug uniformly
 
-      users.push({
-        fullName: `${fn} ${ln}`,
-        email: email,
-        passwordHash: hashedPwd,
-        branch: getRandom(COMMUNITIES),
-        role: isOfficer ? 'officer' : 'member',
-        status: isActive ? 'active' : 'inactive',
-        memberId: `M-${randomInt(100000, 999999)}`,
-        createdAt: createdAt
-      });
+        users.push({
+          fullName: `${fn} ${ln}`,
+          email: email,
+          passwordHash: hashedPwd,
+          branch: community,
+          role: isOfficer ? 'officer' : 'member',
+          status: isActive ? 'active' : 'inactive',
+          memberId: `M-${randomInt(100000, 999999)}`,
+          createdAt: createdAt
+        });
+      }
     }
     const userRes = await db.collection('users').insertMany(users);
     const userMap = Object.values(userRes.insertedIds).map((id, idx) => ({ _id: id, ...users[idx] }));
     console.log(`✅ Users inserted: ${userMap.length}`);
 
     // DONATIONS
-    const donationsCount = randomInt(150, 200);
+    const donationsCount = Math.floor(userMap.length * 1.5);
     console.log(`⏳ Seeding ${donationsCount} donations...`);
     const donations = [];
     let donationCounter = await db.collection('donations').countDocuments();
@@ -133,14 +131,14 @@ async function run() {
     console.log(`✅ Donations inserted: ${donations.length}`);
 
     // SAVINGS GOALS
-    const goalsCount = randomInt(40, 60);
+    const goalsCount = Math.floor(userMap.length * 0.4);
     console.log(`⏳ Seeding ${goalsCount} savings goals...`);
     const goals = [];
     const savedGoalMap = []; // user email -> goal details
 
     for (let i = 0; i < goalsCount; i++) {
       const user = getRandom(userMap);
-      const createdAt = randomDate(0, 3); // Jan-Apr
+      const createdAt = randomDate(0, 7);
       
       const goal = {
         email: user.email,
@@ -155,7 +153,7 @@ async function run() {
     const goalRes = await db.collection('savings_goals').insertMany(goals);
     
     // SAVINGS DEPOSITS
-    const depositsCount = randomInt(80, 120);
+    const depositsCount = Math.floor(goalsCount * 2);
     console.log(`⏳ Seeding ${depositsCount} savings deposits...`);
     const deposits = [];
     
@@ -164,7 +162,7 @@ async function run() {
       const goal = goals[gIdx];
       const goalId = Object.values(goalRes.insertedIds)[gIdx];
 
-      const amount = randomInt(2, 5) * 100; // 200 - 500
+      const amount = randomInt(10, 50) * 100; // 1,000 - 5,000
       goal.currentAmount += amount;
 
       const date = randomDate(1, 7); // Feb-Aug
@@ -191,10 +189,10 @@ async function run() {
     console.log(`✅ Savings deposits inserted: ${deposits.length}`);
 
     // LOANS
-    const loansCount = randomInt(30, 40);
+    const validOfficers = userMap.filter(u => u.role === 'officer' && savedGoalMap.some(g => g.email === u.email && g.savedAmount > 0));
+    const loansCount = Math.floor(validOfficers.length * 0.5);
     console.log(`⏳ Seeding ${loansCount} loans...`);
     const loans = [];
-    const validOfficers = userMap.filter(u => u.role === 'officer' && savedGoalMap.some(g => g.email === u.email && g.savedAmount > 0));
     
     if (validOfficers.length === 0) {
       console.warn("⚠️ No officers with savings found, unable to seed loans!");
@@ -208,33 +206,64 @@ async function run() {
         loanCounter++;
         const loanId = `LN-2026-${String(loanCounter).padStart(5, '0')}`;
         
-        const amount = Math.min(randomInt(10, 50) * 100, userSavings * 2);
-        const type = Math.random() < 0.4 ? 'Personal Loan' : (Math.random() < 0.67 ? 'Emergency Loan' : 'Short-Term Loan');
-        const appliedDate = randomDate(0, 7, true, 3); // Peak in Apr-May (3-4)
+        // Use large dummy loans (20k-150k) to balance existing production data totals
+        const amount = randomInt(200, 1500) * 100;
+        const type = Math.random() < 0.4 ? 'personal' : (Math.random() < 0.67 ? 'emergency' : 'short-term');
+        const purpose = type === 'personal' ? 'Personal Loan' : (type === 'emergency' ? 'Emergency Loan' : 'Short-Term Loan');
+        const appliedDate = randomDate(0, 7);
 
         const r = Math.random();
-        let status = 'Pending';
-        if (r < 0.35) status = 'Completed';
-        else if (r < 0.65) status = 'Active';
-        else if (r < 0.80) status = 'Approved';
-        else if (r < 0.90) status = 'Rejected';
+        let status = 'pending';
+        if (r < 0.35) status = 'completed';
+        else if (r < 0.65) status = 'active';
+        else if (r < 0.80) status = 'approved';
+        else if (r < 0.90) status = 'rejected';
+        else status = 'cancelled';
+
+        const termMonths = randomInt(3, 12);
+        const interestRate = 2.5;
+        const totalInterest = amount * (interestRate / 100) * termMonths;
+        const totalRepayment = amount + totalInterest;
+        const monthlyPayment = totalRepayment / termMonths;
 
         const loanDoc = {
           loanId,
           email: user.email,
           memberName: user.fullName,
           community: user.branch,
-          loanAmount: amount,
+          amount: amount,
           loanType: type,
+          purpose: purpose,
           status,
           appliedDate,
-          loanTerm: randomInt(3, 12),
-          interestRate: 2.5
+          termMonths: termMonths,
+          interestRate: interestRate,
+          totalInterest: totalInterest,
+          totalRepayment: totalRepayment,
+          monthlyPayment: monthlyPayment,
+          remainingBalance: totalRepayment,
+          paidMonths: 0,
+          updatedAt: appliedDate,
+          statusHistory: [{ status: 'pending', date: appliedDate }]
         };
 
-        if (status === 'Active' || status === 'Completed') {
+        if (status === 'active' || status === 'completed') {
+          loanDoc.disbursed = true;
           loanDoc.disbursementDate = new Date(appliedDate.getTime() + 86400000 * randomInt(2, 7)); // disbursed days later
-          loanDoc.disbursementMethod = Math.random() < 0.3 ? 'Bank Transfer' : (Math.random() < 0.7 ? 'E-Wallet' : 'Cash');
+          // Skew heavily towards E-Wallet and Cash to offset existing DB
+          loanDoc.disbursementMethod = Math.random() < 0.15 ? 'Bank Transfer' : (Math.random() < 0.65 ? 'E-Wallet' : 'Cash');
+          loanDoc.statusHistory.push({ status: 'approved', date: loanDoc.disbursementDate });
+          loanDoc.statusHistory.push({ status: 'processed', date: loanDoc.disbursementDate });
+          
+          if (status === 'completed') {
+            loanDoc.paidMonths = termMonths;
+            loanDoc.remainingBalance = 0;
+            loanDoc.statusHistory.push({ status: 'completed', date: new Date(loanDoc.disbursementDate.getTime() + 86400000 * 30 * termMonths) });
+          } else {
+            loanDoc.paidMonths = randomInt(0, Math.max(1, termMonths - 1));
+            loanDoc.remainingBalance = totalRepayment - (monthlyPayment * loanDoc.paidMonths);
+          }
+          
           disbursedLoansForPayments.push(loanDoc);
         }
         
@@ -247,8 +276,9 @@ async function run() {
       console.log(`⏳ Seeding loan payments...`);
       const payments = [];
       for (const l of disbursedLoansForPayments) {
-        const pmts = randomInt(1, Math.min(l.loanTerm, 6)); // Make some payments
-        const monthlyAmo = (l.loanAmount + (l.loanAmount * l.interestRate/100)) / l.loanTerm;
+        if (l.paidMonths === 0) continue;
+        const pmts = l.paidMonths;
+        const monthlyAmo = l.monthlyPayment;
         
         for (let j = 1; j <= pmts; j++) {
           const pDate = new Date(l.disbursementDate);
@@ -276,7 +306,7 @@ async function run() {
     }
 
     // ATTENDANCE
-    const attCount = randomInt(200, 300);
+    const attCount = Math.floor(userMap.length * 2);
     console.log(`⏳ Seeding ${attCount} attendance sessions/records...`);
     
     // Group into sessions
@@ -288,12 +318,8 @@ async function run() {
       sessionIdCount++;
       const isTopAttendance = Math.random() < 0.4;
       const aBranch = isTopAttendance ? getRandom(['Santiago City', 'Alcala']) : getRandom(COMMUNITIES);
-      const isMaySpike = Math.random() < 0.3; // Spike for May Special Event
-      
-      const month = isMaySpike ? 4 : getRandom([0, 1, 2, 5, 6, 7]);
-      const date = new Date(2026, month, randomInt(1, 28));
-      
-      const sType = isMaySpike ? 'Special Event' : getRandom(SERVICE_TYPES);
+      const date = randomDate(0, 7);
+      const sType = getRandom(SERVICE_TYPES);
       
       // select 5-15 users from this branch
       const branchUsers = userMap.filter(u => u.branch === aBranch);
