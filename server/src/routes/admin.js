@@ -707,7 +707,7 @@ router.put('/update-admin', authenticateAdmin, async (req, res) => {
       return res.status(403).json({ success: false, message: 'Only Main Admin can update accounts' });
     }
 
-    const { email, role, newPassword, adminPassword } = req.body;
+    const { email, role, newPassword, adminPassword, newEmail } = req.body;
     if (!email || !role) {
       return res.status(400).json({ success: false, message: 'Email and role are required' });
     }
@@ -722,10 +722,15 @@ router.put('/update-admin', authenticateAdmin, async (req, res) => {
       return res.status(401).json({ success: false, wrongPassword: true, message: 'Incorrect admin password' });
     }
 
-    // Protect the seed super admin from being modified
+    // Protect the seed super admin from being modified by others
     const superAdminEmail = process.env.ADMIN_EMAIL;
-    if (email === superAdminEmail) {
+    if (email === superAdminEmail && req.admin.email !== superAdminEmail) {
       return res.status(403).json({ success: false, message: 'Cannot modify the Main Super Admin account' });
+    }
+
+    // Prevent changing the super admin's role
+    if (email === superAdminEmail && role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Cannot change the role of the Main Super Admin account' });
     }
 
     const validRoles = ['admin', 'loanAdmin', 'secretaryAdmin'];
@@ -742,10 +747,31 @@ router.put('/update-admin', authenticateAdmin, async (req, res) => {
     if (newPassword && newPassword.trim() !== '') {
       updateFields.passwordHash = await bcrypt.hash(newPassword, 12);
     }
+    
+    // Handle email change
+    if (newEmail && newEmail !== email) {
+      // Check if new email is already taken
+      const existing = await admins.findOne({ email: newEmail });
+      if (existing) {
+        return res.status(400).json({ success: false, message: 'Email is already in use by another admin' });
+      }
+      updateFields.email = newEmail;
+    }
 
     await admins.updateOne({ email }, { $set: updateFields });
 
-    res.status(200).json({ success: true, message: `Account updated successfully` });
+    let newToken = null;
+    if (newEmail && newEmail !== email && req.admin.email === email) {
+       // If they changed their own email, their token will become invalid. Issue a new one.
+       const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
+       newToken = jwt.sign(
+         { email: newEmail, role },
+         JWT_SECRET,
+         { expiresIn: '2h', issuer: 'faithly-api', audience: 'faithly-admin' }
+       );
+    }
+
+    res.status(200).json({ success: true, message: `Account updated successfully`, newToken, newEmail });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Failed to update admin' });

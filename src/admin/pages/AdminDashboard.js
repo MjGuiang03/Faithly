@@ -228,7 +228,7 @@ export default function AdminDashboard() {
   const growthInfo = useMemo(() => {
     const validMembers = rawMembers.filter(m => {
       const s = (m.status || '').toLowerCase();
-      return s === 'active' || s === 'verified';
+      return s !== 'deactivated';
     }).sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt));
 
     let growth = [];

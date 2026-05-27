@@ -82,6 +82,7 @@ export default function AdminUserManagement() {
   const [editTarget, setEditTarget] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [editRole, setEditRole] = useState('');
+  const [editEmail, setEditEmail] = useState('');
   const [editPassword, setEditPassword] = useState('');
   const [showCreatePassword, setShowCreatePassword] = useState(false);
   const [showEditPassword, setShowEditPassword] = useState(false);
@@ -161,11 +162,17 @@ export default function AdminUserManagement() {
       const res = await fetch(`${API}/api/admin/update-admin`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ email: editTarget.email, role: editRole, newPassword: editPassword, adminPassword })
+        body: JSON.stringify({ email: editTarget.email, newEmail: editEmail, role: editRole, newPassword: editPassword, adminPassword })
       });
       const data = await res.json();
       if (res.ok && data.success) {
         toast.success(data.message);
+        if (data.newToken && data.newEmail) {
+          localStorage.setItem('adminToken', data.newToken);
+          localStorage.setItem('adminEmail', data.newEmail);
+          // Optional: Force reload to refresh sidebar and other state if they change their own email
+          window.location.reload();
+        }
         setEditTarget(null);
         fetchAdmins();
       } else {
@@ -285,17 +292,21 @@ export default function AdminUserManagement() {
                     </td>
                     <td className="admin-users-date-cell">{fmtDate(a.createdAt)}</td>
                     <td>
-                      {a.role === 'admin' ? (
-                        <span className="admin-users-protected">Protected</span>
-                      ) : (
-                        <div className="admin-users-actions-cell">
-                          <button
-                            className="admin-users-action-btn edit"
-                            title="Edit Account"
-                            onClick={() => { setEditTarget(a); setEditRole(a.role); setEditPassword(''); setShowEditPassword(false); }}
-                          >
-                            <Edit2 size={14} />
-                          </button>
+                      <div className="admin-users-actions-cell">
+                        <button
+                          className="admin-users-action-btn edit"
+                          title="Edit Account"
+                          onClick={() => { 
+                            setEditTarget(a); 
+                            setEditRole(a.role); 
+                            setEditEmail(a.email);
+                            setEditPassword(''); 
+                            setShowEditPassword(false); 
+                          }}
+                        >
+                          <Edit2 size={14} />
+                        </button>
+                        {a.role !== 'admin' && (
                           <button
                             className="admin-users-action-btn delete"
                             title="Delete"
@@ -303,8 +314,8 @@ export default function AdminUserManagement() {
                           >
                             <Trash2 size={14} />
                           </button>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -317,7 +328,7 @@ export default function AdminUserManagement() {
       {/* Info */}
       <div className="admin-users-info-box">
         <Info size={18} className="admin-users-info-icon" />
-        <p>Only the Main Super Admin can create, edit, or delete accounts. The Main Super Admin account is protected and cannot be modified.</p>
+        <p>Only the Main Super Admin can create, edit, or delete accounts. The Main Super Admin account cannot be deleted, but you can update your own email and password.</p>
       </div>
 
       {/* ── Add User Modal ── */}
@@ -382,8 +393,20 @@ export default function AdminUserManagement() {
             <div className="admin-users-modal-body">
               <p className="admin-users-modal-desc">Edit details for <strong>{editTarget.email}</strong></p>
               <div className="admin-users-form-group">
+                <label className="admin-users-form-label">Email Address</label>
+                <input
+                  type="email" className="admin-users-input" 
+                  value={editEmail} onChange={e => setEditEmail(e.target.value)} required
+                />
+              </div>
+              <div className="admin-users-form-group">
                 <label className="admin-users-form-label">New Role</label>
-                <select className="admin-users-select" value={editRole} onChange={e => setEditRole(e.target.value)}>
+                <select 
+                  className="admin-users-select" 
+                  value={editRole} 
+                  onChange={e => setEditRole(e.target.value)}
+                  disabled={editTarget.email === superAdminEmail} // Prevent changing super admin role
+                >
                   <option value="admin">Main Admin</option>
                   <option value="loanAdmin">Loan Officer</option>
                   <option value="secretaryAdmin">Secretary</option>
@@ -408,7 +431,7 @@ export default function AdminUserManagement() {
               <button className="admin-users-btn primary" onClick={() => {
                 // Show password confirmation
                 setEditTarget({ ...editTarget, confirmStep: true });
-              }} disabled={editRole === editTarget.role && !editPassword.trim()}>
+              }} disabled={(editRole === editTarget.role && editEmail === editTarget.email && !editPassword.trim())}>
                 Continue
               </button>
             </div>
