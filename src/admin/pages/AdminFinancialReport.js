@@ -28,7 +28,7 @@ const fmt = (n) => `₱${(Number(n) || 0).toLocaleString('en-PH', { minimumFract
 const fmtShort = (n) => { const v = Number(n) || 0; return v >= 1000 ? `₱${(v/1000).toFixed(1)}k` : `₱${v.toLocaleString()}`; };
 const PIE_COLORS = ['#0D1F45', '#1e3a8a', '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe'];
 
-const METHOD_MAP = { 'bank': 'Bank Transfer', 'bank transfer': 'Bank Transfer', 'gcash': 'GCash', 'e-wallet': 'E-Wallet', 'ewallet': 'E-Wallet', 'cash': 'Cash', 'check': 'Check', 'cheque': 'Check' };
+const METHOD_MAP = { 'bank': 'Bank Transfer', 'bank transfer': 'Bank Transfer', 'gcash': 'E-Wallet', 'maya': 'E-Wallet', 'grab_pay': 'E-Wallet', 'e-wallet': 'E-Wallet', 'ewallet': 'E-Wallet', 'cash': 'Cash', 'check': 'Check', 'cheque': 'Check', 'manual': 'Manual' };
 const normalizeMethod = (m) => METHOD_MAP[(m || '').toLowerCase()] || m;
 
 const ChartFooter = ({ period, location }) => (
@@ -238,12 +238,7 @@ export default function AdminFinancialReport() {
     return 'Scope: All Communities \u00b7 All Provinces';
   };
 
-  // Combined period + location label for chart footers
-  const getPeriodWithLocation = () => {
-    if (!report) return '';
-    const loc = getLocationLabel();
-    return `Period: ${report.period} · ${loc}`;
-  };
+
 
   // Get the month range to display on charts based on selected period
   const getChartMonthRange = () => {

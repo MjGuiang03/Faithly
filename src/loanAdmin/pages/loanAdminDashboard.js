@@ -1020,7 +1020,7 @@ export default function LoanAdminDashboard() {
                 });
                 // Community data for bar chart
                 const topCommunities = communitySavings.filter(c => c.totalSavings > 0).slice(0, 10);
-                const bottomCommunities = [...communitySavings].filter(c => c.community !== 'Unassigned').reverse().slice(0, 10).reverse();
+
                 return (
                 <>
                   {/* Section 1 — Summary Stats + Cumulative Chart */}
