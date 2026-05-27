@@ -187,7 +187,7 @@ export default function LoanAdminSidebar() {
           <div className="loan-admin-sidebar-profile-details">
             <p className="loan-admin-sidebar-profile-name">Loan Admin</p>
             <p className="loan-admin-sidebar-profile-email">
-              {localStorage.getItem('adminEmail') || 'loans@faithly.com'}
+              {localStorage.getItem('adminEmail') || 'loans@isangdiwa.com'}
             </p>
           </div>
         </div>

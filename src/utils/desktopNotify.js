@@ -125,7 +125,7 @@ export function processNewNotifications(prevIds, allNotifications, notifPagePath
   if (newItems.length <= 5) {
     newItems.forEach(n => {
       sendDesktopNotification(
-        `FaithLy — ${n.title || 'New Notification'}`,
+        `IsangDiwa — ${n.title || 'New Notification'}`,
         n.message || '',
         () => navigateFn && navigateFn(notifPagePath)
       );
@@ -133,7 +133,7 @@ export function processNewNotifications(prevIds, allNotifications, notifPagePath
   } else {
     // Summarize if too many at once
     sendDesktopNotification(
-      'FaithLy — New Notifications',
+      'IsangDiwa — New Notifications',
       `You have ${newItems.length} new notifications`,
       () => navigateFn && navigateFn(notifPagePath)
     );

@@ -650,7 +650,7 @@ function LoanInstructionModal({ isOpen, onClose, onApply, isLocked }) {
             <div className="user-savings-modal-content sv-instruction-modal user-fade-in" style={{ maxWidth: '700px', padding: 0, overflow: 'hidden' }}>
                 <div className="sv-inst-header">
                     <h2>How to Apply for a Loan</h2>
-                    <p>Access fast, secure loans straight from your FaithLy account. Here’s how it works.</p>
+                    <p>Access fast, secure loans straight from your IsangDiwa account. Here’s how it works.</p>
                 </div>
                 
                 <div className="sv-inst-body" style={{ padding: '32px 24px' }}>

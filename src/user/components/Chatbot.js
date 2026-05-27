@@ -11,7 +11,7 @@ import API from '../../utils/api';
 const KB_SHARED = [
   {
     patterns: ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening', 'kumusta', 'magandang umaga', 'magandang hapon'],
-    responses: ["Hello! 👋 I'm IsangDiwa Chatbot, your Faithly assistant. How can I help you today?"],
+    responses: ["Hello! 👋 I'm IsangDiwa Chatbot, your assistant. How can I help you today?"],
     quickReplies: ['Donations', 'Savings', 'Attendance', 'Branches']
   },
   {
@@ -45,8 +45,8 @@ const KB_SHARED = [
     quickReplies: ['Donations', 'Savings', 'Attendance']
   },
   {
-    patterns: ['what is faithly', 'about faithly', 'isangdiwa', 'ano ang faithly', 'what is isangdiwa', 'portal'],
-    responses: ["🙏 **Faithly** is the official digital portal of the **Philippine United Apostolic Church (IsangDiwa)**.\n\nAll members can manage donations, savings, attendance, and branches. **Church officers** also get access to loans."],
+    patterns: ['what is isangdiwa', 'about isangdiwa', 'isangdiwa', 'ano ang isangdiwa', 'portal'],
+    responses: ["🙏 **IsangDiwa** is the official digital portal of the **Philippine United Apostolic Church**.\n\nAll members can manage donations, savings, attendance, and branches. **Church officers** also get access to loans."],
     quickReplies: ['Donations', 'Savings', 'Attendance']
   },
 ];
@@ -316,7 +316,7 @@ export default function Chatbot({ isOpen, onClose }) {
               <div className={`cb-bubble cb-bubble--${msg.sender}`}>
                 {msg.greeting ? (
                   <p className="cb-bubble-text">
-                    👋 Hi <strong>{firstName}</strong>! I'm <strong>IsangDiwa Chatbot</strong>, your AI-powered Faithly assistant.
+                    👋 Hi <strong>{firstName}</strong>! I'm <strong>IsangDiwa Chatbot</strong>, your AI-powered assistant.
                     I can help with <strong>donations</strong>, <strong>savings</strong>, <strong>attendance</strong>, and more.
                     {' '}Type anything to get started!
                   </p>

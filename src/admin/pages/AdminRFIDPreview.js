@@ -331,7 +331,7 @@ export default function AdminRFIDPreview() {
       {showEndModal && <EndSessionModal onClose={() => setShowEndModal(false)} onConfirm={endSession} />}
 
       <div className="admin-rfid-header">
-        <h2>Faithly RFID System</h2>
+        <h2>IsangDiwa RFID System</h2>
         <button className="admin-rfid-logout" style={{ display: 'flex', alignItems: 'center' }} onClick={handleBack}>
           <ArrowLeft size={16} style={{ marginRight: '6px' }} />
           Back

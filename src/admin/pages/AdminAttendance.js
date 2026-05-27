@@ -318,7 +318,7 @@ export default function AdminAttendance() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `FaithLy_Attendance_${new Date().toLocaleDateString()}.csv`);
+    link.setAttribute("download", `IsangDiwa_Attendance_${new Date().toLocaleDateString()}.csv`);
     document.body.appendChild(link);
     link.click();
   };

@@ -24,7 +24,7 @@ export default function SecLoanReceiptModal({ loan, onClose }) {
               <Receipt size={24} color="white" />
             </div>
             <h2 className="sec-receipt-title">Disbursement Receipt</h2>
-            <p className="sec-receipt-subtitle">Faithly Official Transaction</p>
+            <p className="sec-receipt-subtitle">IsangDiwa Official Transaction</p>
           </div>
           <button className="sec-receipt-close" onClick={onClose}>
             <X size={20} />

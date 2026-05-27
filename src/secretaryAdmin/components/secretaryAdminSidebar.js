@@ -172,7 +172,7 @@ export default function SecretaryAdminSidebar() {
                     <div className="sec-admin-sidebar-profile-details">
                         <p className="sec-admin-sidebar-profile-name">Secretary Admin</p>
                         <p className="sec-admin-sidebar-profile-email">
-                            {localStorage.getItem('secretaryEmail') || 'secretary@faithly.com'}
+                            {localStorage.getItem('secretaryEmail') || 'secretary@isangdiwa.com'}
                         </p>
                     </div>
                 </div>
