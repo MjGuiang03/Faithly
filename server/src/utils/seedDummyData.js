@@ -71,7 +71,7 @@ async function run() {
         
         const isOfficer = Math.random() < 0.55;
         const isActive = Math.random() < 0.8;
-        const createdAt = randomDate(0, 7); // Jan-Aug uniformly
+        const createdAt = randomDate(0, 4); // Jan-May uniformly
 
         users.push({
           fullName: `${fn} ${ln}`,
@@ -79,6 +79,7 @@ async function run() {
           passwordHash: hashedPwd,
           branch: community,
           role: isOfficer ? 'officer' : 'member',
+          position: isOfficer ? getRandom(['President', 'Vice President', 'Secretary', 'Treasurer', 'Auditor']) : 'Member',
           status: isActive ? 'active' : 'inactive',
           memberId: `M-${randomInt(100000, 999999)}`,
           createdAt: createdAt
@@ -106,8 +107,7 @@ async function run() {
       const isMaySpike = Math.random() < 0.5;
       let dMonth;
       if (isMaySpike) dMonth = 4; // May
-      else if (Math.random() < 0.2) dMonth = 5; // Jun dip
-      else dMonth = getRandom([0, 1, 2, 3, 6, 7]); // other months
+      else dMonth = getRandom([0, 1, 2, 3]); // Jan-Apr
       
       const dDate = new Date(2026, dMonth, randomInt(1, 28), randomInt(8, 20), randomInt(0, 59));
       const method = Math.random() < 0.35 ? 'Bank Transfer' : 'E-Wallet';
@@ -138,7 +138,7 @@ async function run() {
 
     for (let i = 0; i < goalsCount; i++) {
       const user = getRandom(userMap);
-      const createdAt = randomDate(0, 7);
+      const createdAt = randomDate(0, 4);
       
       const goal = {
         email: user.email,
@@ -165,7 +165,7 @@ async function run() {
       const amount = randomInt(10, 50) * 100; // 1,000 - 5,000
       goal.currentAmount += amount;
 
-      const date = randomDate(1, 7); // Feb-Aug
+      const date = randomDate(0, 4); // Jan-May
 
       deposits.push({
         email: goal.email,
@@ -210,7 +210,7 @@ async function run() {
         const amount = randomInt(200, 1500) * 100;
         const type = Math.random() < 0.4 ? 'personal' : (Math.random() < 0.67 ? 'emergency' : 'short-term');
         const purpose = type === 'personal' ? 'Personal Loan' : (type === 'emergency' ? 'Emergency Loan' : 'Short-Term Loan');
-        const appliedDate = randomDate(0, 7);
+        const appliedDate = randomDate(0, 4); // Jan-May
 
         const r = Math.random();
         let status = 'pending';
@@ -284,7 +284,7 @@ async function run() {
           const pDate = new Date(l.disbursementDate);
           pDate.setMonth(pDate.getMonth() + j);
           
-          if (pDate > new Date(2026, 7, 31)) break; // Stop if past Aug
+          if (pDate > new Date(2026, 4, 31)) break; // Stop if past May
 
           const isLate = Math.random() < 0.1;
 
@@ -318,7 +318,7 @@ async function run() {
       sessionIdCount++;
       const isTopAttendance = Math.random() < 0.4;
       const aBranch = isTopAttendance ? getRandom(['Santiago City', 'Alcala']) : getRandom(COMMUNITIES);
-      const date = randomDate(0, 7);
+      const date = randomDate(0, 4); // Jan-May
       const sType = getRandom(SERVICE_TYPES);
       
       // select 5-15 users from this branch

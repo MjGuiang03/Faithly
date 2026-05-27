@@ -88,7 +88,7 @@ export default function AdminDashboard() {
       .then(res => res.ok ? res.json() : { success: false });
 
   const { data: membersData, isValidating: membersValidating } = useSWR(
-    `${API}/api/admin/members?limit=100`, 
+    `${API}/api/admin/members?limit=5000`, 
     fetcherSingle, 
     { 
       revalidateOnFocus: false,
@@ -118,7 +118,7 @@ export default function AdminDashboard() {
   );
   
   const { data: attendData, isValidating: attendValidating } = useSWR(
-    `${API}/api/admin/attendance?limit=500`, 
+    `${API}/api/admin/attendance?limit=5000`, 
     fetcherSingle, 
     { 
       revalidateOnFocus: false,
