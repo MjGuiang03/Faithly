@@ -36,7 +36,7 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', origin);
   } else {
     // Fallback for requests without Origin header (e.g. direct server-to-server)
-    res.setHeader('Access-Control-Allow-Origin', 'https://isangdiwafaithly.com');
+    res.setHeader('Access-Control-Allow-Origin', 'https://puacfaithly.com');
   }
   
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -81,7 +81,7 @@ app.use((err, req, res, next) => {
   
   // Re-apply CORS headers to the error response
   const origin = req.headers.origin;
-  const allowed = ['https://isangdiwafaithly.com', 'https://www.isangdiwafaithly.com', 'http://localhost:3000'];
+  const allowed = ['https://puacfaithly.com', 'https://www.puacfaithly.com', 'http://localhost:3000'];
   if (allowed.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
   }

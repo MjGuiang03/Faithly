@@ -1343,27 +1343,67 @@ export default function AdminFinancialReport() {
                 )}
               </div>
 
-              {/* Attendance Chart */}
-              {report.attendance?.byBranch?.length > 0 && (
-                <div className="fin-report-chart-card">
-                  <h3 className="fin-report-chart-title">Attendance By Community</h3>
-                  <p className="fin-chart-summary">Top: <strong>{report.attendance.byBranch[0]?.name}</strong> · {report.attendance.byBranch[0]?.value} attendees</p>
-                  <ResponsiveContainer width="100%" height={200}>
-                    <BarChart data={report.attendance.byBranch.slice(0, 8)} margin={{ top: 15, right: 10, left: -10, bottom: 40 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                      <XAxis dataKey="name" tick={{ fontSize: 9, angle: -35, textAnchor: 'end' }} interval={0} height={50} />
-                      <YAxis tick={{ fontSize: 10 }} allowDecimals={false}>
-                        <Label value="Attendance Count" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
-                      </YAxis>
-                      <Tooltip />
-                      <Bar dataKey="value" fill="#0D1F45" radius={[4, 4, 0, 0]}>
-                        <LabelList dataKey="value" position="top" style={{ fontSize: 10, fill: '#6B7280' }} />
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                  <ChartFooter period={report.period} location={getLocationLabel()} />
-                </div>
-              )}
+              {/* Attendance Charts Row */}
+              <div className="fin-report-charts-row">
+                {/* Attendance By Community Chart */}
+                {report.attendance?.byBranch?.length > 0 && (
+                  <div className="fin-report-chart-card">
+                    <h3 className="fin-report-chart-title">Attendance By Community</h3>
+                    <p className="fin-chart-summary">Top: <strong>{report.attendance.byBranch[0]?.name}</strong> · {report.attendance.byBranch[0]?.value} attendees</p>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <BarChart data={report.attendance.byBranch.slice(0, 8)} margin={{ top: 15, right: 10, left: -10, bottom: 40 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                        <XAxis dataKey="name" tick={{ fontSize: 9, angle: -35, textAnchor: 'end' }} interval={0} height={50} />
+                        <YAxis tick={{ fontSize: 10 }} allowDecimals={false}>
+                          <Label value="Attendance Count" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                        </YAxis>
+                        <Tooltip />
+                        <Bar dataKey="value" fill="#0D1F45" radius={[4, 4, 0, 0]}>
+                          <LabelList dataKey="value" position="top" style={{ fontSize: 10, fill: '#6B7280' }} />
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                    <ChartFooter period={report.period} location={getLocationLabel()} />
+                  </div>
+                )}
+
+                {/* Top Services Chart */}
+                {report.attendance?.attendees?.length > 0 && (() => {
+                  const serviceMap = {};
+                  report.attendance.attendees.forEach(a => {
+                    const svc = a.service || 'Unknown';
+                    serviceMap[svc] = (serviceMap[svc] || 0) + 1;
+                  });
+                  const serviceData = Object.keys(serviceMap)
+                    .map(svc => ({ service: svc, count: serviceMap[svc] }))
+                    .sort((a, b) => b.count - a.count)
+                    .slice(0, 5); // Top 5
+                  
+                  return serviceData.length > 0 ? (
+                    <div className="fin-report-chart-card">
+                      <h3 className="fin-report-chart-title">Top Services By Attendance</h3>
+                      <p className="fin-chart-summary">
+                        Top: <strong>{serviceData[0].service}</strong> · {serviceData[0].count} attendees
+                      </p>
+                      <ResponsiveContainer width="100%" height={200}>
+                        <BarChart data={serviceData} layout="vertical" margin={{ top: 15, right: 30, left: 10, bottom: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
+                          <XAxis type="number" hide />
+                          <YAxis type="category" dataKey="service" tick={{ fontSize: 10 }} width={90} />
+                          <Tooltip formatter={v => [v, 'Attendees']} />
+                          <Bar dataKey="count" radius={[0, 4, 4, 0]} barSize={20}>
+                            {serviceData.map((_, i) => (
+                              <Cell key={i} fill={i === 0 ? '#2563eb' : '#0D1F45'} />
+                            ))}
+                            <LabelList dataKey="count" position="right" style={{ fontSize: 10, fill: '#6B7280' }} />
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                      <ChartFooter period={report.period} location={getLocationLabel()} />
+                    </div>
+                  ) : null;
+                })()}
+              </div>
 
               {/* Attendee Names Table */}
               {report.attendance?.attendees?.length > 0 && (
