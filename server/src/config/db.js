@@ -26,11 +26,10 @@ for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     const options = process.env.RENDER ? {
       serverSelectionTimeoutMS: 60000,
       connectTimeoutMS: 60000,
-      socketTimeoutMS: 120000,
-      maxPoolSize: 20,
-      minPoolSize: 2,
-      maxIdleTimeMS: 30000,
-      heartbeatFrequencyMS: 10000,
+      socketTimeoutMS: 300000, // 5 minutes (prevent premature timeout on large queries)
+      maxPoolSize: 50,
+      minPoolSize: 5,
+      maxIdleTimeMS: 10000, // Proactively close idle connections to prevent Render LB from silently dropping them
       family: 4,
       retryReads: true,
       retryWrites: true,
