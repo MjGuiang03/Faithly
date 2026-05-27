@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
   BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area, LineChart, Line,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Label, LabelList
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Label, LabelList
 } from 'recharts';
 
 import '../styles/AdminFinancialReport.css';
