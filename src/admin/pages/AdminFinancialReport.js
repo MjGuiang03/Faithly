@@ -3,13 +3,16 @@ import useSWR from 'swr';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
-  BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area,
+  BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Label, LabelList
 } from 'recharts';
 
 import '../styles/AdminFinancialReport.css';
 import API from '../../utils/api';
 import { FileText, Printer, RefreshCw, Sparkles, Calendar, ChevronDown, Download, MapPin, AlertCircle, X } from 'lucide-react';
+
+// Color palette for per-community comparison lines
+const COMMUNITY_COLORS = ['#2563eb', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316', '#6366F1', '#84CC16'];
 
 const renderSliceLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
   if (percent < 0.05) return null;
@@ -783,34 +786,66 @@ export default function AdminFinancialReport() {
 
                 {/* By Month */}
                 {(() => {
-                  // Build month data only for selected period range
                   const byMonthMap = {};
                   (report.donations.byMonth || []).forEach(d => { byMonthMap[d.month] = d.value; });
                   const { from, to } = getChartMonthRange();
+                  const bmc = report.donations.byMonthByCommunity || {};
+                  // Collect all community names across all months
+                  const allCommunities = [...new Set(Object.values(bmc).flatMap(obj => Object.keys(obj)))].sort();
+                  const isMulti = allCommunities.length >= 2;
+
                   const fullMonthData = MONTH_SHORT.slice(from, to + 1).map((label, idx) => {
                     const i = from + idx;
                     const key = `${reportYear}-${String(i + 1).padStart(2, '0')}`;
-                    return { month: label, value: byMonthMap[key] || 0 };
+                    const row = { month: label, value: byMonthMap[key] || 0 };
+                    if (isMulti && bmc[key]) {
+                      allCommunities.forEach(c => { row[c] = bmc[key][c] || 0; });
+                    }
+                    return row;
                   });
                   const totalDon = fullMonthData.reduce((s, d) => s + d.value, 0);
                   const highestMon = fullMonthData.reduce((a, b) => b.value > a.value ? b : a, fullMonthData[0]);
                   return (
                     <div className="fin-report-chart-card">
-                      <h3 className="fin-report-chart-title">Monthly Donation Trend</h3>
+                      <h3 className="fin-report-chart-title">Monthly Donation Trend {isMulti ? '(By Community)' : ''}</h3>
                       <p className="fin-chart-summary">Total: <strong>{fmt(totalDon)}</strong> · Highest: <strong>{highestMon?.month}</strong> ({fmt(highestMon?.value)})</p>
-                      <ResponsiveContainer width="100%" height={220}>
-                        <BarChart data={fullMonthData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                          <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-                          <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false}>
-                            <Label value="Amount (₱)" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
-                          </YAxis>
-                          <Tooltip formatter={v => fmt(v)} />
-                          <Bar dataKey="value" fill="#0D1F45" radius={[4, 4, 0, 0]}>
-                            <LabelList dataKey="value" position="top" formatter={v => v > 0 ? fmtShort(v) : ''} style={{ fontSize: 10, fill: '#6B7280' }} />
-                          </Bar>
-                        </BarChart>
+                      <ResponsiveContainer width="100%" height={isMulti ? 280 : 220}>
+                        {isMulti ? (
+                          <LineChart data={fullMonthData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                            <XAxis dataKey="month" tick={{ fontSize: 10 }} />
+                            <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false}>
+                              <Label value="Amount (₱)" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                            </YAxis>
+                            <Tooltip formatter={v => fmt(v)} />
+                            {allCommunities.map((c, i) => (
+                              <Line key={c} type="monotone" dataKey={c} stroke={COMMUNITY_COLORS[i % COMMUNITY_COLORS.length]} strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                            ))}
+                          </LineChart>
+                        ) : (
+                          <BarChart data={fullMonthData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                            <XAxis dataKey="month" tick={{ fontSize: 10 }} />
+                            <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false}>
+                              <Label value="Amount (₱)" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                            </YAxis>
+                            <Tooltip formatter={v => fmt(v)} />
+                            <Bar dataKey="value" fill="#0D1F45" radius={[4, 4, 0, 0]}>
+                              <LabelList dataKey="value" position="top" formatter={v => v > 0 ? fmtShort(v) : ''} style={{ fontSize: 10, fill: '#6B7280' }} />
+                            </Bar>
+                          </BarChart>
+                        )}
                       </ResponsiveContainer>
+                      {isMulti && (
+                        <div className="fin-report-legend">
+                          {allCommunities.map((c, i) => (
+                            <div key={c} className="fin-report-legend-item">
+                              <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[i % COMMUNITY_COLORS.length] }} />
+                              <span className="fin-report-legend-label">{c}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                       <ChartFooter period={report.period} location={getLocationLabel()} />
                     </div>
                   );
@@ -914,35 +949,64 @@ export default function AdminFinancialReport() {
                   const { from, to } = getChartMonthRange();
                   const attMap = {};
                   report.attendance.byMonth.forEach(d => { attMap[d.month] = d.count; });
+                  const bmc = report.attendance.byMonthByCommunity || {};
+                  const allCommunities = [...new Set(Object.values(bmc).flatMap(obj => Object.keys(obj)))].sort();
+                  const isMulti = allCommunities.length >= 2;
+
                   const trendData = MONTH_SHORT.slice(from, to + 1).map((label, idx) => {
                     const i = from + idx;
                     const key = `${reportYear}-${String(i + 1).padStart(2, '0')}`;
-                    return { month: key, label, count: attMap[key] || 0 };
+                    const row = { month: key, label, count: attMap[key] || 0 };
+                    if (isMulti && bmc[key]) {
+                      allCommunities.forEach(c => { row[c] = bmc[key][c] || 0; });
+                    }
+                    return row;
                   });
                   const totalAtt = trendData.reduce((s, d) => s + d.count, 0);
                   return (
                     <div className="fin-report-chart-card">
-                      <h3 className="fin-report-chart-title">Monthly Attendance Trend</h3>
+                      <h3 className="fin-report-chart-title">Monthly Attendance Trend {isMulti ? '(By Community)' : ''}</h3>
                       <p className="fin-chart-summary">Total: <strong>{totalAtt} attendees</strong> · Peak: <strong>{trendData.reduce((a, b) => b.count > a.count ? b : a, trendData[0])?.label}</strong></p>
-                      <ResponsiveContainer width="100%" height={220}>
-                        <BarChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                          <XAxis dataKey="label" tick={{ fontSize: 10 }} />
-                          <YAxis tick={{ fontSize: 10 }} allowDecimals={false}>
-                            <Label value="Attendance Count" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
-                          </YAxis>
-                          <Tooltip formatter={(v) => [v + ' attendees']} labelFormatter={(v, payload) => payload?.[0]?.payload?.label || v} />
-                          <Bar dataKey="count" fill="#2563eb" radius={[4, 4, 0, 0]} barSize={24}>
-                            <LabelList dataKey="count" position="top" formatter={v => v > 0 ? v : ''} style={{ fontSize: 10, fill: '#6B7280' }} />
-                          </Bar>
-                        </BarChart>
+                      <ResponsiveContainer width="100%" height={isMulti ? 280 : 220}>
+                        {isMulti ? (
+                          <LineChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                            <XAxis dataKey="label" tick={{ fontSize: 10 }} />
+                            <YAxis tick={{ fontSize: 10 }} allowDecimals={false}>
+                              <Label value="Attendance Count" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                            </YAxis>
+                            <Tooltip formatter={(v) => [v + ' attendees']} />
+                            {allCommunities.map((c, i) => (
+                              <Line key={c} type="monotone" dataKey={c} stroke={COMMUNITY_COLORS[i % COMMUNITY_COLORS.length]} strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                            ))}
+                          </LineChart>
+                        ) : (
+                          <BarChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                            <XAxis dataKey="label" tick={{ fontSize: 10 }} />
+                            <YAxis tick={{ fontSize: 10 }} allowDecimals={false}>
+                              <Label value="Attendance Count" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                            </YAxis>
+                            <Tooltip formatter={(v) => [v + ' attendees']} labelFormatter={(v, payload) => payload?.[0]?.payload?.label || v} />
+                            <Bar dataKey="count" fill="#2563eb" radius={[4, 4, 0, 0]} barSize={24}>
+                              <LabelList dataKey="count" position="top" formatter={v => v > 0 ? v : ''} style={{ fontSize: 10, fill: '#6B7280' }} />
+                            </Bar>
+                          </BarChart>
+                        )}
                       </ResponsiveContainer>
                       <div className="fin-report-legend">
-                        <div className="fin-report-legend-item">
-                          <span className="fin-report-legend-dot" style={{ background: '#2563eb' }} />
-                          <span className="fin-report-legend-label">Attendance</span>
-                          <span className="fin-report-legend-val">{totalAtt} total</span>
-                        </div>
+                        {isMulti ? allCommunities.map((c, i) => (
+                          <div key={c} className="fin-report-legend-item">
+                            <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[i % COMMUNITY_COLORS.length] }} />
+                            <span className="fin-report-legend-label">{c}</span>
+                          </div>
+                        )) : (
+                          <div className="fin-report-legend-item">
+                            <span className="fin-report-legend-dot" style={{ background: '#2563eb' }} />
+                            <span className="fin-report-legend-label">Attendance</span>
+                            <span className="fin-report-legend-val">{totalAtt} total</span>
+                          </div>
+                        )}
                       </div>
                       <ChartFooter period={report.period} location={getLocationLabel()} />
                     </div>
@@ -1031,46 +1095,73 @@ export default function AdminFinancialReport() {
                   const { from, to } = getChartMonthRange();
                   const byMonthMap = {};
                   (report.loans.byMonth || []).forEach(d => { byMonthMap[d.month] = d; });
+                  const bmcData = report.loans.byMonthByCommunity || {};
+                  const disbBmc = bmcData.disbursed || {};
+                  const collBmc = bmcData.collected || {};
+                  const allComm = [...new Set([...Object.values(disbBmc), ...Object.values(collBmc)].flatMap(obj => Object.keys(obj)))].sort();
+                  const isMulti = allComm.length >= 2;
+
                   const trendData = MONTH_SHORT.slice(from, to + 1).map((label, idx) => {
                     const i = from + idx;
                     const key = `${reportYear}-${String(i + 1).padStart(2, '0')}`;
                     const existing = byMonthMap[key];
-                    return { month: key, label, disbursed: existing?.disbursed || 0, received: existing?.received || 0 };
+                    const row = { month: key, label, disbursed: existing?.disbursed || 0, received: existing?.received || 0 };
+                    if (isMulti) {
+                      allComm.forEach(c => {
+                        row[`disb_${c}`] = disbBmc[key]?.[c] || 0;
+                        row[`coll_${c}`] = collBmc[key]?.[c] || 0;
+                      });
+                    }
+                    return row;
                   });
                   return trendData.length > 0 ? (
                     <div className="fin-report-chart-card">
-                      <h3 className="fin-report-chart-title">Monthly Disbursement vs Collection</h3>
+                      <h3 className="fin-report-chart-title">Monthly Disbursement vs Collection {isMulti ? '(By Community)' : ''}</h3>
                       <p className="fin-chart-summary">Disbursed: <strong>{fmt(trendData.reduce((s, d) => s + d.disbursed, 0))}</strong> · Collected: <strong>{fmt(trendData.reduce((s, d) => s + d.received, 0))}</strong></p>
-                      <ResponsiveContainer width="100%" height={220}>
-                        <BarChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                          <XAxis dataKey="label" tick={{ fontSize: 10 }} />
-                          <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false}>
-                            <Label value="Amount (₱)" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
-                          </YAxis>
-                          <Tooltip formatter={v => fmt(v)} labelFormatter={(v, payload) => payload?.[0]?.payload?.label || v} />
-                          <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} content={({ payload }) => (
-                            <div className="fin-report-legend" style={{ justifyContent: 'center', display: 'flex', gap: '16px', paddingTop: '10px' }}>
-                              {payload?.map((entry, i) => {
-                                const total = trendData.reduce((s, d) => s + (d[entry.dataKey] || 0), 0);
-                                return (
-                                  <div key={i} className="fin-report-legend-item" style={{ gap: '4px' }}>
-                                    <span className="fin-report-legend-dot" style={{ background: entry.color }} />
-                                    <span className="fin-report-legend-label">{entry.value}</span>
-                                    <span className="fin-report-legend-val">{fmt(total)}</span>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          )} />
-                          <Bar name="Disbursed" dataKey="disbursed" fill="#0D1F45" radius={[4, 4, 0, 0]} barSize={20}>
-                            <LabelList dataKey="disbursed" position="top" formatter={v => v > 0 ? fmtShort(v) : ''} style={{ fontSize: 9, fill: '#6B7280' }} />
-                          </Bar>
-                          <Bar name="Collected" dataKey="received" fill="#10B981" radius={[4, 4, 0, 0]} barSize={20}>
-                            <LabelList dataKey="received" position="top" formatter={v => v > 0 ? fmtShort(v) : ''} style={{ fontSize: 9, fill: '#6B7280' }} />
-                          </Bar>
-                        </BarChart>
+                      <ResponsiveContainer width="100%" height={isMulti ? 280 : 220}>
+                        {isMulti ? (
+                          <LineChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                            <XAxis dataKey="label" tick={{ fontSize: 10 }} />
+                            <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false}>
+                              <Label value="Amount (₱)" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                            </YAxis>
+                            <Tooltip formatter={v => fmt(v)} />
+                            {allComm.map((c, i) => (
+                              <Line key={`disb_${c}`} type="monotone" dataKey={`disb_${c}`} name={`${c} (Disbursed)`} stroke={COMMUNITY_COLORS[i % COMMUNITY_COLORS.length]} strokeWidth={2} dot={{ r: 3 }} />
+                            ))}
+                            {allComm.map((c, i) => (
+                              <Line key={`coll_${c}`} type="monotone" dataKey={`coll_${c}`} name={`${c} (Collected)`} stroke={COMMUNITY_COLORS[i % COMMUNITY_COLORS.length]} strokeWidth={2} strokeDasharray="5 5" dot={{ r: 3 }} />
+                            ))}
+                          </LineChart>
+                        ) : (
+                          <BarChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                            <XAxis dataKey="label" tick={{ fontSize: 10 }} />
+                            <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false}>
+                              <Label value="Amount (₱)" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                            </YAxis>
+                            <Tooltip formatter={v => fmt(v)} labelFormatter={(v, payload) => payload?.[0]?.payload?.label || v} />
+                            <Bar name="Disbursed" dataKey="disbursed" fill="#0D1F45" radius={[4, 4, 0, 0]} barSize={20}>
+                              <LabelList dataKey="disbursed" position="top" formatter={v => v > 0 ? fmtShort(v) : ''} style={{ fontSize: 9, fill: '#6B7280' }} />
+                            </Bar>
+                            <Bar name="Collected" dataKey="received" fill="#10B981" radius={[4, 4, 0, 0]} barSize={20}>
+                              <LabelList dataKey="received" position="top" formatter={v => v > 0 ? fmtShort(v) : ''} style={{ fontSize: 9, fill: '#6B7280' }} />
+                            </Bar>
+                          </BarChart>
+                        )}
                       </ResponsiveContainer>
+                      {isMulti && (
+                        <div className="fin-report-legend">
+                          {allComm.map((c, i) => (
+                            <div key={c} className="fin-report-legend-item">
+                              <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[i % COMMUNITY_COLORS.length] }} />
+                              <span className="fin-report-legend-label">{c}</span>
+                              <span className="fin-report-legend-val" style={{ fontSize: 9 }}>— solid: disbursed, dashed: collected</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                       <ChartFooter period={report.period} location={getLocationLabel()} />
                     </div>
                   ) : null;
@@ -1084,41 +1175,70 @@ export default function AdminFinancialReport() {
                   const { from, to } = getChartMonthRange();
                   const appsMap = {};
                   (report.loans.applicationsByMonth || []).forEach(d => { appsMap[d.month] = d.count; });
+                  const bmc = report.loans.applicationsByMonthByCommunity || {};
+                  const allComm = [...new Set(Object.values(bmc).flatMap(obj => Object.keys(obj)))].sort();
+                  const isMulti = allComm.length >= 2;
+
                   const trendData = MONTH_SHORT.slice(from, to + 1).map((label, idx) => {
                     const i = from + idx;
                     const key = `${reportYear}-${String(i + 1).padStart(2, '0')}`;
-                    return { month: key, label, applications: appsMap[key] || 0 };
+                    const row = { month: key, label, applications: appsMap[key] || 0 };
+                    if (isMulti && bmc[key]) {
+                      allComm.forEach(c => { row[c] = bmc[key][c] || 0; });
+                    }
+                    return row;
                   });
                   const totalApps = trendData.reduce((s, d) => s + d.applications, 0);
                   const peakIdx = trendData.reduce((maxI, d, i, arr) => d.applications > arr[maxI].applications ? i : maxI, 0);
                   const lowIdx = trendData.reduce((minI, d, i, arr) => d.applications < arr[minI].applications ? i : minI, 0);
                   return (
                     <div className="fin-report-chart-card">
-                      <h3 className="fin-report-chart-title">Loan Application Trend</h3>
+                      <h3 className="fin-report-chart-title">Loan Application Trend {isMulti ? '(By Community)' : ''}</h3>
                       <p className="fin-chart-summary">Total: <strong>{totalApps} applications</strong> · Peak: <strong>{trendData[peakIdx]?.label}</strong> ({trendData[peakIdx]?.applications})</p>
-                      <ResponsiveContainer width="100%" height={220}>
-                        <AreaChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
-                          <defs>
-                            <linearGradient id="appGradient" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="#2563eb" stopOpacity={0.3} />
-                              <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
-                            </linearGradient>
-                          </defs>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                          <XAxis dataKey="label" tick={{ fontSize: 10 }} />
-                          <YAxis tick={{ fontSize: 10 }} allowDecimals={false}>
-                            <Label value="No. of Applications" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
-                          </YAxis>
-                          <Tooltip formatter={(v) => [v + ' applications']} labelFormatter={(v, payload) => payload?.[0]?.payload?.label || v} />
-                          <Area type="monotone" dataKey="applications" stroke="#2563eb" fill="url(#appGradient)" strokeWidth={2} dot={(props) => { const { cx, cy, index } = props; if (index === peakIdx || index === lowIdx) return <circle cx={cx} cy={cy} r={4} fill="#2563eb" stroke="#fff" strokeWidth={2} />; return <circle cx={cx} cy={cy} r={3} fill="#2563eb" />; }} label={(props) => { const { x, y, index, value } = props; if (index === peakIdx || index === lowIdx) return <text x={x} y={y - 10} textAnchor="middle" fill="#2563eb" fontSize={10} fontWeight={700}>{value}</text>; return null; }} />
-                        </AreaChart>
+                      <ResponsiveContainer width="100%" height={isMulti ? 280 : 220}>
+                        {isMulti ? (
+                          <LineChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                            <XAxis dataKey="label" tick={{ fontSize: 10 }} />
+                            <YAxis tick={{ fontSize: 10 }} allowDecimals={false}>
+                              <Label value="No. of Applications" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                            </YAxis>
+                            <Tooltip formatter={(v) => [v + ' applications']} />
+                            {allComm.map((c, i) => (
+                              <Line key={c} type="monotone" dataKey={c} stroke={COMMUNITY_COLORS[i % COMMUNITY_COLORS.length]} strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                            ))}
+                          </LineChart>
+                        ) : (
+                          <AreaChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
+                            <defs>
+                              <linearGradient id="appGradient" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#2563eb" stopOpacity={0.3} />
+                                <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                            <XAxis dataKey="label" tick={{ fontSize: 10 }} />
+                            <YAxis tick={{ fontSize: 10 }} allowDecimals={false}>
+                              <Label value="No. of Applications" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                            </YAxis>
+                            <Tooltip formatter={(v) => [v + ' applications']} labelFormatter={(v, payload) => payload?.[0]?.payload?.label || v} />
+                            <Area type="monotone" dataKey="applications" stroke="#2563eb" fill="url(#appGradient)" strokeWidth={2} dot={(props) => { const { cx, cy, index } = props; if (index === peakIdx || index === lowIdx) return <circle cx={cx} cy={cy} r={4} fill="#2563eb" stroke="#fff" strokeWidth={2} />; return <circle cx={cx} cy={cy} r={3} fill="#2563eb" />; }} label={(props) => { const { x, y, index, value } = props; if (index === peakIdx || index === lowIdx) return <text x={x} y={y - 10} textAnchor="middle" fill="#2563eb" fontSize={10} fontWeight={700}>{value}</text>; return null; }} />
+                          </AreaChart>
+                        )}
                       </ResponsiveContainer>
                       <div className="fin-report-legend">
-                        <div className="fin-report-legend-item">
-                          <span className="fin-report-legend-dot" style={{ background: '#2563eb' }} />
-                          <span className="fin-report-legend-label">Applications</span>
-                          <span className="fin-report-legend-val">{totalApps} total</span>
-                        </div>
+                        {isMulti ? allComm.map((c, i) => (
+                          <div key={c} className="fin-report-legend-item">
+                            <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[i % COMMUNITY_COLORS.length] }} />
+                            <span className="fin-report-legend-label">{c}</span>
+                          </div>
+                        )) : (
+                          <div className="fin-report-legend-item">
+                            <span className="fin-report-legend-dot" style={{ background: '#2563eb' }} />
+                            <span className="fin-report-legend-label">Applications</span>
+                            <span className="fin-report-legend-val">{totalApps} total</span>
+                          </div>
+                        )}
                       </div>
                       <ChartFooter period={report.period} location={getLocationLabel()} />
                     </div>
@@ -1466,31 +1586,63 @@ export default function AdminFinancialReport() {
                   const { from, to } = getChartMonthRange();
                   const byMonthMap = {};
                   (report.secretary.disbursements.byMonth || []).forEach(d => { byMonthMap[d.month] = d; });
+                  const bmc = report.secretary.disbursements.byMonthByCommunity || {};
+                  const allComm = [...new Set(Object.values(bmc).flatMap(obj => Object.keys(obj)))].sort();
+                  const isMulti = allComm.length >= 2;
+
                   const trendData = MONTH_SHORT.slice(from, to + 1).map((label, idx) => {
                     const i = from + idx;
                     const key = `${reportYear}-${String(i + 1).padStart(2, '0')}`;
                     const existing = byMonthMap[key];
-                    return { month: key, label, value: existing?.value || 0 };
+                    const row = { month: key, label, value: existing?.value || 0 };
+                    if (isMulti && bmc[key]) {
+                      allComm.forEach(c => { row[c] = bmc[key][c] || 0; });
+                    }
+                    return row;
                   });
                   const totalDisb = trendData.reduce((s, d) => s + d.value, 0);
                   const highestMon = trendData.reduce((a, b) => b.value > a.value ? b : a, trendData[0]);
                   return trendData.length > 0 ? (
                     <div className="fin-report-chart-card">
-                      <h3 className="fin-report-chart-title">Monthly Disbursements</h3>
+                      <h3 className="fin-report-chart-title">Monthly Disbursements {isMulti ? '(By Community)' : ''}</h3>
                       <p className="fin-chart-summary">Total: <strong>{fmt(totalDisb)}</strong> · {report.secretary.disbursements.count} releases · Highest: <strong>{highestMon?.label}</strong></p>
-                      <ResponsiveContainer width="100%" height={220}>
-                        <BarChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                          <XAxis dataKey="label" tick={{ fontSize: 10 }} />
-                          <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false}>
-                            <Label value="Amount (₱)" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
-                          </YAxis>
-                          <Tooltip formatter={v => fmt(v)} labelFormatter={(v, payload) => payload?.[0]?.payload?.label || v} />
-                          <Bar dataKey="value" fill="#0D1F45" radius={[4, 4, 0, 0]} barSize={30}>
-                            <LabelList dataKey="value" position="top" formatter={v => v > 0 ? fmtShort(v) : ''} style={{ fontSize: 10, fill: '#6B7280' }} />
-                          </Bar>
-                        </BarChart>
+                      <ResponsiveContainer width="100%" height={isMulti ? 280 : 220}>
+                        {isMulti ? (
+                          <LineChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                            <XAxis dataKey="label" tick={{ fontSize: 10 }} />
+                            <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false}>
+                              <Label value="Amount (₱)" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                            </YAxis>
+                            <Tooltip formatter={v => fmt(v)} />
+                            {allComm.map((c, i) => (
+                              <Line key={c} type="monotone" dataKey={c} stroke={COMMUNITY_COLORS[i % COMMUNITY_COLORS.length]} strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                            ))}
+                          </LineChart>
+                        ) : (
+                          <BarChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                            <XAxis dataKey="label" tick={{ fontSize: 10 }} />
+                            <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false}>
+                              <Label value="Amount (₱)" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                            </YAxis>
+                            <Tooltip formatter={v => fmt(v)} labelFormatter={(v, payload) => payload?.[0]?.payload?.label || v} />
+                            <Bar dataKey="value" fill="#0D1F45" radius={[4, 4, 0, 0]} barSize={30}>
+                              <LabelList dataKey="value" position="top" formatter={v => v > 0 ? fmtShort(v) : ''} style={{ fontSize: 10, fill: '#6B7280' }} />
+                            </Bar>
+                          </BarChart>
+                        )}
                       </ResponsiveContainer>
+                      {isMulti && (
+                        <div className="fin-report-legend">
+                          {allComm.map((c, i) => (
+                            <div key={c} className="fin-report-legend-item">
+                              <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[i % COMMUNITY_COLORS.length] }} />
+                              <span className="fin-report-legend-label">{c}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                       <ChartFooter period={report.period} location={getLocationLabel()} />
                     </div>
                   ) : null;

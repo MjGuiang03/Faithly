@@ -242,6 +242,7 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
         const donByMonth = {};
         const donByBranch = {};
         const donByDonor = {};
+        const donByMonthByCommunity = {};
         let donTotal = 0;
 
         periodDonations.forEach(d => {
@@ -260,6 +261,10 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
           const targetBranch = d.community || member?.branch || 'Unknown';
           donByBranch[targetBranch] = (donByBranch[targetBranch] || 0) + amt;
 
+          // Per-community monthly breakdown
+          if (!donByMonthByCommunity[mKey]) donByMonthByCommunity[mKey] = {};
+          donByMonthByCommunity[mKey][targetBranch] = (donByMonthByCommunity[mKey][targetBranch] || 0) + amt;
+
           // Track by donor name
           const donorName = d.member || member?.fullName || d.email || 'Unknown';
           if (!donByDonor[donorName]) donByDonor[donorName] = 0;
@@ -273,6 +278,7 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
           byMonth: Object.entries(donByMonth).map(([month, value]) => ({ month, value })).sort((a, b) => a.month.localeCompare(b.month)),
           byBranch: Object.entries(donByBranch).map(([branch, value]) => ({ branch, value })).sort((a, b) => b.value - a.value),
           byDonor: Object.entries(donByDonor).map(([donor, value]) => ({ donor, value })).sort((a, b) => b.value - a.value).slice(0, 10),
+          byMonthByCommunity: donByMonthByCommunity,
         };
 
         // Member growth for period
@@ -313,6 +319,7 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
 
         const attByBranch = {};
         const attByMonth = {};
+        const attByMonthByCommunity = {};
         periodAttendance.forEach(a => {
           const b = a.community || a.branch || a.userBranch || 'Unknown';
           attByBranch[b] = (attByBranch[b] || 0) + 1;
@@ -322,6 +329,10 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
           if (dt && !isNaN(dt)) {
             const mKey = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
             attByMonth[mKey] = (attByMonth[mKey] || 0) + 1;
+
+            // Per-community monthly breakdown
+            if (!attByMonthByCommunity[mKey]) attByMonthByCommunity[mKey] = {};
+            attByMonthByCommunity[mKey][b] = (attByMonthByCommunity[mKey][b] || 0) + 1;
           }
         });
 
@@ -353,6 +364,7 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
           totalRecords: periodAttendance.length,
           byBranch: Object.entries(attByBranch).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value),
           byMonth: Object.entries(attByMonth).map(([month, count]) => ({ month, count })).sort((a, b) => a.month.localeCompare(b.month)),
+          byMonthByCommunity: attByMonthByCommunity,
           attendees,
         };
       }
@@ -393,17 +405,23 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
 
       const loansByMonth = {};
       const paymentsByMonth = {};
+      const loansByMonthByCommunity = {};
+      const paymentsByMonthByCommunity = {};
 
       periodLoans.forEach(l => {
         const s = l.status || 'pending';
         loansByStatus[s] = (loansByStatus[s] || 0) + 1;
         totalApplied += l.amount || 0;
+        const loanMember = allMembersMap[l.email || l.memberEmail];
+        const loanBranch = l.branch || loanMember?.branch || 'Unknown';
         if (l.disbursed) {
           totalDisbursedAmt += l.amount || 0;
           if (l.disbursementDate) {
             const dt = new Date(l.disbursementDate);
             const mKey = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
             loansByMonth[mKey] = (loansByMonth[mKey] || 0) + (l.amount || 0);
+            if (!loansByMonthByCommunity[mKey]) loansByMonthByCommunity[mKey] = {};
+            loansByMonthByCommunity[mKey][loanBranch] = (loansByMonthByCommunity[mKey][loanBranch] || 0) + (l.amount || 0);
           }
         }
       });
@@ -416,21 +434,32 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
         const dt = new Date(p.confirmedAt || p.createdAt || p.date);
         const mKey = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
         paymentsByMonth[mKey] = (paymentsByMonth[mKey] || 0) + (Number(p.amount) || 0);
+        const payMember = allMembersMap[p.email || p.memberEmail];
+        const payBranch = p.branch || payMember?.branch || 'Unknown';
+        if (!paymentsByMonthByCommunity[mKey]) paymentsByMonthByCommunity[mKey] = {};
+        paymentsByMonthByCommunity[mKey][payBranch] = (paymentsByMonthByCommunity[mKey][payBranch] || 0) + (Number(p.amount) || 0);
       });
       
       const allMonths = Array.from(new Set([...Object.keys(loansByMonth), ...Object.keys(paymentsByMonth)])).sort();
 
       // Applications count by month + approval/rejection rate by month
       const appsByMonth = {};
+      const appsByMonthByCommunity = {};
       const approvalByMonth = {};
 
       periodLoans.forEach(l => {
         const dt = new Date(l.appliedDate || l.createdAt);
         const mKey = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
+        const appMember = allMembersMap[l.email || l.memberEmail];
+        const appBranch = l.branch || appMember?.branch || 'Unknown';
         
         // Count applications per month
         if (!appsByMonth[mKey]) appsByMonth[mKey] = 0;
         appsByMonth[mKey]++;
+
+        // Per-community application count
+        if (!appsByMonthByCommunity[mKey]) appsByMonthByCommunity[mKey] = {};
+        appsByMonthByCommunity[mKey][appBranch] = (appsByMonthByCommunity[mKey][appBranch] || 0) + 1;
 
         // Track approved vs rejected per month
         if (!approvalByMonth[mKey]) approvalByMonth[mKey] = { approved: 0, rejected: 0, total: 0 };
@@ -465,7 +494,9 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
         paymentsCount: periodPayments.length,
         byStatus: Object.entries(loansByStatus).map(([status, count]) => ({ status, count })),
         byMonth: allMonths.map(month => ({ month, disbursed: loansByMonth[month] || 0, received: paymentsByMonth[month] || 0 })),
+        byMonthByCommunity: { disbursed: loansByMonthByCommunity, collected: paymentsByMonthByCommunity },
         applicationsByMonth: Object.entries(appsByMonth).map(([month, count]) => ({ month, count })).sort((a, b) => a.month.localeCompare(b.month)),
+        applicationsByMonthByCommunity: appsByMonthByCommunity,
         approvalByMonth: Object.entries(approvalByMonth).map(([month, d]) => ({
           month,
           approvalRate: d.total > 0 ? Math.round((d.approved / d.total) * 100) : 0,
@@ -546,22 +577,26 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
       const totalDisbursed = disbursedLoans.reduce((s, l) => s + (l.amount || 0), 0);
       
       const disbByMonth = {};
+      const disbByMonthByCommunity = {};
       const disbByMethod = {};
       const disbByCommunity = {};
       const disbByUser = {};
       
       disbursedLoans.forEach(l => {
+        const member = allMembersMap[l.email || l.memberEmail];
+        const branch = l.branch || member?.branch || 'Unknown';
+
         if (l.disbursementDate) {
           const dt = new Date(l.disbursementDate);
           const mKey = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
           disbByMonth[mKey] = (disbByMonth[mKey] || 0) + (l.amount || 0);
+          if (!disbByMonthByCommunity[mKey]) disbByMonthByCommunity[mKey] = {};
+          disbByMonthByCommunity[mKey][branch] = (disbByMonthByCommunity[mKey][branch] || 0) + (l.amount || 0);
         }
         const method = normalizeMethodName(l.disbursementMethod || l.paymentMethod || 'Bank Transfer');
         disbByMethod[method] = (disbByMethod[method] || 0) + (l.amount || 0);
 
         // Aggregate by community
-        const member = allMembersMap[l.email || l.memberEmail];
-        const branch = l.branch || member?.branch || 'Unknown';
         disbByCommunity[branch] = (disbByCommunity[branch] || 0) + (l.amount || 0);
 
         // Aggregate by user
@@ -574,6 +609,7 @@ router.get('/financial-report', authenticateAdmin, async (req, res) => {
           totalAmount: totalDisbursed,
           count: disbursedLoans.length,
           byMonth: Object.entries(disbByMonth).map(([month, value]) => ({ month, value })).sort((a, b) => a.month.localeCompare(b.month)),
+          byMonthByCommunity: disbByMonthByCommunity,
           byMethod: Object.entries(disbByMethod).map(([method, value]) => ({ method, value })).sort((a, b) => b.value - a.value),
           byCommunity: Object.entries(disbByCommunity).map(([community, value]) => ({ community, value })).sort((a, b) => b.value - a.value).slice(0, 5),
           byUser: Object.entries(disbByUser).map(([user, value]) => ({ user, value })).sort((a, b) => b.value - a.value).slice(0, 5),
