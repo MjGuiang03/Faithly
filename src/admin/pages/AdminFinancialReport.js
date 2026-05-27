@@ -890,27 +890,36 @@ export default function AdminFinancialReport() {
                         
                         return (
                           <div className="fin-report-grouped-legend" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', marginTop: '16px' }}>
-                            {Object.entries(seriesByProv).map(([prov, seriesList]) => (
-                              <div key={prov} className="fin-report-legend-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '120px' }}>
-                                {!showProvinceTrend && (
-                                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#6b7280', textTransform: 'uppercase', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '2px' }}>
-                                    {prov}
-                                  </div>
-                                )}
-                                {seriesList.map((s) => {
-                                  const totalVal = fullMonthData.reduce((sum, row) => sum + (row[s.name] || 0), 0);
-                                  return (
-                                    <div key={s.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start' }}>
-                                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                                        <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[s.index % COMMUNITY_COLORS.length] }} />
-                                        <span className="fin-report-legend-label">{s.name}</span>
-                                        <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: '6px' }}>({fmt(totalVal)})</span>
-                                      </div>
+                            {Object.entries(seriesByProv).map(([prov, seriesList]) => {
+                              const activeSeries = seriesList.filter(s => seriesWithData.includes(s.name));
+                              if (activeSeries.length === 0) return null;
+                              return (
+                                <div key={prov} className="fin-report-legend-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '120px' }}>
+                                  {!showProvinceTrend && (
+                                    <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#6b7280', textTransform: 'uppercase', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '2px' }}>
+                                      {prov}
                                     </div>
-                                  );
-                                })}
+                                  )}
+                                  {activeSeries.map((s) => {
+                                    const totalVal = fullMonthData.reduce((sum, row) => sum + (row[s.name] || 0), 0);
+                                    return (
+                                      <div key={s.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                                          <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[s.index % COMMUNITY_COLORS.length] }} />
+                                          <span className="fin-report-legend-label">{s.name}</span>
+                                          <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: '6px' }}>({fmt(totalVal)})</span>
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              );
+                            })}
+                            {allSeries.some(s => !seriesWithData.includes(s)) && (
+                              <div style={{ width: '100%', fontSize: '11px', color: '#9CA3AF', marginTop: '8px', fontStyle: 'italic' }}>
+                                No donations: {allSeries.filter(s => !seriesWithData.includes(s)).join(', ')}
                               </div>
-                            ))}
+                            )}
                           </div>
                         );
                       })()}
@@ -999,26 +1008,34 @@ export default function AdminFinancialReport() {
                           
                           return (
                             <div className="fin-report-grouped-legend" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', marginTop: '16px' }}>
-                              {Object.entries(seriesByProv).map(([prov, seriesList]) => (
-                                <div key={prov} className="fin-report-legend-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '120px' }}>
-                                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#6b7280', textTransform: 'uppercase', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '2px' }}>
-                                    {prov}
-                                  </div>
-                                  {seriesList.map((s) => {
-                                    const totalVal = fullMonthData.reduce((sum, row) => sum + (row[s.name] || 0), 0);
-                                    return (
-                                      <div key={s.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start', opacity: s.hasData ? 1 : 0.5 }}>
-                                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                                          <span className="fin-report-legend-dot" style={{ background: s.hasData ? COMMUNITY_COLORS[s.index % COMMUNITY_COLORS.length] : '#d1d5db' }} />
-                                          <span className="fin-report-legend-label">{s.name}</span>
-                                          {s.hasData && <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: '6px' }}>({fmt(totalVal)})</span>}
-                                          {!s.hasData && <span style={{ fontSize: '9px', color: '#9CA3AF', marginLeft: '4px', fontStyle: 'italic' }}>No data</span>}
+                              {Object.entries(seriesByProv).map(([prov, seriesList]) => {
+                                const activeSeries = seriesList.filter(s => s.hasData);
+                                if (activeSeries.length === 0) return null;
+                                return (
+                                  <div key={prov} className="fin-report-legend-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '120px' }}>
+                                    <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#6b7280', textTransform: 'uppercase', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '2px' }}>
+                                      {prov}
+                                    </div>
+                                    {activeSeries.map((s) => {
+                                      const totalVal = fullMonthData.reduce((sum, row) => sum + (row[s.name] || 0), 0);
+                                      return (
+                                        <div key={s.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start' }}>
+                                          <div style={{ display: 'flex', alignItems: 'center' }}>
+                                            <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[s.index % COMMUNITY_COLORS.length] }} />
+                                            <span className="fin-report-legend-label">{s.name}</span>
+                                            <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: '6px' }}>({fmt(totalVal)})</span>
+                                          </div>
                                         </div>
-                                      </div>
-                                    );
-                                  })}
+                                      );
+                                    })}
+                                  </div>
+                                );
+                              })}
+                              {allSeries.some(s => !seriesWithData.includes(s)) && (
+                                <div style={{ width: '100%', fontSize: '11px', color: '#9CA3AF', marginTop: '8px', fontStyle: 'italic' }}>
+                                  No donations: {allSeries.filter(s => !seriesWithData.includes(s)).join(', ')}
                                 </div>
-                              ))}
+                              )}
                             </div>
                           );
                         })()}
@@ -1393,33 +1410,43 @@ export default function AdminFinancialReport() {
                         allSeries.forEach((s, i) => {
                           const prov = showProvinceTrend ? s : (branchToProv[s] || 'Unknown');
                           if (!seriesByProv[prov]) seriesByProv[prov] = [];
-                          seriesByProv[prov].push({ name: s, index: i });
+                          const hasData = seriesWithData.includes(s);
+                          seriesByProv[prov].push({ name: s, index: i, hasData });
                         });
                         
                         return (
                           <div className="fin-report-grouped-legend" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', marginTop: '16px' }}>
-                            {Object.entries(seriesByProv).map(([prov, seriesList]) => (
-                              <div key={prov} className="fin-report-legend-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '120px' }}>
-                                {!showProvinceTrend && (
-                                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#6b7280', textTransform: 'uppercase', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '2px' }}>
-                                    {prov}
-                                  </div>
-                                )}
-                                {seriesList.map((s) => {
-                                  const totalDisb = trendData.reduce((sum, row) => sum + (row['disb_' + s.name] || 0), 0);
-                                  const totalColl = trendData.reduce((sum, row) => sum + (row['coll_' + s.name] || 0), 0);
-                                  return (
-                                    <div key={s.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start' }}>
-                                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                                        <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[s.index % COMMUNITY_COLORS.length] }} />
-                                        <span className="fin-report-legend-label">{s.name}</span>
-                                        <span style={{ fontSize: '9px', color: '#4b5563', marginLeft: '6px' }}>(Disb: {fmt(totalDisb)} · Coll: {fmt(totalColl)})</span>
-                                      </div>
+                            {Object.entries(seriesByProv).map(([prov, seriesList]) => {
+                              const activeSeries = seriesList.filter(s => s.hasData);
+                              if (activeSeries.length === 0) return null;
+                              return (
+                                <div key={prov} className="fin-report-legend-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '120px' }}>
+                                  {!showProvinceTrend && (
+                                    <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#6b7280', textTransform: 'uppercase', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '2px' }}>
+                                      {prov}
                                     </div>
-                                  );
-                                })}
+                                  )}
+                                  {activeSeries.map((s) => {
+                                    const totalDisb = trendData.reduce((sum, row) => sum + (row['disb_' + s.name] || 0), 0);
+                                    const totalColl = trendData.reduce((sum, row) => sum + (row['coll_' + s.name] || 0), 0);
+                                    return (
+                                      <div key={s.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                                          <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[s.index % COMMUNITY_COLORS.length] }} />
+                                          <span className="fin-report-legend-label">{s.name}</span>
+                                          <span style={{ fontSize: '9px', color: '#4b5563', marginLeft: '6px' }}>(Disb: {fmt(totalDisb)} · Coll: {fmt(totalColl)})</span>
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              );
+                            })}
+                            {allSeries.some(s => !seriesWithData.includes(s)) && (
+                              <div style={{ width: '100%', fontSize: '11px', color: '#9CA3AF', marginTop: '8px', fontStyle: 'italic' }}>
+                                No loans: {allSeries.filter(s => !seriesWithData.includes(s)).join(', ')}
                               </div>
-                            ))}
+                            )}
                             <div style={{ width: '100%', fontSize: '11px', color: '#6b7280', marginTop: '8px' }}>
                               <em>Note: For each month, the left bar is Disbursed (solid) and the right bar is Collected (lighter color).</em>
                             </div>
@@ -1526,27 +1553,35 @@ export default function AdminFinancialReport() {
                           
                           return (
                             <div className="fin-report-grouped-legend" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', marginTop: '16px' }}>
-                              {Object.entries(seriesByProv).map(([prov, seriesList]) => (
-                                <div key={prov} className="fin-report-legend-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '120px' }}>
-                                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#6b7280', textTransform: 'uppercase', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '2px' }}>
-                                    {prov}
-                                  </div>
-                                  {seriesList.map((s) => {
-                                    const totalDisb = trendData.reduce((sum, row) => sum + (row['disb_' + s.name] || 0), 0);
-                                    const totalColl = trendData.reduce((sum, row) => sum + (row['coll_' + s.name] || 0), 0);
-                                    return (
-                                      <div key={s.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start', opacity: s.hasData ? 1 : 0.5 }}>
-                                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                                          <span className="fin-report-legend-dot" style={{ background: s.hasData ? COMMUNITY_COLORS[s.index % COMMUNITY_COLORS.length] : '#d1d5db' }} />
-                                          <span className="fin-report-legend-label">{s.name}</span>
-                                          {s.hasData && <span style={{ fontSize: '9px', color: '#4b5563', marginLeft: '6px' }}>(Disb: {fmt(totalDisb)} · Coll: {fmt(totalColl)})</span>}
-                                          {!s.hasData && <span style={{ fontSize: '9px', color: '#9CA3AF', marginLeft: '4px', fontStyle: 'italic' }}>No data</span>}
+                              {Object.entries(seriesByProv).map(([prov, seriesList]) => {
+                                const activeSeries = seriesList.filter(s => s.hasData);
+                                if (activeSeries.length === 0) return null;
+                                return (
+                                  <div key={prov} className="fin-report-legend-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '120px' }}>
+                                    <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#6b7280', textTransform: 'uppercase', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '2px' }}>
+                                      {prov}
+                                    </div>
+                                    {activeSeries.map((s) => {
+                                      const totalDisb = trendData.reduce((sum, row) => sum + (row['disb_' + s.name] || 0), 0);
+                                      const totalColl = trendData.reduce((sum, row) => sum + (row['coll_' + s.name] || 0), 0);
+                                      return (
+                                        <div key={s.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start' }}>
+                                          <div style={{ display: 'flex', alignItems: 'center' }}>
+                                            <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[s.index % COMMUNITY_COLORS.length] }} />
+                                            <span className="fin-report-legend-label">{s.name}</span>
+                                            <span style={{ fontSize: '9px', color: '#4b5563', marginLeft: '6px' }}>(Disb: {fmt(totalDisb)} · Coll: {fmt(totalColl)})</span>
+                                          </div>
                                         </div>
-                                      </div>
-                                    );
-                                  })}
+                                      );
+                                    })}
+                                  </div>
+                                );
+                              })}
+                              {allSeries.some(s => !seriesWithData.includes(s)) && (
+                                <div style={{ width: '100%', fontSize: '11px', color: '#9CA3AF', marginTop: '8px', fontStyle: 'italic' }}>
+                                  No loans: {allSeries.filter(s => !seriesWithData.includes(s)).join(', ')}
                                 </div>
-                              ))}
+                              )}
                               <div style={{ width: '100%', fontSize: '11px', color: '#6b7280', marginTop: '8px' }}>
                                 <em>Note: For each month, the left bar is Disbursed (solid) and the right bar is Collected (lighter color).</em>
                               </div>
@@ -1738,26 +1773,34 @@ export default function AdminFinancialReport() {
                           
                           return (
                             <div className="fin-report-grouped-legend" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', marginTop: '16px' }}>
-                              {Object.entries(seriesByProv).map(([prov, seriesList]) => (
-                                <div key={prov} className="fin-report-legend-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '120px' }}>
-                                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#6b7280', textTransform: 'uppercase', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '2px' }}>
-                                    {prov}
-                                  </div>
-                                  {seriesList.map((s) => {
-                                    const totalVal = trendData.reduce((sum, row) => sum + (row[s.name] || 0), 0);
-                                    return (
-                                      <div key={s.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start', opacity: s.hasData ? 1 : 0.5 }}>
-                                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                                          <span className="fin-report-legend-dot" style={{ background: s.hasData ? COMMUNITY_COLORS[s.index % COMMUNITY_COLORS.length] : '#d1d5db' }} />
-                                          <span className="fin-report-legend-label">{s.name}</span>
-                                          {s.hasData && <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: '6px' }}>({totalVal} apps)</span>}
-                                          {!s.hasData && <span style={{ fontSize: '9px', color: '#9CA3AF', marginLeft: '4px', fontStyle: 'italic' }}>No data</span>}
+                              {Object.entries(seriesByProv).map(([prov, seriesList]) => {
+                                const activeSeries = seriesList.filter(s => s.hasData);
+                                if (activeSeries.length === 0) return null;
+                                return (
+                                  <div key={prov} className="fin-report-legend-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '120px' }}>
+                                    <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#6b7280', textTransform: 'uppercase', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '2px' }}>
+                                      {prov}
+                                    </div>
+                                    {activeSeries.map((s) => {
+                                      const totalVal = trendData.reduce((sum, row) => sum + (row[s.name] || 0), 0);
+                                      return (
+                                        <div key={s.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start' }}>
+                                          <div style={{ display: 'flex', alignItems: 'center' }}>
+                                            <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[s.index % COMMUNITY_COLORS.length] }} />
+                                            <span className="fin-report-legend-label">{s.name}</span>
+                                            <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: '6px' }}>({totalVal} apps)</span>
+                                          </div>
                                         </div>
-                                      </div>
-                                    );
-                                  })}
+                                      );
+                                    })}
+                                  </div>
+                                );
+                              })}
+                              {allSeries.some(s => !seriesWithData.includes(s)) && (
+                                <div style={{ width: '100%', fontSize: '11px', color: '#9CA3AF', marginTop: '8px', fontStyle: 'italic' }}>
+                                  No applications: {allSeries.filter(s => !seriesWithData.includes(s)).join(', ')}
                                 </div>
-                              ))}
+                              )}
                             </div>
                           );
                         })()}
@@ -2148,16 +2191,29 @@ export default function AdminFinancialReport() {
                       </ResponsiveContainer>
                       {isMulti && (
                         <div className="fin-report-legend">
-                          {allSeries.map((s, i) => {
-                            const totalVal = fullMonthData.reduce((sum, row) => sum + (row[s] || 0), 0);
+                          {(() => {
+                            const activeSeries = allSeries.filter(s => seriesWithData.includes(s));
                             return (
-                              <div key={s} className="fin-report-legend-item">
-                                <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[i % COMMUNITY_COLORS.length] }} />
-                                <span className="fin-report-legend-label">{s}</span>
-                                <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: '6px' }}>({totalVal} {showProvinceTrend ? 'attendees' : 'attendees'})</span>
-                              </div>
+                              <>
+                                {activeSeries.map((s, i) => {
+                                  const totalVal = fullMonthData.reduce((sum, row) => sum + (row[s] || 0), 0);
+                                  const origIdx = allSeries.indexOf(s);
+                                  return (
+                                    <div key={s} className="fin-report-legend-item">
+                                      <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[origIdx % COMMUNITY_COLORS.length] }} />
+                                      <span className="fin-report-legend-label">{s}</span>
+                                      <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: '6px' }}>({totalVal} attendees)</span>
+                                    </div>
+                                  );
+                                })}
+                                {allSeries.some(s => !seriesWithData.includes(s)) && (
+                                  <div style={{ width: '100%', fontSize: '11px', color: '#9CA3AF', marginTop: '8px', fontStyle: 'italic' }}>
+                                    No attendance: {allSeries.filter(s => !seriesWithData.includes(s)).join(', ')}
+                                  </div>
+                                )}
+                              </>
                             );
-                          })}
+                          })()}
                         </div>
                       )}
                       <ChartFooter period={report.period} location={getLocationLabel()} />
@@ -2243,26 +2299,34 @@ export default function AdminFinancialReport() {
                           
                           return (
                             <div className="fin-report-grouped-legend" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', marginTop: '16px' }}>
-                              {Object.entries(commsByProv).map(([prov, comms]) => (
-                                <div key={prov} className="fin-report-legend-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '120px' }}>
-                                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#6b7280', textTransform: 'uppercase', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '2px' }}>
-                                    {prov}
-                                  </div>
-                                  {comms.map((c) => {
-                                    const totalVal = fullMonthData.reduce((sum, row) => sum + (row[c.name] || 0), 0);
-                                    return (
-                                      <div key={c.name} className="fin-report-legend-item" style={{ margin: 0, opacity: c.hasData ? 1 : 0.5 }}>
-                                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                                          <span className="fin-report-legend-dot" style={{ background: c.hasData ? COMMUNITY_COLORS[c.index % COMMUNITY_COLORS.length] : '#d1d5db' }} />
-                                          <span className="fin-report-legend-label">{c.name}</span>
-                                          {c.hasData && <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: '6px' }}>({totalVal} attendees)</span>}
-                                          {!c.hasData && <span style={{ fontSize: '9px', color: '#9CA3AF', marginLeft: '4px', fontStyle: 'italic' }}>No data</span>}
+                              {Object.entries(commsByProv).map(([prov, comms]) => {
+                                const activeComms = comms.filter(c => c.hasData);
+                                if (activeComms.length === 0) return null;
+                                return (
+                                  <div key={prov} className="fin-report-legend-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '120px' }}>
+                                    <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#6b7280', textTransform: 'uppercase', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '2px' }}>
+                                      {prov}
+                                    </div>
+                                    {activeComms.map((c) => {
+                                      const totalVal = fullMonthData.reduce((sum, row) => sum + (row[c.name] || 0), 0);
+                                      return (
+                                        <div key={c.name} className="fin-report-legend-item" style={{ margin: 0 }}>
+                                          <div style={{ display: 'flex', alignItems: 'center' }}>
+                                            <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[c.index % COMMUNITY_COLORS.length] }} />
+                                            <span className="fin-report-legend-label">{c.name}</span>
+                                            <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: '6px' }}>({totalVal} attendees)</span>
+                                          </div>
                                         </div>
-                                      </div>
-                                    );
-                                  })}
+                                      );
+                                    })}
+                                  </div>
+                                );
+                              })}
+                              {allCommunities.some(c => !commsWithData.includes(c)) && (
+                                <div style={{ width: '100%', fontSize: '11px', color: '#9CA3AF', marginTop: '8px', fontStyle: 'italic' }}>
+                                  No attendance: {allCommunities.filter(c => !commsWithData.includes(c)).join(', ')}
                                 </div>
-                              ))}
+                              )}
                             </div>
                           );
                         })()}
@@ -2341,8 +2405,12 @@ export default function AdminFinancialReport() {
                   const showProvinceTrend = availableProvinces.length >= 2;
                   const dataMap = showProvinceTrend ? provDataMap : (report.secretary.disbursements.byMonthByCommunity || {});
                   let allSeries = [...new Set(Object.values(dataMap).flatMap(obj => Object.keys(obj)))].sort();
-                  const chartTitle = `Monthly Disbursements ${allSeries.length >= 2 ? (showProvinceTrend ? '(By Province)' : '(By Community)') : ''}`;
                   const isMulti = allSeries.length >= 2;
+
+                  // Filter communities/provinces with actual data
+                  const seriesWithData = allSeries.filter(s => Object.values(dataMap).some(monthObj => (monthObj[s] || 0) > 0));
+
+                  const chartTitle = `Monthly Disbursements ${allSeries.length >= 2 ? (showProvinceTrend ? '(By Province)' : '(By Community)') : ''}`;
 
                   const trendData = MONTH_SHORT.slice(from, to + 1).map((label, idx) => {
                     const i = from + idx;
@@ -2369,9 +2437,10 @@ export default function AdminFinancialReport() {
                               <Label value="Amount (₱)" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
                             </YAxis>
                             <Tooltip formatter={(v, name) => [fmt(v), name === 'value' ? 'Amount' : name]} />
-                            {allSeries.map((s, i) => (
-                              <Bar key={s} dataKey={s} name={s} fill={COMMUNITY_COLORS[i % COMMUNITY_COLORS.length]} />
-                            ))}
+                            {seriesWithData.map((s) => {
+                              const origIdx = allSeries.indexOf(s);
+                              return <Bar key={s} dataKey={s} name={s} fill={COMMUNITY_COLORS[origIdx % COMMUNITY_COLORS.length]} />;
+                            })}
                           </BarChart>
                         ) : (
                           <BarChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
@@ -2396,28 +2465,42 @@ export default function AdminFinancialReport() {
                         allSeries.forEach((s, i) => {
                           const prov = showProvinceTrend ? s : (branchToProv[s] || 'Unknown');
                           if (!seriesByProv[prov]) seriesByProv[prov] = [];
-                          seriesByProv[prov].push({ name: s, index: i });
+                          const hasData = seriesWithData.includes(s);
+                          seriesByProv[prov].push({ name: s, index: i, hasData });
                         });
                         
                         return (
                           <div className="fin-report-grouped-legend" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', marginTop: '16px' }}>
-                            {Object.entries(seriesByProv).map(([prov, seriesList]) => (
-                              <div key={prov} className="fin-report-legend-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '120px' }}>
-                                {!showProvinceTrend && (
-                                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#6b7280', textTransform: 'uppercase', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '2px' }}>
-                                    {prov}
-                                  </div>
-                                )}
-                                {seriesList.map((s) => (
-                                  <div key={s.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                                      <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[s.index % COMMUNITY_COLORS.length] }} />
-                                      <span className="fin-report-legend-label">{s.name}</span>
+                            {Object.entries(seriesByProv).map(([prov, seriesList]) => {
+                              const activeSeries = seriesList.filter(s => s.hasData);
+                              if (activeSeries.length === 0) return null;
+                              return (
+                                <div key={prov} className="fin-report-legend-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '120px' }}>
+                                  {!showProvinceTrend && (
+                                    <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#6b7280', textTransform: 'uppercase', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '2px' }}>
+                                      {prov}
                                     </div>
-                                  </div>
-                                ))}
+                                  )}
+                                  {activeSeries.map((s) => {
+                                    const totalVal = trendData.reduce((sum, row) => sum + (row[s.name] || 0), 0);
+                                    return (
+                                      <div key={s.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                                          <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[s.index % COMMUNITY_COLORS.length] }} />
+                                          <span className="fin-report-legend-label">{s.name}</span>
+                                          <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: '6px' }}>({fmt(totalVal)})</span>
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              );
+                            })}
+                            {allSeries.some(s => !seriesWithData.includes(s)) && (
+                              <div style={{ width: '100%', fontSize: '11px', color: '#9CA3AF', marginTop: '8px', fontStyle: 'italic' }}>
+                                No disbursements: {allSeries.filter(s => !seriesWithData.includes(s)).join(', ')}
                               </div>
-                            ))}
+                            )}
                           </div>
                         );
                       })()}
@@ -2507,26 +2590,34 @@ export default function AdminFinancialReport() {
                           
                           return (
                             <div className="fin-report-grouped-legend" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', marginTop: '16px' }}>
-                              {Object.entries(seriesByProv).map(([prov, seriesList]) => (
-                                <div key={prov} className="fin-report-legend-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '120px' }}>
-                                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#6b7280', textTransform: 'uppercase', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '2px' }}>
-                                    {prov}
-                                  </div>
-                                  {seriesList.map((s) => {
-                                    const totalVal = trendData.reduce((sum, row) => sum + (row[s.name] || 0), 0);
-                                    return (
-                                      <div key={s.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start', opacity: s.hasData ? 1 : 0.5 }}>
-                                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                                          <span className="fin-report-legend-dot" style={{ background: s.hasData ? COMMUNITY_COLORS[s.index % COMMUNITY_COLORS.length] : '#d1d5db' }} />
-                                          <span className="fin-report-legend-label">{s.name}</span>
-                                          {s.hasData && <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: '6px' }}>({fmt(totalVal)})</span>}
-                                          {!s.hasData && <span style={{ fontSize: '9px', color: '#9CA3AF', marginLeft: '4px', fontStyle: 'italic' }}>No data</span>}
+                              {Object.entries(seriesByProv).map(([prov, seriesList]) => {
+                                const activeSeries = seriesList.filter(s => s.hasData);
+                                if (activeSeries.length === 0) return null;
+                                return (
+                                  <div key={prov} className="fin-report-legend-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '120px' }}>
+                                    <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#6b7280', textTransform: 'uppercase', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '2px' }}>
+                                      {prov}
+                                    </div>
+                                    {activeSeries.map((s) => {
+                                      const totalVal = trendData.reduce((sum, row) => sum + (row[s.name] || 0), 0);
+                                      return (
+                                        <div key={s.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start' }}>
+                                          <div style={{ display: 'flex', alignItems: 'center' }}>
+                                            <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[s.index % COMMUNITY_COLORS.length] }} />
+                                            <span className="fin-report-legend-label">{s.name}</span>
+                                            <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: '6px' }}>({fmt(totalVal)})</span>
+                                          </div>
                                         </div>
-                                      </div>
-                                    );
-                                  })}
+                                      );
+                                    })}
+                                  </div>
+                                );
+                              })}
+                              {allSeries.some(s => !seriesWithData.includes(s)) && (
+                                <div style={{ width: '100%', fontSize: '11px', color: '#9CA3AF', marginTop: '8px', fontStyle: 'italic' }}>
+                                  No disbursements: {allSeries.filter(s => !seriesWithData.includes(s)).join(', ')}
                                 </div>
-                              ))}
+                              )}
                             </div>
                           );
                         })()}
