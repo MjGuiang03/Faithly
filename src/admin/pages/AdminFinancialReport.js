@@ -932,7 +932,6 @@ export default function AdminFinancialReport() {
                     const seriesWithData = allSeries.filter(s => {
                       return Object.values(bmc).some(monthObj => (monthObj[s] || 0) > 0);
                     });
-                    const seriesNoData = allSeries.filter(s => !seriesWithData.includes(s));
 
                     const fullMonthData = MONTH_SHORT.slice(from, to + 1).map((label, idx) => {
                       const i = from + idx;
