@@ -382,9 +382,9 @@
 /* ── Legend ── */
 .fin-report-legend {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-top: 8px;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  margin-top: 12px;
 }
 
 .fin-report-legend-item {

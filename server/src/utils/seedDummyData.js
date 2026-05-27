@@ -79,7 +79,7 @@ async function run() {
           passwordHash: hashedPwd,
           branch: community,
           role: isOfficer ? 'officer' : 'member',
-          position: isOfficer ? getRandom(['President', 'Vice President', 'Secretary', 'Treasurer', 'Auditor']) : 'Member',
+          position: isOfficer ? getRandom(['Deacon', 'Local Evangelist', 'District Evangelist', 'National Evangelist', 'Assistant Priest', 'Priest', 'Elder', 'District Elder', 'Bishop', 'District Bishop', 'National Bishop', 'Apostle']) : 'Member',
           status: isActive ? 'active' : 'inactive',
           memberId: `M-${randomInt(100000, 999999)}`,
           createdAt: createdAt
@@ -202,7 +202,6 @@ async function run() {
 
       for (let i = 0; i < Math.min(loansCount, validOfficers.length * 2); i++) {
         const user = getRandom(validOfficers);
-        const userSavings = savedGoalMap.find(g => g.email === user.email).savedAmount;
         loanCounter++;
         const loanId = `LN-2026-${String(loanCounter).padStart(5, '0')}`;
         
@@ -250,8 +249,8 @@ async function run() {
         if (status === 'active' || status === 'completed') {
           loanDoc.disbursed = true;
           loanDoc.disbursementDate = new Date(appliedDate.getTime() + 86400000 * randomInt(2, 7)); // disbursed days later
-          // Skew heavily towards E-Wallet and Cash to offset existing DB
-          loanDoc.disbursementMethod = Math.random() < 0.15 ? 'Bank Transfer' : (Math.random() < 0.65 ? 'E-Wallet' : 'Cash');
+          // Exclusively use E-Wallet and Bank Transfer to balance out the existing heavy Cash transactions in the DB
+          loanDoc.disbursementMethod = Math.random() < 0.5 ? 'Bank Transfer' : 'E-Wallet';
           loanDoc.statusHistory.push({ status: 'approved', date: loanDoc.disbursementDate });
           loanDoc.statusHistory.push({ status: 'processed', date: loanDoc.disbursementDate });
           
@@ -269,7 +268,7 @@ async function run() {
         
         loans.push(loanDoc);
       }
-      const loanRes = await db.collection('loans').insertMany(loans);
+      await db.collection('loans').insertMany(loans);
       console.log(`✅ Loans inserted: ${loans.length}`);
 
       // LOAN PAYMENTS
