@@ -3,7 +3,7 @@ import useSWR from 'swr';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
-  BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area, LineChart, Line,
+  BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Label, LabelList
 } from 'recharts';
 
@@ -1470,7 +1470,6 @@ export default function AdminFinancialReport() {
                   });
                   const totalApps = trendData.reduce((s, d) => s + d.applications, 0);
                   const peakIdx = trendData.reduce((maxI, d, i, arr) => d.applications > arr[maxI].applications ? i : maxI, 0);
-                  const lowIdx = trendData.reduce((minI, d, i, arr) => d.applications < arr[minI].applications ? i : minI, 0);
                   return trendData.length > 0 ? (
                     <div className="fin-report-chart-card" style={{ width: '100%' }}>
                       <h3 className="fin-report-chart-title">{chartTitle}</h3>
