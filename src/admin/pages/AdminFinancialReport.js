@@ -12,7 +12,56 @@ import API from '../../utils/api';
 import { FileText, Printer, RefreshCw, Sparkles, Calendar, ChevronDown, Download, MapPin, AlertCircle, X } from 'lucide-react';
 
 // Color palette for per-community comparison lines
-const COMMUNITY_COLORS = ['#2563eb', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316', '#6366F1', '#84CC16'];
+const COMMUNITY_COLORS = [
+  '#2563eb', '#0ca678', '#f59e0b', '#ef4444', '#7c3aed',
+  '#0891b2', '#dc2626', '#059669', '#d97706', '#4f46e5',
+  '#0d9488', '#be185d',
+];
+
+/**
+ * Given a byMonthByCommunity map and a month range, returns:
+ *   - topSeries: top N community names by total
+ *   - othersLabel: "X others" string or null
+ *   - fullMonthData: chart rows with an "Others" key for the merged rest
+ */
+function buildTopNSeriesData({
+  seriesKeys,       // string[] — all community/province names
+  dataMap,          // { "2026-01": { communityName: value } }
+  reportYear,
+  from,             // month index start (0-based)
+  to,               // month index end (0-based)
+  maxSeries = 10,   // show at most this many series
+}) {
+  // Compute total per series across the month range
+  const totals = {};
+  seriesKeys.forEach(s => { totals[s] = 0; });
+  for (let i = from; i <= to; i++) {
+    const key = `${reportYear}-${String(i + 1).padStart(2, '0')}`;
+    if (dataMap[key]) {
+      seriesKeys.forEach(s => { totals[s] += dataMap[key][s] || 0; });
+    }
+  }
+
+  // Sort by total descending, take top N
+  const sorted = [...seriesKeys].sort((a, b) => totals[b] - totals[a]);
+  const topSeries = sorted.slice(0, maxSeries);
+  const otherSeries = sorted.slice(maxSeries);
+  const hasOthers = otherSeries.length > 0;
+
+  // Build month-by-month rows
+  const fullMonthData = MONTH_SHORT.slice(from, to + 1).map((label, idx) => {
+    const i = from + idx;
+    const key = `${reportYear}-${String(i + 1).padStart(2, '0')}`;
+    const row = { month: label };
+    topSeries.forEach(s => { row[s] = dataMap[key]?.[s] || 0; });
+    if (hasOthers) {
+      row['Others'] = otherSeries.reduce((sum, s) => sum + (dataMap[key]?.[s] || 0), 0);
+    }
+    return row;
+  });
+
+  return { topSeries, otherSeries, fullMonthData, totals, hasOthers };
+}
 
 const renderSliceLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
   if (percent < 0.05) return null;
@@ -282,9 +331,16 @@ export default function AdminFinancialReport() {
       const opt = {
         margin:       [10, 10, 10, 10],
         filename,
-        image:        { type: 'jpeg', quality: 0.95 },
-        html2canvas:  { scale: 2, useCORS: true, logging: false, scrollY: 0, windowWidth: 1200, backgroundColor: '#ffffff' },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  {
+          scale: 3,               // ← was 2, now 3 for crisp charts
+          useCORS: true,
+          logging: false,
+          scrollY: 0,
+          windowWidth: 1200,
+          backgroundColor: '#ffffff',
+        },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' },
         pagebreak:    { mode: ['css', 'legacy'] },
       };
 
@@ -934,118 +990,115 @@ export default function AdminFinancialReport() {
               {/* Monthly Donation Trend (Row 2 - By Community) */}
               {(() => {
                 const bmc = report.donations.byMonthByCommunity || {};
-                let allSeries = [...new Set(Object.values(bmc).flatMap(obj => Object.keys(obj)))].sort();
+                const allSeries = [...new Set(Object.values(bmc).flatMap(obj => Object.keys(obj)))].sort();
                 const shouldShowRow2 = allSeries.length >= 1;
                 if (!shouldShowRow2) return null;
+
+                // ↓ NEW: limit to top 10
+                const { from, to } = getChartMonthRange();
+                const { topSeries, otherSeries, fullMonthData, totals, hasOthers } = buildTopNSeriesData({
+                  seriesKeys: allSeries,
+                  dataMap: bmc,
+                  reportYear,
+                  from,
+                  to,
+                  maxSeries: 10,
+                });
+
+                // totals for summary
+                const totalDon = fullMonthData.reduce((s, d) => {
+                  return s + topSeries.reduce((sum, key) => sum + (d[key] || 0), 0) + (d['Others'] || 0);
+                }, 0);
+                const highestMon = fullMonthData.reduce((a, b) => {
+                  const aVal = topSeries.reduce((s, k) => s + (a[k] || 0), 0) + (a['Others'] || 0);
+                  const bVal = topSeries.reduce((s, k) => s + (b[k] || 0), 0) + (b['Others'] || 0);
+                  return bVal > aVal ? b : a;
+                }, fullMonthData[0]);
+
+                const displaySeries = hasOthers ? [...topSeries, 'Others'] : topSeries;
+
                 return (
-                <div className="fin-report-charts-row" style={{ gridTemplateColumns: '1fr', marginTop: '16px' }}>
-                  {(() => {
-                    const byMonthMap = {};
-                    (report.donations.byMonth || []).forEach(d => { byMonthMap[d.month] = d.value; });
-                    const { from, to } = getChartMonthRange();
-                    const isMulti = allSeries.length >= 2;
+                  <div className="fin-report-charts-row" style={{ gridTemplateColumns: '1fr', marginTop: '16px' }}>
+                    <div className="fin-report-chart-card" style={{ width: '100%' }}>
+                      <h3 className="fin-report-chart-title">Monthly Donation Trend (By Community)</h3>
+                      <p className="fin-chart-summary">
+                        Detailed Community Breakdown · Total: <strong>{fmt(totalDon)}</strong> · Highest: <strong>{highestMon?.month}</strong>
+                        {hasOthers && <> · Showing top 10 of {allSeries.length} communities</>}
+                      </p>
 
-                    // Separate communities with data vs without
-                    const seriesWithData = allSeries.filter(s => {
-                      return Object.values(bmc).some(monthObj => (monthObj[s] || 0) > 0);
-                    });
-
-                    const fullMonthData = MONTH_SHORT.slice(from, to + 1).map((label, idx) => {
-                      const i = from + idx;
-                      const key = `${reportYear}-${String(i + 1).padStart(2, '0')}`;
-                      const row = { month: label, value: byMonthMap[key] || 0 };
-                      if (isMulti && bmc[key]) {
-                        seriesWithData.forEach(s => { row[s] = bmc[key][s] || 0; });
-                      }
-                      return row;
-                    });
-
-                    const totalDon = fullMonthData.reduce((s, d) => s + d.value, 0);
-                    const highestMon = fullMonthData.reduce((a, b) => b.value > a.value ? b : a, fullMonthData[0]);
-                    
-                    return (
-                      <div className="fin-report-chart-card" style={{ width: '100%' }}>
-                        <h3 className="fin-report-chart-title">Monthly Donation Trend (By Community)</h3>
-                        <p className="fin-chart-summary">Detailed Community Breakdown · Total: <strong>{fmt(totalDon)}</strong> · Highest: <strong>{highestMon?.month}</strong></p>
-                        <ResponsiveContainer width="100%" height={isMulti ? 320 : 220}>
-                          {isMulti ? (
-                            <BarChart data={fullMonthData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
-                              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                              <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-                              <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false}>
-                                <Label value="Amount (₱)" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
-                              </YAxis>
-                              <Tooltip formatter={(v, name) => [fmt(v), name === 'value' ? 'Amount' : name]} />
-                              {seriesWithData.map((s, i) => {
-                                const origIdx = allSeries.indexOf(s);
-                                return <Bar key={s} dataKey={s} fill={COMMUNITY_COLORS[origIdx % COMMUNITY_COLORS.length]} />;
-                              })}
-                            </BarChart>
-                          ) : (
-                            <BarChart data={fullMonthData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
-                              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                              <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-                              <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} allowDecimals={false}>
-                                <Label value="Amount (₱)" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
-                              </YAxis>
-                              <Tooltip formatter={(v, name) => [fmt(v), name === 'value' ? 'Amount' : name]} />
-                              <Bar dataKey="value" fill="#0D1F45" radius={[4, 4, 0, 0]}>
-                                <LabelList dataKey="value" position="top" formatter={v => v > 0 ? fmtShort(v) : ''} style={{ fontSize: 10, fill: '#6B7280' }} />
-                              </Bar>
-                            </BarChart>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={fullMonthData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                          <XAxis dataKey="month" tick={{ fontSize: 10 }} />
+                          <YAxis
+                            tick={{ fontSize: 10 }}
+                            tickFormatter={v => `₱${(v/1000).toFixed(0)}k`}
+                            allowDecimals={false}
+                          >
+                            <Label value="Amount (₱)" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                          </YAxis>
+                          <Tooltip formatter={(v, name) => [fmt(v), name === 'Others' ? `Others (${otherSeries.length} communities)` : name]} />
+                          {topSeries.map((s, i) => (
+                            <Bar key={s} dataKey={s} stackId="a" fill={COMMUNITY_COLORS[i % COMMUNITY_COLORS.length]} />
+                          ))}
+                          {hasOthers && (
+                            <Bar key="Others" dataKey="Others" stackId="a" fill="#d1d5db" name="Others" />
                           )}
-                        </ResponsiveContainer>
-                        {isMulti && (() => {
-                          const branchToProv = {};
-                          branchesData.forEach(b => {
-                            branchToProv[b.name] = b.province || (b.address ? b.address.split(',')[0].trim() : 'Unknown');
-                          });
-                          const seriesByProv = {};
-                          allSeries.forEach((s, i) => {
-                            const prov = branchToProv[s] || 'Unknown';
-                            if (!seriesByProv[prov]) seriesByProv[prov] = [];
-                            const hasData = seriesWithData.includes(s);
-                            seriesByProv[prov].push({ name: s, index: i, hasData });
-                          });
-                          
-                          return (
-                            <div className="fin-report-grouped-legend" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', marginTop: '16px' }}>
-                              {Object.entries(seriesByProv).map(([prov, seriesList]) => {
-                                const activeSeries = seriesList.filter(s => s.hasData);
-                                if (activeSeries.length === 0) return null;
-                                return (
-                                  <div key={prov} className="fin-report-legend-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '120px' }}>
-                                    <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#6b7280', textTransform: 'uppercase', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '2px' }}>
-                                      {prov}
-                                    </div>
-                                    {activeSeries.map((s) => {
-                                      const totalVal = fullMonthData.reduce((sum, row) => sum + (row[s.name] || 0), 0);
-                                      return (
-                                        <div key={s.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start' }}>
-                                          <div style={{ display: 'flex', alignItems: 'center' }}>
-                                            <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[s.index % COMMUNITY_COLORS.length] }} />
-                                            <span className="fin-report-legend-label">{s.name}</span>
-                                            <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: '6px' }}>({fmt(totalVal)})</span>
-                                          </div>
-                                        </div>
-                                      );
-                                    })}
+                        </BarChart>
+                      </ResponsiveContainer>
+
+                      {/* Legend — grouped by province */}
+                      {(() => {
+                        const branchToProv = {};
+                        branchesData.forEach(b => {
+                          branchToProv[b.name] = b.province || 'Unknown';
+                        });
+                        const seriesByProv = {};
+                        topSeries.forEach((s, i) => {
+                          const prov = branchToProv[s] || 'Unknown';
+                          if (!seriesByProv[prov]) seriesByProv[prov] = [];
+                          seriesByProv[prov].push({ name: s, index: i, total: totals[s] });
+                        });
+                        return (
+                          <div className="fin-report-grouped-legend">
+                            {Object.entries(seriesByProv).map(([prov, seriesList]) => (
+                              <div key={prov} className="fin-report-legend-group">
+                                <div className="fin-report-legend-province-header">{prov}</div>
+                                {seriesList.map(s => (
+                                  <div key={s.name} className="fin-report-legend-item" style={{ margin: 0 }}>
+                                    <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[s.index % COMMUNITY_COLORS.length] }} />
+                                    <span className="fin-report-legend-label">{s.name}</span>
+                                    <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: '4px' }}>({fmt(s.total)})</span>
                                   </div>
-                                );
-                              })}
-                              {allSeries.some(s => !seriesWithData.includes(s)) && (
-                                <div style={{ width: '100%', fontSize: '11px', color: '#9CA3AF', marginTop: '8px', fontStyle: 'italic' }}>
-                                  No donations: {allSeries.filter(s => !seriesWithData.includes(s)).join(', ')}
+                                ))}
+                              </div>
+                            ))}
+                            {hasOthers && (
+                              <div className="fin-report-legend-group">
+                                <div className="fin-report-legend-province-header">Others</div>
+                                <div className="fin-report-legend-item" style={{ margin: 0 }}>
+                                  <span className="fin-report-legend-dot" style={{ background: '#d1d5db' }} />
+                                  <span className="fin-report-legend-label">{otherSeries.length} more communities</span>
+                                  <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: '4px' }}>
+                                    ({fmt(otherSeries.reduce((s, k) => s + totals[k], 0))})
+                                  </span>
                                 </div>
-                              )}
-                            </div>
-                          );
-                        })()}
-                        <ChartFooter period={report.period} location={getLocationLabel()} />
-                      </div>
-                    );
-                  })()}
-                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
+
+                      {hasOthers && (
+                        <p className="fin-chart-others-note">
+                          ℹ️ Chart shows top 10 communities by total donation. {otherSeries.length} smaller communities
+                          ({otherSeries.join(', ')}) are merged into "Others".
+                        </p>
+                      )}
+
+                      <ChartFooter period={report.period} location={getLocationLabel()} />
+                    </div>
+                  </div>
                 );
               })()}
 
@@ -1145,110 +1198,112 @@ export default function AdminFinancialReport() {
 
               {/* Attendance Trends */}
               {report.attendance?.byMonth?.length > 0 && (() => {
+                const byMonthMap = {};
+                (report.attendance.byMonth || []).forEach(d => { byMonthMap[d.month] = d.count; });
                 const { from, to } = getChartMonthRange();
-                const attMap = {};
-                report.attendance.byMonth.forEach(d => { attMap[d.month] = d.count; });
                 const bmc = report.attendance.byMonthByCommunity || {};
                 const allCommunities = [...new Set(Object.values(bmc).flatMap(obj => Object.keys(obj)))].sort();
                 const isMulti = allCommunities.length >= 2;
 
-                // Filter communities with actual data
-                const commsWithData = allCommunities.filter(c => Object.values(bmc).some(monthObj => (monthObj[c] || 0) > 0));
+                if (!isMulti) return null; // handled by the row-1 chart
 
-                const trendData = MONTH_SHORT.slice(from, to + 1).map((label, idx) => {
-                  const i = from + idx;
-                  const key = `${reportYear}-${String(i + 1).padStart(2, '0')}`;
-                  const row = { month: key, label, count: attMap[key] || 0 };
-                  if (isMulti && bmc[key]) {
-                    commsWithData.forEach(c => { row[c] = bmc[key][c] || 0; });
-                  }
-                  return row;
+                const { topSeries, otherSeries, fullMonthData, totals, hasOthers } = buildTopNSeriesData({
+                  seriesKeys: allCommunities,
+                  dataMap: bmc,
+                  reportYear,
+                  from,
+                  to,
+                  maxSeries: 10,
                 });
-                const totalAtt = trendData.reduce((s, d) => s + d.count, 0);
-                return (
+
+                const totalAtt = fullMonthData.reduce((s, d) =>
+                  s + topSeries.reduce((sum, k) => sum + (d[k] || 0), 0) + (d['Others'] || 0), 0);
+                const highestMon = fullMonthData.reduce((a, b) => {
+                  const aVal = topSeries.reduce((s, k) => s + (a[k] || 0), 0) + (a['Others'] || 0);
+                  const bVal = topSeries.reduce((s, k) => s + (b[k] || 0), 0) + (b['Others'] || 0);
+                  return bVal > aVal ? b : a;
+                }, fullMonthData[0]);
+
+                return fullMonthData.some(d => topSeries.some(k => d[k] > 0)) ? (
                   <div className="fin-report-charts-row" style={{ gridTemplateColumns: '1fr', marginTop: '16px' }}>
-                    <div className="fin-report-chart-card">
-                      <h3 className="fin-report-chart-title">Monthly Attendance Trend {isMulti ? '(By Community)' : ''}</h3>
-                      <p className="fin-chart-summary">Total: <strong>{totalAtt} attendees</strong> · Peak: <strong>{trendData.reduce((a, b) => b.count > a.count ? b : a, trendData[0])?.label}</strong></p>
-                      <ResponsiveContainer width="100%" height={isMulti ? 280 : 220}>
-                        {isMulti ? (
-                          <LineChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                            <XAxis dataKey="label" tick={{ fontSize: 10 }} />
-                            <YAxis tick={{ fontSize: 10 }} allowDecimals={false}>
-                              <Label value="Attendance Count" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
-                            </YAxis>
-                            <Tooltip formatter={(v, name) => [v + ' attendees', name === 'count' ? 'Count' : name]} />
-                            {commsWithData.map((c) => {
-                              const origIdx = allCommunities.indexOf(c);
-                              return <Line key={c} type="monotone" dataKey={c} stroke={COMMUNITY_COLORS[origIdx % COMMUNITY_COLORS.length]} strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />;
-                            })}
-                          </LineChart>
-                        ) : (
-                          <BarChart data={trendData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                            <XAxis dataKey="label" tick={{ fontSize: 10 }} />
-                            <YAxis tick={{ fontSize: 10 }} allowDecimals={false}>
-                              <Label value="Attendance Count" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
-                            </YAxis>
-                            <Tooltip formatter={(v) => [v + ' attendees']} labelFormatter={(v, payload) => payload?.[0]?.payload?.label || v} />
-                            <Bar dataKey="count" fill="#2563eb" radius={[4, 4, 0, 0]} barSize={24}>
-                              <LabelList dataKey="count" position="top" formatter={v => v > 0 ? v : ''} style={{ fontSize: 10, fill: '#6B7280' }} />
-                            </Bar>
-                          </BarChart>
-                        )}
+                    <div className="fin-report-chart-card" style={{ width: '100%' }}>
+                      <h3 className="fin-report-chart-title">Monthly Attendance Trend (By Community)</h3>
+                      <p className="fin-chart-summary">
+                        Detailed Community Breakdown · Total: <strong>{totalAtt} attendees</strong> · Highest: <strong>{highestMon?.month}</strong>
+                        {hasOthers && <> · Showing top 10 of {allCommunities.length} communities</>}
+                      </p>
+
+                      <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={fullMonthData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                          <XAxis dataKey="month" tick={{ fontSize: 10 }} />
+                          <YAxis tick={{ fontSize: 10 }} allowDecimals={false}>
+                            <Label value="Attendees" angle={-90} position="insideLeft" offset={20} style={{ fontSize: 9, fill: '#9CA3AF' }} />
+                          </YAxis>
+                          <Tooltip formatter={(v, name) => [
+                            `${v} attendees`,
+                            name === 'Others' ? `Others (${otherSeries.length} communities)` : name
+                          ]} />
+                          {topSeries.map((s, i) => (
+                            <Bar key={s} dataKey={s} stackId="a" fill={COMMUNITY_COLORS[i % COMMUNITY_COLORS.length]} />
+                          ))}
+                          {hasOthers && (
+                            <Bar key="Others" dataKey="Others" stackId="a" fill="#d1d5db" name="Others" />
+                          )}
+                        </BarChart>
                       </ResponsiveContainer>
-                      {isMulti && (() => {
+
+                      {/* Legend grouped by province */}
+                      {(() => {
                         const branchToProv = {};
-                        branchesData.forEach(b => {
-                          branchToProv[b.name] = b.province || (b.address ? b.address.split(',')[0].trim() : 'Unknown');
+                        branchesData.forEach(b => { branchToProv[b.name] = b.province || 'Unknown'; });
+                        const seriesByProv = {};
+                        topSeries.forEach((s, i) => {
+                          const prov = branchToProv[s] || 'Unknown';
+                          if (!seriesByProv[prov]) seriesByProv[prov] = [];
+                          seriesByProv[prov].push({ name: s, index: i, total: totals[s] });
                         });
-                        const commsByProv = {};
-                        allCommunities.forEach((c, i) => {
-                          const prov = branchToProv[c] || 'Unknown';
-                          if (!commsByProv[prov]) commsByProv[prov] = [];
-                          const hasData = commsWithData.includes(c);
-                          commsByProv[prov].push({ name: c, index: i, hasData });
-                        });
-                        
                         return (
-                          <div className="fin-report-grouped-legend" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', marginTop: '16px' }}>
-                            {Object.entries(commsByProv).map(([prov, comms]) => (
-                              <div key={prov} className="fin-report-legend-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '120px' }}>
-                                <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#6b7280', textTransform: 'uppercase', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px', marginBottom: '2px' }}>
-                                  {prov}
-                                </div>
-                                {comms.map((c) => {
-                                  const totalVal = trendData.reduce((sum, row) => sum + (row[c.name] || 0), 0);
-                                  return (
-                                    <div key={c.name} className="fin-report-legend-item" style={{ margin: 0, flexDirection: 'column', alignItems: 'flex-start', opacity: c.hasData ? 1 : 0.5 }}>
-                                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                                        <span className="fin-report-legend-dot" style={{ background: c.hasData ? COMMUNITY_COLORS[c.index % COMMUNITY_COLORS.length] : '#d1d5db' }} />
-                                        <span className="fin-report-legend-label">{c.name}</span>
-                                        {c.hasData && <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: '6px' }}>({totalVal} attendees)</span>}
-                                        {!c.hasData && <span style={{ fontSize: '9px', color: '#9CA3AF', marginLeft: '4px', fontStyle: 'italic' }}>No data</span>}
-                                      </div>
-                                    </div>
-                                  );
-                                })}
+                          <div className="fin-report-grouped-legend">
+                            {Object.entries(seriesByProv).map(([prov, comms]) => (
+                              <div key={prov} className="fin-report-legend-group">
+                                <div className="fin-report-legend-province-header">{prov}</div>
+                                {comms.map(c => (
+                                  <div key={c.name} className="fin-report-legend-item" style={{ margin: 0 }}>
+                                    <span className="fin-report-legend-dot" style={{ background: COMMUNITY_COLORS[c.index % COMMUNITY_COLORS.length] }} />
+                                    <span className="fin-report-legend-label">{c.name}</span>
+                                    <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: '4px' }}>({c.total} attendees)</span>
+                                  </div>
+                                ))}
                               </div>
                             ))}
+                            {hasOthers && (
+                              <div className="fin-report-legend-group">
+                                <div className="fin-report-legend-province-header">Others</div>
+                                <div className="fin-report-legend-item" style={{ margin: 0 }}>
+                                  <span className="fin-report-legend-dot" style={{ background: '#d1d5db' }} />
+                                  <span className="fin-report-legend-label">{otherSeries.length} more communities</span>
+                                  <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: '4px' }}>
+                                    ({otherSeries.reduce((s, k) => s + totals[k], 0)} attendees)
+                                  </span>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         );
                       })()}
-                      {!isMulti && (
-                        <div className="fin-report-legend">
-                          <div className="fin-report-legend-item">
-                            <span className="fin-report-legend-dot" style={{ background: '#2563eb' }} />
-                            <span className="fin-report-legend-label">Attendance</span>
-                            <span className="fin-report-legend-val">{totalAtt} total</span>
-                          </div>
-                        </div>
+
+                      {hasOthers && (
+                        <p className="fin-chart-others-note">
+                          ℹ️ Chart shows top 10 communities by total attendance. {otherSeries.length} smaller
+                          communities are merged into "Others" for readability.
+                        </p>
                       )}
+
                       <ChartFooter period={report.period} location={getLocationLabel()} />
                     </div>
                   </div>
-                );
+                ) : null;
               })()}
             </div>
           )}
