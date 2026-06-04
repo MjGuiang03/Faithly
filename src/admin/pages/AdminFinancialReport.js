@@ -3,7 +3,7 @@ import useSWR from 'swr';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
-  BarChart, Bar, PieChart, Pie, Cell, LineChart, Line,
+  BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Label, LabelList
 } from 'recharts';
 
@@ -1015,7 +1015,6 @@ export default function AdminFinancialReport() {
                   return bVal > aVal ? b : a;
                 }, fullMonthData[0]);
 
-                const displaySeries = hasOthers ? [...topSeries, 'Others'] : topSeries;
 
                 return (
                   <div className="fin-report-charts-row" style={{ gridTemplateColumns: '1fr', marginTop: '16px' }}>
