@@ -28,8 +28,8 @@
 
 /* ── Logo / brand area ── */
 .admin-sidebar-logo {
-  padding: 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   flex-shrink: 0;
 }
 
@@ -63,7 +63,7 @@
 }
 
 .admin-sidebar-logo-text h1 {
-  font-size: 1.55rem;
+  font-size: 1.5rem;
   font-weight: 600;
   margin: 0;
   color: white;
@@ -72,11 +72,11 @@
 }
 
 .admin-sidebar-logo-text p {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.72);
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
   margin: 0;
   font-family: 'Arial', sans-serif;
-  line-height: 20px;
+  line-height: 16px;
 }
 
 /* ── Navigation ── */
@@ -89,12 +89,12 @@
 }
 
 .admin-sidebar-group-label {
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 9px;
+  font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.32);
-  margin: 12px 0 4px 20px;
+  color: rgba(255, 255, 255, 0.22);
+  margin: 14px 0 2px 20px;
   padding: 0;
   line-height: 1;
 }
@@ -208,8 +208,8 @@
 
 /* ── Profile / sign-out footer ── */
 .admin-sidebar-profile {
-  padding: 16px 20px;
-  border-top: 0.8px solid rgba(255, 255, 255, 0.12);
+  padding: 12px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
   flex-shrink: 0;
 }
 
@@ -221,8 +221,8 @@
 }
 
 .admin-sidebar-profile-avatar {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: #2A50B8;
   display: flex;
@@ -235,7 +235,7 @@
 
 .admin-sidebar-profile-avatar p {
   margin: 0;
-  font-size: 16px;
+  font-size: 13px;
   font-family: 'Arial', sans-serif;
 }
 
@@ -245,23 +245,23 @@
 }
 
 .admin-sidebar-profile-name {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: white;
   margin: 0;
   font-family: 'Arial', sans-serif;
-  line-height: 20px;
+  line-height: 18px;
 }
 
 .admin-sidebar-profile-email {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.72);
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-family: 'Arial', sans-serif;
-  line-height: 16px;
+  line-height: 14px;
 }
 
 .admin-sidebar-profile-signout {
@@ -269,12 +269,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 10px 16px;
+  gap: 6px;
+  padding: 8px 12px;
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   color: rgba(255, 255, 255, 0.72);
-  font-size: 14px;
+  font-size: 13px;
   font-family: 'Arial', sans-serif;
   border-radius: 8px;
   cursor: pointer;

@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 import { toast } from 'sonner';
@@ -8,18 +9,26 @@ import {
 } from 'lucide-react';
 import puacLogo from '../../assets/puaclogo.png';
 import '../styles/AdminSidebar.css';
-import { useTheme } from '../../context/ThemeContext';
+
 
 import API from '../../utils/api';
 import { processNewNotifications } from '../../utils/desktopNotify';
 
 export default function AdminSidebar() {
-  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [unreadCount, setUnreadCount] = useState(0);
   const prevNotifIdsRef = useRef(new Set());
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [adminName, setAdminName] = useState(localStorage.getItem('adminName') || 'Admin');
+
+  useEffect(() => {
+    const handleStorage = () => {
+      setAdminName(localStorage.getItem('adminName') || 'Admin');
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
 
   const handleSignOut = () => {
     localStorage.removeItem('adminEmail');
@@ -183,28 +192,15 @@ export default function AdminSidebar() {
 
       </div>
 
-      {/* Theme Toggle Section */}
-      <div className="admin-sidebar-theme-toggle">
-        <div className="admin-theme-switch-wrapper">
-          <span className="admin-theme-switch-label">Dark Mode</span>
-          <label className="admin-toggle-switch">
-            <input
-              type="checkbox"
-              checked={theme === 'dark'}
-              onChange={toggleTheme}
-            />
-            <span className="admin-toggle-slider"></span>
-          </label>
-        </div>
-      </div>
+
 
       <div className="admin-sidebar-profile">
         <div className="admin-sidebar-profile-info">
           <div className="admin-sidebar-profile-avatar">
-            <p>A</p>
+            <p>{adminName.slice(0, 1).toUpperCase()}</p>
           </div>
           <div className="admin-sidebar-profile-details">
-            <p className="admin-sidebar-profile-name">Admin</p>
+            <p className="admin-sidebar-profile-name">{adminName}</p>
             <p className="admin-sidebar-profile-email">
               {localStorage.getItem('adminEmail')}
             </p>

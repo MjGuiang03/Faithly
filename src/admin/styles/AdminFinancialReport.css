@@ -823,3 +823,173 @@
   .fin-report-community-row { grid-template-columns: 1fr; }
   .fin-report-stat-grid.savings-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ═════════════════════════════════════════════════════════════
+   FORCE LIGHT MODE — Automated Reports are ALWAYS light.
+   This ensures the report page stays white even when the admin
+   has dark mode enabled. Critical for PDF export fidelity.
+   ═════════════════════════════════════════════════════════════ */
+
+/* Page-level background — force the entire report area back to light */
+.dark .admin-main:has(.fin-report-page) {
+  background: #f1f5f9 !important;
+}
+
+.dark .admin-main-inner:has(.fin-report-page) {
+  background: #f1f5f9 !important;
+}
+
+.dark .fin-report-page {
+  background: #f1f5f9 !important;
+  color: var(--r-text, #0f172a);
+}
+
+/* Sections, cards, filter bar — force white */
+.dark .fin-report-section,
+.dark .fin-report-filter-bar,
+.dark .fin-report-chart-card,
+.dark .fin-report-specific-communities,
+.dark .fin-confirm-modal,
+.dark .fin-confirm-details {
+  background: white !important;
+  border-color: var(--r-border, #e5e7eb) !important;
+  color: var(--r-text, #0f172a) !important;
+}
+
+/* Headings & text */
+.dark .fin-report-title { color: var(--r-text, #0f172a) !important; }
+.dark .fin-report-subtitle { color: var(--r-hint, #9ca3af) !important; }
+.dark .fin-report-section-title { color: var(--r-text, #0f172a) !important; }
+.dark .fin-report-chart-title { color: #1e293b !important; }
+.dark .fin-chart-summary { color: var(--r-muted, #6b7280) !important; }
+.dark .fin-chart-summary strong { color: var(--r-text, #0f172a) !important; }
+.dark .fin-report-loading-text { color: var(--r-navy, #0D1F45) !important; }
+.dark .fin-report-loading-sub { color: var(--r-hint, #9ca3af) !important; }
+.dark .fin-report-period-label { color: var(--r-hint, #9ca3af) !important; }
+.dark .fin-report-stat-label { color: var(--r-hint, #9ca3af) !important; }
+.dark .fin-report-stat-value { color: var(--r-text, #0f172a) !important; }
+.dark .fin-report-stat-sub { color: var(--r-hint, #9ca3af) !important; }
+.dark .fin-report-executive-para { color: #374151 !important; }
+.dark .fin-chart-footer-source { color: #c4c9d4 !important; }
+.dark .fin-report-footer { color: var(--r-hint, #9ca3af) !important; }
+
+/* Selects / inputs in filter bar */
+.dark .fin-report-select {
+  background: #f9fafb !important;
+  border-color: var(--r-border, #e5e7eb) !important;
+  color: #374151 !important;
+}
+
+.dark .fin-report-filter {
+  color: var(--r-muted, #6b7280) !important;
+}
+
+.dark .fin-report-compare-label {
+  color: #374151 !important;
+}
+
+/* Buttons */
+.dark .fin-report-btn.secondary {
+  background: white !important;
+  color: #374151 !important;
+  border-color: #d1d5db !important;
+}
+
+.dark .fin-report-btn.secondary:hover {
+  background: #f9fafb !important;
+}
+
+/* Tables */
+.dark .fin-report-table th {
+  background: #f1f5f9 !important;
+  color: #64748b !important;
+}
+
+.dark .fin-report-table td {
+  color: #374151 !important;
+  border-bottom-color: #f8fafc !important;
+}
+
+.dark .fin-report-table tr:hover td {
+  background: #fafbff !important;
+}
+
+/* Legends */
+.dark .fin-report-legend-label { color: #374151 !important; }
+.dark .fin-report-legend-val { color: #111827 !important; }
+
+/* Stat cards */
+.dark .fin-report-stat {
+  background: var(--r-gray, #f8fafc) !important;
+  border-color: #f1f5f9 !important;
+}
+
+/* Executive summary gradient */
+.dark .fin-report-executive {
+  background: linear-gradient(135deg, #f0f4ff 0%, #f5f3ff 100%) !important;
+  border-color: #ddd6fe !important;
+}
+
+/* Branch chips */
+.dark .fin-report-branch-chip {
+  background: white !important;
+  color: #4b5563 !important;
+  border-color: var(--r-border, #e5e7eb) !important;
+}
+
+.dark .fin-report-branch-chip.selected {
+  background: var(--r-blue-lt, #eff6ff) !important;
+  color: var(--r-navy, #0D1F45) !important;
+  border-color: var(--r-navy, #0D1F45) !important;
+}
+
+.dark .fin-report-specific-label {
+  color: #374151 !important;
+}
+
+/* Confirm modal */
+.dark .fin-confirm-title { color: var(--r-text, #0f172a) !important; }
+.dark .fin-confirm-desc { color: var(--r-muted, #6b7280) !important; }
+.dark .fin-confirm-label { color: var(--r-hint, #9ca3af) !important; }
+.dark .fin-confirm-value { color: var(--r-text, #0f172a) !important; }
+.dark .fin-confirm-close { background: #f1f5f9 !important; color: #64748b !important; }
+
+/* Chart total */
+.dark .fin-report-chart-total { color: var(--r-navy, #0D1F45) !important; }
+
+/* YoY changes */
+.dark .fin-change-positive { color: #10B981 !important; }
+.dark .fin-change-negative { color: #EF4444 !important; }
+
+/* Error state */
+.dark .fin-report-error {
+  background: #fef2f2 !important;
+  border-color: #fecaca !important;
+  color: #991b1b !important;
+}
+
+/* Progress bar */
+.dark .fin-report-progress-track { background: #e5e7eb !important; }
+.dark .fin-report-progress-pct { color: var(--r-teal, #0ca678) !important; }
+
+/* Grouped legend */
+.dark .fin-report-grouped-legend {
+  background: #f8fafc !important;
+  border-color: #f1f5f9 !important;
+}
+
+.dark .fin-report-legend-province-header {
+  color: var(--r-hint, #9ca3af) !important;
+  border-bottom-color: #e5e7eb !important;
+}
+
+/* Others note */
+.dark .fin-chart-others-note {
+  background: #f8fafc !important;
+  color: var(--r-hint, #9ca3af) !important;
+}
+
+/* Empty state */
+.dark .fin-report-empty { color: var(--r-hint, #9ca3af) !important; }
+.dark .fin-report-empty h2 { color: #374151 !important; }
+.dark .fin-report-empty-icon { background: #f1f5f9 !important; color: #94a3b8 !important; }

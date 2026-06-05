@@ -23,6 +23,24 @@ export default function SecretaryAdminSidebar() {
     const [unreadCount, setUnreadCount] = useState(0);
     const prevNotifIdsRef = useRef(new Set());
 
+    /* ── Reactive display name (updates when settings page saves) ── */
+    const [displayName, setDisplayName] = useState(
+        () => localStorage.getItem('adminName') || 'Secretary Admin'
+    );
+    const [displayEmail, setDisplayEmail] = useState(
+        () => localStorage.getItem('adminEmail') || localStorage.getItem('secretaryEmail') || 'secretary@isangdiwa.com'
+    );
+
+    useEffect(() => {
+        const onProfileUpdate = () => {
+            setDisplayName(localStorage.getItem('adminName') || 'Secretary Admin');
+            setDisplayEmail(localStorage.getItem('adminEmail') || localStorage.getItem('secretaryEmail') || 'secretary@isangdiwa.com');
+        };
+        window.addEventListener('admin-profile-updated', onProfileUpdate);
+        return () => window.removeEventListener('admin-profile-updated', onProfileUpdate);
+    }, []);
+
+
     /* ── Fetch admin unread count ── */
     useEffect(() => {
         const token = localStorage.getItem('secretaryToken') || localStorage.getItem('adminToken') || localStorage.getItem('token');
@@ -167,12 +185,12 @@ export default function SecretaryAdminSidebar() {
             <div className="sec-admin-sidebar-profile">
                 <div className="sec-admin-sidebar-profile-info">
                     <div className="sec-admin-sidebar-profile-avatar">
-                        <p>SA</p>
+                        <p>{displayName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'SA'}</p>
                     </div>
                     <div className="sec-admin-sidebar-profile-details">
-                        <p className="sec-admin-sidebar-profile-name">Secretary Admin</p>
+                        <p className="sec-admin-sidebar-profile-name">{displayName}</p>
                         <p className="sec-admin-sidebar-profile-email">
-                            {localStorage.getItem('secretaryEmail') || 'secretary@isangdiwa.com'}
+                            {displayEmail}
                         </p>
                     </div>
                 </div>

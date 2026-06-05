@@ -6,7 +6,7 @@
   max-width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   justify-content: flex-start !important;
 }
 
@@ -15,7 +15,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-top: -12px;
+  margin-top: 4px;
   margin-bottom: 4px;
   height: auto;
 }
@@ -28,9 +28,9 @@
 
 .admin-members-title {
   font-family: 'Inter', 'Arial', sans-serif;
-  font-size: 30px;
+  font-size: 22px;
   font-weight: 700;
-  line-height: 36px;
+  line-height: 28px;
   color: #101828;
   margin: 0;
 }
@@ -38,15 +38,15 @@
 .admin-members-add-btn {
   background: #0D1F45;
   border: none;
-  border-radius: 10px;
-  height: 48px;
-  padding: 0 24px;
+  border-radius: 8px;
+  height: 36px;
+  padding: 0 16px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   cursor: pointer;
   font-family: 'Inter', 'Arial', sans-serif;
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 500;
   color: white;
   transition: transform 0.3s ease, background 0.3s ease;
@@ -60,18 +60,18 @@
 .admin-members-stats-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
 .admin-members-stat-card {
   background: #0D1F45;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  padding: 24px;
+  border-radius: 8px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
   transition: all 0.3s ease;
   cursor: pointer;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -100,9 +100,9 @@
 
 .admin-members-stat-value {
   font-family: 'Inter', 'Arial', sans-serif;
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 700;
-  line-height: 28px;
+  line-height: 24px;
   color: white;
   margin: 0;
 }
@@ -119,9 +119,9 @@
 .admin-members-section {
   background: white;
   border: 1px solid #e5e7eb;
-  border-radius: 12px;
+  border-radius: 10px;
   padding: 0;
-  margin-bottom: 32px;
+  margin-bottom: 16px;
   overflow: hidden;
 }
 
@@ -129,7 +129,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 24px;
+  padding: 10px 16px;
   background: #F9FAFB;
   border-bottom: 1px solid #E5E7EB;
 }
@@ -142,9 +142,9 @@
 
 .admin-members-section-title {
   font-family: 'Inter', 'Arial', sans-serif;
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 700;
-  line-height: 28px;
+  line-height: 22px;
   color: #101828;
   margin: 0;
 }
@@ -284,8 +284,8 @@
 }
 
 .admin-members-avatar-circle {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: #e7f0ff;
   display: flex;
@@ -294,6 +294,7 @@
   flex-shrink: 0;
   color: #0D1F45;
   font-weight: 600;
+  font-size: 12px;
 }
 
 /* ═══ TABLE (ADMIN SIDE) ═══ */
@@ -318,7 +319,7 @@
 }
 
 .admin-table th {
-  padding: 12px 24px;
+  padding: 8px 16px;
   text-align: left;
   font-weight: 600;
   font-size: 11px;
@@ -330,8 +331,8 @@
 }
 
 .admin-table td {
-  padding: 16px 24px;
-  font-size: 13px;
+  padding: 6px 16px;
+  font-size: 12px;
   color: #111827;
   border-bottom: 1px solid #f3f4f6;
   vertical-align: middle;

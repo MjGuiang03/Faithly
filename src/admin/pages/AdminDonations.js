@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import useDebounce from '../../hooks/useDebounce';
 import '../styles/AdminDonations.css';
+import '../../styles/sharedPagination.css';
 
 import API from '../../utils/api';
 import { Banknote, Search, ChevronLeft, ChevronRight, Heart } from 'lucide-react';
@@ -51,7 +52,7 @@ export default function AdminDonationsNew() {
   const rejectedLoading = false;
   const rejectedList = [];
   const debouncedSearch = useDebounce(search, 400);
-  const ITEMS_PER_PAGE = 5;
+  const ITEMS_PER_PAGE = 10;
 
   /* ── Detail modal ── */
   const [detailModal, setDetailModal] = useState(null);
@@ -165,6 +166,16 @@ export default function AdminDonationsNew() {
   const goTo   = (p) => setCurrentPage(Math.max(1, Math.min(p, totalPages)));
   const goPrev = () => goTo(currentPage - 1);
   const goNext = () => goTo(currentPage + 1);
+
+  const buildPageNumbers = () => {
+    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
+    const curr = currentPage;
+    const pages = [];
+    if (curr <= 4)                    pages.push(1, 2, 3, 4, 5, '…', totalPages);
+    else if (curr >= totalPages - 3)  pages.push(1, '…', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+    else                              pages.push(1, '…', curr - 1, curr, curr + 1, '…', totalPages);
+    return pages;
+  };
 
 
   /* ── Render ── */
@@ -310,36 +321,30 @@ export default function AdminDonationsNew() {
 
         {/* Pagination */}
         {!loading && totalPages > 1 && (
-          <div className="admin-don-pagination-wrapper">
-            <div className="admin-don-pagination">
-              <button 
-                className="admin-don-pagination-btn" 
-                onClick={goPrev} 
-                disabled={currentPage === 1}
-              >
-                <ChevronLeft size={18} />
+          <div className="pg-bar">
+            <span className="pg-info">
+              Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, totalCount)} of {totalCount}
+            </span>
+            <div className="pg-controls">
+              <button className="pg-btn" onClick={goPrev} disabled={currentPage === 1}>
+                ← Prev
               </button>
-              <div className="admin-don-pagination-numbers">
-                {Array.from({ length: totalPages }).map((_, i) => (
-                  <button 
+              {buildPageNumbers().map((pNum, i) =>
+                pNum === '…' ? (
+                  <span key={`dots-${i}`} className="pg-dots">…</span>
+                ) : (
+                  <button
                     key={i}
-                    className={`admin-don-pagination-number ${currentPage === i + 1 ? 'active' : ''}`}
-                    onClick={() => goTo(i + 1)}
+                    className={`pg-btn pg-num${currentPage === pNum ? ' active' : ''}`}
+                    onClick={() => goTo(pNum)}
                   >
-                    {i + 1}
+                    {pNum}
                   </button>
-                ))}
-              </div>
-              <button 
-                className="admin-don-pagination-btn" 
-                onClick={goNext} 
-                disabled={currentPage === totalPages}
-              >
-                <ChevronRight size={18} />
+                )
+              )}
+              <button className="pg-btn" onClick={goNext} disabled={currentPage === totalPages}>
+                Next →
               </button>
-            </div>
-            <div className="admin-don-pagination-info">
-              Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, totalCount)} of {totalCount} results
             </div>
           </div>
         )}

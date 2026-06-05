@@ -4,7 +4,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   width: 100%;
   min-width: 0;
   justify-content: flex-start !important;
@@ -19,10 +19,10 @@
 }
 
 .admin-att-title {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
   color: #111827;
-  margin: 0 0 4px 0;
+  margin: 0 0 2px 0;
   font-family: 'Inter', sans-serif;
 }
 
@@ -88,17 +88,17 @@
 .admin-att-stats-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  gap: 8px;
 }
 
 .admin-att-stat-block {
   background: #0D1F45;
-  border-radius: 10px;
-  padding: 20px;
+  border-radius: 8px;
+  padding: 14px 16px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
   transition: all 0.3s ease;
   border: 1px solid rgba(255, 255, 255, 0.1);
   cursor: pointer;
@@ -139,7 +139,7 @@
 }
 
 .admin-att-stat-value {
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 700;
   color: white;
   line-height: 1;
@@ -228,12 +228,12 @@
 
 /* Section Header */
 .admin-att-section-header {
-  padding: 16px 24px;
+  padding: 10px 16px;
   border-bottom: 1px solid #E5E7EB;
 }
 
 .admin-att-section-header h2 {
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 600;
   color: #111827;
   margin: 0;
@@ -254,7 +254,7 @@
 
 .admin-att-table th {
   background: #F9FAFB;
-  padding: 12px 24px;
+  padding: 8px 16px;
   text-align: left;
   font-size: 11px;
   font-weight: 600;
@@ -269,9 +269,9 @@
 .admin-att-table th:last-child { border-top-right-radius: 10px; }
 
 .admin-att-table td {
-  padding: 14px 24px;
+  padding: 8px 16px;
   border-bottom: 1px solid #F3F4F6;
-  font-size: 13px;
+  font-size: 12px;
   vertical-align: middle;
   color: #374151;
 }
@@ -392,11 +392,11 @@
 
 /* Pagination */
 .admin-att-pagination {
-  padding: 12px 24px;
+  padding: 8px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 13px;
+  font-size: 12px;
   color: #6B7280;
   border-top: 1px solid #E5E7EB;
 }
@@ -500,10 +500,10 @@
 }
 
 .admin-att-modal-body {
-  padding: 24px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 12px;
 }
 
 .admin-att-form-row {

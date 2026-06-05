@@ -1201,8 +1201,18 @@ router.get('/admin/loan-reports', authenticateAdmin, async (req, res) => {
       status: 'confirmed',
       confirmedAt: { $gte: yearStart, $lt: yearEnd }
     }).toArray();
+
+    // Include active loans that are currently past due
+    const activeLoans = await loans.find({ status: 'active' }).toArray();
+    const currentlyLateLoans = activeLoans.filter(l => {
+      const dueDate = l.nextDueDate || l.approvedDate;
+      if (!dueDate) return false;
+      const daysLate = Math.floor((new Date() - new Date(dueDate)) / (1000 * 60 * 60 * 24));
+      return daysLate >= 1;
+    });
+
     const onTimePayments = allConfirmedPayments.filter(p => !p.isLate).length;
-    const latePayments = allConfirmedPayments.filter(p => p.isLate).length;
+    const latePayments = allConfirmedPayments.filter(p => p.isLate).length + currentlyLateLoans.length;
     const repaymentPerformance = [
       { name: 'On-Time', value: onTimePayments },
       { name: 'Late', value: latePayments },
@@ -1231,8 +1241,13 @@ router.get('/admin/loan-reports', authenticateAdmin, async (req, res) => {
         const d = new Date(p.confirmedAt || p.submittedAt);
         return d.getMonth() === idx;
       });
-      const total = monthPayments.length;
-      const late = monthPayments.filter(p => p.isLate).length;
+      
+      // Add currently late loans to the current month's stats
+      const isCurrentMonth = new Date().getMonth() === idx && new Date().getFullYear() === year;
+      const additionalLate = isCurrentMonth ? currentlyLateLoans.length : 0;
+
+      const total = monthPayments.length + additionalLate;
+      const late = monthPayments.filter(p => p.isLate).length + additionalLate;
       return {
         month,
         rate: total > 0 ? Math.round((late / total) * 100) : 0,

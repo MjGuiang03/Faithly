@@ -5,6 +5,7 @@ import SecretaryAdminSidebar from '../../secretaryAdmin/components/secretaryAdmi
 import NotificationPrompt from '../../components/NotificationPrompt';
 import '../styles/AdminSidebar.css';
 import '../styles/AdminLayout.css';
+import '../styles/adminDark.css';
 
 export default function AdminLayout() {
   const role = localStorage.getItem('adminRole');

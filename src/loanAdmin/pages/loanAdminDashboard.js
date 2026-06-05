@@ -320,7 +320,19 @@ export default function LoanAdminDashboard() {
       <div className="loan-admin-dashboard-content">
         {!expandedChart && (<>
         {/* Header */}
-        <h1 className="admin-dashboard-title">Loan Dashboard</h1>
+        <div className="adm-dashboard-header">
+          <div className="adm-dashboard-header-left">
+            <h1 className="adm-dashboard-greeting">
+              {(() => {
+                const h = new Date().getHours();
+                return h < 12 ? 'Good Morning' : h < 18 ? 'Good Afternoon' : 'Good Evening';
+              })()}, <span className="adm-dashboard-greeting-name">Loan Staff</span>
+            </h1>
+            <p className="adm-dashboard-subtitle">
+              Loan operations overview for <strong>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</strong>
+            </p>
+          </div>
+        </div>
         {/* Row 1 — 5 Stat Cards */}
         <div className="adm-stats-grid">
           <div className="adm-stat-card adm-clickable-card" onClick={() => navigate('/loan-admin/loan-management')}>
@@ -386,7 +398,7 @@ export default function LoanAdminDashboard() {
                   <div className="la-cashflow-badges">
                     <span className="la-cashflow-badge-in">Total In: ₱{(moneyInVsOutSummary.totalIn/1000).toFixed(1)}k</span>
                     <span className="la-cashflow-badge-out">Total Out: ₱{(moneyInVsOutSummary.totalOut/1000).toFixed(1)}k</span>
-                    <span style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 600, background: moneyInVsOutSummary.net >= 0 ? '#D1FAE5' : '#FEE2E2', color: moneyInVsOutSummary.net >= 0 ? '#065F46' : '#991B1B' }}>
+                    <span className={`la-cashflow-badge-net ${moneyInVsOutSummary.net >= 0 ? 'la-cashflow-badge-net-positive' : 'la-cashflow-badge-net-negative'}`}>
                       Net: {moneyInVsOutSummary.net < 0 ? '-' : '+'}₱{(Math.abs(moneyInVsOutSummary.net)/1000).toFixed(1)}k
                     </span>
                   </div>
@@ -397,10 +409,10 @@ export default function LoanAdminDashboard() {
               </button>
             </div>
             <ResponsiveContainer width="100%" height={240}>
-              <BarChart data={monthlyData} margin={{ top: 10, right: 8, left: -10, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-                <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
-                <YAxis stroke="#9CA3AF" fontSize={12} tickFormatter={formatYAxis} width={55} ticks={CHART_TICKS} domain={[0, 500000]} />
+              <BarChart data={monthlyData} margin={{ top: 20, right: 8, left: -25, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
+                <XAxis dataKey="month" stroke="#9CA3AF" fontSize={11} fontFamily="DM Sans, sans-serif" fontWeight={400} axisLine={false} tickLine={false} />
+                <YAxis stroke="#9CA3AF" fontSize={11} fontFamily="DM Mono, monospace" fontWeight={500} axisLine={false} tickLine={false} tickFormatter={formatYAxis} width={55} ticks={CHART_TICKS} domain={[0, 500000]} />
                 <Tooltip cursor={{ fill: '#F9FAFB' }} contentStyle={{ borderRadius: '8px', border: '1px solid #E5E7EB' }} formatter={(v) => '₱' + v.toLocaleString()} />
                 <Legend iconType="circle" wrapperStyle={{ paddingTop: '12px' }} />
                 <Bar dataKey="received" fill="#0D1F45" name="Money Received" radius={[4, 4, 0, 0]} />
@@ -415,14 +427,14 @@ export default function LoanAdminDashboard() {
               <div>
                 <h3 className="adm-card-title">Disbursements by Type</h3>
                 <span className="adm-card-sub">Funds allocated by loan type</span>
-                <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                  <div style={{ background: '#F0F4FF', borderRadius: '8px', padding: '6px 12px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '14px', fontWeight: 700, color: '#0D1F45' }}>₱{disbursementSummary.total >= 1000000 ? (disbursementSummary.total/1000000).toFixed(1).replace(/\.0$/, '') + 'M' : disbursementSummary.total >= 1000 ? (disbursementSummary.total/1000).toFixed(1).replace(/\.0$/, '') + 'k' : disbursementSummary.total.toLocaleString()}</div>
-                    <div style={{ fontSize: '10px', color: '#6B7280', fontWeight: 500 }}>Total Disbursed</div>
+                <div className="la-stat-mini-group">
+                  <div className="la-stat-mini-chip">
+                    <div className="la-stat-mini-chip-value">₱{disbursementSummary.total >= 1000000 ? (disbursementSummary.total/1000000).toFixed(1).replace(/\.0$/, '') + 'M' : disbursementSummary.total >= 1000 ? (disbursementSummary.total/1000).toFixed(1).replace(/\.0$/, '') + 'k' : disbursementSummary.total.toLocaleString()}</div>
+                    <div className="la-stat-mini-chip-label">Total Disbursed</div>
                   </div>
-                  <div style={{ background: '#F0F4FF', borderRadius: '8px', padding: '6px 12px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '14px', fontWeight: 700, color: '#0D1F45' }}>{disbursementByTypeDetail.reduce((s, d) => s + (d.count || 0), 0)}</div>
-                    <div style={{ fontSize: '10px', color: '#6B7280', fontWeight: 500 }}>Total Loans</div>
+                  <div className="la-stat-mini-chip">
+                    <div className="la-stat-mini-chip-value">{disbursementByTypeDetail.reduce((s, d) => s + (d.count || 0), 0)}</div>
+                    <div className="la-stat-mini-chip-label">Total Loans</div>
                   </div>
                 </div>
               </div>
@@ -430,8 +442,8 @@ export default function LoanAdminDashboard() {
                 <Expand size={18} color="#4B5563" strokeWidth={2.5} />
               </button>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0px' }}>
-              <div style={{ flex: '0 0 55%' }}>
+            <div className="la-ex-pie-row">
+              <div className="la-ex-pie-chart">
                 <ResponsiveContainer width="100%" height={220}>
                   <PieChart>
                     <Pie
@@ -461,21 +473,21 @@ export default function LoanAdminDashboard() {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <div style={{ flex: '0 0 45%', display: 'flex', flexDirection: 'column', gap: '10px', paddingRight: '16px' }}>
+              <div className="la-ex-pie-legend">
                 {(() => {
                   const CHART_COLORS = ['#0D1F45', '#1E3A8A', '#2563EB', '#3B82F6', '#60A5FA'];
                   return disbursementByTypeDetail.map((d, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ width: 10, height: 10, borderRadius: '50%', background: CHART_COLORS[i % CHART_COLORS.length], flexShrink: 0 }} />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: '13px', fontWeight: 700, color: '#0D1F45', lineHeight: 1.3 }}>{d.count} loans · ₱{d.amount >= 1000 ? (d.amount / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : d.amount.toLocaleString()}</div>
-                        <div style={{ fontSize: '11px', color: '#6B7280', fontWeight: 400 }}>{d.label}</div>
+                    <div key={i} className="la-ex-legend-item">
+                      <span className="la-ex-legend-dot" style={{ background: CHART_COLORS[i % CHART_COLORS.length] }} />
+                      <div className="la-ex-legend-info">
+                        <div className="la-ex-legend-value">{d.count} loans · ₱{d.amount >= 1000 ? (d.amount / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : d.amount.toLocaleString()}</div>
+                        <div className="la-ex-legend-label">{d.label}</div>
                       </div>
                     </div>
                   ));
                 })()}
                 {disbursementSummary.zeroDisbursements.length > 0 && (
-                  <div style={{ fontSize: '11px', color: '#9CA3AF', paddingLeft: '18px' }}>
+                  <div className="la-ex-legend-zero">
                     {disbursementSummary.zeroDisbursements.map(d => d.type).join(', ')}: ₱0
                   </div>
                 )}
@@ -496,10 +508,10 @@ export default function LoanAdminDashboard() {
             </button>
           </div>
           <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={enhancedSavingsData} margin={{ top: 10, right: 8, left: -10, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-              <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
-              <YAxis stroke="#9CA3AF" fontSize={12} tickFormatter={formatYAxis} width={50} ticks={CHART_TICKS} domain={[0, 500000]} />
+            <LineChart data={enhancedSavingsData} margin={{ top: 20, right: 8, left: -25, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
+              <XAxis dataKey="month" stroke="#9CA3AF" fontSize={11} fontFamily="DM Sans, sans-serif" fontWeight={400} axisLine={false} tickLine={false} />
+              <YAxis stroke="#9CA3AF" fontSize={11} fontFamily="DM Mono, monospace" fontWeight={500} axisLine={false} tickLine={false} tickFormatter={formatYAxis} width={50} ticks={CHART_TICKS} domain={[0, 500000]} />
               <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #E5E7EB' }} formatter={(v, name) => [v != null ? '₱' + v.toLocaleString() : 'No data', name === 'zeroSavings' ? 'No Data' : 'Savings']} labelFormatter={(label) => label} />
               <Line type="monotone" dataKey="zeroSavings" stroke="#D1D5DB" strokeDasharray="5 5" strokeWidth={2} dot={false} name="No Data" connectNulls isAnimationActive={false} />
               <Line type="monotone" dataKey="actualSavings" stroke="#0D1F45" strokeWidth={2} dot={({ cx, cy, payload }) => payload.actualSavings != null ? <circle cx={cx} cy={cy} r={3} fill="#0D1F45" /> : null} name="Savings" connectNulls />
@@ -520,8 +532,8 @@ export default function LoanAdminDashboard() {
                 <Expand size={18} color="#4B5563" strokeWidth={2.5} />
               </button>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0px' }}>
-              <div style={{ flex: '0 0 50%' }}>
+            <div className="la-ex-pie-row">
+              <div className="la-ex-pie-chart-half">
                 <ResponsiveContainer width="100%" height={220}>
                   <PieChart>
                     <Pie data={statusDistribution} cx="55%" cy="50%" innerRadius={38} outerRadius={78} paddingAngle={2} dataKey="value" label={renderSliceLabel} labelLine={false}>
@@ -535,16 +547,16 @@ export default function LoanAdminDashboard() {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <div style={{ flex: '0 0 50%', display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '16px' }}>
+              <div className="la-ex-pie-legend-half">
                 {statusDistribution.map((entry, i) => {
                   const pct = statusDistributionSummary.total > 0 ? ((entry.value / statusDistributionSummary.total) * 100).toFixed(0) : 0;
                   const color = STATUS_COLORS[entry.name] || PIE_COLORS[i % PIE_COLORS.length];
                   return (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ width: 10, height: 10, borderRadius: '50%', background: color, flexShrink: 0 }} />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: '13px', fontWeight: 700, color: '#0D1F45', lineHeight: 1.3 }}>{entry.value} {entry.value === 1 ? 'loan' : 'loans'} · {pct}%</div>
-                        <div style={{ fontSize: '11px', color: '#6B7280', fontWeight: 400 }}>{entry.name}</div>
+                    <div key={i} className="la-ex-legend-item">
+                      <span className="la-ex-legend-dot" style={{ background: color }} />
+                      <div className="la-ex-legend-info">
+                        <div className="la-ex-legend-value">{entry.value} {entry.value === 1 ? 'loan' : 'loans'} · {pct}%</div>
+                        <div className="la-ex-legend-label">{entry.name}</div>
                       </div>
                     </div>
                   );
@@ -566,10 +578,10 @@ export default function LoanAdminDashboard() {
               </button>
             </div>
             <ResponsiveContainer width="100%" height={240}>
-              <BarChart data={repaymentPerformance} margin={{ top: 20, right: 30, left: 0, bottom: 10 }}>
+              <BarChart data={repaymentPerformance} margin={{ top: 20, right: 8, left: -25, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
-                <XAxis dataKey="name" stroke="#9CA3AF" fontSize={13} />
-                <YAxis stroke="#9CA3AF" fontSize={12} allowDecimals={false} />
+                <XAxis dataKey="name" stroke="#9CA3AF" fontSize={11} fontFamily="DM Sans, sans-serif" fontWeight={400} axisLine={false} tickLine={false} />
+                <YAxis stroke="#9CA3AF" fontSize={11} fontFamily="DM Mono, monospace" fontWeight={500} axisLine={false} tickLine={false} allowDecimals={false} />
                 <Tooltip formatter={(v) => v + ' payments'} />
                 <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={60}>
                   <LabelList dataKey="value" position="top" fontSize={13} fontWeight={600} fill="#374151" />
@@ -595,16 +607,16 @@ export default function LoanAdminDashboard() {
               </button>
             </div>
             <ResponsiveContainer width="100%" height={240}>
-              <AreaChart data={monthlyApplications} margin={{ top: 10, right: 8, left: -10, bottom: 0 }}>
+              <AreaChart data={monthlyApplications} margin={{ top: 20, right: 8, left: -25, bottom: 5 }}>
                 <defs>
                   <linearGradient id="colorApps" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
                     <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-                <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
-                <YAxis stroke="#9CA3AF" fontSize={12} allowDecimals={false} label={{ value: 'Count', angle: -90, position: 'insideLeft', style: { fontSize: '11px', fill: '#9CA3AF' } }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
+                <XAxis dataKey="month" stroke="#9CA3AF" fontSize={11} fontFamily="DM Sans, sans-serif" fontWeight={400} axisLine={false} tickLine={false} />
+                <YAxis stroke="#9CA3AF" fontSize={11} fontFamily="DM Mono, monospace" fontWeight={500} axisLine={false} tickLine={false} allowDecimals={false} label={{ value: 'Count', angle: -90, position: 'insideLeft', style: { fontSize: '11px', fill: '#9CA3AF', fontFamily: 'DM Sans, sans-serif' } }} />
                 <Tooltip />
                 <Legend iconType="circle" wrapperStyle={{ paddingTop: '8px' }} />
                 <Area type="monotone" dataKey="applications" stroke="#3B82F6" strokeWidth={2.5} fillOpacity={1} fill="url(#colorApps)" name="Applications" />
@@ -627,10 +639,10 @@ export default function LoanAdminDashboard() {
               </button>
             </div>
             <ResponsiveContainer width="100%" height={240}>
-              <LineChart data={delinquencyRate} margin={{ top: 10, right: 8, left: -10, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-                <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
-                <YAxis stroke="#9CA3AF" fontSize={12} domain={[0, 100]} tickFormatter={v => v + '%'} />
+              <LineChart data={delinquencyRate} margin={{ top: 20, right: 8, left: -25, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
+                <XAxis dataKey="month" stroke="#9CA3AF" fontSize={11} fontFamily="DM Sans, sans-serif" fontWeight={400} axisLine={false} tickLine={false} />
+                <YAxis stroke="#9CA3AF" fontSize={11} fontFamily="DM Mono, monospace" fontWeight={500} axisLine={false} tickLine={false} tickFormatter={v => v + '%'} domain={[0, 100]} />
                 <Tooltip formatter={(v) => v + '%'} />
                 <ReferenceLine y={15} stroke="#EF4444" strokeDasharray="5 5" label={{ value: 'Risk Threshold (15%)', position: 'insideTopRight', fill: '#EF4444', fontSize: 10, fontWeight: 600 }} />
                 <Line type="monotone" dataKey="rate" stroke="#0D1F45" strokeWidth={2.5} dot={{ r: 4, fill: '#0D1F45' }} name="Delinquency %" />
@@ -832,47 +844,43 @@ export default function LoanAdminDashboard() {
                 return (
                 <>
                   {/* Monthly Breakdown Table */}
-                  <div style={{ marginBottom: '20px', overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                  <div className="la-ex-section">
+                    <table className="la-ex-table">
                       <thead>
-                        <tr style={{ borderBottom: '2px solid #E5E7EB', textAlign: 'left' }}>
-                          <th style={{ padding: '10px 12px', color: '#374151', fontWeight: 600 }}>Month</th>
-                          <th style={{ padding: '10px 12px', color: '#374151', fontWeight: 600, textAlign: 'right' }}>Money In</th>
-                          <th style={{ padding: '10px 12px', color: '#374151', fontWeight: 600, textAlign: 'right' }}>Money Out</th>
-                          <th style={{ padding: '10px 12px', color: '#374151', fontWeight: 600, textAlign: 'right' }}>Net</th>
-                          <th style={{ padding: '10px 12px', color: '#374151', fontWeight: 600, textAlign: 'right' }}>MoM Change</th>
+                        <tr className="la-ex-thead-row">
+                          <th>Month</th>
+                          <th className="la-ex-text-right">Money In</th>
+                          <th className="la-ex-text-right">Money Out</th>
+                          <th className="la-ex-text-right">Net</th>
+                          <th className="la-ex-text-right">MoM Change</th>
                         </tr>
                       </thead>
                       <tbody>
                         {netData.map((d, i) => {
                           const hasData = (d.received || 0) > 0 || (d.disbursed || 0) > 0;
                           return (
-                            <tr key={d.month} style={{ borderBottom: '1px solid #F3F4F6', opacity: hasData ? 1 : 0.45 }}>
-                              <td style={{ padding: '10px 12px', fontWeight: 500 }}>{d.month}</td>
-                              <td style={{ padding: '10px 12px', textAlign: 'right', color: '#0D1F45', fontWeight: 600 }}>₱{(d.received || 0).toLocaleString()}</td>
-                              <td style={{ padding: '10px 12px', textAlign: 'right', color: '#60A5FA', fontWeight: 600 }}>₱{(d.disbursed || 0).toLocaleString()}</td>
-                              <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 700, color: d.net >= 0 ? '#10B981' : '#EF4444' }}>
+                            <tr key={d.month} className={`la-ex-tr ${!hasData ? 'la-ex-tr-faded' : ''}`}>
+                              <td className="la-ex-fw-500">{d.month}</td>
+                              <td className="la-ex-text-right la-ex-color-navy la-ex-fw-600">₱{(d.received || 0).toLocaleString()}</td>
+                              <td className="la-ex-text-right la-ex-color-blue la-ex-fw-600">₱{(d.disbursed || 0).toLocaleString()}</td>
+                              <td className={`la-ex-text-right la-ex-fw-700 ${d.net >= 0 ? 'la-ex-color-green' : 'la-ex-color-red'}`}>
                                 {d.net >= 0 ? '+' : '-'}₱{Math.abs(d.net).toLocaleString()}
                               </td>
-                              <td style={{ padding: '10px 12px', textAlign: 'right' }}>
+                              <td className="la-ex-text-right">
                                 {d.momChange !== null && hasData ? (
-                                  <span style={{
-                                    background: parseFloat(d.momChange) >= 0 ? '#D1FAE518' : '#FEE2E218',
-                                    color: parseFloat(d.momChange) >= 0 ? '#10B981' : '#EF4444',
-                                    padding: '2px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 600
-                                  }}>
+                                  <span className={`la-ex-badge ${parseFloat(d.momChange) >= 0 ? 'la-ex-badge-green' : 'la-ex-badge-red'}`}>
                                     {parseFloat(d.momChange) >= 0 ? '↑' : '↓'} {Math.abs(parseFloat(d.momChange))}%
                                   </span>
-                                ) : <span style={{ color: '#9CA3AF', fontSize: '12px' }}>—</span>}
+                                ) : <span className="la-ex-dash">—</span>}
                               </td>
                             </tr>
                           );
                         })}
-                        <tr style={{ borderTop: '2px solid #E5E7EB', fontWeight: 700 }}>
-                          <td style={{ padding: '10px 12px' }}>Total</td>
-                          <td style={{ padding: '10px 12px', textAlign: 'right', color: '#0D1F45' }}>₱{totalIn.toLocaleString()}</td>
-                          <td style={{ padding: '10px 12px', textAlign: 'right', color: '#60A5FA' }}>₱{totalOut.toLocaleString()}</td>
-                          <td style={{ padding: '10px 12px', textAlign: 'right', color: totalNet >= 0 ? '#10B981' : '#EF4444' }}>
+                        <tr className="la-ex-tr-total">
+                          <td>Total</td>
+                          <td className="la-ex-text-right la-ex-color-navy">₱{totalIn.toLocaleString()}</td>
+                          <td className="la-ex-text-right la-ex-color-blue">₱{totalOut.toLocaleString()}</td>
+                          <td className={`la-ex-text-right ${totalNet >= 0 ? 'la-ex-color-green' : 'la-ex-color-red'}`}>
                             {totalNet >= 0 ? '+' : '-'}₱{Math.abs(totalNet).toLocaleString()}
                           </td>
                           <td></td>
@@ -882,9 +890,9 @@ export default function LoanAdminDashboard() {
                   </div>
 
                   {/* Cumulative Cash Flow Line */}
-                  <div style={{ marginBottom: '16px' }}>
-                    <h4 className="adm-expand-panel-title" style={{ marginBottom: '8px' }}>Cumulative Cash Flow</h4>
-                    <div style={{ height: '280px' }}>
+                  <div className="la-ex-section-sm">
+                    <h4 className="adm-expand-panel-title la-ex-section-title">Cumulative Cash Flow</h4>
+                    <div className="la-ex-chart-280">
                       <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={cumulativeData} margin={{ top: 20, right: 30, left: 10, bottom: 10 }}>
                           <defs>
@@ -929,16 +937,16 @@ export default function LoanAdminDashboard() {
               {expandedChart === 'disbursements' && (
                 <>
                   {/* Summary Table */}
-                  <div style={{ marginBottom: '20px', overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                  <div className="la-ex-section">
+                    <table className="la-ex-table">
                       <thead>
-                        <tr style={{ borderBottom: '2px solid #E5E7EB', textAlign: 'left' }}>
-                          <th style={{ padding: '10px 12px', color: '#374151', fontWeight: 600 }}>Loan Type</th>
-                          <th style={{ padding: '10px 12px', color: '#374151', fontWeight: 600, textAlign: 'center' }}># Loans</th>
-                          <th style={{ padding: '10px 12px', color: '#374151', fontWeight: 600, textAlign: 'right' }}>Total Disbursed</th>
-                          <th style={{ padding: '10px 12px', color: '#374151', fontWeight: 600, textAlign: 'right' }}>Avg Loan Size</th>
-                          <th style={{ padding: '10px 12px', color: '#374151', fontWeight: 600, textAlign: 'right' }}>% Share</th>
-                          <th style={{ padding: '10px 12px', color: '#374151', fontWeight: 600, textAlign: 'center' }}>Monthly Trend</th>
+                        <tr className="la-ex-thead-row">
+                          <th >Loan Type</th>
+                          <th className="la-ex-text-center"># Loans</th>
+                          <th className="la-ex-text-right">Total Disbursed</th>
+                          <th className="la-ex-text-right">Avg Loan Size</th>
+                          <th className="la-ex-text-right">% Share</th>
+                          <th className="la-ex-text-center">Monthly Trend</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -949,18 +957,18 @@ export default function LoanAdminDashboard() {
                           // Build sparkline data for this type
                           const sparkData = disbursementMonthlyTrend.map(m => ({ v: m[d.label] || 0 }));
                           return (
-                            <tr key={d.type} style={{ borderBottom: '1px solid #F3F4F6' }}>
-                              <td style={{ padding: '10px 12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ width: 10, height: 10, borderRadius: '50%', background: color, display: 'inline-block', flexShrink: 0 }} />
+                            <tr key={d.type} className="la-ex-tr">
+                              <td className="la-ex-legend-item">
+                                <span className="la-ex-legend-dot" style={{ background: color }} />
                                 {d.label}
                               </td>
-                              <td style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 600 }}>{d.count}</td>
-                              <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600, color: '#0D1F45' }}>₱{d.amount.toLocaleString()}</td>
-                              <td style={{ padding: '10px 12px', textAlign: 'right', color: '#6B7280' }}>{d.count > 0 ? `₱${Math.round(d.average).toLocaleString()}` : '—'}</td>
-                              <td style={{ padding: '10px 12px', textAlign: 'right' }}>
+                              <td className="la-ex-text-center la-ex-fw-600">{d.count}</td>
+                              <td className="la-ex-text-right la-ex-fw-600 la-ex-color-navy">₱{d.amount.toLocaleString()}</td>
+                              <td className="la-ex-text-right la-ex-color-gray">{d.count > 0 ? `₱${Math.round(d.average).toLocaleString()}` : '—'}</td>
+                              <td className="la-ex-text-right">
                                 <span style={{ background: `${color}18`, color, padding: '2px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 600 }}>{pct}%</span>
                               </td>
-                              <td style={{ padding: '6px 12px', textAlign: 'center' }}>
+                              <td className="la-ex-sparkline-cell">
                                 <ResponsiveContainer width={120} height={32}>
                                   <LineChart data={sparkData} margin={{ top: 4, right: 4, left: 4, bottom: 4 }}>
                                     <Line type="monotone" dataKey="v" stroke={color} strokeWidth={1.5} dot={false} />
@@ -971,14 +979,14 @@ export default function LoanAdminDashboard() {
                           );
                         })}
                         {disbursementByTypeDetail.length > 0 && (
-                          <tr style={{ borderTop: '2px solid #E5E7EB', fontWeight: 700 }}>
-                            <td style={{ padding: '10px 12px' }}>Total</td>
-                            <td style={{ padding: '10px 12px', textAlign: 'center' }}>{disbursementByTypeDetail.reduce((s, d) => s + d.count, 0)}</td>
-                            <td style={{ padding: '10px 12px', textAlign: 'right', color: '#0D1F45' }}>₱{disbursementSummary.total.toLocaleString()}</td>
-                            <td style={{ padding: '10px 12px', textAlign: 'right', color: '#6B7280' }}>
+                          <tr className="la-ex-tr-total">
+                            <td >Total</td>
+                            <td className="la-ex-text-center">{disbursementByTypeDetail.reduce((s, d) => s + d.count, 0)}</td>
+                            <td className="la-ex-text-right la-ex-color-navy">₱{disbursementSummary.total.toLocaleString()}</td>
+                            <td className="la-ex-text-right la-ex-color-gray">
                               {(() => { const total = disbursementByTypeDetail.reduce((s, d) => s + d.count, 0); return total > 0 ? `₱${Math.round(disbursementSummary.total / total).toLocaleString()}` : '—'; })()}
                             </td>
-                            <td style={{ padding: '10px 12px', textAlign: 'right' }}>100%</td>
+                            <td className="la-ex-text-right">100%</td>
                             <td></td>
                           </tr>
                         )}
@@ -987,9 +995,9 @@ export default function LoanAdminDashboard() {
                   </div>
 
                   {/* Monthly Disbursement Trend by Type */}
-                  <div style={{ marginBottom: '16px' }}>
-                    <h4 className="adm-expand-panel-title" style={{ marginBottom: '8px' }}>Monthly Disbursement Trend by Loan Type</h4>
-                    <div style={{ height: '280px' }}>
+                  <div className="la-ex-section-sm">
+                    <h4 className="adm-expand-panel-title la-ex-section-title">Monthly Disbursement Trend by Loan Type</h4>
+                    <div className="la-ex-chart-280">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={disbursementMonthlyTrend} margin={{ top: 10, right: 10, left: -10, bottom: 10 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
@@ -1024,29 +1032,29 @@ export default function LoanAdminDashboard() {
                 return (
                 <>
                   {/* Section 1 — Summary Stats + Cumulative Chart */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '20px' }}>
-                    <div style={{ background: '#F8FAFC', borderRadius: '10px', padding: '14px 16px', textAlign: 'center' }}>
-                      <div style={{ fontSize: '11px', color: '#6B7280', fontWeight: 500, marginBottom: '4px' }}>Total Savings</div>
-                      <div style={{ fontSize: '20px', fontWeight: 700, color: '#0D1F45' }}>₱{totalSavings.toLocaleString()}</div>
+                  <div className="la-ex-scorecard la-ex-scorecard-4">
+                    <div className="la-ex-tile">
+                      <div className="la-ex-tile-label">Total Savings</div>
+                      <div className="la-ex-tile-value">₱{totalSavings.toLocaleString()}</div>
                     </div>
-                    <div style={{ background: '#F8FAFC', borderRadius: '10px', padding: '14px 16px', textAlign: 'center' }}>
-                      <div style={{ fontSize: '11px', color: '#6B7280', fontWeight: 500, marginBottom: '4px' }}>Total Members Saving</div>
-                      <div style={{ fontSize: '20px', fontWeight: 700, color: '#0D1F45' }}>{savingsSummary.totalSavers || 0}</div>
+                    <div className="la-ex-tile">
+                      <div className="la-ex-tile-label">Total Members Saving</div>
+                      <div className="la-ex-tile-value">{savingsSummary.totalSavers || 0}</div>
                     </div>
-                    <div style={{ background: '#F8FAFC', borderRadius: '10px', padding: '14px 16px', textAlign: 'center' }}>
-                      <div style={{ fontSize: '11px', color: '#6B7280', fontWeight: 500, marginBottom: '4px' }}>Avg per Member</div>
-                      <div style={{ fontSize: '20px', fontWeight: 700, color: '#0D1F45' }}>₱{(savingsSummary.avgPerSaver || 0).toLocaleString()}</div>
+                    <div className="la-ex-tile">
+                      <div className="la-ex-tile-label">Avg per Member</div>
+                      <div className="la-ex-tile-value">₱{(savingsSummary.avgPerSaver || 0).toLocaleString()}</div>
                     </div>
-                    <div style={{ background: '#F8FAFC', borderRadius: '10px', padding: '14px 16px', textAlign: 'center' }}>
-                      <div style={{ fontSize: '11px', color: '#6B7280', fontWeight: 500, marginBottom: '4px' }}>Highest Month</div>
-                      <div style={{ fontSize: '20px', fontWeight: 700, color: '#0D1F45' }}>{savingsSummary.highestMonth || '—'}</div>
-                      <div style={{ fontSize: '11px', color: '#6B7280' }}>₱{(savingsSummary.highestMonthAmount || 0).toLocaleString()}</div>
+                    <div className="la-ex-tile">
+                      <div className="la-ex-tile-label">Highest Month</div>
+                      <div className="la-ex-tile-value">{savingsSummary.highestMonth || '—'}</div>
+                      <div className="la-ex-tile-sub">₱{(savingsSummary.highestMonthAmount || 0).toLocaleString()}</div>
                     </div>
                   </div>
 
-                  <div style={{ marginBottom: '24px' }}>
-                    <h4 className="adm-expand-panel-title" style={{ marginBottom: '8px' }}>Cumulative Savings Trend</h4>
-                    <div style={{ height: '220px' }}>
+                  <div className="la-ex-section-lg">
+                    <h4 className="adm-expand-panel-title la-ex-section-title">Cumulative Savings Trend</h4>
+                    <div className="la-ex-chart-220">
                       <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={cumulativeData} margin={{ top: 10, right: 30, left: 10, bottom: 10 }}>
                           <defs>
@@ -1068,38 +1076,38 @@ export default function LoanAdminDashboard() {
                   </div>
 
                   {/* Section 2 — Community Savings Table */}
-                  <div style={{ marginBottom: '24px' }}>
-                    <h4 className="adm-expand-panel-title" style={{ marginBottom: '8px' }}>Savings by Community</h4>
-                    <div style={{ maxHeight: '320px', overflowY: 'auto', overflowX: 'auto', border: '1px solid #E5E7EB', borderRadius: '8px' }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-                        <thead style={{ position: 'sticky', top: 0, background: '#fff', zIndex: 1 }}>
-                          <tr style={{ borderBottom: '2px solid #E5E7EB', textAlign: 'left' }}>
-                            <th style={{ padding: '10px 12px', color: '#374151', fontWeight: 600 }}>#</th>
-                            <th style={{ padding: '10px 12px', color: '#374151', fontWeight: 600 }}>Community</th>
-                            <th style={{ padding: '10px 12px', color: '#374151', fontWeight: 600, textAlign: 'right' }}>Total Savings</th>
-                            <th style={{ padding: '10px 12px', color: '#374151', fontWeight: 600, textAlign: 'center' }}>Members</th>
-                            <th style={{ padding: '10px 12px', color: '#374151', fontWeight: 600, textAlign: 'right' }}>Avg / Member</th>
-                            <th style={{ padding: '10px 12px', color: '#374151', fontWeight: 600, textAlign: 'right' }}>% Share</th>
+                  <div className="la-ex-section-lg">
+                    <h4 className="adm-expand-panel-title la-ex-section-title">Savings by Community</h4>
+                    <div className="la-ex-table-scroll">
+                      <table className="la-ex-table">
+                        <thead >
+                          <tr className="la-ex-thead-row">
+                            <th >#</th>
+                            <th >Community</th>
+                            <th className="la-ex-text-right">Total Savings</th>
+                            <th className="la-ex-text-center">Members</th>
+                            <th className="la-ex-text-right">Avg / Member</th>
+                            <th className="la-ex-text-right">% Share</th>
                           </tr>
                         </thead>
                         <tbody>
                           {communitySavings.map((c, i) => {
                             const pct = totalSavings > 0 ? ((c.totalSavings / totalSavings) * 100).toFixed(1) : '0.0';
                             return (
-                              <tr key={c.community} style={{ borderBottom: '1px solid #F3F4F6' }}>
-                                <td style={{ padding: '8px 12px', color: '#9CA3AF', fontSize: '12px' }}>{i + 1}</td>
-                                <td style={{ padding: '8px 12px', fontWeight: 500 }}>{c.community}</td>
-                                <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 600, color: '#0D1F45' }}>₱{c.totalSavings.toLocaleString()}</td>
-                                <td style={{ padding: '8px 12px', textAlign: 'center' }}>{c.memberCount}</td>
-                                <td style={{ padding: '8px 12px', textAlign: 'right', color: '#6B7280' }}>₱{c.avgPerMember.toLocaleString()}</td>
-                                <td style={{ padding: '8px 12px', textAlign: 'right' }}>
+                              <tr key={c.community} className="la-ex-tr">
+                                <td className="la-ex-color-muted">{i + 1}</td>
+                                <td className="la-ex-fw-500">{c.community}</td>
+                                <td className="la-ex-text-right la-ex-fw-600 la-ex-color-navy">₱{c.totalSavings.toLocaleString()}</td>
+                                <td className="la-ex-text-center">{c.memberCount}</td>
+                                <td className="la-ex-text-right la-ex-color-gray">₱{c.avgPerMember.toLocaleString()}</td>
+                                <td className="la-ex-text-right">
                                   <span style={{ background: '#0D1F4518', color: '#0D1F45', padding: '2px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 600 }}>{pct}%</span>
                                 </td>
                               </tr>
                             );
                           })}
                           {communitySavings.length === 0 && (
-                            <tr><td colSpan={6} style={{ padding: '20px', textAlign: 'center', color: '#9CA3AF' }}>No community savings data available.</td></tr>
+                            <tr><td colSpan={6} className="la-ex-table-empty">No community savings data available.</td></tr>
                           )}
                         </tbody>
                       </table>
@@ -1108,8 +1116,8 @@ export default function LoanAdminDashboard() {
 
                   {/* Section 3 — Top Communities Bar Chart */}
                   {topCommunities.length > 0 && (
-                    <div style={{ marginBottom: '16px' }}>
-                      <h4 className="adm-expand-panel-title" style={{ marginBottom: '8px' }}>Top Communities by Savings</h4>
+                    <div className="la-ex-section-sm">
+                      <h4 className="adm-expand-panel-title la-ex-section-title">Top Communities by Savings</h4>
                       <div style={{ height: Math.max(200, topCommunities.length * 36) + 'px' }}>
                         <ResponsiveContainer width="100%" height="100%">
                           <BarChart data={topCommunities} layout="vertical" margin={{ top: 5, right: 80, left: 10, bottom: 5 }}>
@@ -1143,18 +1151,18 @@ export default function LoanAdminDashboard() {
                 return (
                 <>
                   {/* Section 1 — Stacked Status Bar */}
-                  <div style={{ marginBottom: '20px' }}>
-                    <div style={{ display: 'flex', height: '36px', borderRadius: '8px', overflow: 'hidden', marginBottom: '10px' }}>
+                  <div className="la-ex-section">
+                    <div className="la-ex-stacked-bar">
                       {statusDistribution.filter(d => d.value > 0).map((d, i) => (
                         <div key={i} style={{ width: `${(d.value / total) * 100}%`, background: STATUS_COLORS[d.name] || '#9CA3AF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '11px', fontWeight: 600, minWidth: '30px' }}>
                           {d.value}
                         </div>
                       ))}
                     </div>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', fontSize: '12px' }}>
+                    <div className="la-ex-status-legend">
                       {statusDistribution.map((d, i) => (
-                        <span key={i} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <span style={{ width: 8, height: 8, borderRadius: '50%', background: STATUS_COLORS[d.name] || '#9CA3AF' }} />
+                        <span key={i} className="la-ex-status-legend-item">
+                          <span className="la-ex-status-dot-sm" style={{ background: STATUS_COLORS[d.name] || '#9CA3AF' }} />
                           {d.name}: {d.value} ({total > 0 ? ((d.value / total) * 100).toFixed(1) : 0}%)
                         </span>
                       ))}
@@ -1162,37 +1170,37 @@ export default function LoanAdminDashboard() {
                   </div>
 
                   {/* Section 2 — Branch Status Table */}
-                  <div style={{ marginBottom: '24px' }}>
-                    <h4 className="adm-expand-panel-title" style={{ marginBottom: '8px' }}>Status by Community</h4>
-                    <div style={{ maxHeight: '300px', overflowY: 'auto', border: '1px solid #E5E7EB', borderRadius: '8px' }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
-                        <thead style={{ position: 'sticky', top: 0, background: '#fff', zIndex: 1 }}>
-                          <tr style={{ borderBottom: '2px solid #E5E7EB' }}>
-                            <th style={{ padding: '8px 10px', textAlign: 'left', color: '#374151', fontWeight: 600 }}>Community</th>
-                            <th style={{ padding: '8px 10px', textAlign: 'center', fontWeight: 600 }}>Total</th>
-                            <th style={{ padding: '8px 10px', textAlign: 'center', fontWeight: 600, color: '#0D1F45' }}>Completed</th>
-                            <th style={{ padding: '8px 10px', textAlign: 'center', fontWeight: 600, color: '#10B981' }}>Active</th>
-                            <th style={{ padding: '8px 10px', textAlign: 'center', fontWeight: 600, color: '#EF4444' }}>Rejected</th>
-                            <th style={{ padding: '8px 10px', textAlign: 'center', fontWeight: 600, color: '#F59E0B' }}>Cancelled</th>
-                            <th style={{ padding: '8px 10px', textAlign: 'right', fontWeight: 600 }}>Rejection Rate</th>
-                            <th style={{ padding: '8px 10px', textAlign: 'center', fontWeight: 600 }}>Status</th>
+                  <div className="la-ex-section-lg">
+                    <h4 className="adm-expand-panel-title la-ex-section-title">Status by Community</h4>
+                    <div className="la-ex-table-scroll la-ex-table-scroll-md">
+                      <table className="la-ex-table la-ex-table-sm">
+                        <thead >
+                          <tr className="la-ex-thead-row">
+                            <th >Community</th>
+                            <th className="la-ex-text-center">Total</th>
+                            <th className="la-ex-text-center la-ex-color-navy">Completed</th>
+                            <th className="la-ex-text-center la-ex-color-green">Active</th>
+                            <th className="la-ex-text-center la-ex-color-red">Rejected</th>
+                            <th className="la-ex-text-center la-ex-color-amber">Cancelled</th>
+                            <th className="la-ex-text-right">Rejection Rate</th>
+                            <th className="la-ex-text-center">Status</th>
                           </tr>
                         </thead>
                         <tbody>
                           {branchStatusData.map((b, i) => {
                             const rColor = b.rejectionRate > 20 ? '#EF4444' : b.rejectionRate > 10 ? '#F59E0B' : '#10B981';
                             return (
-                              <tr key={i} style={{ borderBottom: '1px solid #F3F4F6' }}>
-                                <td style={{ padding: '8px 10px', fontWeight: 500 }}>{b.branch}</td>
-                                <td style={{ padding: '8px 10px', textAlign: 'center' }}>{b.total}</td>
-                                <td style={{ padding: '8px 10px', textAlign: 'center' }}>{b.completed}</td>
-                                <td style={{ padding: '8px 10px', textAlign: 'center' }}>{b.active}</td>
-                                <td style={{ padding: '8px 10px', textAlign: 'center' }}>{b.rejected}</td>
-                                <td style={{ padding: '8px 10px', textAlign: 'center' }}>{b.cancelled}</td>
-                                <td style={{ padding: '8px 10px', textAlign: 'right' }}>
+                              <tr key={i} className="la-ex-tr">
+                                <td className="la-ex-fw-500">{b.branch}</td>
+                                <td className="la-ex-text-center">{b.total}</td>
+                                <td className="la-ex-text-center">{b.completed}</td>
+                                <td className="la-ex-text-center">{b.active}</td>
+                                <td className="la-ex-text-center">{b.rejected}</td>
+                                <td className="la-ex-text-center">{b.cancelled}</td>
+                                <td className="la-ex-text-right">
                                   <span style={{ background: `${rColor}18`, color: rColor, padding: '2px 8px', borderRadius: '12px', fontWeight: 600 }}>{b.rejectionRate}%</span>
                                 </td>
-                                <td style={{ padding: '8px 10px', textAlign: 'center' }}>
+                                <td className="la-ex-text-center">
                                   {(() => { const sColor = b.rejectionRate > 20 ? '#EF4444' : b.rejectionRate > 10 ? '#F59E0B' : '#10B981'; const label = b.rejectionRate > 20 ? 'Critical' : b.rejectionRate > 10 ? 'At Risk' : 'Healthy'; return <span style={{ background: `${sColor}18`, color: sColor, padding: '2px 8px', borderRadius: '12px', fontWeight: 600, fontSize: '11px' }}>{label}</span>; })()}
                                 </td>
                               </tr>
@@ -1204,9 +1212,9 @@ export default function LoanAdminDashboard() {
                   </div>
 
                   {/* Section 3 — Monthly Status Trend */}
-                  <div style={{ marginBottom: '16px' }}>
-                    <h4 className="adm-expand-panel-title" style={{ marginBottom: '8px' }}>Monthly Status Trend</h4>
-                    <div style={{ height: '260px' }}>
+                  <div className="la-ex-section-sm">
+                    <h4 className="adm-expand-panel-title la-ex-section-title">Monthly Status Trend</h4>
+                    <div className="la-ex-chart-260">
                       <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={monthlyStatusTrend} margin={{ top: 10, right: 30, left: 10, bottom: 10 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
@@ -1240,7 +1248,7 @@ export default function LoanAdminDashboard() {
                 return (
                 <>
                   {/* Section 1 — Scorecard */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px', marginBottom: '20px' }}>
+                  <div className="la-ex-scorecard la-ex-scorecard-5">
                     {[
                       { label: 'Total Payments', value: totalPayments, color: '#0D1F45' },
                       { label: 'On-Time', value: onTime, color: '#10B981' },
@@ -1248,38 +1256,38 @@ export default function LoanAdminDashboard() {
                       { label: 'On-Time Rate', value: onTimeRate + '%', color: rateColor },
                       { label: 'Total Penalties', value: '₱' + totalPenalties.toLocaleString(), color: late > 0 ? '#EF4444' : '#10B981' },
                     ].map((k, i) => (
-                      <div key={i} style={{ background: '#F8FAFC', borderRadius: '10px', padding: '14px 12px', textAlign: 'center' }}>
-                        <div style={{ fontSize: '11px', color: '#6B7280', fontWeight: 500, marginBottom: '4px' }}>{k.label}</div>
+                      <div key={i} className="la-ex-tile">
+                        <div className="la-ex-tile-label">{k.label}</div>
                         <div style={{ fontSize: '18px', fontWeight: 700, color: k.color }}>{k.value}</div>
                       </div>
                     ))}
                   </div>
 
                   {/* Section 2 — Branch Table */}
-                  <div style={{ marginBottom: '24px' }}>
-                    <h4 className="adm-expand-panel-title" style={{ marginBottom: '8px' }}>Repayment by Community</h4>
-                    <div style={{ maxHeight: '280px', overflowY: 'auto', border: '1px solid #E5E7EB', borderRadius: '8px' }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
-                        <thead style={{ position: 'sticky', top: 0, background: '#fff', zIndex: 1 }}>
-                          <tr style={{ borderBottom: '2px solid #E5E7EB' }}>
-                            <th style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 600 }}>Community</th>
-                            <th style={{ padding: '8px 10px', textAlign: 'center', fontWeight: 600 }}>Total</th>
-                            <th style={{ padding: '8px 10px', textAlign: 'center', fontWeight: 600, color: '#10B981' }}>On-Time</th>
-                            <th style={{ padding: '8px 10px', textAlign: 'center', fontWeight: 600, color: '#EF4444' }}>Late</th>
-                            <th style={{ padding: '8px 10px', textAlign: 'right', fontWeight: 600 }}>On-Time Rate</th>
-                            <th style={{ padding: '8px 10px', textAlign: 'right', fontWeight: 600 }}>Penalties</th>
+                  <div className="la-ex-section-lg">
+                    <h4 className="adm-expand-panel-title la-ex-section-title">Repayment by Community</h4>
+                    <div className="la-ex-table-scroll la-ex-table-scroll-sm">
+                      <table className="la-ex-table la-ex-table-sm">
+                        <thead >
+                          <tr className="la-ex-thead-row">
+                            <th >Community</th>
+                            <th className="la-ex-text-center">Total</th>
+                            <th className="la-ex-text-center la-ex-color-green">On-Time</th>
+                            <th className="la-ex-text-center la-ex-color-red">Late</th>
+                            <th className="la-ex-text-right">On-Time Rate</th>
+                            <th className="la-ex-text-right">Penalties</th>
                           </tr>
                         </thead>
                         <tbody>
                           {branchRepaymentData.map((b, i) => {
                             const c = b.onTimeRate >= 80 ? '#10B981' : b.onTimeRate >= 60 ? '#F59E0B' : '#EF4444';
                             return (
-                              <tr key={i} style={{ borderBottom: '1px solid #F3F4F6' }}>
-                                <td style={{ padding: '8px 10px', fontWeight: 500 }}>{b.branch}</td>
-                                <td style={{ padding: '8px 10px', textAlign: 'center' }}>{b.total}</td>
-                                <td style={{ padding: '8px 10px', textAlign: 'center' }}>{b.onTime}</td>
-                                <td style={{ padding: '8px 10px', textAlign: 'center' }}>{b.late}</td>
-                                <td style={{ padding: '8px 10px', textAlign: 'right' }}>
+                              <tr key={i} className="la-ex-tr">
+                                <td className="la-ex-fw-500">{b.branch}</td>
+                                <td className="la-ex-text-center">{b.total}</td>
+                                <td className="la-ex-text-center">{b.onTime}</td>
+                                <td className="la-ex-text-center">{b.late}</td>
+                                <td className="la-ex-text-right">
                                   <span style={{ background: `${c}18`, color: c, padding: '2px 8px', borderRadius: '12px', fontWeight: 600 }}>{b.onTimeRate}%</span>
                                 </td>
                                 <td style={{ padding: '8px 10px', textAlign: 'right', color: b.penalties > 0 ? '#EF4444' : '#6B7280' }}>₱{b.penalties.toLocaleString()}</td>
@@ -1292,9 +1300,9 @@ export default function LoanAdminDashboard() {
                   </div>
 
                   {/* Section 3 — Monthly Trend */}
-                  <div style={{ marginBottom: '16px' }}>
-                    <h4 className="adm-expand-panel-title" style={{ marginBottom: '8px' }}>Monthly Repayment Trend</h4>
-                    <div style={{ height: '250px' }}>
+                  <div className="la-ex-section-sm">
+                    <h4 className="adm-expand-panel-title la-ex-section-title">Monthly Repayment Trend</h4>
+                    <div className="la-ex-chart-250">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={monthlyRepayment} margin={{ top: 10, right: 30, left: 10, bottom: 10 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
@@ -1326,16 +1334,16 @@ export default function LoanAdminDashboard() {
                 return (
                 <>
                   {/* Section 1 — Monthly Table */}
-                  <div style={{ marginBottom: '20px', overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+                  <div className="la-ex-section">
+                    <table className="la-ex-table la-ex-table-sm">
                       <thead>
-                        <tr style={{ borderBottom: '2px solid #E5E7EB', textAlign: 'left' }}>
-                          <th style={{ padding: '8px 10px', fontWeight: 600 }}>Month</th>
-                          <th style={{ padding: '8px 10px', textAlign: 'center', fontWeight: 600 }}>Applications</th>
-                          <th style={{ padding: '8px 10px', textAlign: 'center', fontWeight: 600, color: '#10B981' }}>Approved</th>
-                          <th style={{ padding: '8px 10px', textAlign: 'center', fontWeight: 600, color: '#EF4444' }}>Rejected</th>
-                          <th style={{ padding: '8px 10px', textAlign: 'center', fontWeight: 600, color: '#2563EB' }}>Pending</th>
-                          <th style={{ padding: '8px 10px', textAlign: 'right', fontWeight: 600 }}>Approval Rate</th>
+                        <tr className="la-ex-thead-row">
+                          <th >Month</th>
+                          <th className="la-ex-text-center">Applications</th>
+                          <th className="la-ex-text-center la-ex-color-green">Approved</th>
+                          <th className="la-ex-text-center la-ex-color-red">Rejected</th>
+                          <th className="la-ex-text-center" style={{ color: '#2563EB' }}>Pending</th>
+                          <th className="la-ex-text-right">Approval Rate</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1346,12 +1354,12 @@ export default function LoanAdminDashboard() {
                           const isBold = rejRate > 20;
                           return (
                             <tr key={i} style={{ borderBottom: '1px solid #F3F4F6', fontWeight: isBold ? 700 : 400, opacity: d.applications > 0 ? 1 : 0.4, background: isBold ? '#FEF2F210' : 'transparent' }}>
-                              <td style={{ padding: '8px 10px' }}>{d.month} {isBold && <span style={{ color: '#EF4444', fontSize: '10px' }}>⚠</span>}</td>
-                              <td style={{ padding: '8px 10px', textAlign: 'center' }}>{d.applications}</td>
-                              <td style={{ padding: '8px 10px', textAlign: 'center' }}>{d.approved}</td>
+                              <td >{d.month} {isBold && <span style={{ color: '#EF4444', fontSize: '10px' }}>⚠</span>}</td>
+                              <td className="la-ex-text-center">{d.applications}</td>
+                              <td className="la-ex-text-center">{d.approved}</td>
                               <td style={{ padding: '8px 10px', textAlign: 'center', color: isBold ? '#EF4444' : 'inherit' }}>{d.rejected}</td>
-                              <td style={{ padding: '8px 10px', textAlign: 'center' }}>{pending > 0 ? <span style={{ color: '#F59E0B' }}>⚠ {pending}</span> : '—'}</td>
-                              <td style={{ padding: '8px 10px', textAlign: 'right' }}>
+                              <td className="la-ex-text-center">{pending > 0 ? <span style={{ color: '#F59E0B' }}>⚠ {pending}</span> : '—'}</td>
+                              <td className="la-ex-text-right">
                                 <span style={{ background: rate >= 80 ? '#10B98118' : rate >= 50 ? '#F59E0B18' : '#EF444418', color: rate >= 80 ? '#10B981' : rate >= 50 ? '#F59E0B' : '#EF4444', padding: '2px 8px', borderRadius: '12px', fontWeight: 600 }}>{rate}%</span>
                               </td>
                             </tr>
@@ -1362,9 +1370,9 @@ export default function LoanAdminDashboard() {
                   </div>
 
                   {/* Section 2 — Approval/Rejection Stacked Bar */}
-                  <div style={{ marginBottom: '24px' }}>
-                    <h4 className="adm-expand-panel-title" style={{ marginBottom: '8px' }}>Approval vs Rejection Rate</h4>
-                    <div style={{ height: '240px' }}>
+                  <div className="la-ex-section-lg">
+                    <h4 className="adm-expand-panel-title la-ex-section-title">Approval vs Rejection Rate</h4>
+                    <div className="la-ex-chart-240">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={rateData} margin={{ top: 10, right: 10, left: -10, bottom: 10 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
@@ -1384,18 +1392,18 @@ export default function LoanAdminDashboard() {
                   </div>
 
                   {/* Section 3 — Branch Table */}
-                  <div style={{ marginBottom: '16px' }}>
-                    <h4 className="adm-expand-panel-title" style={{ marginBottom: '8px' }}>Applications by Community</h4>
-                    <div style={{ maxHeight: '280px', overflowY: 'auto', border: '1px solid #E5E7EB', borderRadius: '8px' }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
-                        <thead style={{ position: 'sticky', top: 0, background: '#fff', zIndex: 1 }}>
-                          <tr style={{ borderBottom: '2px solid #E5E7EB' }}>
-                            <th style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 600 }}>Community</th>
-                            <th style={{ padding: '8px 10px', textAlign: 'center', fontWeight: 600 }}>Total</th>
-                            <th style={{ padding: '8px 10px', textAlign: 'center', fontWeight: 600, color: '#10B981' }}>Approved</th>
-                            <th style={{ padding: '8px 10px', textAlign: 'center', fontWeight: 600, color: '#EF4444' }}>Rejected</th>
-                            <th style={{ padding: '8px 10px', textAlign: 'right', fontWeight: 600 }}>Approval Rate</th>
-                            <th style={{ padding: '8px 10px', textAlign: 'center', fontWeight: 600 }}>Top Loan Type</th>
+                  <div className="la-ex-section-sm">
+                    <h4 className="adm-expand-panel-title la-ex-section-title">Applications by Community</h4>
+                    <div className="la-ex-table-scroll la-ex-table-scroll-sm">
+                      <table className="la-ex-table la-ex-table-sm">
+                        <thead >
+                          <tr className="la-ex-thead-row">
+                            <th >Community</th>
+                            <th className="la-ex-text-center">Total</th>
+                            <th className="la-ex-text-center la-ex-color-green">Approved</th>
+                            <th className="la-ex-text-center la-ex-color-red">Rejected</th>
+                            <th className="la-ex-text-right">Approval Rate</th>
+                            <th className="la-ex-text-center">Top Loan Type</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -1403,12 +1411,12 @@ export default function LoanAdminDashboard() {
                             const safeRate = Math.min(b.approvalRate, 100);
                             const c = safeRate >= 80 ? '#10B981' : safeRate >= 50 ? '#F59E0B' : '#EF4444';
                             return (
-                              <tr key={i} style={{ borderBottom: '1px solid #F3F4F6' }}>
-                                <td style={{ padding: '8px 10px', fontWeight: 500 }}>{b.branch}</td>
-                                <td style={{ padding: '8px 10px', textAlign: 'center' }}>{b.total}</td>
-                                <td style={{ padding: '8px 10px', textAlign: 'center' }}>{b.approved}</td>
-                                <td style={{ padding: '8px 10px', textAlign: 'center' }}>{b.rejected}</td>
-                                <td style={{ padding: '8px 10px', textAlign: 'right' }}>
+                              <tr key={i} className="la-ex-tr">
+                                <td className="la-ex-fw-500">{b.branch}</td>
+                                <td className="la-ex-text-center">{b.total}</td>
+                                <td className="la-ex-text-center">{b.approved}</td>
+                                <td className="la-ex-text-center">{b.rejected}</td>
+                                <td className="la-ex-text-right">
                                   <span style={{ background: `${c}18`, color: c, padding: '2px 8px', borderRadius: '12px', fontWeight: 600 }}>{safeRate}%</span>
                                 </td>
                                 <td style={{ padding: '8px 10px', textAlign: 'center', color: '#6B7280' }}>{b.topLoanType}</td>
@@ -1436,53 +1444,53 @@ export default function LoanAdminDashboard() {
                 return (
                 <>
                   {/* Section 1 — Scorecard */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '20px' }}>
+                  <div className="la-ex-scorecard la-ex-scorecard-4">
                     {[
                       { label: 'Current Delinquency Rate', value: currentRate + '%', color: rColor },
                       { label: 'Total Late Payments', value: totalLate, color: totalLate > 0 ? '#EF4444' : '#10B981' },
                       { label: 'Total Penalties Collected', value: '₱' + totalPenalties.toLocaleString(), color: totalPenalties > 0 ? '#EF4444' : '#10B981' },
                       { label: 'Communities At Risk', value: branchesAtRisk, color: branchesAtRisk > 0 ? '#EF4444' : '#10B981' },
                     ].map((k, i) => (
-                      <div key={i} style={{ background: '#F8FAFC', borderRadius: '10px', padding: '14px 12px', textAlign: 'center' }}>
-                        <div style={{ fontSize: '11px', color: '#6B7280', fontWeight: 500, marginBottom: '4px' }}>{k.label}</div>
+                      <div key={i} className="la-ex-tile">
+                        <div className="la-ex-tile-label">{k.label}</div>
                         <div style={{ fontSize: '20px', fontWeight: 700, color: k.color }}>{k.value}</div>
                       </div>
                     ))}
                   </div>
 
                   {/* Section 2 — Branch Table */}
-                  <div style={{ marginBottom: '24px' }}>
-                    <h4 className="adm-expand-panel-title" style={{ marginBottom: '8px' }}>Delinquency by Community</h4>
-                    <div style={{ maxHeight: '300px', overflowY: 'auto', border: '1px solid #E5E7EB', borderRadius: '8px' }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
-                        <thead style={{ position: 'sticky', top: 0, background: '#fff', zIndex: 1 }}>
-                          <tr style={{ borderBottom: '2px solid #E5E7EB' }}>
-                            <th style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 600 }}>Community</th>
-                            <th style={{ padding: '8px 10px', textAlign: 'center', fontWeight: 600 }}>Total Payments</th>
-                            <th style={{ padding: '8px 10px', textAlign: 'center', fontWeight: 600, color: '#10B981' }}>On-Time</th>
-                            <th style={{ padding: '8px 10px', textAlign: 'center', fontWeight: 600, color: '#EF4444' }}>Late</th>
-                            <th style={{ padding: '8px 10px', textAlign: 'right', fontWeight: 600 }}>Delinquency Rate</th>
-                            <th style={{ padding: '8px 10px', textAlign: 'center', fontWeight: 600 }}>Status</th>
+                  <div className="la-ex-section-lg">
+                    <h4 className="adm-expand-panel-title la-ex-section-title">Delinquency by Community</h4>
+                    <div className="la-ex-table-scroll la-ex-table-scroll-md">
+                      <table className="la-ex-table la-ex-table-sm">
+                        <thead >
+                          <tr className="la-ex-thead-row">
+                            <th >Community</th>
+                            <th className="la-ex-text-center">Total Payments</th>
+                            <th className="la-ex-text-center la-ex-color-green">On-Time</th>
+                            <th className="la-ex-text-center la-ex-color-red">Late</th>
+                            <th className="la-ex-text-right">Delinquency Rate</th>
+                            <th className="la-ex-text-center">Status</th>
                           </tr>
                         </thead>
                         <tbody>
                           {branchDelinquencyData.map((b, i) => {
                             const sColor = b.status === 'Critical' ? '#EF4444' : b.status === 'At Risk' ? '#F59E0B' : '#10B981';
                             return (
-                              <tr key={i} style={{ borderBottom: '1px solid #F3F4F6' }}>
-                                <td style={{ padding: '8px 10px', fontWeight: 500 }}>{b.branch}</td>
-                                <td style={{ padding: '8px 10px', textAlign: 'center' }}>{b.total}</td>
-                                <td style={{ padding: '8px 10px', textAlign: 'center' }}>{b.onTime}</td>
-                                <td style={{ padding: '8px 10px', textAlign: 'center' }}>{b.late}</td>
-                                <td style={{ padding: '8px 10px', textAlign: 'right' }}>{b.delinquencyRate}%</td>
-                                <td style={{ padding: '8px 10px', textAlign: 'center' }}>
+                              <tr key={i} className="la-ex-tr">
+                                <td className="la-ex-fw-500">{b.branch}</td>
+                                <td className="la-ex-text-center">{b.total}</td>
+                                <td className="la-ex-text-center">{b.onTime}</td>
+                                <td className="la-ex-text-center">{b.late}</td>
+                                <td className="la-ex-text-right">{b.delinquencyRate}%</td>
+                                <td className="la-ex-text-center">
                                   <span style={{ background: `${sColor}18`, color: sColor, padding: '2px 8px', borderRadius: '12px', fontWeight: 600, fontSize: '11px' }}>{b.status}</span>
                                 </td>
                               </tr>
                             );
                           })}
                           {branchDelinquencyData.length === 0 && (
-                            <tr><td colSpan={6} style={{ padding: '20px', textAlign: 'center', color: '#9CA3AF' }}>No payment data available.</td></tr>
+                            <tr><td colSpan={6} className="la-ex-table-empty">No payment data available.</td></tr>
                           )}
                         </tbody>
                       </table>
@@ -1490,13 +1498,13 @@ export default function LoanAdminDashboard() {
                   </div>
 
                   {/* Section 3 — Trend with Threshold */}
-                  <div style={{ marginBottom: '16px' }}>
-                    <h4 className="adm-expand-panel-title" style={{ marginBottom: '8px' }}>Delinquency Rate Trend</h4>
-                    <div style={{ height: '250px', position: 'relative' }}>
+                  <div className="la-ex-section-sm">
+                    <h4 className="adm-expand-panel-title la-ex-section-title">Delinquency Rate Trend</h4>
+                    <div className="la-ex-chart-250 la-ex-chart-rel">
                       {allZero && (
-                        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', zIndex: 2, background: 'rgba(255,255,255,0.9)', padding: '12px 20px', borderRadius: '8px', border: '1px solid #D1FAE5' }}>
-                          <div style={{ color: '#10B981', fontWeight: 600, fontSize: '14px' }}>✓ No delinquencies recorded</div>
-                          <div style={{ color: '#6B7280', fontSize: '12px' }}>Healthy portfolio — all payments are on time</div>
+                        <div className="la-ex-no-data-overlay">
+                          <div className="la-ex-no-data-title">✓ No delinquencies recorded</div>
+                          <div className="la-ex-no-data-sub">Healthy portfolio — all payments are on time</div>
                         </div>
                       )}
                       <ResponsiveContainer width="100%" height="100%">

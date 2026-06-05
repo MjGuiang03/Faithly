@@ -4,6 +4,7 @@ import useSWR from 'swr';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Label, Legend, AreaChart, Area, LineChart, Line } from 'recharts';
 import SecretaryAdminSidebar from '../components/secretaryAdminSidebar';
 import '../../admin/styles/AdminDashboard.css';
+import '../../loanAdmin/styles/loanAdminDashboard.css';
 import '../styles/secretaryAdminDashboard.css';
 import API from '../../utils/api';
 import { Banknote, Clock, CheckCircle, CalendarDays, X, Filter, Expand } from 'lucide-react';
@@ -212,7 +213,19 @@ export default function SecretaryAdminDashboard() {
         {!expandedChart && (
           <>
             {/* Header */}
-        <h1 className="admin-dashboard-title">Secretary Dashboard</h1>
+        <div className="adm-dashboard-header">
+          <div className="adm-dashboard-header-left">
+            <h1 className="adm-dashboard-greeting">
+              {(() => {
+                const h = new Date().getHours();
+                return h < 12 ? 'Good Morning' : h < 18 ? 'Good Afternoon' : 'Good Evening';
+              })()}, <span className="adm-dashboard-greeting-name">Secretary</span>
+            </h1>
+            <p className="adm-dashboard-subtitle">
+              Disbursement overview for <strong>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</strong>
+            </p>
+          </div>
+        </div>
 
         {loading ? (
           <div className="adm-loading-msg">Loading dashboard data...</div>
@@ -303,7 +316,7 @@ export default function SecretaryAdminDashboard() {
                       return <div className="sec-adm-ytd-text">YTD: ₱{ytd.toLocaleString()}</div>;
                     })()}
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div className="la-ex-legend-item">
                     <select value={chartYear} onChange={e => setChartYear(parseInt(e.target.value))} className="adm-filter-select">
                       {YEAR_OPTIONS.map(y => <option key={y} value={y}>{y}</option>)}
                     </select>
@@ -486,32 +499,32 @@ export default function SecretaryAdminDashboard() {
                 return (
                 <>
                   {/* Section 1 — Scorecard */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '20px' }}>
+                  <div className="la-ex-scorecard la-ex-scorecard-4">
                     {[
                       { label: 'YTD Total Disbursed', value: fmt(ytd), color: '#3B82F6' },
                       { label: 'Highest Month', value: highestMonth ? `${highestMonth.month} · ${fmt(highestMonth.released)}` : '—', color: '#10B981' },
                       { label: 'Avg Monthly', value: fmt(avgMonthly), color: '#8B5CF6' },
                       { label: 'Total Transactions', value: totalCount, color: '#F59E0B' },
                     ].map((s, i) => (
-                      <div key={i} style={{ background: '#0D1F45', borderRadius: '10px', padding: '16px', borderLeft: `4px solid ${s.color}`, boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <div style={{ fontSize: '20px', fontWeight: 700, color: '#ffffff' }}>{s.value}</div>
-                        <div style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.7)', fontWeight: 500 }}>{s.label}</div>
+                      <div key={i} className="la-ex-tile" style={{ background: '#0D1F45', borderLeft: `4px solid ${s.color}` }}>
+                        <div className="la-ex-tile-value" style={{ color: '#fff' }}>{s.value}</div>
+                        <div className="la-ex-tile-label" style={{ color: 'rgba(255,255,255,0.7)' }}>{s.label}</div>
                       </div>
                     ))}
                   </div>
 
                   {/* Section 2 — Monthly Breakdown Table */}
-                  <div style={{ marginBottom: '24px' }}>
-                    <h4 className="adm-expand-panel-title" style={{ marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>MONTHLY BREAKDOWN</h4>
-                    <div style={{ maxHeight: '320px', overflowY: 'auto', border: '1px solid #E5E7EB', borderRadius: '8px' }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
-                        <thead style={{ position: 'sticky', top: 0, background: '#fff', zIndex: 1 }}>
-                          <tr style={{ borderBottom: '2px solid #E5E7EB', background: '#F8FAFC' }}>
-                            <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 600 }}>Month</th>
-                            <th style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600 }}>Total Disbursed</th>
-                            <th style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 600 }}>Transactions</th>
-                            <th style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600 }}>Avg / Txn</th>
-                            <th style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600 }}>MoM Change</th>
+                  <div className="la-ex-section-lg">
+                    <h4 className="adm-expand-panel-title la-ex-section-title">MONTHLY BREAKDOWN</h4>
+                    <div className="la-ex-table-scroll">
+                      <table className="la-ex-table la-ex-table-sm">
+                        <thead >
+                          <tr className="la-ex-thead-row">
+                            <th >Month</th>
+                            <th className="la-ex-text-right">Total Disbursed</th>
+                            <th className="la-ex-text-center">Transactions</th>
+                            <th className="la-ex-text-right">Avg / Txn</th>
+                            <th className="la-ex-text-right">MoM Change</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -524,11 +537,11 @@ export default function SecretaryAdminDashboard() {
                             const isBold = d.released > avgMonthly && d.released > 0;
                             return (
                               <tr key={i} style={{ borderBottom: '1px solid #F3F4F6', opacity: isFuture ? 0.35 : 1, fontWeight: isBold ? 700 : 400, background: i % 2 !== 0 ? '#F9FAFB' : '#ffffff' }}>
-                                <td style={{ padding: '10px 12px' }}>{d.month}</td>
-                                <td style={{ padding: '10px 12px', textAlign: 'right' }}>{d.released > 0 ? fmt(d.released) : '—'}</td>
-                                <td style={{ padding: '10px 12px', textAlign: 'center' }}>{monthLoansCount || '—'}</td>
-                                <td style={{ padding: '10px 12px', textAlign: 'right' }}>{avgPerTxn > 0 ? fmt(avgPerTxn) : '—'}</td>
-                                <td style={{ padding: '10px 12px', textAlign: 'right' }}>
+                                <td >{d.month}</td>
+                                <td className="la-ex-text-right">{d.released > 0 ? fmt(d.released) : '—'}</td>
+                                <td className="la-ex-text-center">{monthLoansCount || '—'}</td>
+                                <td className="la-ex-text-right">{avgPerTxn > 0 ? fmt(avgPerTxn) : '—'}</td>
+                                <td className="la-ex-text-right">
                                   {momPct === null ? '—' : <span style={{ color: momPct >= 0 ? '#10B981' : '#EF4444', fontWeight: 600 }}>{momPct >= 0 ? '↑' : '↓'} {Math.abs(momPct)}%</span>}
                                 </td>
                               </tr>
@@ -540,17 +553,17 @@ export default function SecretaryAdminDashboard() {
                   </div>
 
                   {/* Section 3 — Branch Table */}
-                  <div style={{ marginBottom: '16px' }}>
-                    <h4 className="adm-expand-panel-title" style={{ marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>DISBURSEMENTS BY BRANCH</h4>
-                    <div style={{ maxHeight: '280px', overflowY: 'auto', border: '1px solid #E5E7EB', borderRadius: '8px' }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
-                        <thead style={{ position: 'sticky', top: 0, background: '#fff', zIndex: 1 }}>
-                          <tr style={{ borderBottom: '2px solid #E5E7EB', background: '#F8FAFC' }}>
-                            <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 600 }}>Branch</th>
-                            <th style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600 }}>Total Disbursed</th>
-                            <th style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 600 }}>Transactions</th>
-                            <th style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 600 }}>Top Method</th>
-                            <th style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600 }}>% Share</th>
+                  <div className="la-ex-section-sm">
+                    <h4 className="adm-expand-panel-title la-ex-section-title">DISBURSEMENTS BY BRANCH</h4>
+                    <div className="la-ex-table-scroll la-ex-table-scroll-sm">
+                      <table className="la-ex-table la-ex-table-sm">
+                        <thead >
+                          <tr className="la-ex-thead-row">
+                            <th >Branch</th>
+                            <th className="la-ex-text-right">Total Disbursed</th>
+                            <th className="la-ex-text-center">Transactions</th>
+                            <th className="la-ex-text-center">Top Method</th>
+                            <th className="la-ex-text-right">% Share</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -575,11 +588,11 @@ export default function SecretaryAdminDashboard() {
                               const share = totalAll > 0 ? ((b.total / totalAll) * 100).toFixed(1) : 0;
                               return (
                                 <tr key={idx} style={{ borderBottom: '1px solid #F3F4F6', background: idx % 2 !== 0 ? '#F9FAFB' : '#ffffff' }}>
-                                  <td style={{ padding: '10px 12px', fontWeight: 500 }}>{b.branch}</td>
-                                  <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600 }}>{fmt(b.total)}</td>
-                                  <td style={{ padding: '10px 12px', textAlign: 'center' }}>{b.count}</td>
-                                  <td style={{ padding: '10px 12px', textAlign: 'center' }}><span style={{ background: badge.bg, color: badge.color, padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 600 }}>{topName}</span></td>
-                                  <td style={{ padding: '10px 12px', textAlign: 'right' }}>{share}%</td>
+                                  <td className="la-ex-fw-500">{b.branch}</td>
+                                  <td className="la-ex-text-right">{fmt(b.total)}</td>
+                                  <td className="la-ex-text-center">{b.count}</td>
+                                  <td className="la-ex-text-center"><span style={{ background: badge.bg, color: badge.color, padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 600 }}>{topName}</span></td>
+                                  <td className="la-ex-text-right">{share}%</td>
                                 </tr>
                               );
                             });
@@ -604,7 +617,7 @@ export default function SecretaryAdminDashboard() {
                 return (
                 <>
                   {/* Section 1 — Method Scorecard */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '20px' }}>
+                  <div className="la-ex-scorecard la-ex-scorecard-3">
                     {paymentMethodData.map((m, i) => {
                       const count = yearLoans.filter(l => {
                         const pm = (l.paymentMethod || 'Cash').toLowerCase();
@@ -614,27 +627,27 @@ export default function SecretaryAdminDashboard() {
                       }).length;
                       return (
                         <div key={i} style={{ background: '#0D1F45', borderRadius: '10px', padding: '16px', borderLeft: `4px solid ${METHOD_BORDERS[m.name] || PIE_COLORS_EX[i]}`, boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          <div style={{ fontSize: '20px', fontWeight: 700, color: '#ffffff' }}>{fmt(m.value)}</div>
-                          <div style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.7)', fontWeight: 500 }}>{m.name}</div>
-                          <div style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.5)', marginTop: '2px' }}>{count} txn · {m.percentage}%</div>
+                          <div className="la-ex-tile-value" style={{ color: '#fff' }}>{fmt(m.value)}</div>
+                          <div className="la-ex-tile-label" style={{ color: 'rgba(255,255,255,0.7)' }}>{m.name}</div>
+                          <div className="la-ex-tile-sub" style={{ color: 'rgba(255,255,255,0.5)' }}>{count} txn · {m.percentage}%</div>
                         </div>
                       );
                     })}
                   </div>
 
                   {/* Section 2 — Branch Table */}
-                  <div style={{ marginBottom: '24px' }}>
-                    <h4 className="adm-expand-panel-title" style={{ marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>PAYMENT METHOD BY BRANCH</h4>
-                    <div style={{ maxHeight: '300px', overflowY: 'auto', border: '1px solid #E5E7EB', borderRadius: '8px' }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
-                        <thead style={{ position: 'sticky', top: 0, background: '#fff', zIndex: 1 }}>
-                          <tr style={{ borderBottom: '2px solid #E5E7EB', background: '#F8FAFC' }}>
-                            <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 600 }}>Branch</th>
-                            <th style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600, color: '#4a90d9' }}>E-Wallet</th>
-                            <th style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600, color: '#1e3a5f' }}>Bank</th>
-                            <th style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600, color: '#6B7280' }}>Cash</th>
-                            <th style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600 }}>Total</th>
-                            <th style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 600 }}>Dominant</th>
+                  <div className="la-ex-section-lg">
+                    <h4 className="adm-expand-panel-title la-ex-section-title">PAYMENT METHOD BY BRANCH</h4>
+                    <div className="la-ex-table-scroll la-ex-table-scroll-md">
+                      <table className="la-ex-table la-ex-table-sm">
+                        <thead >
+                          <tr className="la-ex-thead-row">
+                            <th >Branch</th>
+                            <th className="la-ex-text-right" style={{ color: '#4a90d9' }}>E-Wallet</th>
+                            <th className="la-ex-text-right" style={{ color: '#1e3a5f' }}>Bank</th>
+                            <th className="la-ex-text-right la-ex-color-gray">Cash</th>
+                            <th className="la-ex-text-right">Total</th>
+                            <th className="la-ex-text-center">Dominant</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -655,12 +668,12 @@ export default function SecretaryAdminDashboard() {
                               const dColor = dominant === 'E-Wallet' ? '#4a90d9' : dominant === 'Bank' ? '#1e3a5f' : '#6B7280';
                               return (
                                 <tr key={idx} style={{ borderBottom: '1px solid #F3F4F6', background: idx % 2 !== 0 ? '#F9FAFB' : '#ffffff' }}>
-                                  <td style={{ padding: '10px 12px', fontWeight: 500 }}>{b.branch}</td>
-                                  <td style={{ padding: '10px 12px', textAlign: 'right' }}>{b.ewallet > 0 ? fmt(b.ewallet) : '—'}</td>
-                                  <td style={{ padding: '10px 12px', textAlign: 'right' }}>{b.bank > 0 ? fmt(b.bank) : '—'}</td>
-                                  <td style={{ padding: '10px 12px', textAlign: 'right' }}>{b.cash > 0 ? fmt(b.cash) : '—'}</td>
-                                  <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600 }}>{fmt(b.total)}</td>
-                                  <td style={{ padding: '10px 12px', textAlign: 'center' }}>
+                                  <td className="la-ex-fw-500">{b.branch}</td>
+                                  <td className="la-ex-text-right">{b.ewallet > 0 ? fmt(b.ewallet) : '—'}</td>
+                                  <td className="la-ex-text-right">{b.bank > 0 ? fmt(b.bank) : '—'}</td>
+                                  <td className="la-ex-text-right">{b.cash > 0 ? fmt(b.cash) : '—'}</td>
+                                  <td className="la-ex-text-right">{fmt(b.total)}</td>
+                                  <td className="la-ex-text-center">
                                     <span style={{ background: `${dColor}15`, color: dColor, padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 600 }}>{dominant}</span>
                                   </td>
                                 </tr>
@@ -673,9 +686,9 @@ export default function SecretaryAdminDashboard() {
                   </div>
 
                   {/* Section 3 — Monthly Trend */}
-                  <div style={{ marginBottom: '16px' }}>
-                    <h4 className="adm-expand-panel-title" style={{ marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>MONTHLY TREND BY PAYMENT METHOD</h4>
-                    <div style={{ height: '260px' }}>
+                  <div className="la-ex-section-sm">
+                    <h4 className="adm-expand-panel-title la-ex-section-title">MONTHLY TREND BY PAYMENT METHOD</h4>
+                    <div className="la-ex-chart-260">
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={(() => {
                           return MONTH_NAMES.map((month, idx) => {

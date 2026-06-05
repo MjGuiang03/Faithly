@@ -4,6 +4,7 @@ import useSWR from 'swr';
 import { toast } from 'sonner';
 import useDebounce from '../../hooks/useDebounce';
 import '../styles/AdminAttendance.css';
+import '../../styles/sharedPagination.css';
 import API from '../../utils/api';
 import { 
   CalendarDays, MapPin, Search, UserCheck, Clock, ShieldAlert,
@@ -559,11 +560,22 @@ export default function AdminAttendance() {
             </div>
             {/* Logs pagination */}
             {logsTotalCount > PER_PAGE && (
-              <div className="admin-att-pagination">
-                <span>Showing {((logsPage - 1) * PER_PAGE) + 1}–{Math.min(logsPage * PER_PAGE, logsTotalCount)} of {logsTotalCount}</span>
-                <div className="admin-att-pagination-btns">
-                  <button disabled={logsPage <= 1} onClick={() => handleLogsPageChange(logsPage - 1)}><ChevronLeft size={16} /> Previous</button>
-                  <button disabled={logsPage >= totalLogsPages} onClick={() => handleLogsPageChange(logsPage + 1)}>Next <ChevronRight size={16} /></button>
+              <div className="pg-bar">
+                <span className="pg-info">
+                  Showing {((logsPage - 1) * PER_PAGE) + 1}–{Math.min(logsPage * PER_PAGE, logsTotalCount)} of {logsTotalCount}
+                </span>
+                <div className="pg-controls">
+                  <button className="pg-btn" disabled={logsPage <= 1} onClick={() => handleLogsPageChange(logsPage - 1)}>
+                    ← Prev
+                  </button>
+                  {Array.from({ length: totalLogsPages }, (_, i) => i + 1).map(p => (
+                    <button key={p} className={`pg-btn pg-num${logsPage === p ? ' active' : ''}`} onClick={() => handleLogsPageChange(p)}>
+                      {p}
+                    </button>
+                  ))}
+                  <button className="pg-btn" disabled={logsPage >= totalLogsPages} onClick={() => handleLogsPageChange(logsPage + 1)}>
+                    Next →
+                  </button>
                 </div>
               </div>
             )}
@@ -658,21 +670,43 @@ export default function AdminAttendance() {
             
             {/* Pagination depending on activeTab */}
             {activeTab === 'active' && activeSessions.length > PER_PAGE && (
-              <div className="admin-att-pagination">
-                <span>Showing {((sessionsPage - 1) * PER_PAGE) + 1}–{Math.min(sessionsPage * PER_PAGE, activeSessions.length)} of {activeSessions.length}</span>
-                <div className="admin-att-pagination-btns">
-                  <button disabled={sessionsPage <= 1} onClick={() => setSessionsPage(sessionsPage - 1)}><ChevronLeft size={16} /> Previous</button>
-                  <button disabled={sessionsPage >= totalSessionsPages} onClick={() => setSessionsPage(sessionsPage + 1)}>Next <ChevronRight size={16} /></button>
+              <div className="pg-bar">
+                <span className="pg-info">
+                  Showing {((sessionsPage - 1) * PER_PAGE) + 1}–{Math.min(sessionsPage * PER_PAGE, activeSessions.length)} of {activeSessions.length}
+                </span>
+                <div className="pg-controls">
+                  <button className="pg-btn" disabled={sessionsPage <= 1} onClick={() => setSessionsPage(sessionsPage - 1)}>
+                    ← Prev
+                  </button>
+                  {Array.from({ length: totalSessionsPages }, (_, i) => i + 1).map(p => (
+                    <button key={p} className={`pg-btn pg-num${sessionsPage === p ? ' active' : ''}`} onClick={() => setSessionsPage(p)}>
+                      {p}
+                    </button>
+                  ))}
+                  <button className="pg-btn" disabled={sessionsPage >= totalSessionsPages} onClick={() => setSessionsPage(sessionsPage + 1)}>
+                    Next →
+                  </button>
                 </div>
               </div>
             )}
-            
+
             {activeTab === 'history' && historyTotalCount > PER_PAGE && (
-              <div className="admin-att-pagination">
-                <span>Showing {((historyPage - 1) * PER_PAGE) + 1}–{Math.min(historyPage * PER_PAGE, historyTotalCount)} of {historyTotalCount}</span>
-                <div className="admin-att-pagination-btns">
-                  <button disabled={historyPage <= 1} onClick={() => setHistoryPage(historyPage - 1)}><ChevronLeft size={16} /> Previous</button>
-                  <button disabled={historyPage >= historyTotalPages} onClick={() => setHistoryPage(historyPage + 1)}>Next <ChevronRight size={16} /></button>
+              <div className="pg-bar">
+                <span className="pg-info">
+                  Showing {((historyPage - 1) * PER_PAGE) + 1}–{Math.min(historyPage * PER_PAGE, historyTotalCount)} of {historyTotalCount}
+                </span>
+                <div className="pg-controls">
+                  <button className="pg-btn" disabled={historyPage <= 1} onClick={() => setHistoryPage(historyPage - 1)}>
+                    ← Prev
+                  </button>
+                  {Array.from({ length: historyTotalPages }, (_, i) => i + 1).map(p => (
+                    <button key={p} className={`pg-btn pg-num${historyPage === p ? ' active' : ''}`} onClick={() => setHistoryPage(p)}>
+                      {p}
+                    </button>
+                  ))}
+                  <button className="pg-btn" disabled={historyPage >= historyTotalPages} onClick={() => setHistoryPage(historyPage + 1)}>
+                    Next →
+                  </button>
                 </div>
               </div>
             )}

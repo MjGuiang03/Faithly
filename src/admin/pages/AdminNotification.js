@@ -3,6 +3,7 @@ import useSWR from 'swr';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import '../styles/AdminNotification.css';
+import '../../styles/sharedPagination.css';
 
 import API from '../../utils/api';
 import { CalendarDays, Heart, Banknote } from 'lucide-react';
@@ -203,28 +204,34 @@ export default function AdminNotifications() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="admin-notif-pagination">
-              <span className="admin-notif-page-info">
+            <div className="pg-bar">
+              <span className="pg-info">
                 Showing {(page - 1) * PER_PAGE + 1}–{Math.min(page * PER_PAGE, filtered.length)} of {filtered.length}
               </span>
-              <div className="admin-notif-page-controls">
+              <div className="pg-controls">
                 <button
-                  className="admin-notif-page-btn"
-                  onClick={() => setPage(p => p - 1)}
+                  className="pg-btn"
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
                   disabled={page === 1}
-                >‹</button>
+                >
+                  ← Prev
+                </button>
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
                   <button
                     key={p}
-                    className={`admin-notif-page-btn ${p === page ? 'active' : ''}`}
+                    className={`pg-btn pg-num${p === page ? ' active' : ''}`}
                     onClick={() => setPage(p)}
-                  >{p}</button>
+                  >
+                    {p}
+                  </button>
                 ))}
                 <button
-                  className="admin-notif-page-btn"
-                  onClick={() => setPage(p => p + 1)}
+                  className="pg-btn"
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                >›</button>
+                >
+                  Next →
+                </button>
               </div>
             </div>
           )}

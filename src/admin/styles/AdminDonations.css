@@ -7,32 +7,32 @@
 
 /* Header */
 .admin-don-new-header {
-  margin-bottom: 32px;
+  margin-bottom: 14px;
 }
 
 .admin-don-new-title {
   font-family: 'Inter', 'Arial', sans-serif;
-  font-size: 30px;
+  font-size: 22px;
   font-weight: 700;
-  line-height: 36px;
+  line-height: 28px;
   color: #101828;
-  margin: 0 0 8px 0;
+  margin: 0 0 4px 0;
 }
 
 /* Stats Cards */
 .admin-don-new-stats {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
 .admin-don-new-stat-card {
   background: #0D1F45;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  padding: 16px;
-  min-height: 80px;
+  border-radius: 8px;
+  padding: 12px 14px;
+  min-height: 60px;
   transition: all 0.3s ease;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
@@ -60,11 +60,11 @@
 
 .admin-don-new-stat-value {
   font-family: 'Inter', 'Arial', sans-serif;
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 700;
-  line-height: 32px;
+  line-height: 24px;
   color: white;
-  margin: 0 0 4px 0;
+  margin: 0 0 2px 0;
 }
 
 .admin-don-new-stat-change {
@@ -81,8 +81,8 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
 .admin-don-search-wrapper {
@@ -168,7 +168,7 @@
 }
 
 .admin-table th {
-  padding: 12px 24px;
+  padding: 8px 16px;
   text-align: left;
   font-weight: 600;
   font-size: 11px;
@@ -180,8 +180,8 @@
 }
 
 .admin-table td {
-  padding: 16px 24px;
-  font-size: 13px;
+  padding: 6px 16px;
+  font-size: 12px;
   color: #111827;
   border-bottom: 1px solid #f3f4f6;
   vertical-align: middle;
@@ -212,8 +212,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 24px;
-  padding: 12px 0;
+  margin-top: 12px;
+  padding: 6px 0;
 }
 
 .admin-don-pagination {
@@ -264,6 +264,11 @@
 .admin-don-pagination-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+.admin-don-pagination-dots {
+  padding: 0 4px;
+  color: #9CA3AF;
 }
 
 .admin-don-pagination-info {
@@ -717,7 +722,7 @@
 .admin-don-content-layout {
   display: grid;
   grid-template-columns: 2fr 1.2fr;
-  gap: 20px;
+  gap: 12px;
   align-items: start;
 }
 

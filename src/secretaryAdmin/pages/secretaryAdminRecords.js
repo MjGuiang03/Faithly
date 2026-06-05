@@ -3,6 +3,7 @@ import useSWR from 'swr';
 import useDebounce from '../../hooks/useDebounce';
 import SecretaryAdminSidebar from '../components/secretaryAdminSidebar';
 import '../styles/secretaryAdminRecords.css';
+import '../../styles/sharedPagination.css';
 
 import API from '../../utils/api';
 import { Banknote, CalendarDays, Search } from 'lucide-react';
@@ -218,33 +219,33 @@ export default function SecretaryLoanRecords() {
 
                 {/* Pagination */}
                 {totalCount > LIMIT && (
-                    <div className="sec-admin-records-pagination">
-                        <p className="sec-admin-records-pagination-info">
-                            Showing {(page - 1) * LIMIT + 1} to {Math.min(page * LIMIT, totalCount)} of {totalCount} results
-                        </p>
-                        <div className="sec-admin-records-pagination-controls">
-                            <button 
-                                className="sec-admin-records-pagination-btn" 
+                    <div className="pg-bar">
+                        <span className="pg-info">
+                            Showing {(page - 1) * LIMIT + 1}–{Math.min(page * LIMIT, totalCount)} of {totalCount}
+                        </span>
+                        <div className="pg-controls">
+                            <button
+                                className="pg-btn"
                                 onClick={() => setPage(p => Math.max(1, p - 1))}
                                 disabled={page === 1}
                             >
-                                Previous
+                                ← Prev
                             </button>
-                            {Array.from({ length: Math.ceil(totalCount / LIMIT) }, (_, i) => (
+                            {Array.from({ length: Math.ceil(totalCount / LIMIT) }, (_, i) => i + 1).map(p => (
                                 <button
-                                    key={i + 1}
-                                    className={`sec-admin-records-pagination-btn ${page === i + 1 ? 'active' : ''}`}
-                                    onClick={() => setPage(i + 1)}
+                                    key={p}
+                                    className={`pg-btn pg-num${page === p ? ' active' : ''}`}
+                                    onClick={() => setPage(p)}
                                 >
-                                    {i + 1}
+                                    {p}
                                 </button>
                             ))}
-                            <button 
-                                className="sec-admin-records-pagination-btn" 
+                            <button
+                                className="pg-btn"
                                 onClick={() => setPage(p => Math.min(Math.ceil(totalCount / LIMIT), p + 1))}
                                 disabled={page === Math.ceil(totalCount / LIMIT)}
                             >
-                                Next
+                                Next →
                             </button>
                         </div>
                     </div>

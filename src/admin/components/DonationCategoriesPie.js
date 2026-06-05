@@ -33,53 +33,32 @@ export default function DonationCategoriesPie({ categoryBreakdown = {} }) {
     });
   }, [pieData, pieTotal]);
 
+  const formatK = (num) => num >= 1000 ? `${(num / 1000).toFixed(0)}k` : num;
+
   return (
-    <div className="dcp-card">
-      <div className="dcp-card-header" style={{ marginBottom: '10px' }}>
-        <div>
-          <h3 className="dcp-card-title" style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: '#111827' }}>Donation Categories</h3>
-          <span style={{ fontSize: '12px', color: '#6B7280' }}>Total: ₱{(pieTotal || 0).toLocaleString()}</span>
+    <div className="dcp-card" style={{ padding: '24px' }}>
+      <div className="dcp-card-header" style={{ marginBottom: '20px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
+          <h3 className="dcp-card-title" style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#111827', fontFamily: "'Inter', sans-serif" }}>Donation Categories</h3>
+          <span className="dcp-stat-chip">
+            ₱{(pieTotal || 0).toLocaleString()}
+          </span>
         </div>
       </div>
-      <div className="dcp-chart-container" style={{ padding: '10px 0', height: '220px' }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            layout="vertical"
-            data={sortedDonationData}
-            margin={{ top: 0, right: 90, left: 0, bottom: 0 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#F3F4F6" />
-            <XAxis type="number" hide />
-            <YAxis 
-              type="category" 
-              dataKey="name" 
-              axisLine={false} 
-              tickLine={false} 
-              tick={{ fontSize: 11, fill: '#4B5563' }} 
-              width={130} 
-              tickFormatter={(val) => val.length > 18 ? val.substring(0, 18) + '...' : val}
-            />
-            <Tooltip 
-              cursor={{ fill: '#F9FAFB' }}
-              formatter={(value, name, props) => {
-                const p = props.payload;
-                return [`₱${value.toLocaleString()} (${p.percentage}%)`, 'Donations'];
-              }}
-              contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
-            />
-            <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={20} minPointSize={2}>
-              {sortedDonationData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.fillColor} />
-              ))}
-              <LabelList 
-                dataKey="displayLabel" 
-                position="right" 
-                fill="#6B7280" 
-                fontSize={11} 
-              />
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+      <div className="dcp-donation-list">
+        {sortedDonationData.map((item, idx) => {
+          const shortName = item.name.replace('Department', 'Dept');
+          const displayLabel = `₱${formatK(item.value || 0)} • ${item.percentage}%`;
+          return (
+            <div key={idx} className="dcp-donation-row">
+              <span className="dcp-donation-name">{shortName}</span>
+              <div className="dcp-donation-bar-bg">
+                <div className="dcp-donation-bar-fill" style={{ width: `${item.percentage}%`, backgroundColor: item.fillColor }}></div>
+              </div>
+              <span className="dcp-donation-value">{displayLabel}</span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

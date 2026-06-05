@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import useSWR from 'swr';
 import SecretaryAdminSidebar from '../components/secretaryAdminSidebar';
 import '../styles/secretaryAdminNotif.css';
+import '../../styles/sharedPagination.css';
 
 import API from '../../utils/api';
 import { Banknote } from 'lucide-react';
@@ -9,6 +10,8 @@ import { Banknote } from 'lucide-react';
 
 export default function SecretaryAdminNotif() {
     const [activeFilter, setActiveFilter] = useState('all');
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 10;
 
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -84,6 +87,16 @@ export default function SecretaryAdminNotif() {
     };
 
     const filteredNotifications = getFilteredNotifications();
+    const totalPages = Math.ceil(filteredNotifications.length / ITEMS_PER_PAGE);
+    const paginatedNotifications = filteredNotifications.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+    );
+
+    const handleFilterChange = (key) => {
+        setActiveFilter(key);
+        setCurrentPage(1);
+    };
 
     return (
         <div className="sec-admin-notif-page">
@@ -114,7 +127,7 @@ export default function SecretaryAdminNotif() {
                                 <button
                                     key={key}
                                     className={`admin-notif-tab${activeFilter === key ? ' admin-notif-tab-active' : ''}`}
-                                    onClick={() => setActiveFilter(key)}
+                                    onClick={() => handleFilterChange(key)}
                                 >
                                     {label}
                                     {count > 0 && (
@@ -139,7 +152,7 @@ export default function SecretaryAdminNotif() {
                             <p className="sec-admin-notif-empty-text">No notifications found.</p>
                         </div>
                     ) : (
-                        filteredNotifications.map(notification => (
+                        paginatedNotifications.map(notification => (
                             <div
                                 key={notification.id}
                                 className={`sec-admin-notif-card ${notification.isRead ? 'read' : 'unread'}`}
@@ -177,6 +190,40 @@ export default function SecretaryAdminNotif() {
                         ))
                     )}
                 </div>
+
+                {/* ── Pagination ── */}
+                {totalPages > 1 && (
+                    <div className="pg-bar">
+                        <span className="pg-info">
+                            Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filteredNotifications.length)} of {filteredNotifications.length}
+                        </span>
+                        <div className="pg-controls">
+                            <button
+                                className="pg-btn"
+                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                disabled={currentPage === 1}
+                            >
+                                ← Prev
+                            </button>
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                <button
+                                    key={page}
+                                    className={`pg-btn pg-num${currentPage === page ? ' active' : ''}`}
+                                    onClick={() => setCurrentPage(page)}
+                                >
+                                    {page}
+                                </button>
+                            ))}
+                            <button
+                                className="pg-btn"
+                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                disabled={currentPage === totalPages}
+                            >
+                                Next →
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* ── Notification Detail Modal ── */}

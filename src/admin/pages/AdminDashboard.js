@@ -7,6 +7,7 @@ import {
   PieChart, Pie, Cell,
   BarChart, Bar,
   LineChart, Line,
+  ComposedChart, Area,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   ReferenceLine, ReferenceDot, LabelList, Label, ReferenceArea
 } from 'recharts';
@@ -56,12 +57,20 @@ const INITIAL_DONATION_CATEGORIES = [
   { name: 'Mission Fund',           value: 0, color: '#14B8A6' }, // Teal
 ];
 
+const formatK = (num) => {
+  if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'm';
+  if (num >= 1000) return (num / 1000).toFixed(0) + 'k';
+  return num.toString();
+};
+
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
 
   const [growthYear, setGrowthYear] = useState(new Date().getFullYear());
   const [growthMonth, setGrowthMonth] = useState('all');
   const [growthView, setGrowthView] = useState('both'); // 'both', 'total', 'new'
+  const [topCommunitiesLimit, setTopCommunitiesLimit] = useState(20);
   
   const [attYear, setAttYear] = useState(new Date().getFullYear());
   const [attMonth, setAttMonth] = useState('all');
@@ -150,7 +159,9 @@ export default function AdminDashboard() {
         branchMap[b] = (branchMap[b] || 0) + 1;
       }
     });
-    return Object.entries(branchMap).map(([branch, count]) => ({ branch, count }));
+    return Object.entries(branchMap)
+      .map(([branch, count]) => ({ branch, count }))
+      .sort((a, b) => b.count - a.count);
   }, [rawMembers]);
 
   const loanStats = useMemo(() => ({
@@ -315,28 +326,30 @@ export default function AdminDashboard() {
 
     if (attMonth === 'all') {
       const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      att = monthNames.map((m, i) => ({ label: m, attendance: 0, sortKey: i }));
+      att = monthNames.map((m, i) => ({ label: m, present: 0, late: 0, absent: 0, sortKey: i }));
       
       filteredAtt.forEach(a => {
         const s = (a.status || '').toLowerCase();
-        if (s === 'present' || s === 'late') {
-          const d = new Date(a.date || a.createdAt);
-          if (d.getFullYear() === attYear) {
-            att[d.getMonth()].attendance += 1;
-          }
+        const d = new Date(a.date || a.createdAt);
+        if (d.getFullYear() === attYear) {
+          if (s === 'present') att[d.getMonth()].present += 1;
+          else if (s === 'late') att[d.getMonth()].late += 1;
+          else if (s === 'absent') att[d.getMonth()].absent += 1;
         }
       });
     } else {
       const daysInMonth = new Date(attYear, parseInt(attMonth) + 1, 0).getDate();
-      att = Array.from({length: daysInMonth}, (_, i) => ({ label: `${i+1}`, attendance: 0, sortKey: i+1 }));
+      att = Array.from({length: daysInMonth}, (_, i) => ({ label: `${i+1}`, present: 0, late: 0, absent: 0, sortKey: i+1 }));
       
       filteredAtt.forEach(a => {
         const s = (a.status || '').toLowerCase();
-        if (s === 'present' || s === 'late') {
-          const d = new Date(a.date || a.createdAt);
-          if (d.getFullYear() === attYear && d.getMonth() === parseInt(attMonth)) {
-            const dayMatch = att.find(x => x.sortKey === d.getDate());
-            if (dayMatch) dayMatch.attendance += 1;
+        const d = new Date(a.date || a.createdAt);
+        if (d.getFullYear() === attYear && d.getMonth() === parseInt(attMonth)) {
+          const dayMatch = att.find(x => x.sortKey === d.getDate());
+          if (dayMatch) {
+            if (s === 'present') dayMatch.present += 1;
+            else if (s === 'late') dayMatch.late += 1;
+            else if (s === 'absent') dayMatch.absent += 1;
           }
         }
       });
@@ -387,11 +400,15 @@ export default function AdminDashboard() {
   const zeroPieData = pieData.filter(d => d.value === 0);
 
   const sortedDonationData = [...pieData].sort((a, b) => b.value - a.value).map(item => {
-    const percentage = pieTotal > 0 ? ((item.value / pieTotal) * 100).toFixed(1) : 0;
+    const percentage = pieTotal > 0 ? Math.round((item.value / pieTotal) * 100) : 0;
+    
+    let shortName = item.name.replace('Department', 'Dept');
+    
     return {
       ...item,
+      shortName,
       percentage,
-      displayLabel: `₱${(item.value || 0).toLocaleString()} • ${percentage}%`,
+      displayLabel: `₱${formatK(item.value || 0)} • ${percentage}%`,
       fillColor: item.value > 0 ? item.color : '#D1D5DB'
     };
   });
@@ -433,9 +450,19 @@ export default function AdminDashboard() {
     <div className="admin-dashboard-main">
       {!expandedChart && (<>
       {/* ── Dashboard Header ── */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: 700, color: '#0D1F45', margin: 0 }}>Dashboard Overview</h1>
-        <div style={{ display: 'flex', gap: '12px' }}>
+      <div className="adm-dashboard-header">
+        <div className="adm-dashboard-header-left">
+          <h1 className="adm-dashboard-greeting">
+            {(() => {
+              const h = new Date().getHours();
+              return h < 12 ? 'Good Morning' : h < 18 ? 'Good Afternoon' : 'Good Evening';
+            })()}, <span className="adm-dashboard-greeting-name">Admin</span>
+          </h1>
+          <p className="adm-dashboard-subtitle">
+            Here's your church overview for <strong>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</strong>
+          </p>
+        </div>
+        <div className="adm-dashboard-header-actions">
           <div className="adm-filter-group" style={{ margin: 0 }}>
             <select 
               value={attYear} 
@@ -443,22 +470,14 @@ export default function AdminDashboard() {
                 setAttYear(parseInt(e.target.value)); 
                 setGrowthYear(parseInt(e.target.value));
               }} 
-              className="adm-filter-select"
-              style={{ height: '36px', padding: '0 32px 0 12px' }}
+              className="adm-filter-select adm-header-select"
             >
               {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
             </select>
           </div>
-          <button 
-            onClick={() => window.print()} 
-            style={{ 
-              display: 'flex', alignItems: 'center', gap: '8px', height: '36px', 
-              padding: '0 16px', background: '#1E3A8A', color: 'white', 
-              border: 'none', borderRadius: '8px', cursor: 'pointer', 
-              fontFamily: 'Inter', fontWeight: 600, fontSize: '14px' 
-            }}
-          >
-            <Printer size={16} /> Export to PDF
+          <button className="adm-header-export-btn" onClick={() => window.print()}>
+            <Printer size={15} />
+            Export
           </button>
         </div>
       </div>
@@ -576,52 +595,27 @@ export default function AdminDashboard() {
 
       {/* ── Row 2: Analytics Row ── */}
       <div className="adm-analytics-row">
-        {/* Donation Categories Bar */}
+        {/* Donation Categories Custom List */}
         <div className="adm-card adm-card-bar">
-          <div className="adm-card-header">
-            <div>
+          <div className="adm-card-header" style={{ marginBottom: '20px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
               <h3 className="adm-card-title">Donation Categories</h3>
-              <span className="adm-stat-chip">₱{(pieTotal || 0).toLocaleString()}</span>
+              <span className="adm-stat-chip" style={{ fontFamily: 'DM Mono, monospace', fontWeight: 600, margin: 0, padding: '4px 12px', backgroundColor: '#EFF6FF', color: '#1E40AF', borderRadius: '16px', fontSize: '13px' }}>
+                ₱{(pieTotal || 0).toLocaleString()}
+              </span>
             </div>
             <button className="adm-chart-expand-btn" onClick={() => setExpandedChart('donations')} title="Expand Chart"><Expand size={16} color="#4B5563" strokeWidth={2.5} /></button>
           </div>
-          <div className="adm-bar-chart-container" style={{ padding: '10px 0', height: '220px' }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                layout="vertical"
-                data={sortedDonationData}
-                margin={{ top: 0, right: 90, left: 0, bottom: 0 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#F3F4F6" />
-                <XAxis type="number" hide />
-                <YAxis 
-                  type="category" 
-                  dataKey="name" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fontSize: 11, fill: '#4B5563' }} 
-                  width={140} 
-                />
-                <Tooltip 
-                  cursor={{ fill: '#F9FAFB' }}
-                  formatter={(value, name, props) => {
-                    const p = props.payload;
-                    return [`₱${value.toLocaleString()} (${p.percentage}%)`, 'Donations'];
-                  }}
-                />
-                <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={20} minPointSize={2}>
-                  {sortedDonationData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fillColor} />
-                  ))}
-                  <LabelList 
-                    dataKey="displayLabel" 
-                    position="right" 
-                    fill="#6B7280" 
-                    fontSize={11} 
-                  />
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="adm-donation-list">
+            {sortedDonationData.map((item, idx) => (
+              <div key={idx} className="adm-donation-row">
+                <span className="adm-donation-name">{item.shortName}</span>
+                <div className="adm-donation-bar-bg">
+                  <div className="adm-donation-bar-fill" style={{ width: `${item.percentage}%`, backgroundColor: item.fillColor }}></div>
+                </div>
+                <span className="adm-donation-value">{item.displayLabel}</span>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -630,32 +624,45 @@ export default function AdminDashboard() {
           <div className="adm-card-header">
             <div>
               <h3 className="adm-card-title">Members by Community</h3>
-              <span className="adm-card-sub"><strong className="adm-sub-bold">{memberStats.total}</strong> total across <strong className="adm-sub-bold">{membersByBranch.length}</strong> communities</span>
+              <span className="adm-card-sub"><strong className="adm-sub-bold" style={{ fontFamily: 'DM Mono, monospace', fontWeight: 500 }}>{memberStats.total}</strong> total across <strong className="adm-sub-bold" style={{ fontFamily: 'DM Mono, monospace', fontWeight: 500 }}>{membersByBranch.length}</strong> communities</span>
             </div>
-            <button className="adm-chart-expand-btn" onClick={() => setExpandedChart('branches')} title="Expand Chart"><Expand size={16} color="#4B5563" strokeWidth={2.5} /></button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <select 
+                value={topCommunitiesLimit} 
+                onChange={(e) => setTopCommunitiesLimit(Number(e.target.value))}
+                className="adm-filter-select"
+                style={{ padding: '4px 24px 4px 8px', fontSize: '11px', height: '26px' }}
+              >
+                <option value={10}>Top 10</option>
+                <option value={20}>Top 20</option>
+                <option value={40}>Top 40</option>
+                <option value={70}>Top 70</option>
+              </select>
+              <button className="adm-chart-expand-btn" onClick={() => setExpandedChart('branches')} title="Expand Chart"><Expand size={16} color="#4B5563" strokeWidth={2.5} /></button>
+            </div>
           </div>
-          <div className="adm-bar-chart-container">
+          <div className="adm-bar-chart-container" style={{ height: '250px' }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart 
-                data={membersByBranch.length > 0 ? membersByBranch : [{ branch: 'No data', count: 0 }]} 
+                data={membersByBranch.length > 0 ? membersByBranch.slice(0, topCommunitiesLimit) : [{ branch: 'No data', count: 0 }]} 
                 layout={isHorizontalMembers ? "vertical" : "horizontal"}
-                margin={isHorizontalMembers ? { top: 0, right: 30, left: 10, bottom: 0 } : { top: 20, right: 8, left: -20, bottom: 0 }}
+                margin={isHorizontalMembers ? { top: 0, right: 30, left: 10, bottom: 0 } : { top: 20, right: 8, left: -25, bottom: 40 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" horizontal={!isHorizontalMembers} vertical={isHorizontalMembers} />
                 {isHorizontalMembers ? (
                   <>
                     <XAxis type="number" stroke="#9CA3AF" fontSize={11} domain={[0, maxMembersInBranch + 1]} allowDecimals={false} hide />
-                    <YAxis dataKey="branch" type="category" stroke="#9CA3AF" fontSize={11} width={140} />
+                    <YAxis dataKey="branch" type="category" stroke="#9CA3AF" fontSize={11} fontFamily="DM Sans, sans-serif" fontWeight={400} width={160} />
                   </>
                 ) : (
                   <>
-                    <XAxis dataKey="branch" stroke="#9CA3AF" fontSize={11} angle={-35} textAnchor="end" height={50} tickMargin={5} />
-                    <YAxis stroke="#9CA3AF" fontSize={11} domain={[0, maxMembersInBranch + 1]} allowDecimals={false} />
+                    <XAxis dataKey="branch" stroke="#9CA3AF" fontSize={11} fontFamily="DM Sans, sans-serif" fontWeight={400} angle={-45} textAnchor="end" height={60} interval={0} tickMargin={5} />
+                    <YAxis stroke="#9CA3AF" fontSize={11} fontFamily="DM Mono, monospace" fontWeight={500} domain={[0, maxMembersInBranch + 1]} allowDecimals={false} />
                   </>
                 )}
                 <Tooltip cursor={{ fill: '#F9FAFB' }} formatter={(value) => [value, 'Members']} />
                 <Bar dataKey="count" fill="#0D1F45" radius={isHorizontalMembers ? [0, 4, 4, 0] : [4, 4, 0, 0]} barSize={isHorizontalMembers ? 20 : 32} name="Members">
-                  <LabelList dataKey="count" position={isHorizontalMembers ? "right" : "top"} fill="#6B7280" fontSize={10} />
+                  <LabelList dataKey="count" position={isHorizontalMembers ? "right" : "top"} fill="#6B7280" fontSize={11} fontFamily="DM Mono, monospace" fontWeight={500} />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
@@ -669,56 +676,66 @@ export default function AdminDashboard() {
           <div className="adm-card-header">
             <div>
               <h3 className="adm-card-title">Member Growth Trends</h3>
-              <span className="adm-card-sub">
-                <span style={{ color: momGrowth === 0 ? '#6B7280' : momGrowth > 0 ? '#10B981' : '#EF4444', fontWeight: 600 }}>
-                  {momGrowth === 0 ? '—' : momGrowth > 0 ? '↑' : '↓'} {Math.abs(momGrowth)}%
-                </span> vs last month · <strong className="adm-sub-bold">{memberStats.total}</strong> members
+              <span className="adm-card-sub" style={{ color: momGrowth >= 0 ? '#10B981' : '#EF4444', fontWeight: 600, fontFamily: 'DM Sans, sans-serif' }}>
+                {momGrowth >= 0 ? '↑' : '↓'} {Math.abs(momGrowth)}% vs last month · {memberStats.total.toLocaleString()} members
               </span>
             </div>
             <button className="adm-chart-expand-btn" onClick={() => setExpandedChart('growth')} title="Expand Chart"><Expand size={16} color="#4B5563" strokeWidth={2.5} /></button>
           </div>
-          <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={enhancedGrowthData} margin={{ top: 20, right: 8, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-              <XAxis dataKey="label" stroke="#9CA3AF" fontSize={12} />
-              <YAxis stroke="#9CA3AF" fontSize={12} allowDecimals={false} domain={[0, memberStats.total > 0 ? memberStats.total + 2 : 'auto']} />
-              <Tooltip formatter={(value, name) => [value, name === 'actualTotal' ? 'Total Members' : name === 'noDataTotal' ? 'No Data' : name]} />
-              <Legend iconType="circle" wrapperStyle={{ paddingTop: '12px', fontSize: '12px' }} />
-              
-              {enhancedGrowthData.length > 0 && enhancedGrowthData.findIndex(d => d.actualTotal !== null) > 0 && (
-                <ReferenceLine 
-                  x={enhancedGrowthData[enhancedGrowthData.findIndex(d => d.actualTotal !== null)].label} 
-                  stroke="#9CA3AF" 
-                  strokeDasharray="3 3" 
-                  label={{ position: 'insideTopLeft', value: 'Registration Opened', fill: '#9CA3AF', fontSize: 11 }} 
-                />
-              )}
-              
-              <Line type="monotone" dataKey="noDataTotal" stroke="#D1D5DB" strokeDasharray="5 5" strokeWidth={2} dot={false} name="No Data" connectNulls />
-              <Line type="monotone" dataKey="actualTotal" stroke="#155DFC" strokeWidth={2} dot={{ r: 3 }} name="Total Members" connectNulls />
-
-            </LineChart>
-          </ResponsiveContainer>
+          <div className="adm-bar-chart-container" style={{ height: '250px' }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={enhancedGrowthData} margin={{ top: 20, right: 8, left: -25, bottom: 5 }}>
+                <defs>
+                  <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#155DFC" stopOpacity={0.1}/>
+                    <stop offset="95%" stopColor="#155DFC" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
+                <XAxis dataKey="label" stroke="#9CA3AF" fontSize={11} fontFamily="DM Sans, sans-serif" fontWeight={400} axisLine={false} tickLine={false} />
+                <YAxis stroke="#9CA3AF" fontSize={11} fontFamily="DM Mono, monospace" fontWeight={500} axisLine={false} tickLine={false} allowDecimals={false} domain={[0, memberStats.total > 0 ? memberStats.total + 2 : 'auto']} />
+                <Tooltip formatter={(value, name) => [value, name === 'actualTotal' ? 'Total Members' : name === 'newMembers' ? 'New Members' : name]} />
+                <Legend wrapperStyle={{ paddingTop: '15px', fontSize: '11px', fontFamily: 'DM Sans, sans-serif', fontWeight: 400 }} verticalAlign="bottom" />
+                
+                {enhancedGrowthData.length > 0 && enhancedGrowthData.findIndex(d => d.actualTotal !== null) > 0 && (
+                  <ReferenceLine 
+                    x={enhancedGrowthData[enhancedGrowthData.findIndex(d => d.actualTotal !== null)].label} 
+                    stroke="#9CA3AF" 
+                    strokeDasharray="3 3" 
+                    label={{ position: 'insideTopLeft', value: 'Registration Opened', fill: '#9CA3AF', fontSize: 11, fontFamily: 'DM Sans, sans-serif' }} 
+                  />
+                )}
+                
+                <Bar dataKey="newMembers" barSize={16} fill="#F5B247" radius={[4, 4, 4, 4]} name="New Members" />
+                <Area type="monotone" dataKey="actualTotal" stroke="#155DFC" strokeWidth={3} fillOpacity={1} fill="url(#colorTotal)" name="Total Members" connectNulls dot={false} activeDot={{ r: 6 }} />
+  
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
         <div className="adm-card adm-chart-full">
           <div className="adm-card-header">
             <div>
               <h3 className="adm-card-title">Attendance Trends</h3>
-              <span className="adm-card-sub">{totalAttendanceCount} total attendees recorded — {new Date().getFullYear()}</span>
+              <span className="adm-card-sub"><span style={{ fontFamily: 'DM Mono, monospace', fontWeight: 500 }}>{totalAttendanceCount}</span> total attendees recorded — {new Date().getFullYear()}</span>
             </div>
             <button className="adm-chart-expand-btn" onClick={() => setExpandedChart('attendance')} title="Expand Chart"><Expand size={16} color="#4B5563" strokeWidth={2.5} /></button>
           </div>
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={attendVsDonData} margin={{ top: 20, right: 8, left: -10, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-              <XAxis dataKey="label" stroke="#9CA3AF" fontSize={12} />
-              <YAxis stroke="#9CA3AF" fontSize={12} allowDecimals={false} label={{ value: 'Attendees', angle: -90, position: 'insideLeft', fill: '#9CA3AF', fontSize: 11 }} />
-              <Tooltip cursor={{ fill: '#F9FAFB' }} />
-              <Legend iconType="square" wrapperStyle={{ paddingTop: '12px', fontSize: '12px' }} />
-              <Bar dataKey="attendance" fill="#155DFC" radius={[4, 4, 0, 0]} name="Attendance" background={{ fill: '#F3F4F6' }} />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="adm-bar-chart-container" style={{ height: '250px' }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={attendVsDonData} margin={{ top: 20, right: 8, left: -25, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+                <XAxis dataKey="label" stroke="#9CA3AF" fontSize={11} fontFamily="DM Sans, sans-serif" fontWeight={400} />
+                <YAxis stroke="#9CA3AF" fontSize={11} fontFamily="DM Mono, monospace" fontWeight={500} allowDecimals={false} label={{ value: 'Attendees', angle: -90, position: 'insideLeft', fill: '#9CA3AF', fontSize: 11, fontFamily: 'DM Sans, sans-serif', fontWeight: 400, offset: -5 }} />
+                <Tooltip cursor={{ fill: '#F9FAFB' }} />
+                <Legend iconType="square" wrapperStyle={{ paddingTop: '15px', fontSize: '11px', fontFamily: 'DM Sans, sans-serif', fontWeight: 400 }} verticalAlign="bottom" />
+                <Bar dataKey="present" fill="#155DFC" stackId="a" name="Present" />
+                <Bar dataKey="late" fill="#F5B247" stackId="a" name="Late" />
+                <Bar dataKey="absent" fill="#EF4444" stackId="a" name="Absent" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
 

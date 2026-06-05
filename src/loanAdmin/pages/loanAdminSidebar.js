@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 import { toast } from 'sonner';
@@ -6,19 +7,28 @@ import {
 } from 'lucide-react';
 import puacLogo from '../../assets/puaclogo.png';
 import '../styles/loanAdminSidebar.css';
-import { useTheme } from '../../context/ThemeContext';
+
 
 import API from '../../utils/api';
 import { processNewNotifications } from '../../utils/desktopNotify';
 import NotificationPrompt from '../../components/NotificationPrompt';
 
 export default function LoanAdminSidebar() {
-  const { theme, toggleTheme } = useTheme();
+
   const navigate  = useNavigate();
   const location  = useLocation();
   const [unreadCount, setUnreadCount] = useState(0);
   const prevNotifIdsRef = useRef(new Set());
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [adminName, setAdminName] = useState(localStorage.getItem('adminName') || 'Loan Admin');
+
+  useEffect(() => {
+    const handleStorage = () => {
+      setAdminName(localStorage.getItem('adminName') || 'Loan Admin');
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
 
 
   const handleSignOut = () => {
@@ -164,28 +174,14 @@ export default function LoanAdminSidebar() {
         </button>
       </div>
 
-      {/* Theme Toggle Section */}
-      <div className="loan-admin-sidebar-theme-toggle">
-        <div className="loan-theme-switch-wrapper">
-          <span className="loan-theme-switch-label">Dark Mode</span>
-          <label className="loan-toggle-switch">
-            <input 
-              type="checkbox" 
-              checked={theme === 'dark'} 
-              onChange={toggleTheme} 
-            />
-            <span className="loan-toggle-slider"></span>
-          </label>
-        </div>
-      </div>
 
       <div className="loan-admin-sidebar-profile">
         <div className="loan-admin-sidebar-profile-info">
           <div className="loan-admin-sidebar-profile-avatar">
-            <p>LA</p>
+            <p>{adminName.slice(0, 2).toUpperCase()}</p>
           </div>
           <div className="loan-admin-sidebar-profile-details">
-            <p className="loan-admin-sidebar-profile-name">Loan Admin</p>
+            <p className="loan-admin-sidebar-profile-name">{adminName}</p>
             <p className="loan-admin-sidebar-profile-email">
               {localStorage.getItem('adminEmail') || 'loans@isangdiwa.com'}
             </p>

@@ -1495,15 +1495,106 @@ router.get('/settings', authenticateAdmin, async (req, res) => {
 router.post('/settings', authenticateAdmin, async (req, res) => {
   try {
     const { settings } = await import('../config/db.js');
-    const { paymentApprovalMethod } = req.body;
+    const { 
+      paymentApprovalMethod, 
+      orgName, 
+      orgContact, 
+      orgAddress, 
+      maintenanceMode, 
+      notifNewUser, 
+      notifDonation, 
+      notifLoan,
+      notifNewLoan,
+      notifPayment,
+      notifDelinquent
+    } = req.body;
+    
+    const updateObj = { updatedAt: new Date() };
+    if (paymentApprovalMethod !== undefined) updateObj.paymentApprovalMethod = paymentApprovalMethod;
+    if (orgName !== undefined) updateObj.orgName = orgName;
+    if (orgContact !== undefined) updateObj.orgContact = orgContact;
+    if (orgAddress !== undefined) updateObj.orgAddress = orgAddress;
+    if (maintenanceMode !== undefined) updateObj.maintenanceMode = maintenanceMode;
+    if (notifNewUser !== undefined) updateObj.notifNewUser = notifNewUser;
+    if (notifDonation !== undefined) updateObj.notifDonation = notifDonation;
+    if (notifLoan !== undefined) updateObj.notifLoan = notifLoan;
+    if (notifNewLoan !== undefined) updateObj.notifNewLoan = notifNewLoan;
+    if (notifPayment !== undefined) updateObj.notifPayment = notifPayment;
+    if (notifDelinquent !== undefined) updateObj.notifDelinquent = notifDelinquent;
+
     await settings.updateOne(
       { _id: 'global' },
-      { $set: { paymentApprovalMethod, updatedAt: new Date() } },
+      { $set: updateObj },
       { upsert: true }
     );
     res.json({ success: true, message: 'Settings updated' });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Failed to update settings' });
+  }
+});
+
+/* ================== ADMIN PROFILE MANAGEMENT ================== */
+router.get('/profile/me', authenticateAdmin, async (req, res) => {
+  try {
+    const admin = await admins.findOne({ email: req.admin.email });
+    if (!admin) return res.status(404).json({ success: false, message: 'Admin not found' });
+    res.json({ 
+      success: true, 
+      admin: { 
+        email: admin.email, 
+        fullName: admin.fullName || 'Admin User', 
+        role: admin.role 
+      } 
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to fetch profile' });
+  }
+});
+
+router.post('/profile/update', authenticateAdmin, async (req, res) => {
+  try {
+    const { fullName } = req.body;
+    if (!fullName) return res.status(400).json({ success: false, message: 'Full name is required' });
+
+    const result = await admins.updateOne(
+      { email: req.admin.email },
+      { $set: { fullName, updatedAt: new Date() } }
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ success: false, message: 'Admin not found' });
+    }
+
+    res.json({ success: true, message: 'Profile updated successfully' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to update profile' });
+  }
+});
+
+router.post('/profile/change-password', authenticateAdmin, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ success: false, message: 'Current and new passwords are required' });
+    }
+
+    const admin = await admins.findOne({ email: req.admin.email });
+    if (!admin) return res.status(404).json({ success: false, message: 'Admin not found' });
+
+    const isMatch = await bcrypt.compare(currentPassword, admin.passwordHash);
+    if (!isMatch) {
+      return res.status(400).json({ success: false, message: 'Incorrect current password' });
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await admins.updateOne(
+      { email: req.admin.email },
+      { $set: { passwordHash: hashed, updatedAt: new Date() } }
+    );
+
+    res.json({ success: true, message: 'Password updated successfully' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to update password' });
   }
 });
 

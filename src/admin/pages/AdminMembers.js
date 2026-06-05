@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { ChevronLeft, ChevronRight, Edit, Lock, Search, Trash2, User, UserPlus, Users as UsersIcon, XCircle, X, MoreVertical, Eye, EyeOff, CreditCard, CheckCircle2 } from 'lucide-react';
 import useDebounce from '../../hooks/useDebounce';
 import '../styles/AdminMembers.css';
+import '../../styles/sharedPagination.css';
 import React from 'react';
 
 import API from '../../utils/api';
@@ -725,7 +726,7 @@ function LinkRFIDModal({ member, onClose, onSave }) {
 /* ═══════════════════════════════════════════════════════════════════════════
    MAIN PAGE
 ═══════════════════════════════════════════════════════════════════════════ */
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 10;
 
 export default function AdminMembers() {
   const navigate = useNavigate();
@@ -1025,33 +1026,37 @@ export default function AdminMembers() {
         </div>
 
         {pagination.totalPages > 1 && (
-          <div className="admin-members-pagination-wrapper">
-            <div className="admin-members-pagination">
-              <button 
-                className="admin-members-pagination-btn" 
-                onClick={() => setCurrentPage(p => Math.max(1, p-1))} 
+          <div className="pg-bar">
+            <span className="pg-info">
+              Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, pagination.totalMembers)} of {pagination.totalMembers}
+            </span>
+            <div className="pg-controls">
+              <button
+                className="pg-btn"
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
               >
-                <ChevronLeft size={18} />
+                ← Prev
               </button>
-              <div className="admin-members-pagination-numbers">
-                {buildPageNumbers(pagination).map((num, i) => (
-                  num === '…' ? <span key={`dots-${i}`} className="admin-members-pagination-dots">…</span> :
-                  <button 
-                    key={num} 
-                    onClick={() => setCurrentPage(num)} 
-                    className={`admin-members-pagination-number ${currentPage === num ? 'active' : ''}`}
+              {buildPageNumbers(pagination).map((num, i) =>
+                num === '…' ? (
+                  <span key={`dots-${i}`} className="pg-dots">…</span>
+                ) : (
+                  <button
+                    key={num}
+                    className={`pg-btn pg-num${currentPage === num ? ' active' : ''}`}
+                    onClick={() => setCurrentPage(num)}
                   >
                     {num}
                   </button>
-                ))}
-              </div>
-              <button 
-                className="admin-members-pagination-btn" 
-                onClick={() => setCurrentPage(p => Math.min(pagination.totalPages, p+1))} 
+                )
+              )}
+              <button
+                className="pg-btn"
+                onClick={() => setCurrentPage(p => Math.min(pagination.totalPages, p + 1))}
                 disabled={currentPage === pagination.totalPages}
               >
-                <ChevronRight size={18} />
+                Next →
               </button>
             </div>
           </div>

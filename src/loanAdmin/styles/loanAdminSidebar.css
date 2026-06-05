@@ -23,8 +23,8 @@
 
 /* ── Logo / brand area ── */
 .loan-admin-sidebar-logo {
-  padding: 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   flex-shrink: 0;
 }
 
@@ -53,7 +53,7 @@
 }
 
 .loan-admin-sidebar-logo-text h1 {
-  font-size: 1.55rem;
+  font-size: 1.5rem;
   font-weight: 600;
   margin: 0;
   color: white;
@@ -62,11 +62,11 @@
 }
 
 .loan-admin-sidebar-logo-text p {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.72);
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
   margin: 0;
   font-family: 'Arial', sans-serif;
-  line-height: 20px;
+  line-height: 16px;
 }
 
 /* ── Navigation ── */
@@ -79,32 +79,34 @@
 }
 
 .loan-admin-sidebar-group-label {
-  padding: 20px 24px 8px;
-  font-size: 11px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.4);
+  padding: 0;
+  margin: 14px 0 2px 20px;
+  font-size: 9px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.22);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   font-family: 'Arial', sans-serif;
+  line-height: 1;
 }
 
 .loan-admin-sidebar-nav-button {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   padding-left: 20px;
-  height: 48px;
+  height: 40px;
   background: transparent;
   border: none;
   color: rgba(255, 255, 255, 0.72);
-  font-size: 16px;
+  font-size: 14px;
   font-family: 'Arial', sans-serif;
-  border-radius: 2px;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
   width: 100%;
   text-align: left;
-  line-height: 24px;
+  line-height: 20px;
   white-space: nowrap;
 }
 
@@ -119,15 +121,15 @@
 }
 
 .loan-admin-sidebar-nav-button svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   flex-shrink: 0;
 }
 
 /* ── Profile / sign-out footer ── */
 .loan-admin-sidebar-profile {
-  padding: 16px 20px;
-  border-top: 0.8px solid rgba(255, 255, 255, 0.12);
+  padding: 12px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
   flex-shrink: 0;
 }
 
@@ -139,8 +141,8 @@
 }
 
 .loan-admin-sidebar-profile-avatar {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: #0D1F45;
   display: flex;
@@ -153,7 +155,7 @@
 
 .loan-admin-sidebar-profile-avatar p {
   margin: 0;
-  font-size: 16px;
+  font-size: 13px;
   font-family: 'Arial', sans-serif;
 }
 
@@ -163,23 +165,23 @@
 }
 
 .loan-admin-sidebar-profile-name {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: white;
   margin: 0;
   font-family: 'Arial', sans-serif;
-  line-height: 20px;
+  line-height: 18px;
 }
 
 .loan-admin-sidebar-profile-email {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.72);
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-family: 'Arial', sans-serif;
-  line-height: 16px;
+  line-height: 14px;
 }
 
 .loan-admin-sidebar-profile-signout {
@@ -187,12 +189,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 10px 16px;
+  gap: 6px;
+  padding: 8px 12px;
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   color: rgba(255, 255, 255, 0.72);
-  font-size: 14px;
+  font-size: 13px;
   font-family: 'Arial', sans-serif;
   border-radius: 2px;
   cursor: pointer;
