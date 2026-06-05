@@ -7,7 +7,7 @@ import '../styles/AdminDonations.css';
 import '../../styles/sharedPagination.css';
 
 import API from '../../utils/api';
-import { Banknote, Search, ChevronLeft, ChevronRight, Heart } from 'lucide-react';
+import { Banknote, Search, Heart } from 'lucide-react';
 import CommunityDonationChart from '../components/CommunityDonationChart';
 import DonationCategoriesPie from '../components/DonationCategoriesPie';
 

@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LabelList, Cell, ResponsiveContainer } from 'recharts';
 import '../styles/DonationCategoriesPie.css';
 
 const INITIAL_DONATION_CATEGORIES = [

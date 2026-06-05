@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import useSWR from 'swr';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ChevronLeft, ChevronRight, Edit, Lock, Search, Trash2, User, UserPlus, Users as UsersIcon, XCircle, X, MoreVertical, Eye, EyeOff, CreditCard, CheckCircle2 } from 'lucide-react';
+import { Edit, Lock, Search, Trash2, User, UserPlus, Users as UsersIcon, XCircle, X, MoreVertical, Eye, EyeOff, CreditCard, CheckCircle2 } from 'lucide-react';
 import useDebounce from '../../hooks/useDebounce';
 import '../styles/AdminMembers.css';
 import '../../styles/sharedPagination.css';
